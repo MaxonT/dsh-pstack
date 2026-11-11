@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { zstdDecompressSync } from "node:zlib";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -28,9 +28,8 @@ export interface SessionDigest extends Omit<SessionFacts, "sessionFile" | "autoA
 
 export function readSessionEvents(file: string): SessionEvent[] {
   if (!existsSync(file)) throw new Error(`session log is missing: ${file}`);
-  const result = spawnSync("zstdcat", [file], { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
-  if (result.status !== 0) throw new Error(`cannot decompress session log: ${file}`);
-  return (result.stdout ?? "")
+  const text = zstdDecompressSync(readFileSync(file)).toString("utf8");
+  return text
     .split("\n")
     .filter((line) => line.trim() !== "")
     .flatMap((line) => {
@@ -210,6 +209,14 @@ export function digestEvents(events: SessionEvent[], sessionId: string, worker =
           call.status = "ok";
           const loaded = skillCallById.get(rawCallId as string);
           if (loaded) skillLoads.push(loaded);
+        }
+        break;
+      }
+      case "user/message": {
+        const text = textOfContent(data.content);
+        for (const match of text.matchAll(/<skill_content name="([^"]+)">/g)) {
+          const loaded = `${match[1]}#user-gesture`;
+          if (!skillLoads.includes(loaded)) skillLoads.push(loaded);
         }
         break;
       }

@@ -16,5 +16,5 @@
     "skipLibCheck": true
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "raw/generated", ".workers", ".workers-*"]
+  "exclude": ["node_modules", "raw/pstack", "raw/upstream", "raw/scripts", ".workers", ".workers-*"]
 }

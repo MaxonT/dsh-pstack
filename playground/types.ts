@@ -58,6 +58,8 @@ export interface ScenarioSource {
   regression?: string;
 }
 
+export type ScenarioGroup = "skills" | "playbooks" | "official-plugins";
+
 export interface BehaviorScenario {
   type: "behavior";
   id: string;
@@ -70,33 +72,19 @@ export interface BehaviorScenario {
   source: ScenarioSource;
   environmentId?: string;
   answers?: Array<{ match: string; selected?: string[]; custom?: string }>;
+  /** Set by the registry from the directory name. */
+  group?: ScenarioGroup;
+  /** Upstream playbook filename stem for playbook scenarios. */
+  playbook?: string;
+  /** Official plugin package id for official-plugin scenarios. */
+  plugin?: string;
+  /** Environments a plugin scenario runs in; omitted means base only. */
+  environments?: string[];
+  /** Skill names the scenario should observe for availability and loading. */
+  dependencies?: string[];
 }
 
-export interface ConflictRegression {
-  type: "conflict-regression";
-  id: string;
-  turns: Array<{ prompt: string }>;
-  workspace: WorkspaceFixture;
-  expectedConflict: {
-    packages: string[];
-    symptom: string;
-    recovery: string;
-  };
-  observations: UiObservation[];
-  source: ScenarioSource;
-  environmentId: string;
-}
-
-export interface PluginUiScenario {
-  type: "plugin-ui";
-  id: string;
-  steps: Array<{ action: string; expected: string }>;
-  observations: UiObservation[];
-  source: ScenarioSource;
-  environmentId: string;
-}
-
-export type Scenario = BehaviorScenario | ConflictRegression | PluginUiScenario;
+export type Scenario = BehaviorScenario;
 
 export interface Exclusion {
   id: string;
@@ -111,7 +99,7 @@ export interface EnvironmentMatrix {
   /**
    * Plugin packages force-loaded despite a peer/runtime version mismatch. Two fixtures need
    * this: `session-search`, whose experimental plugin pins session-query packages the runtime
-   * does not satisfy, and `agent-team-conflict`, whose experimental Agent Teams plugins declare
+   * does not satisfy, and `agent-team`, whose experimental Agent Teams plugins declare
    * a peer range the pinned dsh runtime does not satisfy. The loader disables those rows unless
    * the exact package@version is exempted for this runtime. `prepare` reads the installed
    * version and the actual runtime version to grant each exemption.
@@ -140,6 +128,38 @@ export interface ToolCallEvidence {
   errorText?: string;
 }
 
+export type SkillLoadPath = "skill" | "pstack_skill" | "read" | "user-gesture" | "none";
+
+export interface SkillInvocationAnalysis {
+  requested: string;
+  loadedVia: SkillLoadPath;
+  attempts: number;
+  errors: string[];
+}
+
+export interface DependencyAnalysis {
+  name: string;
+  available: boolean;
+  loaded: boolean;
+  fallback: string | null;
+}
+
+export interface ToolAttemptAnalysis {
+  name: string;
+  attempts: number;
+  failures: number;
+  finalStatus: "ok" | "error" | "pending";
+}
+
+export interface SessionAnalysis {
+  skillInvocation: SkillInvocationAnalysis;
+  dependencies: DependencyAnalysis[];
+  tools: ToolAttemptAnalysis[];
+  userGesture: boolean;
+  artifacts: string[];
+  warnings: string[];
+}
+
 export interface SessionFacts {
   sessionId: string;
   sessionFile: string;
@@ -153,11 +173,13 @@ export interface SessionFacts {
   /** Every user-authored turn text in order; userText stays the first one for the entry check. */
   userTexts: string[];
   autoAnswers: Array<{ question: string; answer: string }>;
+  analysis?: SessionAnalysis;
 }
 
 export interface ArtifactEvidence {
   recordFile: string;
   screenshotFile?: string;
+  fullScreenshotFile?: string;
   observed: string[];
 }
 

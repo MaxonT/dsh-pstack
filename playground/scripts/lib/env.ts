@@ -134,7 +134,7 @@ function profileDirectory(paths: WorkerPaths): string {
 }
 
 function persistentInstructions(rawMount: string): string {
-  const skill = join(rawMount, "tree/skills/poteto-mode/SKILL.md");
+  const skill = join(rawMount, "pstack/skills/poteto-mode/SKILL.md");
   if (!existsSync(skill))
     throw new Error("raw mount is missing; run playground:prepare for the raw phase first");
   const body = readFileSync(skill, "utf8").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "");
@@ -258,7 +258,7 @@ export function profileManifest(
 }
 
 export function rawProfileEntries(template: unknown[], rawMount: string): unknown[] {
-  const skills = join(rawMount, "tree/skills");
+  const skills = join(rawMount, "pstack/skills");
   if (!existsSync(skills))
     throw new Error("raw mount is missing; run playground:prepare for the raw phase first");
   return [

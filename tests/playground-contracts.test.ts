@@ -53,7 +53,9 @@ describe("scenario registry", () => {
   it("reuses one natural-language scenario across both phases", () => {
     const scenario = behaviorScenario("poteto-help-smoke");
     expect(behaviorScenario(scenario.id)).toBe(scenario);
-    expect(scenario.turns[0]?.prompt).not.toMatch(/poteto-help|skill|工具/);
+    const prompt = scenario.turns[0]?.prompt ?? "";
+    expect(prompt).toMatch(/^\/poteto-help /);
+    expect(prompt.replace("/poteto-help ", "")).not.toMatch(/skill|工具/);
     expect(scenario.assertions.some((assertion) => assertion.kind === "turn-completed")).toBe(true);
     expect(scenario.rubric.prompt).toContain("技能加载是过程证据，不等于建议有效");
   });
@@ -94,6 +96,22 @@ describe("scenario registry", () => {
 
   it("only excludes capabilities that require Cursor services or bots", () => {
     expect(exclusions.map((entry) => entry.id)).toEqual(["make-bot-ui", "automations-benny"]);
+  });
+
+  it("covers every upstream playbook with a scenario", () => {
+    const playbooksDir = join(
+      repository,
+      "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks",
+    );
+    const upstream = readdirSync(playbooksDir)
+      .filter((name) => name.endsWith(".md"))
+      .map((name) => name.slice(0, -".md".length));
+    const covered = new Set(
+      behaviorScenarios
+        .map((scenario) => scenario.playbook)
+        .filter((name): name is string => typeof name === "string"),
+    );
+    expect(upstream.filter((name) => !covered.has(name))).toEqual([]);
   });
 
   it("covers every upstream skill with a scenario or an explicit exclusion", () => {

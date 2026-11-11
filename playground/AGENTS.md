@@ -1,19 +1,44 @@
-# Playground agent 须知
+# Playground 运转规则
 
-- 本目录执行真实浏览器场景。先运行 `vp run playground:raw-generate`，再准备环境。
-- raw 生成只使用上游 pstack 与上游生成脚本的隔离副本。禁止读取 `port`、`src`、现行生成树或旧报告。
-- raw 只允许 `base` 环境，不安装 dsh-pstack 或其他附加插件。raw 使用 standard preset 加 raw systemPrompt 提示。
-- adapted 使用真实插件的 poteto-mode preset，不注入 raw 提示。插件环境用显式 id 和完整附加包清单描述，不能继承宿主状态。
-- 每个 phase、environment 和 worker 使用独立的 home、浏览器、工作区、证据和动态端口。home、浏览器、证据、pid 和日志在仓库内 `.workers/<phase>/<environmentId>/w<k>` 便于审计；被测会话能触达的工作区、raw 技能挂载和运行时临时目录在仓库外隔离根 `<isolatedRoot>/<phase>/<environmentId>/w<k>`（默认 `os.tmpdir()/dsh-pstack-playground`，`PLAYGROUND_WORKSPACE_ROOT` 可覆盖）。`prepare --reset` 只清本 phase 与 environment，另一 phase 的证据必须保留。沙箱只限写不限读，工作区和挂载路径不得暴露仓库根，否则被测会话能读到场景断言与 rubric。
-- 被测读隔离的残余风险已记录为已知限制：沙箱只限写不限读，被测会话仍可能靠猜测绝对路径，或读取 DSH_HOME 等指向仓库内的进程环境变量发现仓库根并读到场景文件。审核证据时不得假设被测读不到仓库；怀疑泄漏时用会话日志 toolCalls 的 argsSummary 核对实际读取目标。
-- 一个浏览器操作序列只在单一进程中执行。并行只能通过多个 worker 子进程。
-- 场景 prompt 使用自然语言。相同 Scenario id 跨 raw 和 adapted 复用，不复制用例。
-- 执行器等待所有 turns 的真实 turn/end。禁止 probeSeconds、DEFAULT_PROBE_SECONDS、truncated 和到点自动中止。
-- 真实模型选择由用户确认。记录实际路由、上下游版本、上游 revision 和配置 hash。证据与报告不得包含 apiKey。
-- 截图里的编辑卡是 workspace 级聚合视图，不得单独作为某个会话写行为的证据；会话级写行为以该会话 toolCalls 的 argsSummary、会话日志与 artifact 断言为准。
-- 技能加载只是过程证据。语义效果必须有独立 reviewer、状态和理由。未审不等于通过。
-- raw 四态为 observed、gap、blocked、unobserved。adapted 三态为 verified、not-verified、inconclusive。
-- 插件 UI 与冲突回归有独立类型。不要为 Agent Teams 假想共存场景。
-- 排除只限强依赖 Cursor 云、Bot、Automations 或 Bugbot 的能力。提及 Cursor 名称不构成排除理由。
-- 不恢复 cases.lock、审批流、旧 SkillCase、Finding 或 reports/skill-audit.md。
-- 不修改 PNPM_HOME。不要把 config.json、worker 数据或临时设计提交进库。
+本文件是 playground 的唯一严格规则源。完整阶段、命令和审批门见 [docs/verification-loop.md](./docs/verification-loop.md)。README 只是入口，不承载流程。
+
+## 边界
+
+- playground 用真实 DSH Web 会话验证移植。Linux 是唯一官方支持的平台；其他系统由 `playground:doctor` 明确报告不支持。
+- 上游技能自身的文案、结构、依赖缺口和质量问题不属于本仓回归范围。这里只验证移植后在 DSH 内的运转和结果渲染。
+- 禁止在 prompt、assertions、rubric、uiObservations 中预设目标运行时能力或预期缺口。能力缺失由会话证据和 review 发现。
+- 真实模型选择由用户确认；每条 RunRecord 记录实际路由、DSH 版本、上游 revision 和配置 hash。
+
+## 目录
+
+- `scenarios/skills/<skill>.ts`：一个上游技能一个文件。
+- `scenarios/playbooks/<playbook>.ts`：一个上游 playbook 一个文件，prompt 以 `/poteto-mode ` 开头。
+- `scenarios/official-plugins/<plugin>.ts`：一个官方插件一个文件，同一场景在 `raw/base`、`adapted/base`、`adapted/<plugin>` 运行。
+- `scenarios/registry.ts`：用 `import.meta.glob` 自动收集三个目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
+- `reports/`：镜像 `scenarios/` 的生成区。`record.json`、截图、session 日志不提交；`index.md`、`summary-*.md`、`comparison.md`、`approval-*.md` 提交。
+- `reviews/`：审核侧车，提交进库。
+- 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
+
+## 场景要求
+
+- 每个场景只观察 DSH 可观察行为：技能是否加载（`skill`、`pstack_skill`、`read` 回退或 `/name` 用户手势）、依赖是否可用和加载、工具调用与重试、turn 是否结束、最终答复或产物是否存在。
+- `SessionAnalysis` 必须写入 RunRecord，包含 `skillInvocation`、`dependencies`、`tools`、`userGesture` 和 warnings。
+- 截图必须同时有 viewport 和 full-page；审阅以 full-page 为准。
+- 每个上游技能和 playbook 必须有场景或明确排除。排除只给上游明确依赖 Cursor 云服务的条目，理由和证据写进 `exclusions.ts`。
+- 官方插件场景不预设冲突；`agent-team` 只是普通插件环境，结果由会话文件和界面观察决定。
+
+## 流程与审批
+
+- raw：生成 `playground/raw/pstack`，跑 `raw/base` 的 skills 和 playbooks，collect，`review --apply`。raw 的 gate 是 sidecar 加 `dsh.md` 逐行确认。
+- 适配开发：维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
+- adapted/base：跑 skills 和 playbooks，与 raw/base 对比，生成 `reports/approval-adapted-base.md`。不通过回适配开发。
+- official-plugins：每个插件跑 base 与插件环境，生成 `reports/approval-official-plugins.md`。插件限制写 `dsh.md` 和根 README。
+- README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
+
+## dsh.md
+
+- `playground/raw/dsh.md` 是 raw 基准答案，`port/dsh.md` 是最终随包答案，两者不能合并。
+- 生成 `dsh.md` 时先复制上游 `claude-code.md` 的结构并清空答案，再由 agent 和用户逐条提案、审批、写入；已有答案作为默认提案但仍逐条确认。
+- `dsh.zh.md` 是逐行中文翻译，只供审阅，生成器不读。
+- `playground/raw/dsh-evidence.md` 保存判定依据。
+- `scripts/generate-pstack.mjs --target port|raw` 是唯一生成器；`--target port` 写根 `pstack/`，`--target raw` 写 `playground/raw/pstack/`。

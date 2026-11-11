@@ -13,6 +13,7 @@ const upstreamAdapter = join(upstream, "pstack/docs/harness/claude-code.md");
 const upstreamGenerator = join(upstream, "scripts/generate-pstack-harness-trees.mjs");
 const skillsRoot = join(upstream, "pstack/skills");
 const dshAdapter = join(repository, "playground/raw/dsh.md");
+const dshZhAdapter = join(repository, "playground/raw/dsh.zh.md");
 
 // Copied from the upstream generator's TERMS list; the drift assertions below
 // fail when upstream changes it, so this copy cannot silently diverge.
@@ -152,6 +153,27 @@ describe("committed DSH adapter guard", () => {
         );
       }
     }
+  });
+
+  it("keeps the Chinese review copy structurally identical to dsh.md", () => {
+    const zh = readFileSync(dshZhAdapter, "utf8");
+    const englishSections = parseSections(dsh);
+    const chineseSections = parseSections(zh);
+    expect(chineseSections.length).toBe(englishSections.length);
+    for (const [index, section] of englishSections.entries()) {
+      expect(chineseSections[index]?.rows.length, `row count in section ${index}`).toBe(
+        section.rows.length,
+      );
+      for (const [row, entry] of section.rows.entries()) {
+        expect(
+          chineseSections[index]?.rows[row]?.[0],
+          `Cursor cell ${row} in section ${index}`,
+        ).toBe(entry[0]);
+      }
+    }
+    expect(zh.split("\n").filter((line) => line.startsWith("- ")).length).toBe(
+      dsh.split("\n").filter((line) => line.startsWith("- ")).length,
+    );
   });
 
   it("targets DSH, never Claude Code or this plugin's artifacts", () => {

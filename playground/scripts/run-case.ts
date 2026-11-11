@@ -10,6 +10,7 @@ import {
 import { dirname, join } from "node:path";
 
 import type { BehaviorScenario, Phase, RunRecord, SessionFacts, TestTarget } from "../types.ts";
+import { analyzeSession } from "./lib/analysis.ts";
 import { createBrowserSession, type BrowserSession } from "./lib/browser.ts";
 import {
   assertSafeRecord,
@@ -191,29 +192,8 @@ function answerPendingQuestions(
       const selected = optionButtons.filter((b) => b.getAttribute("aria-checked") === "true");
       const actions = [];
       const record = (answer) => actions.push({ question, answer: answer || "(clicked first option)" });
-      if (selected.length === 0) {
-        const custom = rule && rule.custom ? rule.custom : (!rule && optionButtons.length === 0 ? fallback : "");
-        if (custom) {
-          const input = card.querySelector("textarea, input:not([type=checkbox]):not([type=radio])");
-          if (input) {
-            const proto = input.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-            Object.getOwnPropertyDescriptor(proto, "value").set.call(input, custom);
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-            record(custom);
-          }
-        } else if (optionButtons.length > 0) {
-          let target = null;
-          if (rule && rule.selected && rule.selected.length) {
-            target = optionButtons.find((b) => (b.getAttribute("aria-label") || b.innerText || "").includes(rule.selected[0]));
-          }
-          if (!target) target = optionButtons[0];
-          record((target.getAttribute("aria-label") || target.innerText || "").trim());
-          target.click();
-        }
-        return JSON.stringify(actions);
-      }
-      // Already answered: click the primary footer button (advance on non-last, submit on last).
-      // Skip the pager arrows (aria nav.prev/nav.next with no text) and the skip button.
+      // The primary footer button advances a non-last question and submits the last.
+      // Skip the pager arrows and the skip button.
       const footer = card.querySelector("footer");
       const primary = footer
         ? [...footer.querySelectorAll("button")].find((b) => {
@@ -223,6 +203,40 @@ function answerPendingQuestions(
             return visible(b) && !b.disabled;
           })
         : null;
+      const input = card.querySelector("textarea, input:not([type=checkbox]):not([type=radio])");
+      const wantsCustom = Boolean(rule && rule.custom);
+      const wantsFallback = !rule && optionButtons.length === 0;
+      if (selected.length === 0 && (wantsCustom || wantsFallback)) {
+        const text = wantsCustom ? rule.custom : fallback;
+        const current = input ? String(input.value || "").trim() : "";
+        if (input && current !== text.trim()) {
+          const proto = input.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+          Object.getOwnPropertyDescriptor(proto, "value").set.call(input, text);
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          record(text);
+          return JSON.stringify(actions);
+        }
+        if (primary) primary.click();
+        return JSON.stringify(actions);
+      }
+      if (selected.length === 0) {
+        if (optionButtons.length > 0) {
+          let target = null;
+          if (rule && rule.selected && rule.selected.length) {
+            target = optionButtons.find((b) => (b.getAttribute("aria-label") || b.innerText || "").includes(rule.selected[0]));
+          }
+          if (!target) {
+            target = optionButtons.find((b) => {
+              const label = (b.getAttribute("aria-label") || "") + " " + (b.innerText || "");
+              return /(Recommended)|（推荐）|推荐/.test(label);
+            });
+          }
+          if (!target) target = optionButtons[0];
+          record((target.getAttribute("aria-label") || target.innerText || "").trim());
+          target.click();
+        }
+        return JSON.stringify(actions);
+      }
       if (primary) primary.click();
       return JSON.stringify(actions);
     })()`,
@@ -251,6 +265,7 @@ interface AttemptInput {
   url: string;
   expectedTarget: TestTarget;
   screenshotFile: string;
+  fullScreenshotFile: string;
   expectedPreset: string;
 }
 
@@ -259,7 +274,7 @@ function attemptScenario(input: AttemptInput): {
   file: string;
   answers: SessionFacts["autoAnswers"];
 } {
-  const { paths, scenario, url, screenshotFile, expectedPreset } = input;
+  const { paths, scenario, url, screenshotFile, fullScreenshotFile, expectedPreset } = input;
   const preset = expectedPreset;
   const session = createBrowserSession({
     session: `${paths.environmentId}-w${paths.index}`,
@@ -340,6 +355,7 @@ function attemptScenario(input: AttemptInput): {
     const matched: MatchResult = match;
     session.wait(1000);
     session.screenshot(screenshotFile);
+    session.screenshot(fullScreenshotFile, { full: true });
     if (!existsSync(matched.file)) throw new InfraError("session log vanished before reading");
     try {
       return {
@@ -420,6 +436,7 @@ async function main(): Promise<void> {
   mkdirSync(paths.evidenceDir, { recursive: true });
   const recordFile = join(paths.evidenceDir, recordFileName(scenarioId, phase, matrix.id, stamp));
   const screenshotFile = recordFile.replace(/\.json$/, ".png");
+  const fullScreenshotFile = recordFile.replace(/\.json$/, ".full.png");
   let record: RunRecord;
   try {
     const outcome = attemptScenario({
@@ -428,9 +445,11 @@ async function main(): Promise<void> {
       url: readWebUrl(paths),
       expectedTarget,
       screenshotFile,
+      fullScreenshotFile,
       expectedPreset,
     });
     const session = sessionFacts(outcome.digest, outcome.file, outcome.answers);
+    session.analysis = analyzeSession(scenario, session);
     const failures = mechanicalFailures({
       scenario,
       session,
@@ -449,9 +468,16 @@ async function main(): Promise<void> {
       artifacts: {
         recordFile,
         screenshotFile,
+        fullScreenshotFile,
         observed: [
           `skillLoads=${session.skillLoads.join(",") || "none"}`,
           `toolCalls=${session.toolCalls.length}`,
+          `skillVia=${session.analysis.skillInvocation.loadedVia}`,
+          `dependencies=${
+            session.analysis.dependencies
+              .map((entry) => `${entry.name}:${entry.available ? "available" : "missing"}`)
+              .join(",") || "none"
+          }`,
         ],
       },
       semanticReview,

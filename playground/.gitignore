@@ -14,9 +14,16 @@ node_modules
 .DS_Store
 
 # Regenerated raw baseline. The generator never writes the upstream checkout.
-raw/generated/
+raw/pstack/
+raw/upstream/
+raw/scripts/
+raw/manifest.json
 
-# Generated per-run reports.
+# Generated per-run reports: evidence files are ignored, summaries/approvals are committed.
+reports/**/record.json
+reports/**/screenshot.png
+reports/**/full.png
+reports/**/session.jsonl.zstd
 reports/run-*.md
 
 # Archived evidence for the audit report; regenerated per run.

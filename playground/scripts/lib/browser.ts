@@ -52,7 +52,7 @@ export interface BrowserSession {
   click(selector: string): string;
   keyboardType(text: string): string;
   press(key: string): string;
-  screenshot(path: string): string;
+  screenshot(path: string, options?: { full?: boolean }): string;
   close(): void;
 }
 
@@ -114,9 +114,9 @@ export function createBrowserSession(options: BrowserOptions): BrowserSession {
     return (result.stdout ?? "").trim();
   };
 
-  const screenshot = (path: string): string => {
+  const screenshot = (path: string, options?: { full?: boolean }): string => {
     mkdirSync(dirname(path), { recursive: true });
-    return raw(["screenshot", path]);
+    return raw(options?.full ? ["screenshot", "--full", path] : ["screenshot", path]);
   };
 
   return {

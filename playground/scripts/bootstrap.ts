@@ -71,6 +71,22 @@ function validateWorker(paths: WorkerPaths): string[] {
       failures.push(
         `preview notice "${PREVIEW_NOTICE}" still present after clicking "${CONTINUE_LABEL}"`,
       );
+    const openedDefault = session.eval<boolean>(
+      `(() => {
+        const title = ${JSON.stringify(defaultTitle)};
+        const button = [...document.querySelectorAll("button")].find((element) => {
+          const label = element.getAttribute("aria-label") || "";
+          return label.includes(title) && (label.includes("新建会话") || label.toLowerCase().includes("new session"));
+        });
+        if (!button) return false;
+        button.click();
+        return true;
+      })()`,
+    );
+    if (openedDefault) {
+      session.wait(3000);
+      body = session.eval<string>("document.body.innerText");
+    }
     if (!body.includes(defaultTitle))
       failures.push(`page does not show workspace "${defaultTitle}"`);
     const nameShown =

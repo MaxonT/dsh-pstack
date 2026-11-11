@@ -34,8 +34,7 @@ import {
   publicConfigHash,
   REPOSITORY_ROOT,
 } from "../playground/scripts/lib/run-metadata.ts";
-import { behaviorScenario, exclusions } from "../playground/scenarios/index.ts";
-import { listScenarioIds } from "../playground/scripts/lib/scenarios.ts";
+import { behaviorScenario, behaviorScenarios, exclusions } from "../playground/scenarios/index.ts";
 import { reportFor } from "../playground/scripts/collect.ts";
 import {
   workerPaths,
@@ -240,6 +239,14 @@ describe("digest granularity", () => {
     );
     expect(digest.assistantText).toBe("--- turn 2 ---\n\nlate answer");
     expect(digest.userTexts).toEqual(["first prompt", "second prompt"]);
+  });
+
+  it("records a user-explicit skill gesture from the injected skill_content", () => {
+    const digest = digestEvents(
+      [userMessage('<skill_content name="poteto-mode">\nskill body\n</skill_content>')],
+      "session-gesture",
+    );
+    expect(digest.skillLoads).toEqual(["poteto-mode#user-gesture"]);
   });
 
   it("keeps non-user messages out of userTexts", () => {
@@ -501,10 +508,10 @@ const isolationPlan: ProviderPlan = {
 };
 
 function writeFakeRawTree(root: string): void {
-  mkdirSync(join(root, "tree/skills/poteto-mode"), { recursive: true });
+  mkdirSync(join(root, "pstack/skills/poteto-mode"), { recursive: true });
   writeFileSync(join(root, "dsh.md"), "# raw harness adapter\n");
   writeFileSync(
-    join(root, "tree/skills/poteto-mode/SKILL.md"),
+    join(root, "pstack/skills/poteto-mode/SKILL.md"),
     "---\nname: poteto-mode\n---\n\n# Raw poteto mode body\n",
   );
 }
@@ -547,17 +554,17 @@ describe("read isolation from the repository tree", () => {
     writeFakeRawTree(source);
     expect(mountRawTree(paths, source)).toBe(paths.rawMount);
     expect(existsSync(join(paths.rawMount, "dsh.md"))).toBe(true);
-    expect(existsSync(join(paths.rawMount, "tree/skills/poteto-mode/SKILL.md"))).toBe(true);
+    expect(existsSync(join(paths.rawMount, "pstack/skills/poteto-mode/SKILL.md"))).toBe(true);
     expect(() => mountRawTree(paths, join(temporary, "absent"))).toThrow(/raw tree is missing/);
 
     const entries = rawProfileEntries([], paths.rawMount);
-    expect(JSON.stringify(entries)).toContain(join(paths.rawMount, "tree/skills"));
+    expect(JSON.stringify(entries)).toContain(join(paths.rawMount, "pstack/skills"));
     expect(JSON.stringify(entries)).not.toContain(REPOSITORY_ROOT);
     expect(() => rawProfileEntries([], join(temporary, "absent"))).toThrow(/raw mount is missing/);
 
     writeHomePatch(paths, isolationPlan, "raw");
     const patch = readFileSync(join(paths.home, "cordis.patch.yml"), "utf8");
-    expect(patch).toContain(join(paths.rawMount, "tree/skills/poteto-mode/SKILL.md"));
+    expect(patch).toContain(join(paths.rawMount, "pstack/skills/poteto-mode/SKILL.md"));
     expect(patch).toContain(join(paths.rawMount, "dsh.md"));
     expect(patch).not.toContain(REPOSITORY_ROOT);
   });
@@ -671,6 +678,6 @@ describe("collect report verdict counting", () => {
     const counts = summaryCounts(reportFor("adapted", "base", [raw, adapted]).markdown);
     const { unrun = 0, excluded = 0, ...statuses } = counts;
     const counted = Object.values(statuses).reduce((total, value) => total + value, 0);
-    expect(counted + unrun + excluded).toBe(listScenarioIds().length + exclusions.length);
+    expect(counted + unrun + excluded).toBe(behaviorScenarios.length + exclusions.length);
   });
 });

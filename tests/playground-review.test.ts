@@ -25,7 +25,7 @@ import {
   readReviewSidecars,
   readRunRecords,
 } from "../playground/scripts/lib/review.ts";
-import { listReviewScenarioIds } from "../playground/scripts/lib/scenarios.ts";
+import { reviewScenarioIds as listReviewScenarioIds } from "../playground/scenarios/index.ts";
 
 const SCENARIO_ID = "poteto-help-smoke";
 const REVIEWED_AT = "2026-11-11T01:00:00.000Z";
@@ -401,29 +401,27 @@ describe("applying a review", () => {
 });
 
 describe("review sidecar scenario registry", () => {
-  it("parses plugin-ui and conflict sidecar names through the full registry", () => {
+  it("parses official-plugin sidecar names through the full registry", () => {
     const ids = listReviewScenarioIds();
-    expect(parseReviewFileName("plugin-ui-role-config-adapted-base.json", ids)).toEqual({
-      scenarioId: "plugin-ui-role-config",
+    expect(parseReviewFileName("plugin-forge-adapted-forge.json", ids)).toEqual({
+      scenarioId: "plugin-forge",
       phase: "adapted",
-      environmentId: "base",
+      environmentId: "forge",
     });
-    expect(
-      parseReviewFileName("plugin-conflict-agent-team-adapted-agent-team-conflict.json", ids),
-    ).toEqual({
-      scenarioId: "plugin-conflict-agent-team",
+    expect(parseReviewFileName("plugin-agent-team-adapted-agent-team.json", ids)).toEqual({
+      scenarioId: "plugin-agent-team",
       phase: "adapted",
-      environmentId: "agent-team-conflict",
+      environmentId: "agent-team",
     });
   });
 
-  it("accepts a plugin-ui sidecar and still rejects an unknown scenario id", () => {
+  it("accepts an official-plugin sidecar and still rejects an unknown scenario id", () => {
     const root = mkdtempSync(join(tmpdir(), "pstack-review-registry-"));
     temporaries.push(root);
     const reviews = join(root, "reviews");
     mkdirSync(reviews, { recursive: true });
     writeFileSync(
-      join(reviews, "plugin-ui-role-config-adapted-base.json"),
+      join(reviews, "plugin-forge-adapted-forge.json"),
       `${JSON.stringify(reviewValue(), null, 2)}\n`,
     );
     writeFileSync(
@@ -432,14 +430,12 @@ describe("review sidecar scenario registry", () => {
     );
 
     const { sidecars, errors } = readReviewSidecars(reviews, listReviewScenarioIds());
-    expect(sidecars.map((sidecar) => sidecar.identity.scenarioId)).toEqual([
-      "plugin-ui-role-config",
-    ]);
+    expect(sidecars.map((sidecar) => sidecar.identity.scenarioId)).toEqual(["plugin-forge"]);
     expect(
       errors.some(
         (error) => error.includes("unknown-scenario") && error.includes("file name must"),
       ),
     ).toBe(true);
-    expect(errors.some((error) => error.includes("plugin-ui-role-config"))).toBe(false);
+    expect(errors.some((error) => error.includes("plugin-forge"))).toBe(false);
   });
 });

@@ -6,13 +6,13 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { PlaygroundConfig, RunEnvironment } from "../../types.ts";
-import { environments } from "../../scenarios/index.ts";
+import { environments } from "../../scenarios/environments.ts";
 
 export const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 export const PLAYGROUND_DIRECTORY = join(REPOSITORY_ROOT, "playground");
 export const DEFAULT_CONFIG_FILE = join(PLAYGROUND_DIRECTORY, "config.json");
-export const RAW_ROOT = join(PLAYGROUND_DIRECTORY, "raw/generated");
-export const RAW_TREE = join(RAW_ROOT, "tree");
+export const RAW_ROOT = join(PLAYGROUND_DIRECTORY, "raw");
+export const RAW_TREE = join(RAW_ROOT, "pstack");
 export const RAW_SKILLS = join(RAW_TREE, "skills");
 export const REPORT_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reports");
 export const WORKERS_ROOT = join(PLAYGROUND_DIRECTORY, ".workers");
