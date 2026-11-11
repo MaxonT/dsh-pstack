@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-// Generate root pstack/ from the pinned upstream pstack tree and port/dsh.md.
-// Root pstack/ is written only by this script; hand-written content lives in
-// port/, plugin sources, tests, or upstream/cursor-plugins.
+// Generate one pstack tree from the pinned upstream pstack tree and its adapter.
+// --target port writes the shipped root pstack/ from port/dsh.md.
+// --target raw writes playground/raw/pstack/ from playground/raw/dsh.md.
 
 import {
   chmodSync,
+  cpSync,
   existsSync,
   mkdirSync,
   readdirSync,
@@ -13,15 +14,26 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join, posix, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE = join(ROOT, "upstream/cursor-plugins/pstack");
-const ADAPTER_SOURCE = "port/dsh.md";
+const targetIndex = process.argv.indexOf("--target");
+const TARGET = targetIndex >= 0 ? process.argv[targetIndex + 1] : "port";
+if (TARGET !== "port" && TARGET !== "raw") {
+  throw new Error("usage: generate-pstack.mjs --target port|raw [--check]");
+}
+const isRaw = TARGET === "raw";
+const ADAPTER_SOURCE = isRaw ? "playground/raw/dsh.md" : "port/dsh.md";
 const ADAPTER_TREE = "docs/harness/dsh.md";
-const OUT = join(ROOT, "pstack");
-const COMMAND = "vpx port/generate.mjs";
+const OUT = isRaw ? join(ROOT, "playground/raw/pstack") : join(ROOT, "pstack");
+const RAW_ROOT = join(ROOT, "playground/raw");
+const COMMAND = `vpx scripts/generate-pstack.mjs --target ${TARGET}`;
+const INJECTION = isRaw
+  ? `In DSH, read [the DSH adapter](../../${ADAPTER_TREE}) once per session before you follow this skill. It maps the Cursor names in pstack skills to DSH.`
+  : `In DeepSeek Harness, read [the DSH adapter](../../${ADAPTER_TREE}) once per session before you follow this skill. It maps the Cursor names in pstack skills to DeepSeek Harness.`;
 const GITHUB = "https://github.com/cursor/plugins";
 const LINK = /\]\(([^)\s]+)\)/g;
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -55,6 +67,7 @@ const TERMS = [
   },
 ];
 const ROUTE_KEY = "Run another pstack skill";
+const ACTIVE_TERMS = isRaw ? TERMS.filter((term) => term.key !== "Custom Mode") : TERMS;
 
 function walk(dir) {
   return readdirSync(dir).flatMap((name) => {
@@ -87,7 +100,7 @@ function classify(skill) {
   const terms = new Set();
   for (const path of walk(dir).filter((path) => path.endsWith(".md"))) {
     const text = readFileSync(path, "utf8");
-    for (const term of TERMS) if (term.re.test(text)) terms.add(term.key);
+    for (const term of ACTIVE_TERMS) if (term.re.test(text)) terms.add(term.key);
     if (text.split("\n").some(namesBareSkill)) terms.add(ROUTE_KEY);
   }
   const text = readFileSync(join(dir, "SKILL.md"), "utf8");
@@ -115,7 +128,7 @@ for (const [skill, { terms, wrap, name }] of classes) {
 }
 const adapterText = readFileSync(join(ROOT, ADAPTER_SOURCE), "utf8");
 const optionalSection = adapterText.split("## Optional plugins")[1]?.split("\n## ")[0];
-if (optionalSection !== undefined) {
+if (!isRaw && optionalSection !== undefined) {
   const rows = optionalSection.split("\n").filter((line) => line.startsWith("|"));
   const header = rows[0]?.split("|").map((cell) => cell.trim());
   if (header?.[1] !== "Plugin packages") {
@@ -131,7 +144,7 @@ if (optionalSection !== undefined) {
 }
 for (const [key, using] of users) {
   if (!adapterText.includes(key))
-    problems.push(`port/dsh.md has no row for ${key}, used by ${using.join(", ")}`);
+    problems.push(`${ADAPTER_SOURCE} has no row for ${key}, used by ${using.join(", ")}`);
 }
 for (const problem of problems) console.log(`FAIL ${problem}`);
 if (problems.length > 0) process.exit(1);
@@ -157,9 +170,7 @@ function render() {
   ];
   const files = new Map(copies.map((path) => [path, file(join(SOURCE, path))]));
   files.set(ADAPTER_TREE, { bytes: Buffer.from(adapterText), executable: false });
-  const line =
-    `In DeepSeek Harness, read [the DSH adapter](../../${ADAPTER_TREE}) once per session before you follow this skill. ` +
-    "It maps the Cursor names in pstack skills to DeepSeek Harness.";
+  const line = INJECTION;
   for (const [skill, { wrap }] of classes) {
     const path = `skills/${skill}/SKILL.md`;
     const text = files.get(path).bytes.toString("utf8");
@@ -192,6 +203,17 @@ for (const [path, entry] of rendered) {
 for (const link of dangling) console.log(`FAIL ${link}`);
 if (dangling.length > 0) process.exit(1);
 
+function digestTree(root) {
+  const hash = createHash("sha256");
+  for (const path of walk(root).sort()) {
+    hash.update(relative(root, path));
+    hash.update("\0");
+    hash.update(readFileSync(path));
+    hash.update("\0");
+  }
+  return hash.digest("hex");
+}
+
 if (process.argv.includes("--check")) {
   const onDisk = new Map(
     existsSync(OUT) ? walk(OUT).map((path) => [relative(OUT, path), file(path)]) : [],
@@ -217,6 +239,36 @@ if (process.argv.includes("--check")) {
     writeFileSync(join(OUT, path), bytes);
     chmodSync(join(OUT, path), executable ? 0o755 : 0o644);
   }
+  if (isRaw) {
+    const upstreamOut = join(RAW_ROOT, "upstream");
+    rmSync(upstreamOut, { recursive: true, force: true });
+    cpSync(SOURCE, upstreamOut, {
+      recursive: true,
+      filter: (source) => !/\/(automations|\.git|node_modules)(\/|$)/.test(source),
+    });
+    const scriptsOut = join(RAW_ROOT, "scripts");
+    rmSync(scriptsOut, { recursive: true, force: true });
+    mkdirSync(scriptsOut, { recursive: true });
+    cpSync(
+      join(ROOT, "upstream/cursor-plugins/scripts/generate-pstack-harness-trees.mjs"),
+      join(scriptsOut, "generate-pstack-harness-trees.mjs"),
+    );
+    writeFileSync(
+      join(RAW_ROOT, "manifest.json"),
+      `${JSON.stringify(
+        {
+          target: "raw",
+          source: "upstream/cursor-plugins/pstack",
+          tree: "pstack",
+          digest: digestTree(OUT),
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  }
   const wrapped = [...classes.values()].filter(({ wrap }) => wrap).length;
-  console.log(`${skills.length} skills, ${wrapped} SKILL.md files with the adapter line`);
+  console.log(
+    `${TARGET}: ${skills.length} skills, ${wrapped} SKILL.md files with the adapter line`,
+  );
 }

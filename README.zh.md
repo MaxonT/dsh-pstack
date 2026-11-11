@@ -180,8 +180,8 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 
 通过 **插件 → 添加插件** 启用对应包，必要时重启 profile。多数包随 DSH 提供，`@deepseek-ai/dsh-cua-bundle` 按需安装。除 MCP client 外，以上插件均为实验性插件。
 
-> [!WARNING]
-> **Agent Teams 与 pstack 根预设冲突。** Agent Teams 与 `pstack_subagent` 只能二选一。Agent Teams 服务存在时，pstack 根预设会因 `AGENT_TEAMS_CONFLICT` 加载失败。Web 仍能启动，`poteto-mode` 与 `poteto-mode-creator` 卡片在「设置 → Agent 预设」中显示「加载失败」。
+> [!NOTE]
+> **Agent Teams 是探测项，不预先判定冲突。** `agent-team` playground 场景用真实任务启用该插件，并记录会话与界面实际表现。如果当前根预设守卫拒绝组合，把观察到的失败写进 `port/dsh.md` 和本 README；用例本身不预设冲突。
 
 依赖未启用插件的步骤会标记为 skipped 或 blocked，不会标记为通过。安装与回退说明见 [DSH 适配文档](./port/dsh.zh.md#可选插件)。
 
@@ -189,11 +189,11 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 
 移植以真实 DeepSeek Harness Web 会话为准进行核对，不靠与上游文本比对。完整流程见 [playground/README.md](./playground/README.md)。
 
-- **raw 基准。** 生成器把上游 pstack 复制到 `playground/raw/generated`，不装其他插件。`playground/raw/dsh.md` 把每项上游能力写成三种情况之一：base DSH 原生、仅官方可选插件提供、没有此能力。生成器只复制该文档并替换引用链接，上游文案保持原样。
-- **场景驱动。** 注册表定义 57 个行为场景，每个场景用自然语言 turns 先跑 raw 基准，再跑适配后的插件。两项能力因强依赖 Cursor 云 routine、Bot 或 Automations 声明为排除。上游技能既无场景也无排除时，覆盖守卫测试会失败。
+- **raw 基准。** 生成器把上游 pstack 复制到 `playground/raw/pstack`，不装其他插件。`playground/raw/dsh.md` 把每项上游能力写成三种情况之一：base DSH 原生、仅官方可选插件提供、没有此能力。生成器只复制该文档并替换引用链接，上游文案保持原样。
+- **场景驱动。** 注册表定义 57 个技能场景、23 个 playbook 场景和 5 个官方插件场景，每个场景用自然语言 turns 先跑 raw 基准，再跑适配后的插件。两项能力因强依赖 Cursor 云 routine、Bot 或 Automations 声明为排除。上游技能或 playbook 既无场景也无排除时，覆盖守卫测试会失败。
 - **语义审核。** 技能能加载只证明它可被触达。每个场景单独记录 `supported`、`gap` 或 `inconclusive` 结论，并附审核者与理由；adapted 运行记录 `verified`、`not-verified` 或 `inconclusive`。
 - **adapted 复验。** 审核结论驱动 [port/dsh.zh.md](./port/dsh.zh.md)。适配包用 `vp run build` 重建后，重跑同一批场景确认映射后的行为。
-- **插件矩阵。** 矩阵定义官方插件环境 `base`、`session-search`、`browser-use`、`terminal`、`forge` 与 `agent-team-conflict`。按工作流实际依赖运行相应环境；插件 UI 场景与 Agent Teams 冲突回归有各自的运行入口。
+- **插件矩阵。** 矩阵定义官方插件环境 `base`、`session-search`、`browser-use`、`terminal`、`forge` 与 `agent-team`。同一 scenario id 跑 `raw/base`、`adapted/base`、`adapted/<plugin>`；对比报告分别呈现移植效果和插件效果。`agent-team` 是中性探测，不预设冲突。
 
 ## ⚠️ 仍存在的缺口
 

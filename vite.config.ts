@@ -66,19 +66,23 @@ export default defineConfig({
         command: "tsc --noEmit -p playground/tsconfig.json",
       },
       generate: {
-        command: "vpx port/generate.mjs",
+        command: "vpx scripts/generate-pstack.mjs --target port",
         cache: false,
       },
       "generate:check": {
-        command: "vpx port/generate.mjs --check",
+        command: "vpx scripts/generate-pstack.mjs --target port --check",
         cache: false,
       },
       "compatibility:check": {
-        command: "vpx port/release-compatibility.ts --check",
+        command: "vpx scripts/release-compatibility.ts --check",
         cache: false,
       },
       "playground:raw-generate": {
-        command: "vpx playground/raw/generate-cli.ts",
+        command: "vpx scripts/generate-pstack.mjs --target raw",
+        cache: false,
+      },
+      "playground:doctor": {
+        command: "vpx playground/scripts/doctor.ts",
         cache: false,
       },
       "playground:prepare": {
@@ -99,14 +103,6 @@ export default defineConfig({
       },
       "playground:run": {
         command: "vpx playground/scripts/run-case.ts",
-        cache: false,
-      },
-      "playground:run-ui": {
-        command: "vpx playground/scripts/run-ui.ts",
-        cache: false,
-      },
-      "playground:run-conflict": {
-        command: "vpx playground/scripts/run-conflict.ts",
         cache: false,
       },
       "playground:run-batch": {

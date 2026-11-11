@@ -5,7 +5,7 @@
 ## 固定边界
 
 - 根 `pstack/` 只放生成的插件树。生成器可以整体替换该目录，不允许把手工文件放在其中。
-- 根 `port/` 集中保存移植工具与适配资料。以 `dsh.md` 为源生成的英文适配文档进入生成树；面向中文用户与审核者的版本不进入生成树，由 `README.zh.md` 直接链接。
+- 根 `port/` 只保存最终适配文档与维护规则：`dsh.md`、`dsh.zh.md`、`AGENTS.md`。生成器和发布工具在 `scripts/`，测试脚手架在 `playground/`。以 `dsh.md` 为源生成的英文适配文档进入生成树；面向中文用户与审核者的版本不进入生成树，由 `README.zh.md` 直接链接。
 - `port/dsh.md` 是当前适配文案的唯一手写来源，必须按审核通过的适配说明、当前 `cordis.patch.yml` 和实现维护。可选插件表以包名为主键，不另外维护编号。
 - 插件源码、测试、扩展登记和回归记录都在生成树之外。生成器不会修改这些内容。
 - 根 `package.json` 的 `exports` 由根 `vite.config.ts` 生成。主 pack 的 `entry` 为 `./src/*.ts`；仅第一个 pack 的 `customExports` 补齐非源码入口。其他 pack 使用 `exports: false`。
@@ -17,7 +17,7 @@
 
 1. 按审核通过的适配说明编写 `port/dsh.md`，同时产出中文版 `port/dsh.zh.md`。
 2. 维护可选插件表，以包名为主键，不另外维护编号。
-3. 用 `port/generate.mjs` 生成根 `pstack/`，用 `--check` 检查生成漂移。
+3. 用 `scripts/generate-pstack.mjs --target port` 生成根 `pstack/`，加 `--check` 检查生成漂移。
 4. 验证生成树中的链接、适配提示与已确认行为。
 
 
@@ -45,7 +45,7 @@ DSH 或 pstack 任一上游发生破坏性变更时，按新基线重新实现�
 
 实现提交使用 Conventional Commits 的 `type!:` 形式。破坏性适配同时更新 `package.json` 的 DSH 范围和 `playground/baseline.json` 的 `compatibilityKey`，并在双语 README 注册新的兼容键、增加对应行；保留旧兼容行。
 
-`vp run release` 在版本更新后、发布提交前由 `bump.config.ts` 的 `execute` 钩子在同一进程内调用 `port/release-compatibility.ts` 导出的 `syncCompatibility`。该函数读取当前版本、DSH 范围、兼容键与实际 pstack 版本：键匹配时更新该行，每个 `x.y` 只保留最新 `z`；键不存在时追加行；同一键对应不同 DSH 范围时停止。发布提交包含 `package.json` 和双语 README。`vp run compatibility:check` 以只读方式检查同步结果。
+`vp run release` 在版本更新后、发布提交前由 `bump.config.ts` 的 `execute` 钩子在同一进程内调用 `scripts/release-compatibility.ts` 导出的 `syncCompatibility`。该函数读取当前版本、DSH 范围、兼容键与实际 pstack 版本：键匹配时更新该行，每个 `x.y` 只保留最新 `z`；键不存在时追加行；同一键对应不同 DSH 范围时停止。发布提交包含 `package.json` 和双语 README。`vp run compatibility:check` 以只读方式检查同步结果。
 
 DSH 升级后从标准模式开始重新检查。标准能力已经满足时，删除本插件的补偿实现。
 

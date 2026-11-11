@@ -7,7 +7,7 @@ import {
   compatibilityBlock,
   releaseMetadata,
   syncCompatibility,
-} from "../port/release-compatibility.ts";
+} from "../scripts/release-compatibility.ts";
 
 const ROOT = join(process.cwd(), ".tmp", "release-compatibility-tests");
 const KEY = "dsh-0.2.2-rc.1+port-v1";

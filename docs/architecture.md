@@ -27,10 +27,10 @@
 | Client 入口与对话框 | `src/client/index.ts`、`src/client/PstackConfigDialog.tsx` | 挂载 Remote 描述符、注册 locale 和插件详情动作；管理配置对话框、页签和未保存草稿。 |
 | 角色与插件页面 | `src/client/RoleSettingsPage.tsx`、`src/client/RoleCard.tsx`、`src/client/BudgetDialog.tsx`、`src/client/RecommendedPluginsPage.tsx` | 编辑角色草稿并展示保存结果；按预算批量预览并应用推理档位；展示关联插件及其变更结果。 |
 | Client 支撑 | `src/client/ui.tsx`、`src/client/icons.tsx`、`src/client/styles.ts`、`src/client/toast.tsx`、`src/client/message.ts`、`src/client/focus-trap.ts`、`src/client/locales/`、`src/client/role-copy.ts`、`src/client/role-draft.ts`、`src/client/role-selectors.ts` | 提供本插件的 UI 组件、样式、共享提示、焦点陷阱、翻译、角色草稿和选择器文案。 |
-| 移植与生成 | `port/generate.mjs`、`port/dsh.md`、`port/dsh.zh.md`、`playground/raw/`（`AGENTS.md`、`dsh.md`、`generate.ts`）、`playground/scenarios/` | 从固定上游生成 `pstack/`；按 `playground/raw/AGENTS.md` 的规则改判出 DSH 适配文档，并在场景注册表维护行为场景、排除与环境。 |
-| 发布元数据 | `port/release-compatibility.ts`、`bump.config.ts` | 按显式兼容键同步双语 README 的版本表；每个 `x.y` 保留最新 `z`，新兼容键新增行，并把双语 README 加入发布提交。 |
+| 移植与生成 | `scripts/generate-pstack.mjs`、`port/dsh.md`、`port/dsh.zh.md`、`playground/raw/`（`AGENTS.md`、`dsh.md`、`dsh.zh.md`、`dsh-evidence.md`）、`playground/scenarios/` | 从固定上游生成根 `pstack/` 和 `playground/raw/pstack/`；按 `playground/raw/AGENTS.md` 的规则维护 DSH 适配文档，并在场景注册表维护 skills、playbooks、official-plugins 三组。 |
+| 发布元数据 | `scripts/release-compatibility.ts`、`bump.config.ts` | 按显式兼容键同步双语 README 的版本表；每个 `x.y` 保留最新 `z`，新兼容键新增行，并把双语 README 加入发布提交。 |
 | 构建与打包 | `vite.config.ts`、`package.json` | 分别构建 Host 与浏览器 Client；导出 Host 模块，复制生成树和技能资源。 |
-| 自动化验证 | `tests/`、`playground/scripts/`（raw-generate、prepare、bootstrap、run、run-batch、run-ui、run-conflict、collect、review、status、stop、browser） | 运行单元和 DOM 交互测试；在真实 DSH playground 中运行行为、插件 UI 与冲突场景，收集 RunRecord 并用审核侧车校验，浏览器脚本做不涉及模型选择的交互。 |
+| 自动化验证 | `tests/`、`playground/scripts/`（doctor、raw-generate、prepare、bootstrap、run、run-batch、collect、review、status、stop、browser） | 运行单元和 DOM 交互测试；在真实 DSH playground 中运行 skills、playbooks、official-plugins 场景，收集 RunRecord、SessionAnalysis 和审核侧车。 |
 
 ## 依赖方向
 
@@ -73,10 +73,14 @@ src/subagent.ts
 
 ```text
 upstream/cursor-plugins/pstack + port/dsh.md
-  → port/generate.mjs
+  → scripts/generate-pstack.mjs --target port
   → 根 pstack/
   → vite.config.ts
   → dist/pstack/
+
+upstream/cursor-plugins/pstack + playground/raw/dsh.md
+  → scripts/generate-pstack.mjs --target raw
+  → playground/raw/pstack/
 ```
 
 `skills/.agents/skills/` 与 `skills/authored/` 由构建配置分别复制到 `dist/skills/vendored/` 和 `dist/skills/authored/`；vendored 与 authored 技能目录由 `cordis.patch.yml` 的 `bundledSkillDir` 值在 `dist/skills/...` 下定位。`src/paths.ts` 在发布后的 `dist/pstack/` 下定位 pstack 资源。

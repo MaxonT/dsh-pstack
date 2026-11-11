@@ -180,8 +180,8 @@ For browser verification, choose one provider:
 
 Enable packages through **Plugins → Add plugin**, then restart the profile when required. Most packages ship with DSH; `@deepseek-ai/dsh-cua-bundle` installs on demand. All except the MCP client are experimental.
 
-> [!WARNING]
-> **Agent Teams conflicts with the pstack root presets.** Use either Agent Teams or `pstack_subagent`, not both. While the Agent Teams service runs, the pstack root preset fails to load with `AGENT_TEAMS_CONFLICT`. The Web app still starts, and the `poteto-mode` and `poteto-mode-creator` cards show a load failure in Settings → Agent presets.
+> [!NOTE]
+> **Agent Teams is probed, not predeclared.** The `agent-team` playground scenario runs a real task with the plugin and records what the session and UI show. If the current root-preset guard rejects the combination, the observed failure is written into `port/dsh.md` and this README; the test does not assume the conflict in advance.
 
 Steps that depend on a disabled plugin report skipped or blocked, never passed. See the [DSH adaptation guide](./pstack/docs/harness/dsh.md#optional-plugins) for setup and fallbacks.
 
@@ -189,11 +189,11 @@ Steps that depend on a disabled plugin report skipped or blocked, never passed. 
 
 The port is checked against real DeepSeek Harness Web sessions, not by comparing text with upstream. [playground/README.md](./playground/README.md) documents the full procedure.
 
-- **Raw baseline.** The generator copies upstream pstack into `playground/raw/generated` and installs nothing else. `playground/raw/dsh.md` states each upstream capability as one of three cases: native in base DSH, provided only by an official optional plugin, or absent. The generator copies that document and rewrites link references only, so the upstream wording stays intact.
-- **Scenario-driven runs.** The registry defines 57 behavior scenarios; each runs its natural-language turns against the raw baseline and then against the adapted plugin. Two capabilities are declared exclusions because they need Cursor cloud routines, Bots, or Automations. A guard test fails when an upstream skill has neither a scenario nor an exclusion.
+- **Raw baseline.** The generator copies upstream pstack into `playground/raw/pstack` and installs nothing else. `playground/raw/dsh.md` states each upstream capability as one of three cases: native in base DSH, provided only by an official optional plugin, or absent. The generator copies that document and rewrites link references only, so the upstream wording stays intact.
+- **Scenario-driven runs.** The registry defines 57 skill scenarios, 23 playbook scenarios, and 5 official-plugin scenarios; each runs its natural-language turns against the raw baseline and then against the adapted plugin. Two capabilities are declared exclusions because they need Cursor cloud routines, Bots, or Automations. A guard test fails when an upstream skill or playbook has neither a scenario nor an exclusion.
 - **Semantic review.** A skill load only proves the skill was reachable. Each scenario records a separate verdict (`supported`, `gap`, or `inconclusive`) with a reviewer and a reason, and the adapted run records `verified`, `not-verified`, or `inconclusive`.
 - **Adapted re-check.** Review findings drive [port/dsh.md](./port/dsh.md). The adapted package is rebuilt with `vp run build`, then the same scenarios rerun to confirm the mapped behavior.
-- **Plugin matrix.** The matrix defines the official plugin environments `base`, `session-search`, `browser-use`, `terminal`, `forge`, and `agent-team-conflict`. Run the environments your workflow depends on; plugin UI scenarios and the Agent Teams conflict regression have their own run targets.
+- **Plugin matrix.** The matrix defines the official plugin environments `base`, `session-search`, `browser-use`, `terminal`, `forge`, and `agent-team`. The same scenario id runs in `raw/base`, `adapted/base`, and `adapted/<plugin>`; the comparison report shows the port effect and the plugin effect. `agent-team` is a neutral probe, not a pre-declared conflict.
 
 ## ⚠️ Remaining gaps
 

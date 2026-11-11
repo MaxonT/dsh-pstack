@@ -242,7 +242,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ];
     const once = renderCompatibility(metadata).map((result) => result.text);
     if (current.some((text, index) => text !== once[index])) {
-      throw new Error("Compatibility tables are stale; run vpx port/release-compatibility.ts");
+      throw new Error("Compatibility tables are stale; run vpx scripts/release-compatibility.ts");
     }
     console.log(
       `Compatibility tables current for ${syncCompatibility(metadata, false).releases.join("、")}.`,
