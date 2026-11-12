@@ -3,7 +3,14 @@ import { join } from "node:path";
 
 import { PLAYGROUND_DIRECTORY } from "./run-metadata.ts";
 
-const SENSITIVE_DIRECTORIES = ["scenarios", "reviews", "reports"] as const;
+const SENSITIVE_DIRECTORIES = [
+  "scenarios/skills",
+  "scenarios/playbooks",
+  "scenarios/official-plugins",
+  "scenarios/runtime-tools",
+  "reviews",
+  "reports",
+] as const;
 
 export function hideSensitiveDirectories(): () => void {
   const saved: Array<{ path: string; mode: number }> = [];
