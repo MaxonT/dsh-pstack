@@ -13,6 +13,11 @@ import { pathToFileURL } from "node:url";
 import type { Phase, RunRecord, RuntimeFinding, RuntimeReviewStatus } from "../types.ts";
 import { assertSameEntry, isRunRecord, latestRecords } from "./lib/evidence.ts";
 import { environmentMatrix, REPORT_DIRECTORY, workersDirectory } from "./lib/run-metadata.ts";
+import {
+  ensureRuntimeReviewNotes,
+  removeRuntimeReviewNotes,
+  runtimeFindingId,
+} from "./lib/runtime-review.ts";
 import { loadScenario, listScenarioIds } from "./lib/scenarios.ts";
 import { exclusions } from "../scenarios/exclusions.ts";
 
@@ -226,6 +231,7 @@ function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: 
   const findings = new Map<
     string,
     {
+      id: string;
       group: string;
       skill: string;
       kind: string;
@@ -253,6 +259,7 @@ function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: 
         finding.action,
       ].join("\0");
       const existing = findings.get(key) ?? {
+        id: runtimeFindingId(group, scenario.skill, finding),
         group,
         skill: scenario.skill,
         kind: finding.kind,
@@ -272,13 +279,20 @@ function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: 
     rmSync(join(REPORT_DIRECTORY, group, "runtime-review"), { recursive: true, force: true });
     rmSync(join(REPORT_DIRECTORY, group, "runtime-review.md"), { force: true });
   }
+  rmSync(join(REPORT_DIRECTORY, "runtime-review"), { recursive: true, force: true });
   rmSync(join(REPORT_DIRECTORY, "runtime-review.md"), { force: true });
-  const directory = join(REPORT_DIRECTORY, "runtime-review");
-  const file = join(directory, `${phase}-${environmentId}.md`);
+  const directory = join(REPORT_DIRECTORY, "runs", `${phase}-${environmentId}`);
+  const file = join(directory, "runtime-review.md");
   if (findings.size === 0) {
     rmSync(file, { force: true });
+    removeRuntimeReviewNotes(phase, environmentId);
     return;
   }
+  const notes = ensureRuntimeReviewNotes(
+    phase,
+    environmentId,
+    [...findings.values()].map(({ id }) => ({ id })),
+  );
   mkdirSync(directory, { recursive: true });
   writeFileSync(
     file,
@@ -287,12 +301,15 @@ function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: 
       "",
       `Phase: ${phase}. Environment: ${environmentId}. Scenarios: ${current.length}. Clean: ${counts["clean"] ?? 0}. Findings: ${findings.size}. Needs-review: ${counts["needs-review"] ?? 0}. Unreviewed: ${counts["unreviewed"] ?? 0}.`,
       "",
-      "| group | skill | finding | severity | decision | scenarios | action | evidence |",
-      "| --- | --- | --- | --- | --- | --- | --- | --- |",
-      ...[...findings.values()].map(
-        (finding) =>
-          `| ${finding.group} | ${finding.skill} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${[...finding.scenarios].join(", ")} | ${escape(finding.action)} | ${escape([...finding.evidence].join("; "))} |`,
-      ),
+      "| id | group | skill | finding | severity | decision | scenarios | action | evidence | 你的点评 |",
+      "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+      ...[...findings.values()].map((finding) => {
+        const note = notes.notes[finding.id];
+        const annotation = note
+          ? `${note.decision}${note.comment ? `: ${note.comment}` : ""}`
+          : "pending";
+        return `| ${finding.id} | ${finding.group} | ${finding.skill} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${[...finding.scenarios].join(", ")} | ${escape(finding.action)} | ${escape([...finding.evidence].join("; "))} | ${escape(annotation)} |`;
+      }),
       "",
     ].join("\n"),
   );
@@ -307,13 +324,19 @@ export function writeMirroredReports(
   const current = latest.filter(
     (record) => record.phase === phase && record.environment.matrix.id === environmentId,
   );
+  for (const legacy of ["skills", "playbooks", "official-plugins", "summary"]) {
+    rmSync(join(REPORT_DIRECTORY, legacy), { recursive: true, force: true });
+  }
+  rmSync(join(REPORT_DIRECTORY, "approval-adapted-base.md"), { force: true });
+  rmSync(join(REPORT_DIRECTORY, "approval-official-plugins.md"), { force: true });
+  mkdirSync(join(REPORT_DIRECTORY, "approvals"), { recursive: true });
   const rows: string[] = [];
   const groupRows = new Map<string, string[]>();
   for (const id of listScenarioIds()) {
     const scenario = loadScenario(id);
     const group = scenario.group ?? "skills";
     const record = current.find((entry) => entry.scenarioId === id);
-    const caseRoot = join(REPORT_DIRECTORY, group, id);
+    const caseRoot = join(REPORT_DIRECTORY, "scenarios", group, id);
     if (record) {
       copyRunEvidence(record, join(caseRoot, `${phase}-${environmentId}`));
       if (phase === "adapted") {
@@ -337,14 +360,13 @@ export function writeMirroredReports(
     ...rows,
     "",
   ].join("\n");
-  const groupPath = join(REPORT_DIRECTORY, "summary");
-  mkdirSync(groupPath, { recursive: true });
-  writeFileSync(join(groupPath, `${phase}-${environmentId}.md`), summary);
+  const runPath = join(REPORT_DIRECTORY, "runs", `${phase}-${environmentId}`);
+  mkdirSync(runPath, { recursive: true });
+  writeFileSync(join(runPath, "summary.md"), summary);
   for (const [group, groupLines] of groupRows) {
-    const directory = join(REPORT_DIRECTORY, group);
-    mkdirSync(directory, { recursive: true });
+    mkdirSync(runPath, { recursive: true });
     writeFileSync(
-      join(directory, `summary-${phase}-${environmentId}.md`),
+      join(runPath, `summary-${group}.md`),
       [
         `# ${group} ${phase} ${environmentId} summary`,
         "",
@@ -398,7 +420,7 @@ export function writeMirroredReports(
         ? "blocked"
         : "clear";
     writeFileSync(
-      join(REPORT_DIRECTORY, "approval-adapted-base.md"),
+      join(REPORT_DIRECTORY, "approvals", "adapted-base.md"),
       [
         "# Adapted base approval",
         "",
@@ -452,7 +474,7 @@ export function writeMirroredReports(
       }) ||
       officialRuntimeEntries.some(({ finding }) => ["blocker", "major"].includes(finding.severity));
     writeFileSync(
-      join(REPORT_DIRECTORY, "approval-official-plugins.md"),
+      join(REPORT_DIRECTORY, "approvals", "official-plugins.md"),
       [
         "# Official plugins approval",
         "",
@@ -486,11 +508,9 @@ export function writeMirroredReports(
     [
       "# Playground reports",
       "",
-      "- `summary/`：按 phase 与环境汇总。",
-      "- `skills/`、`playbooks/`、`official-plugins/`：每个 case 的运行记录、截图、comparison 和组根 `summary-*.md`。",
-      "- `runtime-review/<phase>-<environment>.md`：跨 group、按 finding 去重的运行时问题汇总；没有 finding 时不生成。",
-      "- `approval-adapted-base.md`：移植验收审批。",
-      "- `approval-official-plugins.md`：官方插件矩阵审批。",
+      "- `scenarios/`：按 skills、playbooks、official-plugins 三组保存 case 证据与 comparison。",
+      "- `runs/<phase>-<environment>/`：`summary.md`、`summary-<group>.md` 和 `runtime-review.md`。",
+      "- `approvals/`：`adapted-base.md` 与 `official-plugins.md`。",
       "",
     ].join("\n"),
   );

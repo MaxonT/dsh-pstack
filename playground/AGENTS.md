@@ -15,7 +15,7 @@
 - `scenarios/playbooks/<playbook>.ts`：一个上游 playbook 一个文件，prompt 以 `/poteto-mode ` 开头。
 - `scenarios/official-plugins/<plugin>.ts`：一个官方插件一个文件，同一场景在 `raw/base`、`adapted/base`、`adapted/<plugin>` 运行。
 - `scenarios/registry.ts`：用 `import.meta.glob` 自动收集三个目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
-- `reports/`：镜像 `scenarios/` 的生成区。`record.json`、截图、session 日志不提交；`index.md`、`summary-*.md`、`comparison.md`、`approval-*.md` 提交。
+- `reports/scenarios/`：镜像 `scenarios/` 的 case 证据组。`reports/runs/`：按 phase/environment 汇总的 `summary.md`、`summary-<group>.md` 和 `runtime-review.md`。`reports/approvals/`：最终审批。`record.json`、截图、session 日志不提交；其余报告文件提交。
 - `reviews/`：审核侧车，提交进库。
 - 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
 
@@ -33,7 +33,7 @@
 - 每个 finding 必须有 `kind`、`severity`、`decision`、`observation`、`action`、`evidence`。
 - `decision` 只能是 `dsh-md`、`plugin`、`skip`、`ignore-environment`、`upstream` 或 `needs-human`。DSH 有等价能力但语义不同时走 `dsh-md`；需要新增工具、预设或可选包时走 `plugin`；只有环境权限、凭据、网络或无头限制时走 `ignore-environment`；技能自身问题走 `upstream`。
 - 无法可靠分类、或分类会影响后续方案却证据不足时，必须使用 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户亲自审查。禁止默认忽略、默认归为上游或默认选一个 decision 来消除告警。
-- `collect` 必须输出一个总的 `reports/runtime-review/<phase>-<environment>.md`：只保留 finding，按 `group + skill + kind + severity + decision + observation + action` 去重，相同 finding 合并 `scenarios`。没有 finding 时不生成该文件。summary、comparison 和 approval 仍要区分 semantic 与 runtime；`needs-review` 和未填写的 runtime review 不能被当作 clean。
+- `collect` 必须输出 `reports/runs/<phase>-<environment>/runtime-review.md`：只保留 finding，按 `group + skill + kind + severity + decision + observation + action` 去重，相同 finding 合并 `scenarios`。没有 finding 时不生成该文件。summary、comparison 和 approval 仍要区分 semantic 与 runtime；`needs-review` 和未填写的 runtime review 不能被当作 clean。
 
 ## 流程与审批
 
@@ -42,8 +42,8 @@
 - worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
 - raw：生成 `playground/raw/pstack`，跑 `raw/base` 的 skills 和 playbooks，collect，`review --apply`。raw 的 gate 是 sidecar 加 `dsh.md` 逐行确认。
 - 适配开发：维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
-- adapted/base：跑 skills 和 playbooks，与 raw/base 对比，生成 `reports/approval-adapted-base.md`。不通过回适配开发。
-- official-plugins：每个插件跑 base 与插件环境，生成 `reports/approval-official-plugins.md`。插件限制写 `dsh.md` 和根 README。
+- adapted/base：跑 skills 和 playbooks，与 raw/base 对比，生成 `reports/approvals/adapted-base.md`。不通过回适配开发。
+- official-plugins：每个插件跑 base 与插件环境，生成 `reports/approvals/official-plugins.md`。插件限制写 `dsh.md` 和根 README。
 - README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
 
 ## dsh.md
