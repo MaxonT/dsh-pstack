@@ -70,7 +70,7 @@ vp run playground:status -- --phase raw --environment base
 
 review sidecar 可以带 `runtime` 字段，记录每个运行时差异的 kind、severity、decision、observation、action 和 evidence。`review --apply` 会把它写入 `RunRecord.runtimeReview`，`collect` 会生成 `reports/runs/<phase>-<environment>/runtime-review.md`，只保留 finding 并合并重复项；summary、comparison 和 approval 仍区分 semantic 与 runtime。
 
-运行时 finding 不假设用户环境会安装插件或依赖，也不写具体插件名、包名、外部二进制名或服务名；需要说明时用能力类别。外部依赖缺失由技能在运行时自行处理，不作为适配 gap，不写进 dsh.md 或依赖补齐建议。官方插件矩阵是唯一例外：scenario 的 `plugin` 字段、环境矩阵和 official-plugin approval 可以记录官方插件包名或 ID；提示词、rubric、断言和普通 runtime-review 仍只写能力类别。
+运行时 finding 不假设用户环境会安装插件或依赖，也不写具体插件名、包名、外部二进制名或服务名；需要说明时用能力类别。外部依赖缺失由技能在运行时自行处理，不作为适配 gap，不写进 dsh.md 或依赖补齐建议。带显式环境矩阵的场景是唯一例外：scenario 的 `plugin` 字段、环境矩阵和对应 approval 可以记录包名或 ID；提示词、rubric、断言和普通 runtime-review 仍只写能力类别。
 
 无法可靠分类的 finding 必须写成 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户审查；`needs-review` 和未填写的 runtime review 都不能当作 clean。
 
@@ -89,7 +89,7 @@ vp run playground:review
 vp run playground:review -- --apply
 ```
 
-产物：`reports/runs/raw-base/summary.md`、`reports/scenarios/skills/*/raw-base/`、`reports/scenarios/playbooks/*/raw-base/`、`reviews/scenarios/`。
+产物：`reports/runs/raw-base/summary.md`、`reports/scenarios/<group>/*/raw-base/`、`reviews/scenarios/`。
 
 Gate：raw 场景 sidecar 通过；runtime review 没有 `needs-review` 或 `unreviewed`；`playground/raw/dsh.md` 与 `dsh.zh.md` 逐行确认。
 
@@ -124,7 +124,7 @@ vp run playground:review
 vp run playground:review -- --apply
 ```
 
-产物：`reports/runs/adapted-base/summary.md`、`reports/scenarios/skills/*/comparison.md`、`reports/scenarios/playbooks/*/comparison.md`、`reports/approvals/adapted-base.md`。
+产物：`reports/runs/adapted-base/summary.md`、`reports/scenarios/<group>/*/comparison.md`、`reports/approvals/adapted-base.md`。
 
 Gate：`reports/approvals/adapted-base.md` 的 Runtime gate 为 `clear` 且 semantic 通过；`needs-review` 或 `unreviewed` 必须人工审查。不通过回第 2 阶段。
 
@@ -144,7 +144,7 @@ vp run playground:collect -- --phase adapted --environment <environment>
 
 同一个场景必须有 `adapted/base` 和 `adapted/<environment>` 记录；raw/base 不作为这一组的必选基线。产物：`reports/scenarios/<group>/<scenario>/comparison.md`、`reports/runs/adapted-<environment>/summary.md`、`reports/approvals/<approval>.md`。
 
-Gate：该 approval 的 Runtime gate 为 `clear` 且对应矩阵审批通过。环境限制按能力类别记录；官方插件矩阵元数据和审批可写包名或 ID。
+Gate：该 approval 的 Runtime gate 为 `clear` 且对应矩阵审批通过。环境限制按能力类别记录；带显式环境矩阵的元数据和审批可写包名或 ID。
 
 ## 5. README 与发版
 

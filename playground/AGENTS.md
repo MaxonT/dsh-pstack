@@ -24,16 +24,16 @@
 - `SessionAnalysis` 必须写入 RunRecord，包含 `skillInvocation`、`dependencies`、`tools`、`userGesture` 和 warnings。
 - 截图必须同时有 viewport 和 full-page；审阅以 full-page 为准。
 - 每个上游技能和 playbook 必须有场景或明确排除。排除只给上游明确依赖 Cursor 云服务的条目，理由和证据写进 `exclusions.ts`。
-- 官方插件场景不预设冲突；`agent-team` 只是普通插件环境，结果由会话文件和界面观察决定。
+- 带环境矩阵的场景不预设冲突；具体环境只用于运行矩阵，结果由会话文件和界面观察决定。
 
 ## 运行时适配审查
 
 - `SemanticReview` 只判断技能效果是否成立；运行时差异必须单独记录在 `runtimeReview`，不能把运行时问题藏进 skill 的 `gap` 或 `reason`。
 - 每个 finding 必须有 `kind`、`severity`、`decision`、`observation`、`action`、`evidence`。
 - `decision` 只能是 `dsh-md`、`plugin`、`skip`、`ignore-environment`、`upstream` 或 `needs-human`。DSH 有等价能力但语义不同时走 `dsh-md`；需要新增工具、预设或可选包时走 `plugin`；只有环境权限、凭据、网络或无头限制时走 `ignore-environment`；技能自身问题走 `upstream`。
-- 普通 skills/playbooks 的 finding 不假设用户环境会安装任何可选插件，也不写具体插件名、包名、外部二进制名或服务名；需要描述能力时用能力类别。
+- 普通场景组的 finding 不假设用户环境会安装任何可选插件，也不写具体插件名、包名、外部二进制名或服务名；需要描述能力时用能力类别。
 - 外部依赖缺失由技能在运行时自行处理。它不是适配 gap，不写进 dsh.md 的安装建议，也不进入“需要补插件/依赖”的 runtime finding。
-- 官方插件矩阵是唯一例外：scenario 的 `plugin` 字段、环境矩阵和 official-plugin approval 可以记录官方插件包名或 ID；提示词、rubric、断言和普通 runtime-review 仍只写能力类别，不写包名或安装建议。
+- 带显式环境矩阵的场景是唯一例外：scenario 的 `plugin` 字段、环境矩阵和对应 approval 可以记录包名或 ID；提示词、rubric、断言和普通 runtime-review 仍只写能力类别，不写包名或安装建议。
 - 无法可靠分类、或分类会影响后续方案却证据不足时，必须使用 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户亲自审查。禁止默认忽略、默认归为上游或默认选一个 decision 来消除告警。
 - `collect` 必须输出 `reports/runs/<phase>-<environment>/runtime-review.md`：只保留 finding，按 `group + skill + kind + severity + decision + observation + action` 去重，相同 finding 合并 `scenarios`。没有 finding 时不生成该文件。summary、comparison 和 approval 仍要区分 semantic 与 runtime；`needs-review` 和未填写的 runtime review 不能被当作 clean。
 
@@ -46,7 +46,7 @@
 - raw：生成 `playground/raw/pstack`，按场景组的 phase 适用性跑 raw 可用组，collect，`review --apply`。raw 的 gate 是 sidecar 加 `dsh.md` 逐行确认。
 - 适配开发：维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
 - adapted/base：按场景组的 phase 适用性跑 adapted 可用组，与 raw/base 对比，生成 adapted base approval。不通过回适配开发。
-- 适配后环境组：按环境矩阵跑 base 与环境记录，生成对应 approval。环境限制按能力类别记录；官方插件矩阵元数据和审批可以写包名或 ID。
+- 适配后环境组：按环境矩阵跑 base 与环境记录，生成对应 approval。环境限制按能力类别记录；带显式环境矩阵的元数据和审批可以写包名或 ID。
 - README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
 
 ## dsh.md
