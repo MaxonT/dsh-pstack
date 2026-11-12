@@ -12,6 +12,8 @@
 
 先运行 raw 生成器，再准备 raw 环境。raw 不能包含 dsh-pstack 或其他附加插件。standard preset 加 raw systemPrompt 提示提供与 poteto-mode 相同的常驻工作流入口。
 
+`prepare` 启动的 DSH Web 只在当前 job 的 PID namespace/cgroup 内存活。`prepare`、`bootstrap`、`run-batch` 和 `collect` 必须放在同一个长期存活的 background job 中，不能拆成多次 bash 调用；`vp run` wrapper 被 SIGTERM 时改用 `vpx` 直调。
+
 下面是单场景的抽样示例，只对 `w0` 运行场景；`prepare` 省略 `--workers`，由 `capacity.ts` 按环境容量启动全部 worker。若要限制为一个 worker，再显式加 `--workers 1`。
 
 ```sh

@@ -2,6 +2,8 @@
 
 本文件给出 `playground/AGENTS.md` 的完整阶段、命令和审批门。所有命令在仓库根执行，Linux 是唯一官方支持平台。所有 `prepare` 命令都省略 `--workers`；默认由 `capacity.ts` 按当前机器的核数、空闲内存和上限计算最大值，只有明确需要限制并发时才写 `--workers N`。
 
+`prepare → bootstrap → run-batch → collect` 必须作为同一个长期存活的 background job 串行执行，不能拆成独立 bash 调用；shell 要活到 collect 结束。不要用 `&`、`nohup` 或 `tee`。如果 `vp run` wrapper 被 SIGTERM，改用 `vpx playground/scripts/*.ts` 直接调用。
+
 ## 进度
 
 `run-batch` 在 `playground/.workers/<phase>/<environment>/progress.json` 写入当前轮次、已完成数、运行中的场景和失败列表，并在终端打印该路径。查看：
