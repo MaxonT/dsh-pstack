@@ -15,6 +15,18 @@ export const RAW_ROOT = join(PLAYGROUND_DIRECTORY, "raw");
 export const RAW_TREE = join(RAW_ROOT, "pstack");
 export const RAW_SKILLS = join(RAW_TREE, "skills");
 export const REPORT_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reports");
+export const REPORT_LAYOUT = {
+  scenarios: "scenarios",
+  runs: "runs",
+  approvals: "approvals",
+  summary: "summary.md",
+  runtimeReview: "runtime-review.md",
+  runtimeReviewDirectory: "runtime-review",
+} as const;
+export const APPROVAL_FILES = {
+  adaptedBase: "adapted-base.md",
+  officialPlugins: "official-plugins.md",
+} as const;
 export const WORKERS_ROOT = join(PLAYGROUND_DIRECTORY, ".workers");
 export const ISOLATED_ROOT = join(tmpdir(), "dsh-pstack-playground");
 

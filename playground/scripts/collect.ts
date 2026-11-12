@@ -21,7 +21,13 @@ import {
 } from "../types.ts";
 import type { Phase, RunRecord, RuntimeFinding, RuntimeReviewStatus } from "../types.ts";
 import { assertSameEntry, isRunRecord, latestRecords } from "./lib/evidence.ts";
-import { environmentMatrix, REPORT_DIRECTORY, workersDirectory } from "./lib/run-metadata.ts";
+import {
+  APPROVAL_FILES,
+  environmentMatrix,
+  REPORT_DIRECTORY,
+  REPORT_LAYOUT,
+  workersDirectory,
+} from "./lib/run-metadata.ts";
 import {
   emptyRuntimeReviewNoteCounts,
   ensureRuntimeReviewNotes,
@@ -289,13 +295,19 @@ function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: 
     }
   }
   for (const group of SCENARIO_GROUPS) {
-    rmSync(join(REPORT_DIRECTORY, group, "runtime-review"), { recursive: true, force: true });
-    rmSync(join(REPORT_DIRECTORY, group, "runtime-review.md"), { force: true });
+    rmSync(join(REPORT_DIRECTORY, group, REPORT_LAYOUT.runtimeReviewDirectory), {
+      recursive: true,
+      force: true,
+    });
+    rmSync(join(REPORT_DIRECTORY, group, REPORT_LAYOUT.runtimeReview), { force: true });
   }
-  rmSync(join(REPORT_DIRECTORY, "runtime-review"), { recursive: true, force: true });
-  rmSync(join(REPORT_DIRECTORY, "runtime-review.md"), { force: true });
-  const directory = join(REPORT_DIRECTORY, "runs", `${phase}-${environmentId}`);
-  const file = join(directory, "runtime-review.md");
+  rmSync(join(REPORT_DIRECTORY, REPORT_LAYOUT.runtimeReviewDirectory), {
+    recursive: true,
+    force: true,
+  });
+  rmSync(join(REPORT_DIRECTORY, REPORT_LAYOUT.runtimeReview), { force: true });
+  const directory = join(REPORT_DIRECTORY, REPORT_LAYOUT.runs, `${phase}-${environmentId}`);
+  const file = join(directory, REPORT_LAYOUT.runtimeReview);
   if (findings.size === 0) {
     rmSync(file, { force: true });
     removeRuntimeReviewNotes(phase, environmentId);
@@ -343,9 +355,9 @@ export function writeMirroredReports(
   for (const legacy of [...SCENARIO_GROUPS, "summary"]) {
     rmSync(join(REPORT_DIRECTORY, legacy), { recursive: true, force: true });
   }
-  rmSync(join(REPORT_DIRECTORY, "approval-adapted-base.md"), { force: true });
-  rmSync(join(REPORT_DIRECTORY, "approval-official-plugins.md"), { force: true });
-  mkdirSync(join(REPORT_DIRECTORY, "approvals"), { recursive: true });
+  rmSync(join(REPORT_DIRECTORY, APPROVAL_FILES.adaptedBase), { force: true });
+  rmSync(join(REPORT_DIRECTORY, APPROVAL_FILES.officialPlugins), { force: true });
+  mkdirSync(join(REPORT_DIRECTORY, REPORT_LAYOUT.approvals), { recursive: true });
   const selectedIds = visibleScenarioIds(phase);
   const rows: string[] = [];
   const groupRows = new Map<string, string[]>();
@@ -353,7 +365,7 @@ export function writeMirroredReports(
     const scenario = loadScenario(id);
     const group = scenario.group ?? DEFAULT_SCENARIO_GROUP;
     const record = current.find((entry) => entry.scenarioId === id);
-    const caseRoot = join(REPORT_DIRECTORY, "scenarios", group, id);
+    const caseRoot = join(REPORT_DIRECTORY, REPORT_LAYOUT.scenarios, group, id);
     if (record) {
       copyRunEvidence(record, join(caseRoot, `${phase}-${environmentId}`));
       if (phase === "adapted") {
@@ -377,12 +389,12 @@ export function writeMirroredReports(
     ...rows,
     "",
   ].join("\n");
-  const runPath = join(REPORT_DIRECTORY, "runs", `${phase}-${environmentId}`);
+  const runPath = join(REPORT_DIRECTORY, REPORT_LAYOUT.runs, `${phase}-${environmentId}`);
   mkdirSync(runPath, { recursive: true });
   for (const name of readdirSync(runPath)) {
     if (/^summary-.*\.md$/.test(name)) rmSync(join(runPath, name), { force: true });
   }
-  writeFileSync(join(runPath, "summary.md"), summary);
+  writeFileSync(join(runPath, REPORT_LAYOUT.summary), summary);
   for (const [group, groupLines] of groupRows) {
     mkdirSync(runPath, { recursive: true });
     writeFileSync(
@@ -439,7 +451,7 @@ export function writeMirroredReports(
         ? "blocked"
         : "clear";
     writeFileSync(
-      join(REPORT_DIRECTORY, "approvals", "adapted-base.md"),
+      join(REPORT_DIRECTORY, REPORT_LAYOUT.approvals, APPROVAL_FILES.adaptedBase),
       [
         "# Adapted base approval",
         "",
@@ -502,7 +514,7 @@ export function writeMirroredReports(
       officialNoteCounts.pending + officialNoteCounts.reject + officialNoteCounts["needs-human"] >
         0;
     writeFileSync(
-      join(REPORT_DIRECTORY, "approvals", "official-plugins.md"),
+      join(REPORT_DIRECTORY, REPORT_LAYOUT.approvals, APPROVAL_FILES.officialPlugins),
       [
         "# Official plugins approval",
         "",

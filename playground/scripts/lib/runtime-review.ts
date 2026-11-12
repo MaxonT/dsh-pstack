@@ -4,8 +4,12 @@ import { dirname, join } from "node:path";
 
 import type { Phase, RuntimeFinding } from "../../types.ts";
 import { REVIEWS_DIRECTORY } from "./review.ts";
+import { REPORT_LAYOUT } from "./run-metadata.ts";
 
-export const RUNTIME_REVIEW_DIRECTORY = join(REVIEWS_DIRECTORY, "runtime-review");
+export const RUNTIME_REVIEW_DIRECTORY = join(
+  REVIEWS_DIRECTORY,
+  REPORT_LAYOUT.runtimeReviewDirectory,
+);
 
 export const RUNTIME_REVIEW_NOTE_DECISIONS = [
   "pending",
