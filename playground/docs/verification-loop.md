@@ -14,6 +14,12 @@ vp run playground:status -- --phase raw --environment base
 
 `prepare --reset` 会清空该 phase 的 worker 目录，因此旧进度不会保留；重新 prepare 后从新一轮开始。
 
+## 运行时审查
+
+review sidecar 可以带 `runtime` 字段，记录每个运行时差异的 kind、severity、decision、observation、action 和 evidence。`review --apply` 会把它写入 `RunRecord.runtimeReview`，`collect` 会按 skill 生成 `runtime-review/` 报告，并在 summary、comparison 和 approval 中区分 semantic 与 runtime。
+
+无法可靠分类的 finding 必须写成 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户审查；`needs-review` 和未填写的 runtime review 都不能当作 clean。
+
 ## 1. raw 基线
 
 ```sh

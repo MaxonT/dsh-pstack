@@ -191,6 +191,47 @@ export type SemanticReview =
       reviewer: { kind: "model"; route: TestTarget } | { kind: "human"; name: string };
     };
 
+export type RuntimeFindingKind =
+  | "runtime-missing"
+  | "runtime-difference"
+  | "adapter-gap"
+  | "plugin-gap"
+  | "environment-only"
+  | "upstream-skill"
+  | "unclear";
+
+export type RuntimeDecision =
+  | "dsh-md"
+  | "plugin"
+  | "skip"
+  | "ignore-environment"
+  | "upstream"
+  | "needs-human";
+
+export type RuntimeSeverity = "blocker" | "major" | "minor" | "info";
+
+export interface RuntimeFinding {
+  kind: RuntimeFindingKind;
+  severity: RuntimeSeverity;
+  decision: RuntimeDecision;
+  observation: string;
+  action: string;
+  evidence: string;
+}
+
+export type RuntimeReviewStatus =
+  | "clean"
+  | "findings"
+  | "blocked"
+  | "environment-only"
+  | "upstream-only"
+  | "needs-review";
+
+export interface RuntimeReview {
+  status: RuntimeReviewStatus;
+  findings: RuntimeFinding[];
+}
+
 export type Verdict =
   | { phase: "raw"; status: "observed"; gaps: string[] }
   | { phase: "raw"; status: "gap"; gaps: string[] }
@@ -210,6 +251,8 @@ export interface RunRecord {
   session: SessionFacts | null;
   artifacts: ArtifactEvidence;
   semanticReview: SemanticReview;
+  /** Optional on records written before runtime review existed. */
+  runtimeReview?: RuntimeReview;
   /**
    * Every mechanical check result at capture time (assertions, workspace, entry, route).
    * Always recorded: an unobserved or inconclusive verdict must not hide them, and a

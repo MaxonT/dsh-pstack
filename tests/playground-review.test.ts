@@ -220,6 +220,67 @@ describe("review sidecar validation", () => {
     ).toEqual([]);
   });
 
+  it("accepts a structured runtime review and requires human review for unresolved findings", () => {
+    const finding = {
+      kind: "adapter-gap",
+      severity: "major",
+      decision: "dsh-md",
+      observation: "The runtime needs an explicit mapping.",
+      action: "Add the mapping to dsh.md.",
+      evidence: "tool call evidence",
+    };
+    const accepted = parseReviewValue(
+      reviewValue({ runtime: { status: "findings", findings: [finding] } }),
+    );
+    expect(accepted.errors).toEqual([]);
+    expect(accepted.review?.runtime?.findings).toHaveLength(1);
+
+    const unclear = parseReviewValue(
+      reviewValue({
+        runtime: {
+          status: "findings",
+          findings: [{ ...finding, kind: "unclear", decision: "needs-human" }],
+        },
+      }),
+    );
+    expect(
+      unclear.errors.some(
+        (error) => error.includes("needs-human") && error.includes("needs-review"),
+      ),
+    ).toBe(true);
+
+    const needsReview = parseReviewValue(
+      reviewValue({
+        runtime: {
+          status: "needs-review",
+          findings: [{ ...finding, kind: "unclear", decision: "needs-human" }],
+        },
+      }),
+    );
+    expect(needsReview.errors).toEqual([]);
+  });
+
+  it("rejects a clean runtime review that carries findings", () => {
+    const { errors } = parseReviewValue(
+      reviewValue({
+        runtime: {
+          status: "clean",
+          findings: [
+            {
+              kind: "runtime-missing",
+              severity: "blocker",
+              decision: "skip",
+              observation: "missing",
+              action: "skip",
+              evidence: "evidence",
+            },
+          ],
+        },
+      }),
+    );
+    expect(errors).toContain("runtime.status clean must have no findings");
+  });
+
   it("surfaces format errors from the inspection so the command can exit 1", () => {
     const fx = fixture("raw");
     writeSidecar(fx.reviews, "raw", {
@@ -259,6 +320,29 @@ describe("applying a review", () => {
     applyReviews(paths(fx));
 
     const upgraded = newestRecord(fx.evidence);
+    expect(upgraded.semanticReview.status).toBe("supported");
+    expect(upgraded.verdict).toEqual({ phase: "adapted", status: "verified" });
+  });
+
+  it("carries the runtime review into the revision", () => {
+    const fx = fixture("adapted");
+    const runtime = {
+      status: "needs-review",
+      findings: [
+        {
+          kind: "unclear",
+          severity: "major",
+          decision: "needs-human",
+          observation: "The failure could be runtime or skill.",
+          action: "Ask the owner to classify it.",
+          evidence: "session evidence",
+        },
+      ],
+    };
+    writeSidecar(fx.reviews, "adapted", reviewValue({ runtime }));
+    applyReviews(paths(fx));
+    const upgraded = newestRecord(fx.evidence);
+    expect(upgraded.runtimeReview).toEqual(runtime);
     expect(upgraded.semanticReview.status).toBe("supported");
     expect(upgraded.verdict).toEqual({ phase: "adapted", status: "verified" });
   });

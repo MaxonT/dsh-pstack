@@ -27,6 +27,14 @@
 - 每个上游技能和 playbook 必须有场景或明确排除。排除只给上游明确依赖 Cursor 云服务的条目，理由和证据写进 `exclusions.ts`。
 - 官方插件场景不预设冲突；`agent-team` 只是普通插件环境，结果由会话文件和界面观察决定。
 
+## 运行时适配审查
+
+- `SemanticReview` 只判断技能效果是否成立；运行时差异必须单独记录在 `runtimeReview`，不能把运行时问题藏进 skill 的 `gap` 或 `reason`。
+- 每个 finding 必须有 `kind`、`severity`、`decision`、`observation`、`action`、`evidence`。
+- `decision` 只能是 `dsh-md`、`plugin`、`skip`、`ignore-environment`、`upstream` 或 `needs-human`。DSH 有等价能力但语义不同时走 `dsh-md`；需要新增工具、预设或可选包时走 `plugin`；只有环境权限、凭据、网络或无头限制时走 `ignore-environment`；技能自身问题走 `upstream`。
+- 无法可靠分类、或分类会影响后续方案却证据不足时，必须使用 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户亲自审查。禁止默认忽略、默认归为上游或默认选一个 decision 来消除告警。
+- `collect` 必须按 skill 输出 `runtime-review/` 报告，并在 summary、comparison 和 approval 中区分 semantic 与 runtime；`needs-review` 和未填写的 runtime review 不能被当作 clean。
+
 ## 流程与审批
 
 - 进程生命周期：每次 bash 调用都在独立的 PID namespace/cgroup 里。`prepare` 启动的 DSH Web 即使使用 detached，也会在 job shell 退出时被销毁；不要把 `prepare` 和 `bootstrap` 拆成两次调用。

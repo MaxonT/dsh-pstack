@@ -38,7 +38,7 @@ run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。�
 
 RunRecord 的身份是 scenarioId、phase、environmentId。记录包含实际 DSH 版本、安装版本、实际模型路由、上游 revision、配置 hash、会话事实、产物和裁决。密钥只用于进程环境，不能进入记录。
 
-可观察断言检查完成状态、产物和过程事实。语义审核另存状态、理由与审核者。pending 在 raw 是 unobserved，在 adapted 是 inconclusive。
+可观察断言检查完成状态、产物和过程事实。语义审核另存状态、理由与审核者。运行时审查另存 `runtimeReview`，与语义审核分开；无法归类的 finding 必须标为 `needs-review` 等用户审查。pending 在 raw 是 unobserved，在 adapted 是 inconclusive。
 
 collect 读取全部 worker 的 RunRecord。报告列出已运行、未运行和排除的场景。adapted 必须与 raw 对照自然语言、实际模型、上游 revision 和配置 hash。归档避免重复复制已归档文件。
 

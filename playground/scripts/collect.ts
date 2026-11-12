@@ -9,7 +9,7 @@ import {
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { Phase, RunRecord } from "../types.ts";
+import type { Phase, RunRecord, RuntimeFinding, RuntimeReviewStatus } from "../types.ts";
 import { assertSameEntry, isRunRecord, latestRecords } from "./lib/evidence.ts";
 import { environmentMatrix, REPORT_DIRECTORY, workersDirectory } from "./lib/run-metadata.ts";
 import { loadScenario, listScenarioIds } from "./lib/scenarios.ts";
@@ -70,7 +70,7 @@ export function reportFor(
     if (!record) {
       unrun += 1;
       rows.push(
-        `| ${id} | ${phase} | ${environmentId} | unrun | unavailable | pending | no RunRecord | ${escape(scenario.rubric.prompt)} | missing |`,
+        `| ${id} | ${phase} | ${environmentId} | unrun | unavailable | pending | unreviewed | no RunRecord | ${escape(scenario.rubric.prompt)} | missing |`,
       );
       continue;
     }
@@ -99,12 +99,12 @@ export function reportFor(
     const verdict = comparisonFailures.length > 0 ? "inconclusive" : record.verdict.status;
     counts[verdict] += 1;
     rows.push(
-      `| ${id} | ${phase} | ${environmentId} | ${verdict} | ${escape(route)} | ${record.semanticReview.status} | ${escape(reason)} | ${escape(scenario.rubric.prompt)} | ${escape(record.artifacts.recordFile)} |`,
+      `| ${id} | ${phase} | ${environmentId} | ${verdict} | ${escape(route)} | ${record.semanticReview.status} | ${escape(runtimeOf(record).summary)} | ${escape(reason)} | ${escape(scenario.rubric.prompt)} | ${escape(record.artifacts.recordFile)} |`,
     );
   }
   for (const exclusion of exclusions) {
     rows.push(
-      `| ${exclusion.id} | excluded | ${environmentId} | excluded | not run | not applicable | ${escape(exclusion.reason)} | ${escape(exclusion.evidence)} | excluded |`,
+      `| ${exclusion.id} | excluded | ${environmentId} | excluded | not run | not applicable | not applicable | ${escape(exclusion.reason)} | ${escape(exclusion.evidence)} | excluded |`,
     );
   }
   const metadata = current[0]?.environment;
@@ -119,8 +119,8 @@ export function reportFor(
     JSON.stringify({ ...counts, unrun, excluded: exclusions.length }, null, 2),
     "```",
     "",
-    "| scenario | phase | environment | verdict | actual route | semantic review | reason | rubric | evidence |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| scenario | phase | environment | verdict | actual route | semantic review | runtime review | reason | rubric | evidence |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...rows,
     "",
   ];
@@ -146,6 +146,20 @@ function analysisOf(record: RunRecord | undefined): {
         .map((entry) => `${entry.name}:${entry.available ? "available" : "missing"}`)
         .join(", ") || "none",
     warnings: analysis.warnings.join("; ") || "none",
+  };
+}
+
+function runtimeOf(record: RunRecord | undefined): {
+  status: RuntimeReviewStatus | "unreviewed";
+  summary: string;
+  findings: RuntimeFinding[];
+} {
+  const review = record?.runtimeReview;
+  if (!review) return { status: "unreviewed", summary: "unreviewed", findings: [] };
+  return {
+    status: review.status,
+    summary: `${review.status}(${review.findings.length})`,
+    findings: review.findings,
   };
 }
 
@@ -194,16 +208,55 @@ function comparisonMarkdown(scenarioId: string, current: RunRecord, latest: RunR
       record.target
         ? `${record.target.provider}/${record.target.model}[${record.target.effort}]`
         : "unavailable"
-    } | ${analysis.via} | ${escape(analysis.dependencies)} | ${escape(analysis.warnings)} |`;
+    } | ${analysis.via} | ${escape(runtimeOf(record).summary)} | ${escape(analysis.dependencies)} | ${escape(analysis.warnings)} |`;
   });
   return [
     `# ${scenarioId} comparison`,
     "",
-    "| environment | phase | verdict | route | skill load | dependencies | warnings |",
-    "| --- | --- | --- | --- | --- | --- | --- |",
+    "| environment | phase | verdict | route | skill load | runtime review | dependencies | warnings |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ...rows,
     "",
   ].join("\n");
+}
+
+function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: string): void {
+  const bySkill = new Map<string, { group: string; skill: string; records: RunRecord[] }>();
+  for (const record of current) {
+    const scenario = loadScenario(record.scenarioId);
+    const group = scenario.group ?? "skills";
+    const key = `${group}\0${scenario.skill}`;
+    const bucket = bySkill.get(key) ?? { group, skill: scenario.skill, records: [] };
+    bucket.records.push(record);
+    bySkill.set(key, bucket);
+  }
+  for (const { group, skill, records } of bySkill.values()) {
+    const rows = records.flatMap((record) => {
+      const runtime = runtimeOf(record);
+      if (runtime.findings.length === 0) {
+        return [`| ${record.scenarioId} | ${runtime.status} | - | - | - | - | - | - |`];
+      }
+      return runtime.findings.map(
+        (finding) =>
+          `| ${record.scenarioId} | ${runtime.status} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.observation)} | ${escape(finding.action)} | ${escape(finding.evidence)} |`,
+      );
+    });
+    const directory = join(REPORT_DIRECTORY, group, "runtime-review");
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(
+      join(directory, `${skill.replace(/[^a-z0-9-]+/gi, "-") || "skill"}.md`),
+      [
+        `# ${skill} runtime review`,
+        "",
+        `Phase: ${phase}. Environment: ${environmentId}. Scenarios: ${records.length}.`,
+        "",
+        "| scenario | runtime status | finding | severity | decision | observation | action | evidence |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+        ...rows,
+        "",
+      ].join("\n"),
+    );
+  }
 }
 
 export function writeMirroredReports(
@@ -229,7 +282,7 @@ export function writeMirroredReports(
       }
     }
     const analysis = analysisOf(record);
-    const row = `| ${id} | ${group} | ${verdictOf(record)} | ${analysis.via} | ${escape(analysis.dependencies)} | ${escape(analysis.warnings)} |`;
+    const row = `| ${id} | ${group} | ${verdictOf(record)} | ${escape(runtimeOf(record).summary)} | ${analysis.via} | ${escape(analysis.dependencies)} | ${escape(analysis.warnings)} |`;
     rows.push(row);
     const bucket = groupRows.get(group) ?? [];
     bucket.push(row);
@@ -240,8 +293,8 @@ export function writeMirroredReports(
     "",
     `Registered scenarios: ${listScenarioIds().length}.`,
     "",
-    "| scenario | group | verdict | skill load | dependencies | warnings |",
-    "| --- | --- | --- | --- | --- | --- |",
+    "| scenario | group | verdict | runtime review | skill load | dependencies | warnings |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
     ...rows,
     "",
   ].join("\n");
@@ -256,24 +309,41 @@ export function writeMirroredReports(
       [
         `# ${group} ${phase} ${environmentId} summary`,
         "",
-        "| scenario | group | verdict | skill load | dependencies | warnings |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| scenario | group | verdict | runtime review | skill load | dependencies | warnings |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
         ...groupLines,
         "",
       ].join("\n"),
     );
   }
 
+  writeRuntimeReviews(current, phase, environmentId);
+
   if (phase === "adapted" && environmentId === "base") {
     const failed = current.filter((record) => record.verdict.status !== "verified");
     const registered = listScenarioIds().length;
     const unrun = registered - current.length;
+    const runtimeNeedsHuman = current.filter(
+      (record) => runtimeOf(record).status === "needs-review",
+    ).length;
+    const runtimeBlocked = current.filter(
+      (record) => runtimeOf(record).status === "blocked",
+    ).length;
+    const runtimeUnreviewed = current.filter((record) => !record.runtimeReview).length;
+    const runtimeFindings = current.flatMap((record) =>
+      runtimeOf(record).findings.map(
+        (finding) =>
+          `| ${record.scenarioId} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.action)} |`,
+      ),
+    );
     writeFileSync(
       join(REPORT_DIRECTORY, "approval-adapted-base.md"),
       [
         "# Adapted base approval",
         "",
         `Registered scenarios: ${registered}. Recorded: ${current.length}. Unrun: ${unrun}. Verified: ${current.length - failed.length}. Not verified: ${failed.length}.`,
+        `Runtime review: needs-review=${runtimeNeedsHuman}, blocked=${runtimeBlocked}, unreviewed=${runtimeUnreviewed}, findings=${runtimeFindings.length}.`,
+        `Runtime gate: ${runtimeNeedsHuman + runtimeBlocked + runtimeUnreviewed > 0 ? "blocked" : "clear"}.`,
         ...(unrun > 0
           ? [
               "",
@@ -289,6 +359,10 @@ export function writeMirroredReports(
               "reason" in record.verdict ? (record.verdict.reason ?? "") : "",
             )} |`,
         ),
+        "",
+        "| scenario | runtime finding | severity | decision | action |",
+        "| --- | --- | --- | --- | --- |",
+        ...runtimeFindings,
         "",
       ].join("\n"),
     );
@@ -312,11 +386,11 @@ export function writeMirroredReports(
           ? ["", "> No official-plugin run has been recorded yet; this is not an approval."]
           : []),
         "",
-        "| scenario | environment | verdict |",
-        "| --- | --- | --- |",
+        "| scenario | environment | verdict | runtime review |",
+        "| --- | --- | --- | --- |",
         ...official.map(
           (record) =>
-            `| ${record.scenarioId} | ${record.environment.matrix.id} | ${record.verdict.status} |`,
+            `| ${record.scenarioId} | ${record.environment.matrix.id} | ${record.verdict.status} | ${escape(runtimeOf(record).summary)} |`,
         ),
         "",
       ].join("\n"),
@@ -328,7 +402,7 @@ export function writeMirroredReports(
       "# Playground reports",
       "",
       "- `summary/`：按 phase 与环境汇总。",
-      "- `skills/`、`playbooks/`、`official-plugins/`：每个 case 的运行记录、截图、comparison 与组根 `summary-*.md`。",
+      "- `skills/`、`playbooks/`、`official-plugins/`：每个 case 的运行记录、截图、comparison、组根 `summary-*.md` 和 `runtime-review/`。",
       "- `approval-adapted-base.md`：移植验收审批。",
       "- `approval-official-plugins.md`：官方插件矩阵审批。",
       "",

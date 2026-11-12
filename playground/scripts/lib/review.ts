@@ -9,7 +9,18 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
-import type { Phase, RunRecord, SemanticReview, TestTarget } from "../../types.ts";
+import type {
+  Phase,
+  RunRecord,
+  RuntimeDecision,
+  RuntimeFinding,
+  RuntimeFindingKind,
+  RuntimeReview,
+  RuntimeReviewStatus,
+  RuntimeSeverity,
+  SemanticReview,
+  TestTarget,
+} from "../../types.ts";
 import { evaluateAssertions, isRunRecord, latestRecords, verdictFor } from "./evidence.ts";
 import { PLAYGROUND_DIRECTORY } from "./run-metadata.ts";
 import { loadScenario } from "./scenarios.ts";
@@ -19,7 +30,34 @@ export const REVIEWS_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reviews");
 const REVIEWED_STATUSES = ["supported", "gap", "inconclusive"] as const;
 export type ReviewedStatus = (typeof REVIEWED_STATUSES)[number];
 export type Review = Extract<SemanticReview, { status: ReviewedStatus }>;
-export type ReviewFile = Review & { reviewedAt: string };
+export type ReviewFile = Review & { reviewedAt: string; runtime?: RuntimeReview };
+
+const RUNTIME_STATUSES: readonly RuntimeReviewStatus[] = [
+  "clean",
+  "findings",
+  "blocked",
+  "environment-only",
+  "upstream-only",
+  "needs-review",
+];
+const RUNTIME_KINDS: readonly RuntimeFindingKind[] = [
+  "runtime-missing",
+  "runtime-difference",
+  "adapter-gap",
+  "plugin-gap",
+  "environment-only",
+  "upstream-skill",
+  "unclear",
+];
+const RUNTIME_DECISIONS: readonly RuntimeDecision[] = [
+  "dsh-md",
+  "plugin",
+  "skip",
+  "ignore-environment",
+  "upstream",
+  "needs-human",
+];
+const RUNTIME_SEVERITIES: readonly RuntimeSeverity[] = ["blocker", "major", "minor", "info"];
 
 export interface ReviewIdentity {
   scenarioId: string;
@@ -71,6 +109,82 @@ export function parseReviewFileName(
   return null;
 }
 
+function parseRuntimeValue(value: unknown): { runtime?: RuntimeReview; errors: string[] } {
+  const errors: string[] = [];
+  if (!isRecord(value)) return { errors: ["runtime must be an object when present"] };
+  if (
+    !nonEmptyString(value.status) ||
+    !RUNTIME_STATUSES.includes(value.status as RuntimeReviewStatus)
+  ) {
+    errors.push(
+      `runtime.status must be one of ${RUNTIME_STATUSES.map((status) => JSON.stringify(status)).join(", ")}`,
+    );
+  }
+  if (!Array.isArray(value.findings)) {
+    errors.push("runtime.findings must be an array");
+    return { errors };
+  }
+  const findings: RuntimeFinding[] = [];
+  value.findings.forEach((rawFinding, index) => {
+    if (!isRecord(rawFinding)) {
+      errors.push(`runtime.findings[${index}] must be an object`);
+      return;
+    }
+    const fields = ["observation", "action", "evidence"] as const;
+    for (const field of fields) {
+      if (!nonEmptyString(rawFinding[field])) {
+        errors.push(`runtime.findings[${index}].${field} must be a non-empty string`);
+      }
+    }
+    const kind = rawFinding.kind;
+    if (!nonEmptyString(kind) || !RUNTIME_KINDS.includes(kind as RuntimeFindingKind)) {
+      errors.push(`runtime.findings[${index}].kind is invalid`);
+    }
+    const severity = rawFinding.severity;
+    if (!nonEmptyString(severity) || !RUNTIME_SEVERITIES.includes(severity as RuntimeSeverity)) {
+      errors.push(`runtime.findings[${index}].severity is invalid`);
+    }
+    const decision = rawFinding.decision;
+    if (!nonEmptyString(decision) || !RUNTIME_DECISIONS.includes(decision as RuntimeDecision)) {
+      errors.push(`runtime.findings[${index}].decision is invalid`);
+    }
+    if (
+      fields.every((field) => nonEmptyString(rawFinding[field])) &&
+      nonEmptyString(kind) &&
+      RUNTIME_KINDS.includes(kind as RuntimeFindingKind) &&
+      nonEmptyString(severity) &&
+      RUNTIME_SEVERITIES.includes(severity as RuntimeSeverity) &&
+      nonEmptyString(decision) &&
+      RUNTIME_DECISIONS.includes(decision as RuntimeDecision)
+    ) {
+      findings.push({
+        kind: kind as RuntimeFindingKind,
+        severity: severity as RuntimeSeverity,
+        decision: decision as RuntimeDecision,
+        observation: rawFinding.observation as string,
+        action: rawFinding.action as string,
+        evidence: rawFinding.evidence as string,
+      });
+    }
+  });
+  if (errors.length > 0) return { errors };
+  const status = value.status as RuntimeReviewStatus;
+  const needsHuman = findings.some((finding) => finding.decision === "needs-human");
+  if (status === "clean" && findings.length > 0) {
+    errors.push("runtime.status clean must have no findings");
+  }
+  if (status === "needs-review" && !needsHuman) {
+    errors.push("runtime.status needs-review requires a needs-human finding");
+  }
+  if (needsHuman && status !== "needs-review") {
+    errors.push("a needs-human finding requires runtime.status needs-review");
+  }
+  if (status === "blocked" && !findings.some((finding) => finding.severity === "blocker")) {
+    errors.push("runtime.status blocked requires a blocker finding");
+  }
+  return { runtime: { status, findings }, errors };
+}
+
 /** Validate one parsed sidecar. Every missing field is reported, not just the first. */
 export function parseReviewValue(value: unknown): { review?: ReviewFile; errors: string[] } {
   const errors: string[] = [];
@@ -113,6 +227,12 @@ export function parseReviewValue(value: unknown): { review?: ReviewFile; errors:
   } else {
     errors.push('reviewer.kind must be "model" or "human"');
   }
+  let runtime: RuntimeReview | undefined;
+  if (value.runtime !== undefined) {
+    const parsed = parseRuntimeValue(value.runtime);
+    errors.push(...parsed.errors);
+    if (parsed.errors.length === 0) runtime = parsed.runtime;
+  }
   if (errors.length > 0 || !reviewer) return { errors };
   return {
     review: {
@@ -120,6 +240,7 @@ export function parseReviewValue(value: unknown): { review?: ReviewFile; errors:
       reason: value.reason as string,
       reviewer,
       reviewedAt: value.reviewedAt as string,
+      ...(runtime === undefined ? {} : { runtime }),
     },
     errors,
   };
@@ -268,9 +389,11 @@ export function applyReviews(paths: ReviewPaths): ApplyResult {
       reason: review.reason,
       reviewer: review.reviewer,
     };
+    const runtimeReview = review.runtime ?? latest.runtimeReview;
     if (
       latest.reviewedAt === review.reviewedAt &&
-      JSON.stringify(latest.semanticReview) === JSON.stringify(semanticReview)
+      JSON.stringify(latest.semanticReview) === JSON.stringify(semanticReview) &&
+      JSON.stringify(latest.runtimeReview) === JSON.stringify(runtimeReview)
     ) {
       result.skipped.push(identity);
       continue;
@@ -291,6 +414,7 @@ export function applyReviews(paths: ReviewPaths): ApplyResult {
     const revision: RunRecord = {
       ...latest,
       semanticReview,
+      ...(runtimeReview === undefined ? {} : { runtimeReview }),
       reviewedAt: review.reviewedAt,
       mechanicalFailures: verdictInput.failures,
       verdict: verdictFor(verdictInput),
