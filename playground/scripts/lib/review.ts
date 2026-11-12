@@ -4,10 +4,9 @@ import {
   readdirSync,
   readFileSync,
   renameSync,
-  statSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 
 import {
   PHASES,
@@ -35,6 +34,7 @@ import { PLAYGROUND_DIRECTORY } from "./run-metadata.ts";
 import { loadScenario } from "./scenarios.ts";
 
 export const REVIEWS_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reviews");
+export const REVIEW_SCENARIOS_DIRECTORY = join(REVIEWS_DIRECTORY, "scenarios");
 
 export type ReviewedStatus = SemanticReviewStatus;
 export type Review = Extract<SemanticReview, { status: ReviewedStatus }>;
@@ -64,9 +64,10 @@ function nonEmptyString(value: unknown): value is string {
 const ROUTE_PLACEHOLDERS = new Set(["pending"]);
 
 /**
- * A sidecar name is `<scenarioId>-<phase>-<environmentId>.json`. Neither scenario ids nor
- * environment ids are free of hyphens, so resolve the scenario against the registry and take
- * the longest match first instead of splitting on every hyphen.
+ * Legacy flat sidecar names are `<scenarioId>-<phase>-<environmentId>.json`. New sidecars
+ * live under `scenarios/<group>/<scenario>/<phase>-<environment>.json`. Neither scenario ids
+ * nor environment ids are free of hyphens, so resolve the scenario against the registry and
+ * take the longest match first instead of splitting on every hyphen.
  */
 export function parseReviewFileName(
   fileName: string,
@@ -227,32 +228,62 @@ export function parseReviewValue(value: unknown): { review?: ReviewFile; errors:
   };
 }
 
+function reviewFiles(directory: string): string[] {
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const file = join(directory, entry.name);
+    if (entry.isDirectory()) return reviewFiles(file);
+    return entry.name.endsWith(".json") ? [file] : [];
+  });
+}
+
+function identityFromTreeFile(
+  file: string,
+  scenariosDirectory: string,
+  scenarioIds: string[],
+): ReviewIdentity | null {
+  const parts = relative(scenariosDirectory, file).split(/[\\/]/);
+  if (parts.length !== 3) return null;
+  const [group, scenarioId, name] = parts;
+  if (scenarioId === undefined || name === undefined || !scenarioIds.includes(scenarioId)) {
+    return null;
+  }
+  const identity = parseReviewFileName(`${scenarioId}-${name}`, [scenarioId]);
+  if (!identity) return null;
+  const expectedGroup = loadScenario(scenarioId).group;
+  if (expectedGroup !== undefined && expectedGroup !== group) return null;
+  return identity;
+}
+
 export function readReviewSidecars(
   reviewsDirectory: string,
   scenarioIds: string[],
 ): { sidecars: ReviewSidecar[]; errors: string[] } {
   if (!existsSync(reviewsDirectory)) return { sidecars: [], errors: [] };
+  const scenariosDirectory = join(reviewsDirectory, "scenarios");
   const sidecars: ReviewSidecar[] = [];
   const errors: string[] = [];
-  for (const name of readdirSync(reviewsDirectory).sort()) {
-    if (!name.endsWith(".json")) continue;
-    const file = join(reviewsDirectory, name);
-    if (!statSync(file).isFile()) continue;
+  for (const file of reviewFiles(scenariosDirectory)) {
+    const display = relative(reviewsDirectory, file);
     let parsed: unknown;
     try {
       parsed = JSON.parse(readFileSync(file, "utf8"));
     } catch (error) {
       errors.push(
-        `${name}: invalid JSON (${error instanceof Error ? error.message : String(error)})`,
+        `${display}: invalid JSON (${error instanceof Error ? error.message : String(error)})`,
       );
       continue;
     }
     const { review, errors: valueErrors } = parseReviewValue(parsed);
-    const identity = parseReviewFileName(name, scenarioIds);
+    const identity = identityFromTreeFile(file, scenariosDirectory, scenarioIds);
     const issues = [...valueErrors];
-    if (!identity) issues.push("file name must be <scenarioId>-<phase>-<environmentId>.json");
+    if (!identity) {
+      issues.push(
+        "file name must be <scenarioId>-<phase>-<environmentId>.json or path must be scenarios/<group>/<scenarioId>/<phase>-<environmentId>.json",
+      );
+    }
     if (issues.length > 0) {
-      for (const issue of issues) errors.push(`${name}: ${issue}`);
+      for (const issue of issues) errors.push(`${display}: ${issue}`);
       continue;
     }
     sidecars.push({ file, identity: identity as ReviewIdentity, review: review as ReviewFile });

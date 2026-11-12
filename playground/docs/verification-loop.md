@@ -44,7 +44,7 @@ flowchart TD
 | 阶段 | 进入条件 | 产物 | 出口 |
 | --- | --- | --- | --- |
 | 1. raw 基线 | 无当前 raw 记录 | `reports/runs/raw-base/summary.md`、`reports/scenarios/**/raw-base/` | raw review |
-| 2. raw review | raw 记录完整 | `reviews/*.json`（含 runtime） | 通过则进适配开发；有 gap 回到对应 decision |
+| 2. raw review | raw 记录完整 | `reviews/scenarios/**/<phase>-<environment>.json`（含 runtime） | 通过则进适配开发；有 gap 回到对应 decision |
 | 3. 适配开发 | review 给出 `dsh-md` 或 `plugin` | 更新 `dsh.md` 或插件、生成树、build | adapted/base |
 | 4. adapted/base | 新 build 完成 | `reports/runs/adapted-base/summary.md`、`reports/scenarios/**/comparison.md` | adapted review |
 | 5. adapted review | adapted 记录完整 | `reports/runs/adapted-base/runtime-review.md`、`reviews/runtime-review/adapted-base.json`、`reports/approvals/adapted-base.md` | `Runtime gate: clear` 后进 official-plugins；否则回到第 3 阶段 |
@@ -70,7 +70,7 @@ review sidecar 可以带 `runtime` 字段，记录每个运行时差异的 kind�
 
 无法可靠分类的 finding 必须写成 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户审查；`needs-review` 和未填写的 runtime review 都不能当作 clean。
 
-`collect` 同时会在 `reviews/runtime-review/<phase>-<environment>.json` 生成点评骨架，每条 finding 有稳定 id。只写点评时编辑这个 JSON 的 `decision` 和 `comment`，再重新 collect；点评列会显示在 `runtime-review.md`。approval 的 Runtime gate 会把 `pending`、`reject` 和 `needs-human` 视为未完成；只有 `accept` 才放行。如果要改 finding 本身，改对应 scenario 的 `reviews/*.json`，执行 `review --apply` 后再 collect。
+`collect` 同时会在 `reviews/runtime-review/<phase>-<environment>.json` 生成点评骨架，每条 finding 有稳定 id。只写点评时编辑这个 JSON 的 `decision` 和 `comment`，再重新 collect；点评列会显示在 `runtime-review.md`。approval 的 Runtime gate 会把 `pending`、`reject` 和 `needs-human` 视为未完成；只有 `accept` 才放行。如果要改 finding 本身，改对应 scenario 的 `reviews/scenarios/<group>/<scenario>/<phase>-<environment>.json`，执行 `review --apply` 后再 collect。
 
 ## 1. raw 基线
 
@@ -85,7 +85,7 @@ vp run playground:review
 vp run playground:review -- --apply
 ```
 
-产物：`reports/runs/raw-base/summary.md`、`reports/scenarios/skills/*/raw-base/`、`reports/scenarios/playbooks/*/raw-base/`、`reviews/`。
+产物：`reports/runs/raw-base/summary.md`、`reports/scenarios/skills/*/raw-base/`、`reports/scenarios/playbooks/*/raw-base/`、`reviews/scenarios/`。
 
 Gate：raw 场景 sidecar 通过；runtime review 没有 `needs-review` 或 `unreviewed`；`playground/raw/dsh.md` 与 `dsh.zh.md` 逐行确认。
 

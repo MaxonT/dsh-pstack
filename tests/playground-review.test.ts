@@ -130,10 +130,9 @@ function reviewValue(overrides: Record<string, unknown> = {}): Record<string, un
 }
 
 function writeSidecar(reviews: string, phase: Phase, value: unknown): void {
-  writeFileSync(
-    join(reviews, `${SCENARIO_ID}-${phase}-base.json`),
-    `${JSON.stringify(value, null, 2)}\n`,
-  );
+  const directory = join(reviews, "scenarios", "skills", SCENARIO_ID);
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(join(directory, `${phase}-base.json`), `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function evidenceFiles(evidence: string): string[] {
@@ -503,13 +502,16 @@ describe("review sidecar scenario registry", () => {
     const root = mkdtempSync(join(tmpdir(), "pstack-review-registry-"));
     temporaries.push(root);
     const reviews = join(root, "reviews");
-    mkdirSync(reviews, { recursive: true });
+    const officialDirectory = join(reviews, "scenarios", "official-plugins", "plugin-forge");
+    const unknownDirectory = join(reviews, "scenarios", "skills", "unknown-scenario");
+    mkdirSync(officialDirectory, { recursive: true });
+    mkdirSync(unknownDirectory, { recursive: true });
     writeFileSync(
-      join(reviews, "plugin-forge-adapted-forge.json"),
+      join(officialDirectory, "adapted-forge.json"),
       `${JSON.stringify(reviewValue(), null, 2)}\n`,
     );
     writeFileSync(
-      join(reviews, "unknown-scenario-adapted-base.json"),
+      join(unknownDirectory, "adapted-base.json"),
       `${JSON.stringify(reviewValue(), null, 2)}\n`,
     );
 
