@@ -12,11 +12,11 @@
 
 先运行 raw 生成器，再准备 raw 环境。raw 不能包含 dsh-pstack 或其他附加插件。standard preset 加 raw systemPrompt 提示提供与 poteto-mode 相同的常驻工作流入口。
 
-下面是单 worker 的抽样示例，示例里的 `--workers 1` 只是为了只操作 `w0`；日常运行省略 `--workers`，由 `capacity.ts` 按环境容量取最大值。
+下面是单场景的抽样示例，只对 `w0` 运行场景；`prepare` 省略 `--workers`，由 `capacity.ts` 按环境容量启动全部 worker。若要限制为一个 worker，再显式加 `--workers 1`。
 
 ```sh
 vp run playground:raw-generate
-vp run playground:prepare -- --phase raw --environment base --workers 1 --reset
+vp run playground:prepare -- --phase raw --environment base --reset
 vp run playground:bootstrap -- --worker 0 --environment base
 vp run playground:run -- --worker 0 --environment base --phase raw --scenario poteto-help-smoke
 vp run playground:collect -- --phase raw --environment base
@@ -25,7 +25,7 @@ vp run playground:collect -- --phase raw --environment base
 adapted 重建自己的环境。它选择 poteto-mode preset，不再挂载 raw 提示。附加官方插件必须列在 EnvironmentMatrix 中。UI 插件开关属于环境矩阵，不是场景复制。
 
 ```sh
-vp run playground:prepare -- --phase adapted --environment base --workers 1 --reset
+vp run playground:prepare -- --phase adapted --environment base --reset
 vp run playground:run -- --worker 0 --environment base --phase adapted --scenario poteto-help-smoke
 vp run playground:collect -- --phase adapted --environment base
 ```
