@@ -14,6 +14,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
+import { checkDshAdapters } from "./check-dsh-adapters.mjs";
 import { createHash } from "node:crypto";
 import { dirname, join, posix, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -25,6 +26,8 @@ const TARGET = targetIndex >= 0 ? process.argv[targetIndex + 1] : "port";
 if (TARGET !== "port" && TARGET !== "raw") {
   throw new Error("usage: generate-pstack.mjs --target port|raw [--check]");
 }
+checkDshAdapters();
+
 const isRaw = TARGET === "raw";
 const ADAPTER_SOURCE = isRaw ? "playground/raw/dsh.md" : "port/dsh.md";
 const ADAPTER_TREE = "docs/harness/dsh.md";
