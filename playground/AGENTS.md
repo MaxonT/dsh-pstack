@@ -29,6 +29,7 @@
 
 ## 流程与审批
 
+- worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
 - raw：生成 `playground/raw/pstack`，跑 `raw/base` 的 skills 和 playbooks，collect，`review --apply`。raw 的 gate 是 sidecar 加 `dsh.md` 逐行确认。
 - 适配开发：维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
 - adapted/base：跑 skills 和 playbooks，与 raw/base 对比，生成 `reports/approval-adapted-base.md`。不通过回适配开发。

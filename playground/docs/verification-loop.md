@@ -1,12 +1,12 @@
 # Playground 验证闭环
 
-本文件给出 `playground/AGENTS.md` 的完整阶段、命令和审批门。所有命令在仓库根执行，Linux 是唯一官方支持平台。
+本文件给出 `playground/AGENTS.md` 的完整阶段、命令和审批门。所有命令在仓库根执行，Linux 是唯一官方支持平台。所有 `prepare` 命令都省略 `--workers`；默认由 `capacity.ts` 按当前机器的核数、空闲内存和上限计算最大值，只有明确需要限制并发时才写 `--workers N`。
 
 ## 1. raw 基线
 
 ```sh
 vp run playground:raw-generate
-vp run playground:prepare -- --phase raw --environment base --workers 4 --reset
+vp run playground:prepare -- --phase raw --environment base --reset
 vp run playground:bootstrap -- --phase raw --environment base --all
 vp run playground:run-batch -- --phase raw --environment base --all
 vp run playground:collect -- --phase raw --environment base
@@ -41,7 +41,7 @@ Gate：`dsh.md` 逐行审批；`generate:check` 通过。
 ## 3. adapted/base
 
 ```sh
-vp run playground:prepare -- --phase adapted --environment base --workers 4 --reset
+vp run playground:prepare -- --phase adapted --environment base --reset
 vp run playground:run-batch -- --phase adapted --environment base --all
 vp run playground:collect -- --phase adapted --environment base
 vp run playground:review
@@ -57,7 +57,7 @@ Gate：`approval-adapted-base.md` 通过。不通过回第 2 阶段。
 对 `forge`、`session-search`、`browser-use`、`terminal`、`agent-team` 逐个运行：
 
 ```sh
-vp run playground:prepare -- --phase adapted --environment <plugin> --workers 1 --reset
+vp run playground:prepare -- --phase adapted --environment <plugin> --reset
 vp run playground:run-batch -- --phase adapted --environment <plugin> --scenarios <ids>
 vp run playground:collect -- --phase adapted --environment <plugin>
 ```

@@ -187,7 +187,7 @@ Steps that depend on a disabled plugin report skipped or blocked, never passed. 
 
 ## 🧪 Port verification
 
-The port is checked against real DeepSeek Harness Web sessions, not by comparing text with upstream. [playground/README.md](./playground/README.md) documents the full procedure.
+The port is checked against real DeepSeek Harness Web sessions, not by comparing text with upstream. [playground/docs/verification-loop.md](./playground/docs/verification-loop.md) documents the full procedure.
 
 - **Raw baseline.** The generator copies upstream pstack into `playground/raw/pstack` and installs nothing else. `playground/raw/dsh.md` states each upstream capability as one of three cases: native in base DSH, provided only by an official optional plugin, or absent. The generator copies that document and rewrites link references only, so the upstream wording stays intact.
 - **Scenario-driven runs.** The registry defines 57 skill scenarios, 23 playbook scenarios, and 5 official-plugin scenarios; each runs its natural-language turns against the raw baseline and then against the adapted plugin. Two capabilities are declared exclusions because they need Cursor cloud routines, Bots, or Automations. A guard test fails when an upstream skill or playbook has neither a scenario nor an exclusion.

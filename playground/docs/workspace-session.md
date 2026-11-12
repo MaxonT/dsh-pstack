@@ -1,6 +1,6 @@
 # 工作区与会话流程
 
-本文说明如何运行一个真实场景并保存证据。完整命令见 playground/README.md。
+本文说明如何运行一个真实场景并保存证据。完整流程见 [playground/AGENTS.md](../AGENTS.md) 和 [verification-loop.md](./verification-loop.md)。
 
 ## 隔离运行环境
 
@@ -11,6 +11,8 @@
 ## 准备和运行
 
 先运行 raw 生成器，再准备 raw 环境。raw 不能包含 dsh-pstack 或其他附加插件。standard preset 加 raw systemPrompt 提示提供与 poteto-mode 相同的常驻工作流入口。
+
+下面是单 worker 的抽样示例，示例里的 `--workers 1` 只是为了只操作 `w0`；日常运行省略 `--workers`，由 `capacity.ts` 按环境容量取最大值。
 
 ```sh
 vp run playground:raw-generate

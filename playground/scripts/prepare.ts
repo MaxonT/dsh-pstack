@@ -20,13 +20,7 @@ import {
 } from "./lib/env.ts";
 import { listScenarioIds } from "./lib/scenarios.ts";
 import { computeWorkers } from "./lib/capacity.ts";
-import {
-  listWorkers,
-  resetPhase,
-  workerCount,
-  workerPaths,
-  type WorkerPaths,
-} from "./lib/worker.ts";
+import { listWorkers, resetPhase, workerPaths, type WorkerPaths } from "./lib/worker.ts";
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -87,7 +81,7 @@ async function main(): Promise<void> {
   const reuse = process.argv.includes("--reuse");
   if (reset && reuse) throw new Error("--reset and --reuse are mutually exclusive");
   if (reuse) {
-    const workers = Array.from({ length: requested ?? workerCount(matrix.id, phase) }, (_, index) =>
+    const workers = Array.from({ length: count }, (_, index) =>
       workerPaths(index, matrix.id, phase),
     );
     for (const worker of workers) stopWeb(worker);
