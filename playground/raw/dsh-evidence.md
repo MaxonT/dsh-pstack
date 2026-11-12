@@ -65,6 +65,13 @@
 | `pstack-models.mdc`/`~/.cursor/rules/pstack-models.mdc` | Cursor 规则文件 | pstack 角色文件是 `$DSH_HOME/pstack-models.mdc`；base DSH 没有 `.mdc` 和 `rules/`，pstack 适配器在委派时读取该文件。`AGENTS.md` 兼容链只承载会话指令，不能替代角色文件 | 不要创建 `.cursor/rules`；角色行不能写进 `AGENTS.md` 或 `CLAUDE.md`；文件不在上下文时用 `read` | `src/role-manifest.ts` 的 `PSTACK_MODELS_FILENAME`；`src/role-config.ts`；`dsh-home-paths`；`port/dsh.md` |
 | 角色值 `<model> <effort>` | Cursor 角色值 | DSH 角色值是 `<provider>/<model> <effort>`；拆成 `provider`/`model`/`reasoning_effort` | effort 是最后一个 token；角色行写在 `$DSH_HOME/pstack-models.mdc` 的注释、`# budget` 行和角色行块中 | `dsh-tool-subagent` 路由参数；`src/role-config.ts`；`setup-pstack` 步骤 |
 
+## 角色文件为什么是特例
+
+| 方案 | 实际行为 | 结论 |
+| --- | --- | --- |
+| 写入 `$DSH_HOME/AGENTS.md` | `dsh-agent-instructions` 把它作为持久会话指令加载，会进入每次请求并可能被预算截断或去重；需要解析自由文本，角色变更也不会在每次委派时重新读取 | 不采用 |
+| 保留 `$DSH_HOME/pstack-models.mdc` | `pstack` 的 `role-config` 在每次委派时读取；文件缺失时角色继承父路由，不可读或坏行显式报错；设置页可以原子编辑该文件 | 采用 |
+
 ## Paths
 
 | dsh.md 行 | Cursor 侧 | DSH 判定 | 差异与写法 | 证据 |
