@@ -4,6 +4,8 @@
 
 `prepare → bootstrap → run-batch → collect` 必须作为同一个长期存活的 background job 串行执行，不能拆成独立 bash 调用；shell 要活到 collect 结束。不要用 `&`、`nohup` 或 `tee`。如果 `vp run` wrapper 被 SIGTERM，改用 `vpx playground/scripts/*.ts` 直接调用。
 
+场景编写规则见 [`scenarios/AGENTS.md`](../scenarios/AGENTS.md)。
+
 ## 闭环总览
 
 ```mermaid

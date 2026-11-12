@@ -15,6 +15,7 @@
 - `scenarios/playbooks/<playbook>.ts`：一个上游 playbook 一个文件，prompt 以 `/poteto-mode ` 开头。
 - `scenarios/official-plugins/<plugin>.ts`：一个官方插件一个文件，同一场景在 `raw/base`、`adapted/base`、`adapted/<plugin>` 运行。
 - `scenarios/registry.ts`：用 `import.meta.glob` 自动收集三个目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
+- `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
 - `reports/scenarios/`：镜像 `scenarios/` 的 case 证据组。`reports/runs/`：按 phase/environment 汇总的 `summary.md`、`summary-<group>.md` 和 `runtime-review.md`。`reports/approvals/`：最终审批。`record.json`、截图、session 日志不提交；其余报告文件提交。
 - `reviews/scenarios/<group>/<scenario>/<phase>-<environment>.json`：审核侧车，提交进库；`reviews/runtime-review/<phase>-<environment>.json`：运行时点评。
 - 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
