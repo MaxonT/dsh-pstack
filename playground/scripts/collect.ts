@@ -323,27 +323,49 @@ export function writeMirroredReports(
     const failed = current.filter((record) => record.verdict.status !== "verified");
     const registered = listScenarioIds().length;
     const unrun = registered - current.length;
-    const runtimeNeedsHuman = current.filter(
-      (record) => runtimeOf(record).status === "needs-review",
+    const runtimeCounts: Record<string, number> = {};
+    const runtimeEntries = current.flatMap((record) => {
+      const runtime = runtimeOf(record);
+      runtimeCounts[runtime.status] = (runtimeCounts[runtime.status] ?? 0) + 1;
+      return runtime.findings.map((finding) => ({
+        record,
+        finding,
+        status: runtime.status,
+      }));
+    });
+    for (const status of [
+      "clean",
+      "findings",
+      "needs-review",
+      "blocked",
+      "environment-only",
+      "upstream-only",
+      "unreviewed",
+    ]) {
+      runtimeCounts[status] ??= 0;
+    }
+    const blockingRuntime = runtimeEntries.filter(
+      ({ finding }) =>
+        ["blocker", "major"].includes(finding.severity) &&
+        ["dsh-md", "plugin", "skip"].includes(finding.decision),
     ).length;
-    const runtimeBlocked = current.filter(
-      (record) => runtimeOf(record).status === "blocked",
-    ).length;
-    const runtimeUnreviewed = current.filter((record) => !record.runtimeReview).length;
-    const runtimeFindings = current.flatMap((record) =>
-      runtimeOf(record).findings.map(
-        (finding) =>
-          `| ${record.scenarioId} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.action)} |`,
-      ),
-    );
+    const runtimeGate =
+      (runtimeCounts["needs-review"] ?? 0) +
+        (runtimeCounts["blocked"] ?? 0) +
+        (runtimeCounts["unreviewed"] ?? 0) +
+        blockingRuntime +
+        unrun >
+      0
+        ? "blocked"
+        : "clear";
     writeFileSync(
       join(REPORT_DIRECTORY, "approval-adapted-base.md"),
       [
         "# Adapted base approval",
         "",
-        `Registered scenarios: ${registered}. Recorded: ${current.length}. Unrun: ${unrun}. Verified: ${current.length - failed.length}. Not verified: ${failed.length}.`,
-        `Runtime review: needs-review=${runtimeNeedsHuman}, blocked=${runtimeBlocked}, unreviewed=${runtimeUnreviewed}, findings=${runtimeFindings.length}.`,
-        `Runtime gate: ${runtimeNeedsHuman + runtimeBlocked + runtimeUnreviewed > 0 ? "blocked" : "clear"}.`,
+        `Runtime gate: ${runtimeGate}.`,
+        `Runtime review: clean=${runtimeCounts["clean"]}, findings=${runtimeCounts["findings"]}, needs-review=${runtimeCounts["needs-review"]}, blocked=${runtimeCounts["blocked"]}, environment-only=${runtimeCounts["environment-only"]}, upstream-only=${runtimeCounts["upstream-only"]}, unreviewed=${runtimeCounts["unreviewed"]}.`,
+        `Semantic review: verified=${current.length - failed.length}, not-verified=${failed.length}. Registered=${registered}, recorded=${current.length}, unrun=${unrun}.`,
         ...(unrun > 0
           ? [
               "",
@@ -351,6 +373,15 @@ export function writeMirroredReports(
             ]
           : []),
         "",
+        "## Runtime issues",
+        "| skill | scenario | finding | severity | decision | action |",
+        "| --- | --- | --- | --- | --- | --- |",
+        ...runtimeEntries.map(
+          ({ record, finding }) =>
+            `| ${escape(loadScenario(record.scenarioId).skill)} | ${record.scenarioId} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.action)} |`,
+        ),
+        "",
+        "## Semantic failures",
         "| scenario | verdict | reason |",
         "| --- | --- | --- |",
         ...failed.map(
@@ -359,10 +390,6 @@ export function writeMirroredReports(
               "reason" in record.verdict ? (record.verdict.reason ?? "") : "",
             )} |`,
         ),
-        "",
-        "| scenario | runtime finding | severity | decision | action |",
-        "| --- | --- | --- | --- | --- |",
-        ...runtimeFindings,
         "",
       ].join("\n"),
     );
@@ -376,16 +403,35 @@ export function writeMirroredReports(
       (id) => loadScenario(id).group === "official-plugins",
     ).length;
     const recordedScenarios = new Set(official.map((record) => record.scenarioId)).size;
+    const officialRuntimeEntries = official.flatMap((record) =>
+      runtimeOf(record).findings.map((finding) => ({ record, finding })),
+    );
+    const officialRuntimeGate =
+      official.some((record) => {
+        const status = runtimeOf(record).status;
+        return status === "needs-review" || status === "blocked" || status === "unreviewed";
+      }) ||
+      officialRuntimeEntries.some(({ finding }) => ["blocker", "major"].includes(finding.severity));
     writeFileSync(
       join(REPORT_DIRECTORY, "approval-official-plugins.md"),
       [
         "# Official plugins approval",
         "",
+        `Runtime gate: ${officialRuntimeGate ? "blocked" : "clear"}.`,
         `Registered official-plugin scenarios: ${registeredOfficial}. Recorded cases: ${official.length}. Recorded scenarios: ${recordedScenarios}.`,
         ...(official.length === 0
           ? ["", "> No official-plugin run has been recorded yet; this is not an approval."]
           : []),
         "",
+        "## Runtime issues",
+        "| skill | scenario | environment | finding | severity | decision | action |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+        ...officialRuntimeEntries.map(
+          ({ record, finding }) =>
+            `| ${escape(loadScenario(record.scenarioId).skill)} | ${record.scenarioId} | ${record.environment.matrix.id} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.action)} |`,
+        ),
+        "",
+        "## Runs",
         "| scenario | environment | verdict | runtime review |",
         "| --- | --- | --- | --- |",
         ...official.map(

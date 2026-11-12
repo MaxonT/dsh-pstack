@@ -34,7 +34,7 @@ vp run playground:review -- --apply
 
 产物：`reports/summary/raw-base.md`、`reports/skills/*/raw-base/`、`reports/playbooks/*/raw-base/`、`reviews/`。
 
-Gate：raw 场景 sidecar 通过；`playground/raw/dsh.md` 与 `dsh.zh.md` 逐行确认。
+Gate：raw 场景 sidecar 通过；runtime review 没有 `needs-review` 或 `unreviewed`；`playground/raw/dsh.md` 与 `dsh.zh.md` 逐行确认。
 
 ## 2. 适配开发
 
@@ -68,7 +68,7 @@ vp run playground:review -- --apply
 
 产物：`reports/summary/adapted-base.md`、`reports/skills/*/comparison.md`、`reports/playbooks/*/comparison.md`、`reports/approval-adapted-base.md`。
 
-Gate：`approval-adapted-base.md` 通过。不通过回第 2 阶段。
+Gate：`approval-adapted-base.md` 的 Runtime gate 为 `clear` 且 semantic 通过；`needs-review` 或 `unreviewed` 必须人工审查。不通过回第 2 阶段。
 
 ## 4. official-plugins
 
@@ -82,7 +82,7 @@ vp run playground:collect -- --phase adapted --environment <plugin>
 
 同一个场景必须同时有 `raw/base`、`adapted/base` 和 `adapted/<plugin>` 记录。产物：`reports/official-plugins/<plugin>/comparison.md`、`reports/summary/adapted-<plugin>.md`、`reports/approval-official-plugins.md`。
 
-Gate：审批通过。插件限制写进 `dsh.md` 与根 README，不另设冲突类型。
+Gate：`approval-official-plugins.md` 的 Runtime gate 为 `clear` 且插件矩阵审批通过。插件限制写进 `dsh.md` 与根 README，不另设冲突类型。
 
 ## 5. README 与发版
 
