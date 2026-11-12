@@ -55,7 +55,7 @@ import { exclusions } from "../scenarios/exclusions.ts";
 
 const GROUP_LABELS: Record<string, string> = {
   skills: "技能",
-  playbooks: "playbook",
+  playbooks: "playbook 场景",
   "official-plugins": "官方插件",
   "runtime-tools": "运行时工具",
 };
