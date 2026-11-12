@@ -174,6 +174,7 @@ async function main(): Promise<void> {
     workers,
   };
   writeProgress(file, state);
+  console.log(`[run-batch] progress=${file}`);
   mkdirSync(join(workersDirectory(), phase, matrix.id), { recursive: true });
   const logFile = join(workersDirectory(), phase, matrix.id, "batch.log");
   writeFileSync(logFile, `phase=${phase} environment=${matrix.id} round=${round}\n`);

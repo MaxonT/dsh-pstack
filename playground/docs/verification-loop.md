@@ -2,6 +2,16 @@
 
 本文件给出 `playground/AGENTS.md` 的完整阶段、命令和审批门。所有命令在仓库根执行，Linux 是唯一官方支持平台。所有 `prepare` 命令都省略 `--workers`；默认由 `capacity.ts` 按当前机器的核数、空闲内存和上限计算最大值，只有明确需要限制并发时才写 `--workers N`。
 
+## 进度
+
+`run-batch` 在 `playground/.workers/<phase>/<environment>/progress.json` 写入当前轮次、已完成数、运行中的场景和失败列表，并在终端打印该路径。查看：
+
+```sh
+vp run playground:status -- --phase raw --environment base
+```
+
+`prepare --reset` 会清空该 phase 的 worker 目录，因此旧进度不会保留；重新 prepare 后从新一轮开始。
+
 ## 1. raw 基线
 
 ```sh

@@ -30,7 +30,7 @@ vp run playground:run -- --worker 0 --environment base --phase adapted --scenari
 vp run playground:collect -- --phase adapted --environment base
 ```
 
-run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮等待新的 turn/end。没有自动停止和隐藏超时。浏览器或会话日志不可读时记录基础设施未决，不自动重试。
+run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮等待新的 turn/end。没有自动停止和隐藏超时。浏览器或会话日志不可读时记录基础设施未决，不自动重试。`run` 是单场景命令，不写 batch progress；多场景进度由 `run-batch` 写入 `playground/.workers/<phase>/<environment>/progress.json`，用 `playground:status` 查看。
 
 ## 证据和报告
 
