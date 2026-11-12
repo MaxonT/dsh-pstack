@@ -266,6 +266,21 @@ function verdictOf(record: RunRecord | undefined): string {
   return record?.verdict.status ?? "unrun";
 }
 
+function warningText(warnings: string[]): string {
+  const translated = warnings.map((warning) => {
+    const notLoaded = /^skill (.+) was not loaded$/.exec(warning);
+    if (notLoaded) return `技能 ${notLoaded[1]} 未加载`;
+    const dependencyMissing = /^dependency (.+) is unavailable$/.exec(warning);
+    if (dependencyMissing) return `依赖 ${dependencyMissing[1]} 不可用`;
+    const dependencyNotLoaded = /^dependency (.+) was not loaded$/.exec(warning);
+    if (dependencyNotLoaded) return `依赖 ${dependencyNotLoaded[1]} 未加载`;
+    const retries = /^(.+) needed (\d+) attempts with (\d+) failures$/.exec(warning);
+    if (retries) return `${retries[1]} 重试 ${retries[2]} 次，失败 ${retries[3]} 次`;
+    return warning;
+  });
+  return translated.join("；") || "无";
+}
+
 function analysisOf(record: RunRecord | undefined): {
   via: string;
   dependencies: string;
@@ -280,7 +295,7 @@ function analysisOf(record: RunRecord | undefined): {
       analysis.dependencies
         .map((entry) => `${entry.name}:${entry.available ? "可用" : "缺失"}`)
         .join(", ") || "无",
-    warnings: analysis.warnings.join("；") || "无",
+    warnings: warningText(analysis.warnings),
   };
 }
 
