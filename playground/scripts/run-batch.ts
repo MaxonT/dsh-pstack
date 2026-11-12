@@ -9,8 +9,8 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 
-import { isPhase, SCENARIO_GROUPS } from "../types.ts";
-import type { Phase, RunRecord, Verdict } from "../types.ts";
+import { isPhase, SCENARIO_GROUP_PHASES, SCENARIO_GROUPS } from "../types.ts";
+import type { Phase, RunRecord, ScenarioGroup, Verdict } from "../types.ts";
 import { latestRecords } from "./lib/evidence.ts";
 import { computeWorkers } from "./lib/capacity.ts";
 import {
@@ -88,6 +88,11 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
     const selected = new Set(parseList(groups));
     for (const group of selected) {
       if (!GROUPS.has(group)) throw new Error(`unknown scenario group ${JSON.stringify(group)}`);
+      if (!SCENARIO_GROUP_PHASES[group as ScenarioGroup].includes(phase)) {
+        throw new Error(
+          `scenario group ${JSON.stringify(group)} is not available in phase ${phase}`,
+        );
+      }
     }
     return listScenarioIds().filter((id) => {
       const group = loadScenario(id).group;
@@ -166,6 +171,12 @@ async function main(): Promise<void> {
   }
   const matrix = environmentMatrix(argValue("--environment"));
   const ids = selectedScenarios(phase, matrix.id);
+  for (const id of ids) {
+    const group = loadScenario(id).group;
+    if (group === undefined || !SCENARIO_GROUP_PHASES[group].includes(phase)) {
+      throw new Error(`scenario ${id} is not available in phase ${phase}`);
+    }
+  }
   if (ids.length === 0) {
     console.log("[run-batch] no scenarios selected");
     return;

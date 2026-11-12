@@ -13,9 +13,10 @@ import { pathToFileURL } from "node:url";
 import {
   BLOCKING_RUNTIME_DECISIONS,
   BLOCKING_RUNTIME_SEVERITIES,
+  isOfficialPluginScenario,
   isPhase,
-  OFFICIAL_PLUGIN_GROUP,
   RUNTIME_REVIEW_STATUSES,
+  SCENARIO_GROUP_PHASES,
   SCENARIO_GROUPS,
   VERDICT_STATUSES,
 } from "../types.ts";
@@ -74,10 +75,12 @@ function scenarioGroup(id: string): ScenarioGroup {
   return group;
 }
 
+function phaseEligible(id: string, phase: Phase): boolean {
+  return SCENARIO_GROUP_PHASES[scenarioGroup(id)].includes(phase);
+}
+
 function visibleScenarioIds(phase: Phase): string[] {
-  return listScenarioIds().filter(
-    (id) => phase !== "raw" || scenarioGroup(id) !== OFFICIAL_PLUGIN_GROUP,
-  );
+  return listScenarioIds().filter((id) => phaseEligible(id, phase));
 }
 
 export function reportFor(
@@ -93,7 +96,7 @@ export function reportFor(
     (record) =>
       record.phase === phase &&
       record.environment.matrix.id === environmentId &&
-      (phase !== "raw" || scenarioGroup(record.scenarioId) !== OFFICIAL_PLUGIN_GROUP),
+      phaseEligible(record.scenarioId, phase),
   );
   const counts: Record<string, number> = Object.fromEntries(
     VERDICT_STATUSES.map((status) => [status, 0]),
@@ -362,7 +365,7 @@ export function writeMirroredReports(
     (record) =>
       record.phase === phase &&
       record.environment.matrix.id === environmentId &&
-      (phase !== "raw" || scenarioGroup(record.scenarioId) !== OFFICIAL_PLUGIN_GROUP),
+      phaseEligible(record.scenarioId, phase),
   );
   for (const legacy of [...SCENARIO_GROUPS, "summary"]) {
     rmSync(join(REPORT_DIRECTORY, legacy), { recursive: true, force: true });
@@ -501,10 +504,10 @@ export function writeMirroredReports(
   if (phase === "adapted" && environmentId !== "base") {
     const official = latest.filter(
       (record) =>
-        record.phase === "adapted" && scenarioGroup(record.scenarioId) === OFFICIAL_PLUGIN_GROUP,
+        record.phase === "adapted" && isOfficialPluginScenario(loadScenario(record.scenarioId)),
     );
     const registeredOfficial = listScenarioIds().filter(
-      (id) => scenarioGroup(id) === OFFICIAL_PLUGIN_GROUP,
+      (id) => isOfficialPluginScenario(loadScenario(id)),
     ).length;
     const recordedScenarios = new Set(official.map((record) => record.scenarioId)).size;
     const officialRuntimeEntries = official.flatMap((record) =>

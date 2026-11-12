@@ -23,11 +23,11 @@ flowchart TD
   adaptReview -->|runtime plugin| plugin
   adaptReview -->|upstream 问题| upstream
   adaptReview -->|needs-human| human[用户亲自审查]
-  adaptReview -->|通过| official[6. official-plugins]
-  official --> officialReview[7. official plugin review]
-  officialReview -->|runtime issue| dsh
-  officialReview -->|needs-human| human
-  officialReview -->|通过| release[8. README + release-ready]
+  adaptReview -->|通过| envGroup[6. 适配后环境组]
+  envGroup --> envReview[7. 适配后环境审查]
+  envReview -->|runtime issue| dsh
+  envReview -->|needs-human| human
+  envReview -->|通过| release[8. README + release-ready]
   release --> manual[用户手动 vp run release]
 ```
 
@@ -49,9 +49,9 @@ flowchart TD
 | 2. raw review | raw 记录完整 | `reviews/scenarios/**/<phase>-<environment>.json`（含 runtime） | 通过则进适配开发；有 gap 回到对应 decision |
 | 3. 适配开发 | review 给出 `dsh-md` 或 `plugin` | 更新 `dsh.md` 或插件、生成树、build | adapted/base |
 | 4. adapted/base | 新 build 完成 | `reports/runs/adapted-base/summary.md`、`reports/scenarios/**/comparison.md` | adapted review |
-| 5. adapted review | adapted 记录完整 | `reports/runs/adapted-base/runtime-review.md`、`reviews/runtime-review/adapted-base.json`、`reports/approvals/adapted-base.md` | `Runtime gate: clear` 后进 official-plugins；否则回到第 3 阶段 |
-| 6. official-plugins | adapted/base 通过 | `reports/runs/adapted-<plugin>/summary.md`、`reports/scenarios/official-plugins/**/comparison.md` | official plugin review |
-| 7. official plugin review | 各插件记录完整 | `reports/approvals/official-plugins.md` | `Runtime gate: clear` 后进 README/release |
+| 5. adapted review | adapted 记录完整 | `reports/runs/adapted-base/runtime-review.md`、`reviews/runtime-review/adapted-base.json`、`reports/approvals/adapted-base.md` | `Runtime gate: clear` 后进适配后环境组；否则回到第 3 阶段 |
+| 6. 适配后环境组 | adapted/base 通过 | `reports/runs/adapted-<environment>/summary.md`、`reports/scenarios/<group>/**/comparison.md` | 适配后环境审查 |
+| 7. 适配后环境审查 | 各环境记录完整 | `reports/approvals/<approval>.md` | `Runtime gate: clear` 后进 README/release |
 | 8. README + release-ready | 前两轮审批通过 | README/兼容表、`vp run ci` 通过 | 用户手动 `vp run release` |
 
 一个会话只接一个阶段，入口条件和出口产物以这张表为准。不要把 review 的下一步留成“看起来没问题”，必须落到某个 decision。
@@ -128,23 +128,23 @@ vp run playground:review -- --apply
 
 Gate：`reports/approvals/adapted-base.md` 的 Runtime gate 为 `clear` 且 semantic 通过；`needs-review` 或 `unreviewed` 必须人工审查。不通过回第 2 阶段。
 
-## 4. official-plugins
+## 4. 适配后环境组
 
-对 `forge`、`session-search`、`browser-use`、`terminal`、`agent-team` 逐个运行：
+对每个适用的环境逐个运行：
 
 ```sh
-# adapted/base official baseline; workers from stage 3 can be reused
+# adapted/base baseline; workers from stage 3 can be reused
 vp run playground:prepare -- --phase adapted --environment base --reuse
-vp run playground:run-batch -- --phase adapted --environment base --groups official-plugins
-# each plugin environment
-vp run playground:prepare -- --phase adapted --environment <plugin> --reset
-vp run playground:run-batch -- --phase adapted --environment <plugin> --groups official-plugins
-vp run playground:collect -- --phase adapted --environment <plugin>
+vp run playground:run-batch -- --phase adapted --environment base --groups <group>
+# each environment
+vp run playground:prepare -- --phase adapted --environment <environment> --reset
+vp run playground:run-batch -- --phase adapted --environment <environment> --groups <group>
+vp run playground:collect -- --phase adapted --environment <environment>
 ```
 
-同一个 official-plugin 场景必须有 `adapted/base` 和 `adapted/<plugin>` 记录；raw/base 不作为这一组的必选基线。产物：`reports/scenarios/official-plugins/<plugin>/comparison.md`、`reports/runs/adapted-<plugin>/summary.md`、`reports/approvals/official-plugins.md`。
+同一个场景必须有 `adapted/base` 和 `adapted/<environment>` 记录；raw/base 不作为这一组的必选基线。产物：`reports/scenarios/<group>/<scenario>/comparison.md`、`reports/runs/adapted-<environment>/summary.md`、`reports/approvals/<approval>.md`。
 
-Gate：`reports/approvals/official-plugins.md` 的 Runtime gate 为 `clear` 且插件矩阵审批通过。插件限制写进 `dsh.md` 与根 README，不另设冲突类型。
+Gate：该 approval 的 Runtime gate 为 `clear` 且对应矩阵审批通过。环境限制按能力类别记录；官方插件矩阵元数据和审批可写包名或 ID。
 
 ## 5. README 与发版
 
@@ -163,5 +163,5 @@ agent 停在 release-ready。`vp run release` 由用户手动执行，bumpp 负�
 2. 从第 1 阶段重跑 raw。
 3. 重新逐行确认 `playground/raw/dsh.md` 和 `port/dsh.md`，同步中文版。
 4. 重新生成两棵树并 build。
-5. 重跑 adapted/base 与 official-plugins，更新报告和审批。
+5. 重跑 adapted/base 与适配后环境组，更新报告和审批。
 6. 更新 README/兼容表，准备 release-ready。

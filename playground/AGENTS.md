@@ -11,10 +11,8 @@
 
 ## 目录
 
-- `scenarios/skills/<skill>.ts`：一个上游技能一个文件。
-- `scenarios/playbooks/<playbook>.ts`：一个上游 playbook 一个文件，prompt 以 `/poteto-mode ` 开头。
-- `scenarios/official-plugins/<plugin>.ts`：一个官方插件一个文件，同一场景在 `raw/base`、`adapted/base`、`adapted/<plugin>` 运行。
-- `scenarios/registry.ts`：用 `import.meta.glob` 自动收集三个目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
+- `scenarios/<group>/<scenario>.ts`：一个场景一个文件；group 由目录和注册表决定。playbook 场景的 prompt 以 `/poteto-mode ` 开头。
+- `scenarios/registry.ts`：用 `import.meta.glob` 自动发现组目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
 - `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
 - `reports/scenarios/`：镜像 `scenarios/` 的 case 证据组。`reports/runs/`：按 phase/environment 汇总的 `summary.md`、`summary-<group>.md` 和 `runtime-review.md`。`reports/approvals/`：最终审批。`record.json`、截图、session 日志不提交；其余报告文件提交。
 - `reviews/scenarios/<group>/<scenario>/<phase>-<environment>.json`：审核侧车，提交进库；`reviews/runtime-review/<phase>-<environment>.json`：运行时点评。
@@ -45,10 +43,10 @@
 - 进程生命周期：每次 bash 调用都在独立的 PID namespace/cgroup 里。`prepare` 启动的 DSH Web 即使使用 detached，也会在 job shell 退出时被销毁；不要把 `prepare` 和 `bootstrap` 拆成两次调用。
 - `prepare → bootstrap → run-batch → collect` 必须在同一个长期存活的 background job 中执行，shell 保持到 collect 结束。不要用 `&`、`nohup` 或 `tee`；`vp run` wrapper 被 SIGTERM 时改用 `vpx playground/scripts/*.ts` 直调。
 - worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
-- raw：生成 `playground/raw/pstack`，跑 `raw/base` 的 skills 和 playbooks，collect，`review --apply`。raw 的 gate 是 sidecar 加 `dsh.md` 逐行确认。
+- raw：生成 `playground/raw/pstack`，按场景组的 phase 适用性跑 raw 可用组，collect，`review --apply`。raw 的 gate 是 sidecar 加 `dsh.md` 逐行确认。
 - 适配开发：维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
-- adapted/base：跑 skills 和 playbooks，与 raw/base 对比，生成 `reports/approvals/adapted-base.md`。不通过回适配开发。
-- official-plugins：每个插件跑 base 与插件环境，生成 `reports/approvals/official-plugins.md`。环境限制按能力类别记录；官方插件矩阵元数据和审批可以写包名或 ID。
+- adapted/base：按场景组的 phase 适用性跑 adapted 可用组，与 raw/base 对比，生成 adapted base approval。不通过回适配开发。
+- 适配后环境组：按环境矩阵跑 base 与环境记录，生成对应 approval。环境限制按能力类别记录；官方插件矩阵元数据和审批可以写包名或 ID。
 - README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
 
 ## dsh.md

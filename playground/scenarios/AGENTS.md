@@ -26,6 +26,7 @@
 - 外部依赖缺失不是适配问题，也不是技能 gap。技能自身决定是向用户说明、降级还是终止；用例只观察它是否按技能契约处理，不预设插件安装或依赖补齐方案。
 - 官方插件矩阵场景是唯一例外：scenario 的 `plugin` 字段、环境矩阵和 official-plugin approval 可以出现官方插件包名或 ID；`turns.prompt`、`rubric`、`assertions` 仍然只写能力，不写包名或安装建议。不要把矩阵环境当成所有用户环境。
 - `scenario.dependencies` 只列上游技能明确要求配合的其它 skill 名；不列插件包、外部二进制、渲染器或可选能力。它只用于会话分析中的 availability/loaded 观察和 warning，不会安装或补齐任何东西。
+- 场景组是否适用于 raw 或 adapted 由注册表数据决定；新增、删除或改名组只改数据源，本文档不枚举组名。
 
 ## 用例粒度
 
@@ -39,7 +40,7 @@
 | 显式替代格式 | 用户明确要求该格式 | 该格式的可观察产物或结构 |
 | 能力不可用/降级 | 用户要求的能力在环境中不可用 | 明确说明限制，给出等价降级，不假装完成 |
 
-场景 id 用后缀区分分支，例如 `statechart-order-ship-rule`、`statechart-order-ship-rule-mermaid`、`statechart-order-ship-rule-image`。在 `source.regression` 中写明该场景覆盖的分支。
+场景 id 用 `<scenario>-<branch>` 后缀区分分支；在 `source.regression` 中写明该场景覆盖的分支。
 
 不是所有技能都需要多场景。纯文本技能通常一个主场景足够；只有技能契约确实包含多个输出或降级分支时才拆。
 
@@ -84,11 +85,3 @@ Rubric 要描述用户能观察到的效果，并列出真正的 gap：
 - 提示词、rubric 或断言里是否出现具体插件、包、外部二进制或服务名？如果是，改成能力类别。
 - 是否假设用户环境会安装某个插件或依赖？如果是，删除这个假设，让运行时证据决定。
 - rubric 是否接受所有合法输出形态？如果不接受，说明本场景是格式专用场景，或放宽 rubric。
-
-## 已知需要重写的例子
-
-- `statechart`：当前提示词、rubric 和断言都限定 Mermaid；应保留 Mermaid 专用场景，增加格式中立场景和图片场景。
-- `principle-attack-the-premise`：提示词直接说出两次修复共享的前提；应删掉结论，让 agent 自己归纳。
-- `principle-experience-first`：提示词先给用户偏好，rubric 又要求支持该偏好；应改成中立呈现两种取舍。
-- `ketchup-video`：只检查回复含“视频”，不足以证明视频存在；应增加产物或人工观察。
-- `ketchup`：上游要求文字加视觉，当前场景主要检查文字；如需覆盖视觉分支，增加独立视觉场景。
