@@ -272,11 +272,14 @@ function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: 
     rmSync(join(REPORT_DIRECTORY, group, "runtime-review"), { recursive: true, force: true });
     rmSync(join(REPORT_DIRECTORY, group, "runtime-review.md"), { force: true });
   }
-  const file = join(REPORT_DIRECTORY, "runtime-review.md");
+  rmSync(join(REPORT_DIRECTORY, "runtime-review.md"), { force: true });
+  const directory = join(REPORT_DIRECTORY, "runtime-review");
+  const file = join(directory, `${phase}-${environmentId}.md`);
   if (findings.size === 0) {
     rmSync(file, { force: true });
     return;
   }
+  mkdirSync(directory, { recursive: true });
   writeFileSync(
     file,
     [
@@ -485,7 +488,7 @@ export function writeMirroredReports(
       "",
       "- `summary/`：按 phase 与环境汇总。",
       "- `skills/`、`playbooks/`、`official-plugins/`：每个 case 的运行记录、截图、comparison 和组根 `summary-*.md`。",
-      "- `runtime-review.md`：跨 group、按 finding 去重的运行时问题汇总；没有 finding 时不生成。",
+      "- `runtime-review/<phase>-<environment>.md`：跨 group、按 finding 去重的运行时问题汇总；没有 finding 时不生成。",
       "- `approval-adapted-base.md`：移植验收审批。",
       "- `approval-official-plugins.md`：官方插件矩阵审批。",
       "",
