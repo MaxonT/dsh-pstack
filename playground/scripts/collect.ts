@@ -15,6 +15,7 @@ import { assertSameEntry, isRunRecord, latestRecords } from "./lib/evidence.ts";
 import { environmentMatrix, REPORT_DIRECTORY, workersDirectory } from "./lib/run-metadata.ts";
 import {
   ensureRuntimeReviewNotes,
+  readRuntimeReviewNotes,
   removeRuntimeReviewNotes,
   runtimeFindingId,
 } from "./lib/runtime-review.ts";
@@ -410,11 +411,18 @@ export function writeMirroredReports(
         ["blocker", "major"].includes(finding.severity) &&
         ["dsh-md", "plugin", "skip"].includes(finding.decision),
     ).length;
+    const noteCounts = { pending: 0, accept: 0, reject: 0, "needs-human": 0 };
+    for (const note of Object.values(readRuntimeReviewNotes(phase, environmentId).notes)) {
+      noteCounts[note.decision] += 1;
+    }
     const runtimeGate =
       (runtimeCounts["needs-review"] ?? 0) +
         (runtimeCounts["blocked"] ?? 0) +
         (runtimeCounts["unreviewed"] ?? 0) +
         blockingRuntime +
+        noteCounts.pending +
+        noteCounts.reject +
+        noteCounts["needs-human"] +
         unrun >
       0
         ? "blocked"
@@ -426,6 +434,7 @@ export function writeMirroredReports(
         "",
         `Runtime gate: ${runtimeGate}.`,
         `Runtime review: clean=${runtimeCounts["clean"]}, findings=${runtimeCounts["findings"]}, needs-review=${runtimeCounts["needs-review"]}, blocked=${runtimeCounts["blocked"]}, environment-only=${runtimeCounts["environment-only"]}, upstream-only=${runtimeCounts["upstream-only"]}, unreviewed=${runtimeCounts["unreviewed"]}.`,
+        `Runtime notes: pending=${noteCounts.pending}, accept=${noteCounts.accept}, reject=${noteCounts.reject}, needs-human=${noteCounts["needs-human"]}.`,
         `Semantic review: verified=${current.length - failed.length}, not-verified=${failed.length}. Registered=${registered}, recorded=${current.length}, unrun=${unrun}.`,
         ...(unrun > 0
           ? [
@@ -467,18 +476,27 @@ export function writeMirroredReports(
     const officialRuntimeEntries = official.flatMap((record) =>
       runtimeOf(record).findings.map((finding) => ({ record, finding })),
     );
+    const officialNoteCounts = { pending: 0, accept: 0, reject: 0, "needs-human": 0 };
+    for (const note of Object.values(readRuntimeReviewNotes(phase, environmentId).notes)) {
+      officialNoteCounts[note.decision] += 1;
+    }
     const officialRuntimeGate =
       official.some((record) => {
         const status = runtimeOf(record).status;
         return status === "needs-review" || status === "blocked" || status === "unreviewed";
       }) ||
-      officialRuntimeEntries.some(({ finding }) => ["blocker", "major"].includes(finding.severity));
+      officialRuntimeEntries.some(({ finding }) =>
+        ["blocker", "major"].includes(finding.severity),
+      ) ||
+      officialNoteCounts.pending + officialNoteCounts.reject + officialNoteCounts["needs-human"] >
+        0;
     writeFileSync(
       join(REPORT_DIRECTORY, "approvals", "official-plugins.md"),
       [
         "# Official plugins approval",
         "",
         `Runtime gate: ${officialRuntimeGate ? "blocked" : "clear"}.`,
+        `Runtime notes: pending=${officialNoteCounts.pending}, accept=${officialNoteCounts.accept}, reject=${officialNoteCounts.reject}, needs-human=${officialNoteCounts["needs-human"]}.`,
         `Registered official-plugin scenarios: ${registeredOfficial}. Recorded cases: ${official.length}. Recorded scenarios: ${recordedScenarios}.`,
         ...(official.length === 0
           ? ["", "> No official-plugin run has been recorded yet; this is not an approval."]

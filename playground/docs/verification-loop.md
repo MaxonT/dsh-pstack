@@ -70,7 +70,7 @@ review sidecar 可以带 `runtime` 字段，记录每个运行时差异的 kind�
 
 无法可靠分类的 finding 必须写成 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户审查；`needs-review` 和未填写的 runtime review 都不能当作 clean。
 
-`collect` 同时会在 `reviews/runtime-review/<phase>-<environment>.json` 生成点评骨架，每条 finding 有稳定 id。只写点评时编辑这个 JSON 的 `decision` 和 `comment`，再重新 collect；点评列会显示在 `runtime-review.md`。如果要改 finding 本身，改对应 scenario 的 `reviews/*.json`，执行 `review --apply` 后再 collect。
+`collect` 同时会在 `reviews/runtime-review/<phase>-<environment>.json` 生成点评骨架，每条 finding 有稳定 id。只写点评时编辑这个 JSON 的 `decision` 和 `comment`，再重新 collect；点评列会显示在 `runtime-review.md`。approval 的 Runtime gate 会把 `pending`、`reject` 和 `needs-human` 视为未完成；只有 `accept` 才放行。如果要改 finding 本身，改对应 scenario 的 `reviews/*.json`，执行 `review --apply` 后再 collect。
 
 ## 1. raw 基线
 
