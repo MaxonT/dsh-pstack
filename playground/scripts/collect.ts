@@ -535,9 +535,9 @@ export function writeMirroredReports(
     [
       "# Playground reports",
       "",
-      "- `scenarios/`：按 skills、playbooks、official-plugins 三组保存 case 证据与 comparison。",
-      "- `runs/<phase>-<environment>/`：`summary.md`、`summary-<group>.md` 和 `runtime-review.md`。",
-      "- `approvals/`：`adapted-base.md` 与 `official-plugins.md`。",
+      "- `scenarios/`：当前 phase 的 case 证据与 comparison。",
+      `- \`runs/${phase}-${environmentId}/\`：summary 和 runtime-review。`,
+      ...(phase === "adapted" ? ["- `approvals/`：adapted-base 与 official-plugins。"] : []),
       "",
     ].join("\n"),
   );
