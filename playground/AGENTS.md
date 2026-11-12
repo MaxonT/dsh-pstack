@@ -37,6 +37,7 @@
 
 ## 流程与审批
 
+- 每个会话只接一个阶段，入口条件、产物和下一步以 `docs/verification-loop.md` 的“阶段交接”表为准；review 后必须落到具体 decision，不能停在“看起来没问题”。
 - 进程生命周期：每次 bash 调用都在独立的 PID namespace/cgroup 里。`prepare` 启动的 DSH Web 即使使用 detached，也会在 job shell 退出时被销毁；不要把 `prepare` 和 `bootstrap` 拆成两次调用。
 - `prepare → bootstrap → run-batch → collect` 必须在同一个长期存活的 background job 中执行，shell 保持到 collect 结束。不要用 `&`、`nohup` 或 `tee`；`vp run` wrapper 被 SIGTERM 时改用 `vpx playground/scripts/*.ts` 直调。
 - worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。

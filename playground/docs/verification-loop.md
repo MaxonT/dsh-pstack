@@ -4,6 +4,56 @@
 
 `prepare → bootstrap → run-batch → collect` 必须作为同一个长期存活的 background job 串行执行，不能拆成独立 bash 调用；shell 要活到 collect 结束。不要用 `&`、`nohup` 或 `tee`。如果 `vp run` wrapper 被 SIGTERM，改用 `vpx playground/scripts/*.ts` 直接调用。
 
+## 闭环总览
+
+```mermaid
+flowchart TD
+  raw[1. raw 基线] --> rawReview[2. raw review]
+  rawReview -->|通过| adapt[3. 适配开发]
+  rawReview -->|语义 gap| upstream[记录 upstream 或由用户判定]
+  rawReview -->|runtime dsh-md| dsh[修改 dsh.md]
+  rawReview -->|runtime plugin| plugin[修改插件或预设]
+  dsh --> build[生成 + build]
+  plugin --> build
+  build --> adapted[4. adapted/base]
+  adapted --> adaptReview[5. adapted review]
+  adaptReview -->|runtime dsh-md| dsh
+  adaptReview -->|runtime plugin| plugin
+  adaptReview -->|upstream 问题| upstream
+  adaptReview -->|needs-human| human[用户亲自审查]
+  adaptReview -->|通过| official[6. official-plugins]
+  official --> officialReview[7. official plugin review]
+  officialReview -->|runtime issue| dsh
+  officialReview -->|needs-human| human
+  officialReview -->|通过| release[8. README + release-ready]
+  release --> manual[用户手动 vp run release]
+```
+
+每次 review 后不是都要改代码。先按 finding 的 `decision` 分流：
+
+- `accept`：只记录点评，不改适配。
+- `dsh-md`：改目标适配文档，重新生成并跑受影响 phase。
+- `plugin`：改插件、工具或预设，build 后跑受影响 case。
+- `skip`：在 `dsh.md` 写跳过或替代规则，不写插件补偿。
+- `ignore-environment`：只记录环境限制，不进入移植 backlog。
+- `upstream`：记录为上游技能问题，不在本仓修。
+- `needs-human`：停下来交给用户，不允许自动选一个 decision。
+
+## 阶段交接
+
+| 阶段 | 进入条件 | 产物 | 出口 |
+| --- | --- | --- | --- |
+| 1. raw 基线 | 无当前 raw 记录 | `reports/runs/raw-base/summary.md`、`reports/scenarios/**/raw-base/` | raw review |
+| 2. raw review | raw 记录完整 | `reviews/*.json`（含 runtime） | 通过则进适配开发；有 gap 回到对应 decision |
+| 3. 适配开发 | review 给出 `dsh-md` 或 `plugin` | 更新 `dsh.md` 或插件、生成树、build | adapted/base |
+| 4. adapted/base | 新 build 完成 | `reports/runs/adapted-base/summary.md`、`reports/scenarios/**/comparison.md` | adapted review |
+| 5. adapted review | adapted 记录完整 | `reports/runs/adapted-base/runtime-review.md`、`reviews/runtime-review/adapted-base.json`、`reports/approvals/adapted-base.md` | `Runtime gate: clear` 后进 official-plugins；否则回到第 3 阶段 |
+| 6. official-plugins | adapted/base 通过 | `reports/runs/adapted-<plugin>/summary.md`、`reports/scenarios/official-plugins/**/comparison.md` | official plugin review |
+| 7. official plugin review | 各插件记录完整 | `reports/approvals/official-plugins.md` | `Runtime gate: clear` 后进 README/release |
+| 8. README + release-ready | 前两轮审批通过 | README/兼容表、`vp run ci` 通过 | 用户手动 `vp run release` |
+
+一个会话只接一个阶段，入口条件和出口产物以这张表为准。不要把 review 的下一步留成“看起来没问题”，必须落到某个 decision。
+
 ## 进度
 
 `run-batch` 在 `playground/.workers/<phase>/<environment>/progress.json` 写入当前轮次、已完成数、运行中的场景和失败列表，并在终端打印该路径。查看：
@@ -19,6 +69,8 @@ vp run playground:status -- --phase raw --environment base
 review sidecar 可以带 `runtime` 字段，记录每个运行时差异的 kind、severity、decision、observation、action 和 evidence。`review --apply` 会把它写入 `RunRecord.runtimeReview`，`collect` 会生成 `reports/runs/<phase>-<environment>/runtime-review.md`，只保留 finding 并合并重复项；summary、comparison 和 approval 仍区分 semantic 与 runtime。
 
 无法可靠分类的 finding 必须写成 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户审查；`needs-review` 和未填写的 runtime review 都不能当作 clean。
+
+`collect` 同时会在 `reviews/runtime-review/<phase>-<environment>.json` 生成点评骨架，每条 finding 有稳定 id。只写点评时编辑这个 JSON 的 `decision` 和 `comment`，再重新 collect；点评列会显示在 `runtime-review.md`。如果要改 finding 本身，改对应 scenario 的 `reviews/*.json`，执行 `review --apply` 后再 collect。
 
 ## 1. raw 基线
 
