@@ -14,6 +14,7 @@ import {
   BLOCKING_RUNTIME_DECISIONS,
   BLOCKING_RUNTIME_SEVERITIES,
   DEFAULT_SCENARIO_GROUP,
+  isPhase,
   OFFICIAL_PLUGIN_GROUP,
   RUNTIME_REVIEW_STATUSES,
   SCENARIO_GROUPS,
@@ -559,8 +560,7 @@ export function writeMirroredReports(
 
 function main(): void {
   const phase = argValue("--phase") as Phase | undefined;
-  if (phase !== "raw" && phase !== "adapted")
-    throw new Error("collect requires --phase raw|adapted --environment ID");
+  if (!isPhase(phase)) throw new Error("collect requires --phase raw|adapted --environment ID");
   const matrix = environmentMatrix(argValue("--environment"));
   writeMirroredReports(phase, matrix.id, records(workersDirectory()));
   console.log(`[collect] reports=${REPORT_DIRECTORY}`);

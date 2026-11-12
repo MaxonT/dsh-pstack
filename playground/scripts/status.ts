@@ -1,3 +1,4 @@
+import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
 import { progressFilePath, readProgress } from "./lib/progress.ts";
 
@@ -7,7 +8,7 @@ function argValue(flag: string): string | undefined {
 }
 
 const phase = argValue("--phase") as Phase | undefined;
-if (phase !== "raw" && phase !== "adapted") throw new Error("status requires --phase raw|adapted");
+if (!isPhase(phase)) throw new Error("status requires --phase raw|adapted");
 const environment = argValue("--environment") ?? "base";
 const file = progressFilePath(environment, phase);
 const state = readProgress(file);

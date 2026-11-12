@@ -9,6 +9,7 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 
+import { isPhase } from "../types.ts";
 import type { BehaviorScenario, Phase, RunRecord, SessionFacts, TestTarget } from "../types.ts";
 import { analyzeSession } from "./lib/analysis.ts";
 import { captureFullPage, createBrowserSession, type BrowserSession } from "./lib/browser.ts";
@@ -413,7 +414,7 @@ function blockedRecord(input: {
 async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   const scenarioId = argValue("--scenario");
-  if ((phase !== "raw" && phase !== "adapted") || !scenarioId) {
+  if (!isPhase(phase) || !scenarioId) {
     throw new Error(
       "usage: run-case.ts --worker N --scenario ID --phase raw|adapted [--environment base] [--config FILE]",
     );

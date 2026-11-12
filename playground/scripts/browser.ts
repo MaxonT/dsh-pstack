@@ -20,6 +20,7 @@ import { join } from "node:path";
 import { createBrowserSession } from "./lib/browser.ts";
 import { readWebUrl } from "./lib/env.ts";
 import { workerPaths } from "./lib/worker.ts";
+import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
 
 function main(): void {
@@ -35,7 +36,7 @@ function main(): void {
   const phasePos = argv.indexOf("--phase");
   if (phasePos >= 0) {
     phase = argv[phasePos + 1] as Phase;
-    if (phase !== "raw" && phase !== "adapted") throw new Error("--phase must be raw or adapted");
+    if (!isPhase(phase)) throw new Error("--phase must be raw or adapted");
     argv.splice(phasePos, 2);
   }
   const workerPos = argv.indexOf("--worker");

@@ -1,6 +1,10 @@
 export const PHASES = ["raw", "adapted"] as const;
 export type Phase = (typeof PHASES)[number];
 
+export function isPhase(value: unknown): value is Phase {
+  return typeof value === "string" && (PHASES as readonly string[]).includes(value);
+}
+
 export interface TestTarget {
   provider: string;
   model: string;

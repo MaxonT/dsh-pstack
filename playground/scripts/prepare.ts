@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
+import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
 import { environmentMatrix, workersDirectory } from "./lib/run-metadata.ts";
 import {
@@ -60,7 +61,7 @@ async function startWorkers(paths: WorkerPaths[], plan: ProviderPlan): Promise<v
 
 async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
-  if (phase !== "raw" && phase !== "adapted") {
+  if (!isPhase(phase)) {
     throw new Error(
       "usage: prepare.ts --phase raw|adapted [--environment base] [--workers N] [--reset|--reuse]",
     );

@@ -2,6 +2,7 @@ import { createBrowserSession } from "./lib/browser.ts";
 import { stopWeb } from "./lib/env.ts";
 import { environmentMatrix } from "./lib/run-metadata.ts";
 import { listWorkers } from "./lib/worker.ts";
+import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
 
 function argValue(flag: string): string | undefined {
@@ -12,8 +13,7 @@ function argValue(flag: string): string | undefined {
 const environment = argValue("--environment");
 if (environment) environmentMatrix(environment);
 const phase = argValue("--phase") as Phase | undefined;
-if (phase !== undefined && phase !== "raw" && phase !== "adapted")
-  throw new Error("--phase must be raw or adapted");
+if (phase !== undefined && !isPhase(phase)) throw new Error("--phase must be raw or adapted");
 for (const paths of listWorkers({
   ...(environment === undefined ? {} : { environmentId: environment }),
   ...(phase === undefined ? {} : { phase }),

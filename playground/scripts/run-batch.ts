@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 
-import { DEFAULT_SCENARIO_GROUP, SCENARIO_GROUPS } from "../types.ts";
+import { DEFAULT_SCENARIO_GROUP, isPhase, SCENARIO_GROUPS } from "../types.ts";
 import type { Phase, RunRecord, Verdict } from "../types.ts";
 import { latestRecords } from "./lib/evidence.ts";
 import { computeWorkers } from "./lib/capacity.ts";
@@ -155,7 +155,7 @@ function statusFor(record: RunRecord | undefined, phase: Phase): Verdict["status
 
 async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
-  if (phase !== "raw" && phase !== "adapted") {
+  if (!isPhase(phase)) {
     throw new Error(
       `usage: run-batch.ts --phase raw|adapted [--environment base] [--groups ${GROUP_USAGE}|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]`,
     );
