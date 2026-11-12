@@ -1,6 +1,16 @@
 # DSH 适配判定依据
 
-本文件保存 `playground/raw/dsh.md` 逐行判定的证据。它不是运行时文件，生成器不读；DSH 升级后复核 `dsh.md` 时直接引用这里的事实。
+本文件保存 `playground/raw/dsh.md` 当前内容的逐行判定证据。它不是运行时文件，生成器不读；DSH 升级后复核 `dsh.md` 时直接引用这里的事实。
+
+## 覆盖检查
+
+| 章节 | dsh.md 行数 | 证据行数 |
+| --- | --- | --- |
+| Tools | 5 | 5 |
+| Subagent fields | 10 | 10 |
+| Models | 5 | 5 |
+| Paths | 5 | 5 |
+| Cursor-only features | 4 | 4 |
 
 ## 使用规则
 

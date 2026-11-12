@@ -194,7 +194,8 @@ describe("committed DSH adapter guard", () => {
         englishSections.get(heading),
       );
     }
-    expect(dsh).toContain('status: "skipped"');
+    expect(dsh).toContain("there is no `skipped` status");
+    expect(dsh).toContain("`skip: <reason>`");
     expect(evidence).toContain("DSH 不支持 `skipped` 状态");
   });
 
