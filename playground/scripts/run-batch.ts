@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 
-import { DEFAULT_SCENARIO_GROUP, isPhase, SCENARIO_GROUPS } from "../types.ts";
+import { isPhase, SCENARIO_GROUPS } from "../types.ts";
 import type { Phase, RunRecord, Verdict } from "../types.ts";
 import { latestRecords } from "./lib/evidence.ts";
 import { computeWorkers } from "./lib/capacity.ts";
@@ -90,7 +90,8 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
       if (!GROUPS.has(group)) throw new Error(`unknown scenario group ${JSON.stringify(group)}`);
     }
     return listScenarioIds().filter((id) => {
-      const group = loadScenario(id).group ?? DEFAULT_SCENARIO_GROUP;
+      const group = loadScenario(id).group;
+      if (group === undefined) throw new Error(`scenario ${id} has no group`);
       if (!selected.has(group)) return false;
       return true;
     });

@@ -13,14 +13,19 @@ import { pathToFileURL } from "node:url";
 import {
   BLOCKING_RUNTIME_DECISIONS,
   BLOCKING_RUNTIME_SEVERITIES,
-  DEFAULT_SCENARIO_GROUP,
   isPhase,
   OFFICIAL_PLUGIN_GROUP,
   RUNTIME_REVIEW_STATUSES,
   SCENARIO_GROUPS,
   VERDICT_STATUSES,
 } from "../types.ts";
-import type { Phase, RunRecord, RuntimeFinding, RuntimeReviewStatus } from "../types.ts";
+import type {
+  Phase,
+  RunRecord,
+  RuntimeFinding,
+  RuntimeReviewStatus,
+  ScenarioGroup,
+} from "../types.ts";
 import { assertSameEntry, isRunRecord, latestRecords } from "./lib/evidence.ts";
 import {
   APPROVAL_FILES,
@@ -63,9 +68,15 @@ function escape(value: string): string {
   return value.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 
+function scenarioGroup(id: string): ScenarioGroup {
+  const group = loadScenario(id).group;
+  if (group === undefined) throw new Error(`scenario ${id} has no group`);
+  return group;
+}
+
 function visibleScenarioIds(phase: Phase): string[] {
   return listScenarioIds().filter(
-    (id) => phase !== "raw" || loadScenario(id).group !== OFFICIAL_PLUGIN_GROUP,
+    (id) => phase !== "raw" || scenarioGroup(id) !== OFFICIAL_PLUGIN_GROUP,
   );
 }
 
@@ -82,7 +93,7 @@ export function reportFor(
     (record) =>
       record.phase === phase &&
       record.environment.matrix.id === environmentId &&
-      (phase !== "raw" || loadScenario(record.scenarioId).group !== OFFICIAL_PLUGIN_GROUP),
+      (phase !== "raw" || scenarioGroup(record.scenarioId) !== OFFICIAL_PLUGIN_GROUP),
   );
   const counts: Record<string, number> = Object.fromEntries(
     VERDICT_STATUSES.map((status) => [status, 0]),
@@ -265,7 +276,7 @@ function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: 
   >();
   for (const record of current) {
     const scenario = loadScenario(record.scenarioId);
-    const group = scenario.group ?? DEFAULT_SCENARIO_GROUP;
+    const group = scenarioGroup(record.scenarioId);
     const runtime = runtimeOf(record);
     counts[runtime.status] = (counts[runtime.status] ?? 0) + 1;
     for (const finding of runtime.findings) {
@@ -351,7 +362,7 @@ export function writeMirroredReports(
     (record) =>
       record.phase === phase &&
       record.environment.matrix.id === environmentId &&
-      (phase !== "raw" || loadScenario(record.scenarioId).group !== OFFICIAL_PLUGIN_GROUP),
+      (phase !== "raw" || scenarioGroup(record.scenarioId) !== OFFICIAL_PLUGIN_GROUP),
   );
   for (const legacy of [...SCENARIO_GROUPS, "summary"]) {
     rmSync(join(REPORT_DIRECTORY, legacy), { recursive: true, force: true });
@@ -363,8 +374,7 @@ export function writeMirroredReports(
   const rows: string[] = [];
   const groupRows = new Map<string, string[]>();
   for (const id of selectedIds) {
-    const scenario = loadScenario(id);
-    const group = scenario.group ?? DEFAULT_SCENARIO_GROUP;
+    const group = scenarioGroup(id);
     const record = current.find((entry) => entry.scenarioId === id);
     const caseRoot = join(REPORT_DIRECTORY, REPORT_LAYOUT.scenarios, group, id);
     if (record) {
@@ -489,12 +499,12 @@ export function writeMirroredReports(
     );
   }
   if (phase === "adapted" && environmentId !== "base") {
-    const official = latest.filter((record) => {
-      const scenario = loadScenario(record.scenarioId);
-      return record.phase === "adapted" && scenario.group === OFFICIAL_PLUGIN_GROUP;
-    });
+    const official = latest.filter(
+      (record) =>
+        record.phase === "adapted" && scenarioGroup(record.scenarioId) === OFFICIAL_PLUGIN_GROUP,
+    );
     const registeredOfficial = listScenarioIds().filter(
-      (id) => loadScenario(id).group === OFFICIAL_PLUGIN_GROUP,
+      (id) => scenarioGroup(id) === OFFICIAL_PLUGIN_GROUP,
     ).length;
     const recordedScenarios = new Set(official.map((record) => record.scenarioId)).size;
     const officialRuntimeEntries = official.flatMap((record) =>

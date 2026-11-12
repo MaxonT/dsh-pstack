@@ -65,7 +65,6 @@ export interface ScenarioSource {
 
 export const SCENARIO_GROUPS = ["skills", "playbooks", "official-plugins"] as const;
 export type ScenarioGroup = (typeof SCENARIO_GROUPS)[number];
-export const DEFAULT_SCENARIO_GROUP: ScenarioGroup = "skills";
 export const OFFICIAL_PLUGIN_GROUP: ScenarioGroup = "official-plugins";
 
 export interface BehaviorScenario {
