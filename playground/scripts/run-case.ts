@@ -27,7 +27,6 @@ import {
 } from "./lib/evidence.ts";
 import { readHomePlan, readPlaygroundConfig, readWebUrl, CONFIG_FILE } from "./lib/env.ts";
 import { createEnvironment, environmentMatrix, REPORT_DIRECTORY } from "./lib/run-metadata.ts";
-import { loadScenario } from "./lib/scenarios.ts";
 import { workerPaths, type WorkerPaths } from "./lib/worker.ts";
 
 const COMPOSER_SELECTOR = '[data-composer-input="true"]';
@@ -45,6 +44,31 @@ function argValue(flag: string): string | undefined {
 
 function sleep(ms: number): void {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+const SETTLE_WINDOW_MS = 5_000;
+const TURN_TIMEOUT_MS = 180_000;
+
+function sessionSignature(file: string): string {
+  const events = readSessionEvents(file);
+  return `${events.length}:${events.at(-1)?.type ?? "none"}`;
+}
+
+function waitForSettledSession(file: string): void {
+  const deadline = Date.now() + TURN_TIMEOUT_MS;
+  let signature = sessionSignature(file);
+  let stableSince = Date.now();
+  while (Date.now() < deadline) {
+    sleep(POLL_INTERVAL_MS);
+    const next = sessionSignature(file);
+    if (next !== signature) {
+      signature = next;
+      stableSince = Date.now();
+      continue;
+    }
+    if (Date.now() - stableSince >= SETTLE_WINDOW_MS) return;
+  }
+  throw new InfraError("session did not settle after turn/end");
 }
 
 interface SessionFile {
@@ -344,6 +368,7 @@ function attemptScenario(input: AttemptInput): {
             ).length;
             if (ends > seenTurnEnds) {
               seenTurnEnds = ends;
+              waitForSettledSession(match.file);
               break;
             }
           }
@@ -428,7 +453,15 @@ async function main(): Promise<void> {
     : "";
   if (preparedPhase !== phase)
     throw new Error(`worker is prepared for ${preparedPhase || "nothing"}, not ${phase}`);
-  const scenario = loadScenario(scenarioId);
+  const bundlePath = process.env.PLAYGROUND_SCENARIO_BUNDLE;
+  const scenario = bundlePath
+    ? (() => {
+        const scenarios = JSON.parse(readFileSync(bundlePath, "utf8")) as BehaviorScenario[];
+        const found = scenarios.find((entry) => entry.id === scenarioId);
+        if (!found) throw new Error(`scenario ${scenarioId} is missing from the batch bundle`);
+        return found;
+      })()
+    : (await import("./lib/scenarios.ts")).loadScenario(scenarioId);
   const configFile = argValue("--config") ?? process.env.PLAYGROUND_CONFIG_FILE ?? CONFIG_FILE;
   const config = readPlaygroundConfig(configFile);
   const expectedTarget = readHomePlan(paths);

@@ -3,10 +3,13 @@ import {
   appendFileSync,
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { isPhase, SCENARIO_GROUP_PHASES, SCENARIO_GROUPS } from "../types.ts";
@@ -27,6 +30,7 @@ import {
   writeProgress,
   type ProgressState,
 } from "./lib/progress.ts";
+import { hideSensitiveDirectories } from "./lib/scenario-isolation.ts";
 import { listScenarioIds, listScenariosForSkill, loadScenario } from "./lib/scenarios.ts";
 import { workerCount } from "./lib/worker.ts";
 
@@ -127,9 +131,9 @@ interface ChildResult {
   output: string;
 }
 
-function runCase(args: string[]): Promise<ChildResult> {
+function runCase(args: string[], env: NodeJS.ProcessEnv): Promise<ChildResult> {
   return new Promise((resolvePromise) => {
-    const child = spawn(VPX, args, { cwd: REPOSITORY_ROOT, env: process.env });
+    const child = spawn(VPX, args, { cwd: REPOSITORY_ROOT, env });
     let output = "";
     child.stdout.on("data", (chunk: Buffer) => {
       output += chunk.toString();
@@ -140,6 +144,13 @@ function runCase(args: string[]): Promise<ChildResult> {
     child.on("error", (error) => resolvePromise({ code: -1, output: error.message }));
     child.on("close", (code) => resolvePromise({ code, output }));
   });
+}
+
+function createScenarioBundle(ids: string[]): { directory: string; file: string } {
+  const directory = mkdtempSync(join(tmpdir(), "pstack-scenario-bundle-"));
+  const file = join(directory, "scenarios.json");
+  writeFileSync(file, JSON.stringify(ids.map((id) => loadScenario(id))), { mode: 0o600 });
+  return { directory, file };
 }
 
 function statuses(): ProgressState["statuses"] {
@@ -210,57 +221,69 @@ async function main(): Promise<void> {
   mkdirSync(join(workersDirectory(), phase, matrix.id), { recursive: true });
   const logFile = join(workersDirectory(), phase, matrix.id, "batch.log");
   writeFileSync(logFile, `phase=${phase} environment=${matrix.id} round=${round}\n`);
-  await Promise.all(
-    queues.map(async (queue, worker) => {
-      for (const scenarioId of queue) {
-        updateProgress(file, (current) => {
-          current.running.push({ worker, scenarioId });
-        });
-        const args = [
-          "playground/scripts/run-case.ts",
-          "--worker",
-          String(worker),
-          "--scenario",
-          scenarioId,
-          "--phase",
-          phase,
-          "--environment",
-          matrix.id,
-        ];
-        const config = argValue("--config");
-        if (config) args.push("--config", config);
-        const result = await runCase(args);
-        appendFileSync(
-          logFile,
-          `\n===== ${scenarioId} ${phase} ${matrix.id} exit=${String(result.code)} =====\n${result.output}\n`,
-        );
-        const records = latestRecords(
-          readRecords(join(workersDirectory(), phase, matrix.id, `w${worker}/evidence`)),
-        );
-        const record = records.find(
-          (entry) => entry.scenarioId === scenarioId && entry.phase === phase,
-        );
-        const status = statusFor(record, phase);
-        updateProgress(file, (current) => {
-          current.running = current.running.filter(
-            (entry) => !(entry.worker === worker && entry.scenarioId === scenarioId),
+  const bundle = createScenarioBundle(ids);
+  const childEnvironment = {
+    ...process.env,
+    PLAYGROUND_SCENARIO_BUNDLE: bundle.file,
+  };
+  const restore = hideSensitiveDirectories();
+  process.once("exit", restore);
+  try {
+    await Promise.all(
+      queues.map(async (queue, worker) => {
+        for (const scenarioId of queue) {
+          updateProgress(file, (current) => {
+            current.running.push({ worker, scenarioId });
+          });
+          const args = [
+            "playground/scripts/run-case.ts",
+            "--worker",
+            String(worker),
+            "--scenario",
+            scenarioId,
+            "--phase",
+            phase,
+            "--environment",
+            matrix.id,
+          ];
+          const config = argValue("--config");
+          if (config) args.push("--config", config);
+          const result = await runCase(args, childEnvironment);
+          appendFileSync(
+            logFile,
+            `\n===== ${scenarioId} ${phase} ${matrix.id} exit=${String(result.code)} =====\n${result.output}\n`,
           );
-          current.done += 1;
-          current.statuses[status] += 1;
-          const perWorker = current.perWorker[`w${worker}`];
-          if (perWorker) perWorker.done += 1;
-          if (status !== "verified" && status !== "observed") {
-            current.failures.push({
-              scenarioId,
-              worker,
-              reason: record?.verdict.status ?? result.output.slice(-500),
-            });
-          }
-        });
-        console.log(`[run-batch] ${scenarioId} ${phase} ${matrix.id} ${status}`);
-      }
-    }),
-  );
+          const records = latestRecords(
+            readRecords(join(workersDirectory(), phase, matrix.id, `w${worker}/evidence`)),
+          );
+          const record = records.find(
+            (entry) => entry.scenarioId === scenarioId && entry.phase === phase,
+          );
+          const status = statusFor(record, phase);
+          updateProgress(file, (current) => {
+            current.running = current.running.filter(
+              (entry) => !(entry.worker === worker && entry.scenarioId === scenarioId),
+            );
+            current.done += 1;
+            current.statuses[status] += 1;
+            const perWorker = current.perWorker[`w${worker}`];
+            if (perWorker) perWorker.done += 1;
+            if (status !== "verified" && status !== "observed") {
+              current.failures.push({
+                scenarioId,
+                worker,
+                reason: record?.verdict.status ?? result.output.slice(-500),
+              });
+            }
+          });
+          console.log(`[run-batch] ${scenarioId} ${phase} ${matrix.id} ${status}`);
+        }
+      }),
+    );
+  } finally {
+    restore();
+    rmSync(bundle.directory, { recursive: true, force: true });
+  }
   console.log(`[run-batch] log=${logFile}`);
 }
 

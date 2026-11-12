@@ -4,7 +4,7 @@
 
 ## 隔离运行环境
 
-一个 worker 有一套独立运行环境。home、浏览器 profile、证据、pid 和日志在仓库内 `playground/.workers/<phase>/<environmentId>/w<k>`，便于审计；被测会话的工作区和 raw 技能挂载在仓库外隔离根 `<isolatedRoot>/<phase>/<environmentId>/w<k>`（默认 `os.tmpdir()/dsh-pstack-playground`，环境变量 `PLAYGROUND_WORKSPACE_ROOT` 可覆盖）。沙箱只限写不限读，所以 prepare 把 `playground/raw` 整体复制到隔离根的 `raw` 挂载目录，raw profile 与常驻提示只引用该副本，工作区与挂载路径都不得暴露仓库根。environmentId 属于 RunRecord 的身份，不能只靠时间戳区分。
+一个 worker 有一套独立运行环境。home、浏览器 profile、证据、pid 和日志在仓库内 `playground/.workers/<phase>/<environmentId>/w<k>`，便于审计；被测会话的工作区和 raw 技能挂载在仓库外隔离根 `<isolatedRoot>/<phase>/<environmentId>/w<k>`（默认 `os.tmpdir()/dsh-pstack-playground`，环境变量 `PLAYGROUND_WORKSPACE_ROOT` 可覆盖）。沙箱只限写不限读，所以 prepare 把 `playground/raw` 整体复制到隔离根的 `raw` 挂载目录，raw profile 与常驻提示只引用该副本，工作区与挂载路径都不得暴露仓库根。run-batch 在批次执行期间隐藏 `playground/scenarios`、`reviews`、`reports` 的读访问，run-case 从临时 bundle 读取场景；被测会话不能读取场景定义、rubric 或评审侧车。environmentId 属于 RunRecord 的身份，不能只靠时间戳区分。
 
 每个 worker 使用 `dsh --port 0`。prepare 从实际启动输出读取 URL 和端口。当前受管 web 生命周期只在 Linux 上运行。其他平台需要接入受管 DSH 进程，不能把未知 PID 当成 web 进程。
 
@@ -32,7 +32,7 @@ vp run playground:run -- --worker 0 --environment base --phase adapted --scenari
 vp run playground:collect -- --phase adapted --environment base
 ```
 
-run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮等待新的 turn/end。没有自动停止和隐藏超时。浏览器或会话日志不可读时记录基础设施未决，不自动重试。`run` 是单场景命令，不写 batch progress；多场景进度由 `run-batch` 写入 `playground/.workers/<phase>/<environment>/progress.json`，用 `playground:status` 查看。
+run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮等待新的 turn/end 后，再等待会话事件稳定，才采集最终 assistant 消息和截图。没有自动停止和隐藏超时。浏览器或会话日志不可读时记录基础设施未决，不自动重试。`run` 是单场景命令，不写 batch progress；多场景进度由 `run-batch` 写入 `playground/.workers/<phase>/<environment>/progress.json`，用 `playground:status` 查看。
 
 ## 证据和报告
 

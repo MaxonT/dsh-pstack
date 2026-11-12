@@ -453,18 +453,22 @@ export async function startWeb(paths: WorkerPaths, plan: ProviderPlan): Promise<
     );
   }
   mkdirSync(paths.home, { recursive: true });
+  mkdirSync(paths.isolatedRoot, { recursive: true });
   const logFd = openSync(paths.logFile, "w");
+  const spawnEnvironment = {
+    ...process.env,
+    ...runtimeEnv(paths),
+    DSH_HOME: paths.home,
+    [plan.apiKeyEnv]: plan.apiKey,
+  };
+  delete spawnEnvironment.PWD;
+  delete spawnEnvironment.OLDPWD;
   const child = spawn(
     DSH_BIN,
     ["--profile", PROFILE_NAME, "--port", "0", "--host", HOST, "--no-open"],
     {
-      cwd: REPOSITORY_ROOT,
-      env: {
-        ...process.env,
-        ...runtimeEnv(paths),
-        DSH_HOME: paths.home,
-        [plan.apiKeyEnv]: plan.apiKey,
-      },
+      cwd: paths.isolatedRoot,
+      env: spawnEnvironment,
       detached: true,
       stdio: ["ignore", logFd, logFd],
     },
