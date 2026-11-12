@@ -85,23 +85,31 @@ export function browserEnv(browserDir: string): NodeJS.ProcessEnv {
 /**
  * Capture the whole conversation, not just the viewport. DSH uses an inner scroll
  * container, so Playwright's `--full` only sees the page viewport. Grow the
- * viewport to the tallest scrollable content, take a normal screenshot, then
- * restore the original viewport so the next case starts at a stable size.
+ * viewport to the main conversation scroll area, never the workspace sidebar,
+ * take a normal screenshot, then restore the original viewport.
  */
 export function captureFullPage(session: BrowserSession, path: string): void {
   const metrics = session.eval<{ width: number; height: number; scrollHeight: number }>(
     `(() => {
-      const candidates = [...document.querySelectorAll("*")]
-        .filter((element) => {
-          const style = getComputedStyle(element);
-          return (style.overflowY === "auto" || style.overflowY === "scroll") &&
-            element.clientHeight > 100 &&
-            element.scrollHeight > element.clientHeight + 4;
-        })
-        .sort(
-          (left, right) =>
-            right.scrollHeight - right.clientHeight - (left.scrollHeight - left.clientHeight),
-        );
+      const scrollable = (element) => {
+        const style = getComputedStyle(element);
+        return (style.overflowY === "auto" || style.overflowY === "scroll") &&
+          element.clientHeight > 100 &&
+          element.scrollHeight > element.clientHeight + 4;
+      };
+      const main = document.querySelector("main, [role='main'], [data-slot='main'], [class*='mainPanel']");
+      const mainCandidates = main
+        ? [main, ...main.querySelectorAll("*")].filter(scrollable)
+        : [];
+      const pageCandidates = [...document.querySelectorAll("*")].filter((element) => {
+        if (!scrollable(element)) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.left >= window.innerWidth * 0.2 && rect.width >= window.innerWidth * 0.4;
+      });
+      const candidates = (mainCandidates.length > 0 ? mainCandidates : pageCandidates).sort(
+        (left, right) =>
+          right.scrollHeight - right.clientHeight - (left.scrollHeight - left.clientHeight),
+      );
       const target = candidates[0];
       return {
         width: Math.max(window.innerWidth, document.documentElement.scrollWidth || 0),
