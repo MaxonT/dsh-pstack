@@ -53,6 +53,93 @@ import {
 import { loadScenario, listScenarioIds } from "./lib/scenarios.ts";
 import { exclusions } from "../scenarios/exclusions.ts";
 
+const GROUP_LABELS: Record<string, string> = {
+  skills: "技能",
+  playbooks: "playbook",
+  "official-plugins": "官方插件",
+  "runtime-tools": "运行时工具",
+};
+
+const VERDICT_LABELS: Record<string, string> = {
+  observed: "已观察",
+  gap: "缺口",
+  blocked: "阻塞",
+  unobserved: "未观察",
+  verified: "验证通过",
+  "not-verified": "未验证",
+  inconclusive: "不确定",
+  unrun: "未运行",
+};
+
+const RUNTIME_STATUS_LABELS: Record<string, string> = {
+  clean: "干净",
+  findings: "发现",
+  blocked: "阻塞",
+  "environment-only": "仅环境限制",
+  "upstream-only": "仅上游问题",
+  "needs-review": "待审查",
+  unreviewed: "未审查",
+};
+
+const SKILL_LOAD_LABELS: Record<string, string> = {
+  skill: "技能工具",
+  pstack_skill: "pstack 工具",
+  read: "读取回退",
+  "user-gesture": "用户手势",
+  none: "无",
+};
+
+const FINDING_KIND_LABELS: Record<string, string> = {
+  "runtime-missing": "运行时缺失",
+  "runtime-difference": "运行时差异",
+  "adapter-gap": "适配缺口",
+  "plugin-gap": "插件能力缺口",
+  "environment-only": "仅环境限制",
+  "upstream-skill": "上游技能问题",
+  unclear: "不明确",
+};
+
+const SEVERITY_LABELS: Record<string, string> = {
+  blocker: "阻断",
+  major: "严重",
+  minor: "轻微",
+  info: "信息",
+};
+
+const DECISION_LABELS: Record<string, string> = {
+  "dsh-md": "dsh.md",
+  plugin: "插件",
+  skip: "跳过",
+  "ignore-environment": "忽略环境",
+  upstream: "上游",
+  "needs-human": "需要人工",
+};
+
+const NOTE_LABELS: Record<string, string> = {
+  pending: "待点评",
+  accept: "接受",
+  reject: "拒绝",
+  "needs-human": "需要人工",
+};
+
+const VERDICT_PRIORITY: Record<string, number> = {
+  gap: 0,
+  "not-verified": 1,
+  blocked: 2,
+  unobserved: 3,
+  inconclusive: 4,
+  unrun: 5,
+  observed: 6,
+  verified: 7,
+};
+
+const SEVERITY_PRIORITY: Record<string, number> = {
+  blocker: 0,
+  major: 1,
+  minor: 2,
+  info: 3,
+};
+
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
   return index >= 0 ? process.argv[index + 1] : undefined;
@@ -185,15 +272,15 @@ function analysisOf(record: RunRecord | undefined): {
   warnings: string;
 } {
   const analysis = record?.session?.analysis;
-  if (!analysis)
-    return { via: "unavailable", dependencies: "unavailable", warnings: "unavailable" };
+  if (!analysis) return { via: "不可用", dependencies: "不可用", warnings: "不可用" };
   return {
-    via: analysis.skillInvocation.loadedVia,
+    via:
+      SKILL_LOAD_LABELS[analysis.skillInvocation.loadedVia] ?? analysis.skillInvocation.loadedVia,
     dependencies:
       analysis.dependencies
-        .map((entry) => `${entry.name}:${entry.available ? "available" : "missing"}`)
-        .join(", ") || "none",
-    warnings: analysis.warnings.join("; ") || "none",
+        .map((entry) => `${entry.name}:${entry.available ? "可用" : "缺失"}`)
+        .join(", ") || "无",
+    warnings: analysis.warnings.join("；") || "无",
   };
 }
 
@@ -203,12 +290,61 @@ function runtimeOf(record: RunRecord | undefined): {
   findings: RuntimeFinding[];
 } {
   const review = record?.runtimeReview;
-  if (!review) return { status: "unreviewed", summary: "unreviewed", findings: [] };
+  if (!review) return { status: "unreviewed", summary: "未审查", findings: [] };
   return {
     status: review.status,
-    summary: `${review.status}(${review.findings.length})`,
+    summary: `${RUNTIME_STATUS_LABELS[review.status] ?? review.status}(${review.findings.length})`,
     findings: review.findings,
   };
+}
+
+function verdictLabel(record: RunRecord | undefined): string {
+  const verdict = record?.verdict.status ?? "unrun";
+  return VERDICT_LABELS[verdict] ?? verdict;
+}
+
+function summarySortOrder(ids: string[], records: RunRecord[]): string[] {
+  const groupRank = new Map(SCENARIO_GROUPS.map((group, index) => [group, index]));
+  return [...ids].sort((left, right) => {
+    const leftRecord = records.find((record) => record.scenarioId === left);
+    const rightRecord = records.find((record) => record.scenarioId === right);
+    const priority =
+      (VERDICT_PRIORITY[verdictOf(leftRecord)] ?? 99) -
+      (VERDICT_PRIORITY[verdictOf(rightRecord)] ?? 99);
+    if (priority !== 0) return priority;
+    const group =
+      (groupRank.get(scenarioGroup(left)) ?? 99) - (groupRank.get(scenarioGroup(right)) ?? 99);
+    return group !== 0 ? group : left.localeCompare(right);
+  });
+}
+
+function gateLabel(value: string): string {
+  return value === "blocked" ? "未通过" : "通过";
+}
+
+function sortRuntimeEntries<T extends { finding: RuntimeFinding }>(entries: T[]): T[] {
+  return [...entries].sort((left, right) => {
+    const severity =
+      (SEVERITY_PRIORITY[left.finding.severity] ?? 99) -
+      (SEVERITY_PRIORITY[right.finding.severity] ?? 99);
+    return severity !== 0
+      ? severity
+      : (FINDING_KIND_LABELS[left.finding.kind] ?? left.finding.kind).localeCompare(
+          FINDING_KIND_LABELS[right.finding.kind] ?? right.finding.kind,
+        );
+  });
+}
+
+function runtimeCountText(counts: Record<string, number>): string {
+  return [...RUNTIME_REVIEW_STATUSES, "unreviewed"]
+    .map((status) => `${RUNTIME_STATUS_LABELS[status] ?? status}=${counts[status] ?? 0}`)
+    .join("，");
+}
+
+function noteCountText(counts: Record<string, number>): string {
+  return Object.entries(counts)
+    .map(([decision, count]) => `${NOTE_LABELS[decision] ?? decision}=${count}`)
+    .join("，");
 }
 
 function copyRunEvidence(record: RunRecord, directory: string): void {
@@ -252,16 +388,16 @@ function comparisonMarkdown(scenarioId: string, current: RunRecord, latest: RunR
   ];
   const rows = unique.map((record) => {
     const analysis = analysisOf(record);
-    return `| ${record.environment.matrix.id} | ${record.phase} | ${record.verdict.status} | ${
+    return `| ${record.environment.matrix.id} | ${record.phase} | ${verdictLabel(record)} | ${
       record.target
         ? `${record.target.provider}/${record.target.model}[${record.target.effort}]`
-        : "unavailable"
+        : "不可用"
     } | ${analysis.via} | ${escape(runtimeOf(record).summary)} | ${escape(analysis.dependencies)} | ${escape(analysis.warnings)} |`;
   });
   return [
-    `# ${scenarioId} comparison`,
+    `# ${scenarioId} 对比`,
     "",
-    "| environment | phase | verdict | route | skill load | runtime review | dependencies | warnings |",
+    "| 环境 | 阶段 | 结论 | 路由 | 技能加载 | 运行时审查 | 依赖 | 警告 |",
     "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ...rows,
     "",
@@ -342,27 +478,36 @@ function writeRuntimeReviews(
     removeRuntimeReviewNotes(phase, environmentId);
     return;
   }
+  const orderedFindings = [...findings.values()].sort((left, right) => {
+    const severity =
+      (SEVERITY_PRIORITY[left.severity] ?? 99) - (SEVERITY_PRIORITY[right.severity] ?? 99);
+    if (severity !== 0) return severity;
+    const group = (GROUP_LABELS[left.group] ?? left.group).localeCompare(
+      GROUP_LABELS[right.group] ?? right.group,
+    );
+    return group !== 0 ? group : left.skill.localeCompare(right.skill);
+  });
   const notes = ensureRuntimeReviewNotes(
     phase,
     environmentId,
-    [...findings.values()].map(({ id }) => ({ id })),
+    orderedFindings.map(({ id }) => ({ id })),
   );
   mkdirSync(directory, { recursive: true });
   writeFileSync(
     file,
     [
-      "# Runtime review",
+      "# 运行时审查",
       "",
-      `Phase: ${phase}. Environment: ${environmentId}. Scenarios: ${current.length}. Clean: ${counts["clean"] ?? 0}. Findings: ${findings.size}. Needs-review: ${counts["needs-review"] ?? 0}. Unreviewed: ${counts["unreviewed"] ?? 0}.`,
+      `阶段：${phase}。环境：${environmentId}。场景：${current.length}。干净：${counts["clean"] ?? 0}。发现：${findings.size}。待审查：${counts["needs-review"] ?? 0}。未审查：${counts["unreviewed"] ?? 0}。`,
       "",
-      "| id | group | skill | finding | severity | decision | scenarios | action | evidence | 你的点评 |",
+      "| 严重度 | 编号 | 发现类型 | 分组 | 技能 | 场景 | 处置 | 建议 | 证据 | 你的点评 |",
       "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-      ...[...findings.values()].map((finding) => {
+      ...orderedFindings.map((finding) => {
         const note = notes.notes[finding.id];
         const annotation = note
-          ? `${note.decision}${note.comment ? `: ${note.comment}` : ""}`
-          : "pending";
-        return `| ${finding.id} | ${finding.group} | ${finding.skill} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${[...finding.scenarios].join(", ")} | ${escape(finding.action)} | ${escape([...finding.evidence].join("; "))} | ${escape(annotation)} |`;
+          ? `${NOTE_LABELS[note.decision] ?? note.decision}${note.comment ? `：${note.comment}` : ""}`
+          : "待点评";
+        return `| ${SEVERITY_LABELS[finding.severity] ?? finding.severity} | ${finding.id} | ${FINDING_KIND_LABELS[finding.kind] ?? finding.kind} | ${GROUP_LABELS[finding.group] ?? finding.group} | ${finding.skill} | ${[...finding.scenarios].join(", ")} | ${DECISION_LABELS[finding.decision] ?? finding.decision} | ${escape(finding.action)} | ${escape([...finding.evidence].join("；"))} | ${escape(annotation)} |`;
       }),
       "",
     ].join("\n"),
@@ -399,7 +544,7 @@ export function writeMirroredReports(
   rmSync(join(REPORT_DIRECTORY, APPROVAL_FILES.adaptedBase), { force: true });
   rmSync(join(REPORT_DIRECTORY, APPROVAL_FILES.officialPlugins), { force: true });
   mkdirSync(join(REPORT_DIRECTORY, REPORT_LAYOUT.approvals), { recursive: true });
-  const selectedIds = visibleScenarioIds(phase);
+  const selectedIds = summarySortOrder(visibleScenarioIds(phase), current);
   const rows: string[] = [];
   const groupRows = new Map<string, string[]>();
   for (const id of selectedIds) {
@@ -415,18 +560,18 @@ export function writeMirroredReports(
       }
     }
     const analysis = analysisOf(record);
-    const row = `| ${id} | ${group} | ${verdictOf(record)} | ${escape(runtimeOf(record).summary)} | ${analysis.via} | ${escape(analysis.dependencies)} | ${escape(analysis.warnings)} |`;
+    const row = `| ${id} | ${GROUP_LABELS[group] ?? group} | ${verdictLabel(record)} | ${escape(runtimeOf(record).summary)} | ${analysis.via} | ${escape(analysis.dependencies)} | ${escape(analysis.warnings)} |`;
     rows.push(row);
     const bucket = groupRows.get(group) ?? [];
     bucket.push(row);
     groupRows.set(group, bucket);
   }
   const summary = [
-    `# ${phase} ${environmentId} summary`,
+    `# ${phase}/${environmentId} 汇总`,
     "",
-    `Registered scenarios: ${selectedIds.length}.`,
+    `已注册场景：${selectedIds.length}。`,
     "",
-    "| scenario | group | verdict | runtime review | skill load | dependencies | warnings |",
+    "| 场景 | 分组 | 结论 | 运行时审查 | 技能加载 | 依赖 | 警告 |",
     "| --- | --- | --- | --- | --- | --- | --- |",
     ...rows,
     "",
@@ -441,9 +586,9 @@ export function writeMirroredReports(
     writeFileSync(
       join(runPath, `summary-${group}.md`),
       [
-        `# ${group} ${phase} ${environmentId} summary`,
+        `# ${GROUP_LABELS[group] ?? group} ${phase}/${environmentId} 汇总`,
         "",
-        "| scenario | group | verdict | runtime review | skill load | dependencies | warnings |",
+        "| 场景 | 分组 | 结论 | 运行时审查 | 技能加载 | 依赖 | 警告 |",
         "| --- | --- | --- | --- | --- | --- | --- |",
         ...groupLines,
         "",
@@ -470,6 +615,7 @@ export function writeMirroredReports(
     for (const status of [...RUNTIME_REVIEW_STATUSES, "unreviewed"]) {
       runtimeCounts[status] ??= 0;
     }
+    const orderedRuntimeEntries = sortRuntimeEntries(runtimeEntries);
     const blockingRuntime = runtimeEntries.filter(
       ({ finding }) =>
         BLOCKING_RUNTIME_SEVERITIES.includes(finding.severity) &&
@@ -494,33 +640,30 @@ export function writeMirroredReports(
     writeFileSync(
       join(REPORT_DIRECTORY, REPORT_LAYOUT.approvals, APPROVAL_FILES.adaptedBase),
       [
-        "# Adapted base approval",
+        "# adapted/base 审批",
         "",
-        `Runtime gate: ${runtimeGate}.`,
-        `Runtime review: clean=${runtimeCounts["clean"]}, findings=${runtimeCounts["findings"]}, needs-review=${runtimeCounts["needs-review"]}, blocked=${runtimeCounts["blocked"]}, environment-only=${runtimeCounts["environment-only"]}, upstream-only=${runtimeCounts["upstream-only"]}, unreviewed=${runtimeCounts["unreviewed"]}.`,
-        `Runtime notes: pending=${noteCounts.pending}, accept=${noteCounts.accept}, reject=${noteCounts.reject}, needs-human=${noteCounts["needs-human"]}.`,
-        `Semantic review: verified=${current.length - failed.length}, not-verified=${failed.length}. Registered=${registered}, recorded=${current.length}, unrun=${unrun}.`,
+        `运行时门禁：${gateLabel(runtimeGate)}。`,
+        `运行时审查：${runtimeCountText(runtimeCounts)}。`,
+        `运行点评：${noteCountText(noteCounts)}。`,
+        `语义审查：验证通过=${current.length - failed.length}，未验证=${failed.length}。已注册=${registered}，已记录=${current.length}，未运行=${unrun}。`,
         ...(unrun > 0
-          ? [
-              "",
-              `> This is a partial run: ${unrun} registered scenarios have no record. Do not treat it as a full approval.`,
-            ]
+          ? ["", `> 这是部分运行：还有 ${unrun} 个已注册场景没有记录，不能当作完整审批。`]
           : []),
         "",
-        "## Runtime issues",
-        "| skill | scenario | finding | severity | decision | action |",
+        "## 运行时问题",
+        "| 技能 | 场景 | 发现类型 | 严重度 | 处置 | 建议 |",
         "| --- | --- | --- | --- | --- | --- |",
-        ...runtimeEntries.map(
+        ...orderedRuntimeEntries.map(
           ({ record, finding }) =>
-            `| ${escape(loadScenario(record.scenarioId).skill)} | ${record.scenarioId} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.action)} |`,
+            `| ${escape(loadScenario(record.scenarioId).skill)} | ${record.scenarioId} | ${FINDING_KIND_LABELS[finding.kind] ?? finding.kind} | ${SEVERITY_LABELS[finding.severity] ?? finding.severity} | ${DECISION_LABELS[finding.decision] ?? finding.decision} | ${escape(finding.action)} |`,
         ),
         "",
-        "## Semantic failures",
-        "| scenario | verdict | reason |",
+        "## 语义失败",
+        "| 场景 | 结论 | 原因 |",
         "| --- | --- | --- |",
         ...failed.map(
           (record) =>
-            `| ${record.scenarioId} | ${record.verdict.status} | ${escape(
+            `| ${record.scenarioId} | ${verdictLabel(record)} | ${escape(
               "reason" in record.verdict ? (record.verdict.reason ?? "") : "",
             )} |`,
         ),
@@ -544,6 +687,7 @@ export function writeMirroredReports(
     for (const note of Object.values(readRuntimeReviewNotes(phase, environmentId).notes)) {
       officialNoteCounts[note.decision] += 1;
     }
+    const orderedOfficialRuntimeEntries = sortRuntimeEntries(officialRuntimeEntries);
     const officialRuntimeGate =
       official.some((record) => {
         const status = runtimeOf(record).status;
@@ -557,29 +701,27 @@ export function writeMirroredReports(
     writeFileSync(
       join(REPORT_DIRECTORY, REPORT_LAYOUT.approvals, APPROVAL_FILES.officialPlugins),
       [
-        "# Official plugins approval",
+        "# 适配后环境审批",
         "",
-        `Runtime gate: ${officialRuntimeGate ? "blocked" : "clear"}.`,
-        `Runtime notes: pending=${officialNoteCounts.pending}, accept=${officialNoteCounts.accept}, reject=${officialNoteCounts.reject}, needs-human=${officialNoteCounts["needs-human"]}.`,
-        `Registered official-plugin scenarios: ${registeredOfficial}. Recorded cases: ${official.length}. Recorded scenarios: ${recordedScenarios}.`,
-        ...(official.length === 0
-          ? ["", "> No official-plugin run has been recorded yet; this is not an approval."]
-          : []),
+        `运行时门禁：${officialRuntimeGate ? "未通过" : "通过"}。`,
+        `运行点评：${noteCountText(officialNoteCounts)}。`,
+        `已注册适配后环境场景：${registeredOfficial}。已记录：${official.length}。已记录场景：${recordedScenarios}。`,
+        ...(official.length === 0 ? ["", "> 尚无适配后环境运行记录，这不是审批。"] : []),
         "",
-        "## Runtime issues",
-        "| skill | scenario | environment | finding | severity | decision | action |",
+        "## 运行时问题",
+        "| 技能 | 场景 | 环境 | 发现类型 | 严重度 | 处置 | 建议 |",
         "| --- | --- | --- | --- | --- | --- | --- |",
-        ...officialRuntimeEntries.map(
+        ...orderedOfficialRuntimeEntries.map(
           ({ record, finding }) =>
-            `| ${escape(loadScenario(record.scenarioId).skill)} | ${record.scenarioId} | ${record.environment.matrix.id} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.action)} |`,
+            `| ${escape(loadScenario(record.scenarioId).skill)} | ${record.scenarioId} | ${record.environment.matrix.id} | ${FINDING_KIND_LABELS[finding.kind] ?? finding.kind} | ${SEVERITY_LABELS[finding.severity] ?? finding.severity} | ${DECISION_LABELS[finding.decision] ?? finding.decision} | ${escape(finding.action)} |`,
         ),
         "",
-        "## Runs",
-        "| scenario | environment | verdict | runtime review |",
+        "## 运行记录",
+        "| 场景 | 环境 | 结论 | 运行时审查 |",
         "| --- | --- | --- | --- |",
         ...official.map(
           (record) =>
-            `| ${record.scenarioId} | ${record.environment.matrix.id} | ${record.verdict.status} | ${escape(runtimeOf(record).summary)} |`,
+            `| ${record.scenarioId} | ${record.environment.matrix.id} | ${verdictLabel(record)} | ${escape(runtimeOf(record).summary)} |`,
         ),
         "",
       ].join("\n"),
@@ -595,11 +737,11 @@ export function writeMirroredReports(
   writeFileSync(
     join(REPORT_DIRECTORY, "index.md"),
     [
-      "# Playground reports",
+      "# Playground 报告",
       "",
-      "- `scenarios/`：当前 phase 的 case 证据与 comparison。",
-      `- \`runs/${phase}-${environmentId}/\`：summary 和 runtime-review。`,
-      ...(phase === "adapted" ? ["- `approvals/`：adapted-base 与 official-plugins。"] : []),
+      `- \`runs/${phase}-${environmentId}/\`：最新汇总和运行时审查，先看这里。`,
+      ...(phase === "adapted" ? ["- `approvals/`：最终审批。"] : []),
+      "- `scenarios/`：当前 phase 的 case 证据与对比。",
       "",
     ].join("\n"),
   );
