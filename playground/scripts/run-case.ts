@@ -31,6 +31,8 @@ import { workerPaths, type WorkerPaths } from "./lib/worker.ts";
 
 const COMPOSER_SELECTOR = '[data-composer-input="true"]';
 const NEW_SESSION_LABEL = "新会话";
+const PREVIEW_NOTICE = "预览版说明";
+const CONTINUE_LABEL = "继续";
 const POLL_INTERVAL_MS = 2_000;
 
 class InfraError extends Error {}
@@ -72,9 +74,9 @@ function waitFor(predicate: () => boolean, timeoutMs: number): boolean {
 }
 
 function dismissPreview(session: BrowserSession): void {
-  if (!session.eval<string>("document.body.innerText").includes("预览版说明")) return;
+  if (!session.eval<string>("document.body.innerText").includes(PREVIEW_NOTICE)) return;
   session.eval<boolean>(
-    `(() => { const button = [...document.querySelectorAll("button")].find((element) => element.innerText.trim() === "继续"); if (!button) return false; button.click(); return true; })()`,
+    `(() => { const button = [...document.querySelectorAll("button")].find((element) => element.innerText.trim() === ${JSON.stringify(CONTINUE_LABEL)}); if (!button) return false; button.click(); return true; })()`,
   );
   session.wait(2000);
 }
