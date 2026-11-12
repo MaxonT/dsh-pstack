@@ -1,16 +1,16 @@
 # pstack in DSH
 
-pstack skills use Cursor names. In DSH, read this file once per session, then map each Cursor name in a skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/`. If a Cursor field has no row, drop it and say so. Never pass a field or value the tool schema rejects.
+pstack skills use Cursor names. In DSH, read this file once per session, then map each Cursor name in a skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/`. Each DSH cell states the behavior difference that changes how a skill must be written, not just the replacement name. If a Cursor field has no row, drop it and say so. Never pass a field or value the tool schema rejects.
 
 ## Tools
 
 | Cursor | DSH |
 | --- | --- |
-| `Task` | `subagent`. It starts an independently managed child and returns its id immediately; the runtime notifies you when the child finishes. Its schema takes `description`, `prompt`, and an optional `cwd`, plus `provider`/`model`/`reasoning_effort` when the session enables model selection. There is no subagent-type field. `subagent_fork` starts a child that inherits the current conversation instead. |
-| `AskQuestion` | `ask_user_question`. When the session does not offer it, ask in plain text. |
-| Open a todolist | `todo_write`. Each call replaces the entire list, so resend every item with its status at each phase. |
+| `Task` | `subagent`. It starts an independently managed child and returns its id immediately; the runtime notifies you when the child finishes. Its schema takes `description`, `prompt`, and an optional `cwd`, plus `provider`/`model`/`reasoning_effort` when the session enables model selection. There is no `subagent_type`, `readonly`, `run_in_background`, `environment`, `cloud_base_branch`, or `file_attachments` field; the Subagent fields table gives the replacements. `subagent_fork` starts a child that inherits the current conversation instead. |
+| `AskQuestion` | `ask_user_question`. It takes a `questions` array with one item per question; each item has `id`, `question`, optional `header`/`options`/`multi_select`. Answers return selected labels plus optional `custom`; empty `selected` with no `custom` means the user explicitly skipped that question, which is a valid answer to continue from. A timeout returns `pending`, not skipped, and the questions remain answerable. When the session does not offer the tool, ask in plain text. |
+| Open a todolist | `todo_write`. Each call replaces the entire list, so resend every item with its status at each phase. Statuses are only `pending`, `in_progress`, and `completed`; there is no `skipped` status. A pstack step marked `skip: <reason>` stays in the list as a `pending` item with that text; never send `status: "skipped"` and never omit the item. The list has one owner, no partial update, no read-back tool, and duplicate content is rejected. |
 | Run another pstack skill (`/name` or "the **name** skill") | `skill` with the skill's `name` loads its full instructions when the session skill catalog lists it. A skill whose frontmatter sets `disable-model-invocation: true` stays out of the model catalog; `read` `<pstack>/skills/<name>/SKILL.md` and follow it. When you tell the user to type it, write `/<name>`; DSH lists user-invocable skills in its slash menu with no plugin namespace. |
-| `Grep`, `Glob` | `grep` and `glob` are native tools; call them directly. Use `bash` with `rg` only when the session has neither. |
+| `Grep`, `Glob` | `grep` and `glob` are native tools; call them directly. `grep` takes a required ripgrep pattern, an optional path, and one include glob; negation is not supported. `glob` takes a required pattern and optional path, includes hidden and ignored files, and returns paths in modification-time order. Use `bash` with `rg` only when the session has neither. |
 
 ## Subagent fields
 

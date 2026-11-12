@@ -1,16 +1,16 @@
 # DSH 中的 pstack
 
-pstack 技能使用 Cursor 名称。在 DSH 中，每个会话读一次本文件，然后用下面的表格映射技能中的每个 Cursor 名称。`<pstack>` 指包含 `skills/` 和 `docs/` 的文件夹。如果某个 Cursor 字段没有对应行，就丢弃它并说明。永远不要传入工具 schema 拒绝的字段或值。
+pstack 技能使用 Cursor 名称。在 DSH 中，每个会话读一次本文件，然后用下面的表格映射技能中的每个 Cursor 名称。`<pstack>` 指包含 `skills/` 和 `docs/` 的文件夹。每个 DSH 单元格都说明会改变技能写法的行为差异，而不只是替换名称。如果某个 Cursor 字段没有对应行，就丢弃它并说明。永远不要传入工具 schema 拒绝的字段或值。
 
 ## 工具
 
 | Cursor | DSH |
 | --- | --- |
-| `Task` | `subagent`。它启动一个独立管理的子代理，并立即返回其 id；运行时会在子代理完成时通知你。其 schema 接受 `description`、`prompt` 和可选的 `cwd`，在会话启用模型选择时还接受 `provider`/`model`/`reasoning_effort`。没有 subagent-type 字段。`subagent_fork` 改为启动一个继承当前对话的子代理。 |
-| `AskQuestion` | `ask_user_question`。当会话不提供它时，用纯文本提问。 |
-| Open a todolist | `todo_write`。每次调用替换整个列表，因此在每个阶段都要重发所有条目及其状态。 |
+| `Task` | `subagent`。它启动一个独立管理的子代理，并立即返回其 id；运行时会在子代理完成时通知你。其 schema 接受 `description`、`prompt` 和可选的 `cwd`，在会话启用模型选择时还接受 `provider`/`model`/`reasoning_effort`。没有 `subagent_type`、`readonly`、`run_in_background`、`environment`、`cloud_base_branch` 或 `file_attachments` 字段；替换方式见“子代理字段”表。`subagent_fork` 改为启动一个继承当前对话的子代理。 |
+| `AskQuestion` | `ask_user_question`。它接受 `questions` 数组，每个问题一项；每项包含 `id`、`question`，可选 `header`/`options`/`multi_select`。答案返回选中的标签和可选的 `custom`；`selected` 为空且没有 `custom` 表示用户明确跳过该问题，这是可以继续的有效回答。超时返回 `pending`，不是跳过，问题仍可回答。当会话不提供该工具时，用纯文本提问。 |
+| Open a todolist | `todo_write`。每次调用替换整个列表，因此在每个阶段都要重发所有条目及其状态。状态只有 `pending`、`in_progress` 和 `completed`；没有 `skipped` 状态。pstack 中标记为 `skip: <reason>` 的步骤要作为 `pending` 条目保留，内容写 `skip: <reason>`；绝不要发送 `status: "skipped"`，也不要省略该条目。列表只有一个所有者，不支持局部更新，没有读回工具，重复内容会被拒绝。 |
 | Run another pstack skill (`/name` or "the **name** skill") | `skill` 加上技能的 `name`，会在会话技能目录列出该技能时加载其完整说明。在 frontmatter 中设置 `disable-model-invocation: true` 的技能不会进入模型目录；用 `read` 读取 `<pstack>/skills/<name>/SKILL.md` 并遵循它。当你让用户输入该技能时，写 `/<name>`；DSH 会在其斜杠菜单中列出用户可调用的技能，不带插件命名空间。 |
-| `Grep`, `Glob` | `grep` 和 `glob` 是原生工具，直接调用它们。只有会话两者都没有时，才用 `bash` 运行 `rg`。 |
+| `Grep`, `Glob` | `grep` 和 `glob` 是原生工具，直接调用它们。`grep` 接受必填的 ripgrep 正则、可选路径和一个 include glob；不支持否定。`glob` 接受必填的 pattern 和可选路径，包含隐藏与忽略文件，并按修改时间顺序返回路径。只有会话两者都没有时，才用 `bash` 运行 `rg`。 |
 
 ## 子代理字段
 

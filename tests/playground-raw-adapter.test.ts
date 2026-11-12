@@ -14,6 +14,7 @@ const upstreamGenerator = join(upstream, "scripts/generate-pstack-harness-trees.
 const skillsRoot = join(upstream, "pstack/skills");
 const dshAdapter = join(repository, "playground/raw/dsh.md");
 const dshZhAdapter = join(repository, "playground/raw/dsh.zh.md");
+const dshEvidence = join(repository, "playground/raw/dsh-evidence.md");
 
 // Copied from the upstream generator's TERMS list; the drift assertions below
 // fail when upstream changes it, so this copy cannot silently diverge.
@@ -88,6 +89,27 @@ interface Section {
 }
 
 // Parse the two-column tables of an adapter document, keeping data rows only.
+function countEvidenceRows(text: string, heading: string): number {
+  let inside = false;
+  let count = 0;
+  for (const line of text.split("\n")) {
+    if (line.startsWith("## ")) {
+      inside = line === `## ${heading}`;
+      continue;
+    }
+    if (!inside || !line.startsWith("|")) continue;
+    const cells = line
+      .split("|")
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+    if (cells.length < 2) continue;
+    if (cells.every((cell) => /^:?-+:?$/.test(cell))) continue;
+    if (cells[0] === "dsh.md 行" || cells[0] === "主题" || cells[0] === "工具") continue;
+    count += 1;
+  }
+  return count;
+}
+
 function parseSections(text: string): Section[] {
   const sections: Section[] = [];
   let current: Section | null = null;
@@ -153,6 +175,27 @@ describe("committed DSH adapter guard", () => {
         );
       }
     }
+  });
+
+  it("documents every dsh.md mapping with one evidence table row", () => {
+    const evidence = readFileSync(dshEvidence, "utf8");
+    const englishSections = new Map(
+      parseSections(dsh).map((section) => [section.heading, section.rows.length]),
+    );
+    const pairs = [
+      ["Tools", "Tools"],
+      ["Subagent fields", "Subagent 字段"],
+      ["Models", "Models"],
+      ["Paths", "Paths"],
+      ["Cursor-only features", "Cursor-only features"],
+    ];
+    for (const [heading, evidenceHeading] of pairs) {
+      expect(countEvidenceRows(evidence, evidenceHeading), heading).toBe(
+        englishSections.get(heading),
+      );
+    }
+    expect(dsh).toContain('status: "skipped"');
+    expect(evidence).toContain("DSH 不支持 `skipped` 状态");
   });
 
   it("keeps the Chinese review copy structurally identical to dsh.md", () => {
