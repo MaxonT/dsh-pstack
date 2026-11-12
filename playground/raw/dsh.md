@@ -34,16 +34,16 @@ pstack skills use Cursor names. In DSH, read this file once per session, then ma
 | `claude-<family>-<version>-<effort>[-fast]`, such as `claude-opus-5-5-xhigh` | Route with `provider`, `model`, and `reasoning_effort`; drop `-fast`. Valid ids come from `list_subagent_models`. |
 | A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route. If none matches, omit `provider` and `model`, let the child fall back, and say so. |
 | `auto` or `inherit-parent` | Omit `provider` and `model`; omitted values use child or parent defaults. |
-| The `pstack-models.mdc` rule, `~/.cursor/rules/pstack-models.mdc` | DSH reads no `.mdc`; role lines live in `$DSH_HOME/AGENTS.md`. Read that file when it is not in context. |
+| The `pstack-models.mdc` rule, `~/.cursor/rules/pstack-models.mdc` | The pstack role file is `$DSH_HOME/pstack-models.mdc`. Base DSH never reads `.mdc`; the pstack adapter's model-aware delegation reads this file. Read it when it is not in context. |
 | A role value `<model> <effort>`, such as `opus high` | Write `<provider>/<model> <effort>`; split it into `provider`, `model`, and `reasoning_effort`. |
 
 ## setup-pstack
 
-DSH has no rules directory and never reads `.mdc` files. Each session loads the `AGENTS.md`-compatible chain; the user-global file is `$DSH_HOME/AGENTS.md`. Follow its steps with these changes:
+DSH has no rules directory and never reads `.mdc` files as session rules. The pstack role file is `$DSH_HOME/pstack-models.mdc`; the pstack adapter reads it on delegation. The `AGENTS.md`-compatible chain still supplies session instructions, but it does not replace the role file. Follow its steps with these changes:
 
 - Detect. Use `list_subagent_models`; write each served route as `<provider>/<model> <effort>`.
 - Defaults. Map a served slug to its route; an unserved slug becomes `inherit-parent`.
-- Write. Update `$DSH_HOME/AGENTS.md`, not the project `AGENTS.md`, and replace only the previous role-lines block.
+- Write. Update `$DSH_HOME/pstack-models.mdc`, not the project `AGENTS.md` or `CLAUDE.md`, and replace only the previous role-lines block.
 
 ## Paths
 
@@ -51,7 +51,7 @@ DSH has no rules directory and never reads `.mdc` files. Each session loads the 
 | --- | --- |
 | `.cursor/skills/`, `~/.cursor/skills/` | Project skills live in `.dsh/skills/` or `.agents/skills/`. User skills live in `$DSH_HOME/skills/` or `$DSH_AGENTS_HOME/skills/`; the latter defaults to `~/.agents`. |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | A profile is `$DSH_HOME/profiles/<name>/`, holding `package.json` and `cordis.patch.yml`; a plugin manifest is the `dsh` section of its `package.json`. |
-| `.cursor/rules/*.mdc`, always-applied rules | The `AGENTS.md`-compatible chain; DSH never reads `.mdc`. Project `AGENTS.md`/`AGENTS.local.md` plus user-global `$DSH_HOME/AGENTS.md`. |
+| `.cursor/rules/*.mdc`, always-applied rules | General rules use the `AGENTS.md`-compatible chain; DSH never reads `.mdc`. The pstack role file `$DSH_HOME/pstack-models.mdc` is the exception, read by the pstack adapter. Project `AGENTS.md`/`AGENTS.local.md` plus user-global `$DSH_HOME/AGENTS.md`. |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | `<pstack>/<path>` when the file exists. Read the local copy, never fetch it; give the user the URL when needed. |
 | Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | `$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`, one append-only log per session. Optional session-search adds model-facing search tools. |
 

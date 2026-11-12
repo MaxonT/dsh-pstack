@@ -34,16 +34,16 @@ pstack 技能使用 Cursor 名称。在 DSH 中，每个会话读一次本文件
 | `claude-<family>-<version>-<effort>[-fast]`, such as `claude-opus-5-5-xhigh` | 用 `provider`、`model` 和 `reasoning_effort` 组成路由；去掉 `-fast`。有效 id 来自 `list_subagent_models`。 |
 | A `grok-*`, `gpt-*`, or other non-Claude slug | 选择最接近的已公布路由。没有匹配时省略 `provider` 和 `model`，让子代理回退，并说明这一点。 |
 | `auto` or `inherit-parent` | 省略 `provider` 和 `model`；省略时使用子代理或父级默认值。 |
-| The `pstack-models.mdc` rule, `~/.cursor/rules/pstack-models.mdc` | DSH 不读 `.mdc`；角色行在 `$DSH_HOME/AGENTS.md`。文件不在上下文时读取它。 |
+| The `pstack-models.mdc` rule, `~/.cursor/rules/pstack-models.mdc` | pstack 角色文件是 `$DSH_HOME/pstack-models.mdc`。base DSH 从不读取 `.mdc`；pstack 适配器的模型感知委派会读取此文件。文件不在上下文时读取它。 |
 | A role value `<model> <effort>`, such as `opus high` | 写成 `<provider>/<model> <effort>`；拆成 `provider`、`model` 和 `reasoning_effort`。 |
 
 ## setup-pstack
 
-DSH 没有 rules 目录，也从不读取 `.mdc` 文件。每个会话加载 `AGENTS.md` 兼容链；用户全局文件是 `$DSH_HOME/AGENTS.md`。按它的步骤做这些替换：
+DSH 没有 rules 目录，也不会把 `.mdc` 文件当作会话规则读取。pstack 角色文件是 `$DSH_HOME/pstack-models.mdc`；pstack 适配器在委派时读取它。`AGENTS.md` 兼容链仍提供会话指令，但不能替代该角色文件。按它的步骤做这些替换：
 
 - 检测。使用 `list_subagent_models`；把每条可用路由写成 `<provider>/<model> <effort>`。
 - 默认值。可用的 slug 映射到路由；不可用的 slug 写成 `inherit-parent`。
-- 写入。更新 `$DSH_HOME/AGENTS.md`，不是项目 `AGENTS.md`，并且只替换之前的角色行块。
+- 写入。更新 `$DSH_HOME/pstack-models.mdc`，不是项目 `AGENTS.md` 或 `CLAUDE.md`，并且只替换之前的角色行块。
 
 ## 路径
 
@@ -51,7 +51,7 @@ DSH 没有 rules 目录，也从不读取 `.mdc` 文件。每个会话加载 `AG
 | --- | --- |
 | `.cursor/skills/`, `~/.cursor/skills/` | 项目技能放在 `.dsh/skills/` 或 `.agents/skills/`。用户技能放在 `$DSH_HOME/skills/` 或 `$DSH_AGENTS_HOME/skills/`；后者默认 `~/.agents`。 |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | profile 是 `$DSH_HOME/profiles/<name>/`，包含 `package.json` 和 `cordis.patch.yml`；插件 manifest 是 `package.json` 的 `dsh` 段。 |
-| `.cursor/rules/*.mdc`, always-applied rules | `AGENTS.md` 兼容链；DSH 从不读取 `.mdc`。项目 `AGENTS.md`/`AGENTS.local.md` 加用户全局 `$DSH_HOME/AGENTS.md`。 |
+| `.cursor/rules/*.mdc`, always-applied rules | 通用规则使用 `AGENTS.md` 兼容链；DSH 从不读取 `.mdc`。pstack 角色文件 `$DSH_HOME/pstack-models.mdc` 是例外，由 pstack 适配器读取。项目 `AGENTS.md`/`AGENTS.local.md` 加用户全局 `$DSH_HOME/AGENTS.md`。 |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | 文件存在时用 `<pstack>/<path>`。读本地副本，不要抓取；需要时把 URL 给用户。 |
 | Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | `$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`，每个会话一个 append-only 日志。可选 session-search 增加模型可见的搜索工具。 |
 
