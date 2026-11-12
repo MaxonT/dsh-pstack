@@ -26,10 +26,11 @@ import {
   writeProgress,
   type ProgressState,
 } from "./lib/progress.ts";
-import { listScenarioIds, listScenariosForSkill } from "./lib/scenarios.ts";
+import { listScenarioIds, listScenariosForSkill, loadScenario } from "./lib/scenarios.ts";
 import { workerCount } from "./lib/worker.ts";
 
 const VPX = process.platform === "win32" ? "vpx.cmd" : "vpx";
+const GROUPS = new Set(["skills", "playbooks", "official-plugins"]);
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -71,15 +72,27 @@ function allRecords(): RunRecord[] {
 function selectedScenarios(phase: Phase, environmentId: string): string[] {
   const scenarios = argValue("--scenarios");
   const skills = argValue("--skills");
+  const groups = argValue("--groups");
   const failed = process.argv.includes("--only-failed");
-  if ([scenarios, skills, failed ? "failed" : undefined].filter(Boolean).length > 1) {
-    throw new Error("--scenarios, --skills and --only-failed are mutually exclusive");
+  if ([scenarios, skills, groups, failed ? "failed" : undefined].filter(Boolean).length > 1) {
+    throw new Error("--scenarios, --skills, --groups and --only-failed are mutually exclusive");
   }
   if (scenarios) return parseList(scenarios);
   if (skills)
     return parseList(skills).flatMap((skill) =>
       listScenariosForSkill(skill).map((scenario) => scenario.id),
     );
+  if (groups) {
+    const selected = new Set(parseList(groups));
+    for (const group of selected) {
+      if (!GROUPS.has(group)) throw new Error(`unknown scenario group ${JSON.stringify(group)}`);
+    }
+    return listScenarioIds().filter((id) => {
+      const group = loadScenario(id).group ?? "skills";
+      if (!selected.has(group)) return false;
+      return true;
+    });
+  }
   if (failed) {
     return latestRecords(allRecords())
       .filter((record) => record.phase === phase && record.environment.matrix.id === environmentId)
@@ -90,7 +103,9 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
       )
       .map((record) => record.scenarioId);
   }
-  return listScenarioIds();
+  throw new Error(
+    "run-batch requires --groups <skills,playbooks,official-plugins>, --scenarios <ids>, --skills <names>, or --only-failed",
+  );
 }
 
 function distribute(ids: string[], workers: number): string[][] {
@@ -140,8 +155,11 @@ async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   if (phase !== "raw" && phase !== "adapted") {
     throw new Error(
-      "usage: run-batch.ts --phase raw|adapted [--environment base] [--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]",
+      "usage: run-batch.ts --phase raw|adapted [--environment base] [--groups skills,playbooks,official-plugins|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]",
     );
+  }
+  if (process.argv.includes("--all")) {
+    throw new Error("--all is no longer supported; select --groups, --scenarios, or --skills");
   }
   const matrix = environmentMatrix(argValue("--environment"));
   const ids = selectedScenarios(phase, matrix.id);

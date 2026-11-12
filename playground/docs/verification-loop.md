@@ -78,7 +78,8 @@ review sidecar 可以带 `runtime` 字段，记录每个运行时差异的 kind�
 vp run playground:raw-generate
 vp run playground:prepare -- --phase raw --environment base --reset
 vp run playground:bootstrap -- --phase raw --environment base --all
-vp run playground:run-batch -- --phase raw --environment base --all
+vp run playground:run-batch -- --phase raw --environment base --groups skills
+vp run playground:run-batch -- --phase raw --environment base --groups playbooks
 vp run playground:collect -- --phase raw --environment base
 vp run playground:review
 vp run playground:review -- --apply
@@ -112,7 +113,8 @@ Gate：`dsh.md` 逐行审批；`generate:check` 通过。
 
 ```sh
 vp run playground:prepare -- --phase adapted --environment base --reset
-vp run playground:run-batch -- --phase adapted --environment base --all
+vp run playground:run-batch -- --phase adapted --environment base --groups skills
+vp run playground:run-batch -- --phase adapted --environment base --groups playbooks
 vp run playground:collect -- --phase adapted --environment base
 vp run playground:review
 vp run playground:review -- --apply
@@ -127,12 +129,16 @@ Gate：`reports/approvals/adapted-base.md` 的 Runtime gate 为 `clear` 且 sema
 对 `forge`、`session-search`、`browser-use`、`terminal`、`agent-team` 逐个运行：
 
 ```sh
+# adapted/base official baseline; workers from stage 3 can be reused
+vp run playground:prepare -- --phase adapted --environment base --reuse
+vp run playground:run-batch -- --phase adapted --environment base --groups official-plugins
+# each plugin environment
 vp run playground:prepare -- --phase adapted --environment <plugin> --reset
-vp run playground:run-batch -- --phase adapted --environment <plugin> --scenarios <ids>
+vp run playground:run-batch -- --phase adapted --environment <plugin> --groups official-plugins
 vp run playground:collect -- --phase adapted --environment <plugin>
 ```
 
-同一个场景必须同时有 `raw/base`、`adapted/base` 和 `adapted/<plugin>` 记录。产物：`reports/scenarios/official-plugins/<plugin>/comparison.md`、`reports/runs/adapted-<plugin>/summary.md`、`reports/approvals/official-plugins.md`。
+同一个 official-plugin 场景必须有 `adapted/base` 和 `adapted/<plugin>` 记录；raw/base 不作为这一组的必选基线。产物：`reports/scenarios/official-plugins/<plugin>/comparison.md`、`reports/runs/adapted-<plugin>/summary.md`、`reports/approvals/official-plugins.md`。
 
 Gate：`reports/approvals/official-plugins.md` 的 Runtime gate 为 `clear` 且插件矩阵审批通过。插件限制写进 `dsh.md` 与根 README，不另设冲突类型。
 
