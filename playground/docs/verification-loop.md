@@ -70,6 +70,8 @@ vp run playground:status -- --phase raw --environment base
 
 review sidecar 可以带 `runtime` 字段，记录每个运行时差异的 kind、severity、decision、observation、action 和 evidence。`review --apply` 会把它写入 `RunRecord.runtimeReview`，`collect` 会生成 `reports/runs/<phase>-<environment>/runtime-review.md`，只保留 finding 并合并重复项；summary、comparison 和 approval 仍区分 semantic 与 runtime。
 
+运行时 finding 不假设用户环境会安装插件或依赖，也不写具体插件名、包名、外部二进制名或服务名；需要说明时用能力类别。外部依赖缺失由技能在运行时自行处理，不作为适配 gap，不写进 dsh.md 或依赖补齐建议。
+
 无法可靠分类的 finding 必须写成 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户审查；`needs-review` 和未填写的 runtime review 都不能当作 clean。
 
 `collect` 同时会在 `reviews/runtime-review/<phase>-<environment>.json` 生成点评骨架，每条 finding 有稳定 id。只写点评时编辑这个 JSON 的 `decision` 和 `comment`，再重新 collect；点评列会显示在 `runtime-review.md`。approval 的 Runtime gate 会把 `pending`、`reject` 和 `needs-human` 视为未完成；只有 `accept` 才放行。如果要改 finding 本身，改对应 scenario 的 `reviews/scenarios/<group>/<scenario>/<phase>-<environment>.json`，执行 `review --apply` 后再 collect。

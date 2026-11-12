@@ -33,6 +33,8 @@
 - `SemanticReview` 只判断技能效果是否成立；运行时差异必须单独记录在 `runtimeReview`，不能把运行时问题藏进 skill 的 `gap` 或 `reason`。
 - 每个 finding 必须有 `kind`、`severity`、`decision`、`observation`、`action`、`evidence`。
 - `decision` 只能是 `dsh-md`、`plugin`、`skip`、`ignore-environment`、`upstream` 或 `needs-human`。DSH 有等价能力但语义不同时走 `dsh-md`；需要新增工具、预设或可选包时走 `plugin`；只有环境权限、凭据、网络或无头限制时走 `ignore-environment`；技能自身问题走 `upstream`。
+- 普通 skills/playbooks 的 finding 不假设用户环境会安装任何可选插件，也不写具体插件名、包名、外部二进制名或服务名；需要描述能力时用能力类别。
+- 外部依赖缺失由技能在运行时自行处理。它不是适配 gap，不写进 dsh.md 的安装建议，也不进入“需要补插件/依赖”的 runtime finding。官方插件矩阵按环境矩阵声明的包记录，不把矩阵环境当成所有用户环境。
 - 无法可靠分类、或分类会影响后续方案却证据不足时，必须使用 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户亲自审查。禁止默认忽略、默认归为上游或默认选一个 decision 来消除告警。
 - `collect` 必须输出 `reports/runs/<phase>-<environment>/runtime-review.md`：只保留 finding，按 `group + skill + kind + severity + decision + observation + action` 去重，相同 finding 合并 `scenarios`。没有 finding 时不生成该文件。summary、comparison 和 approval 仍要区分 semantic 与 runtime；`needs-review` 和未填写的 runtime review 不能被当作 clean。
 
@@ -45,12 +47,13 @@
 - raw：生成 `playground/raw/pstack`，跑 `raw/base` 的 skills 和 playbooks，collect，`review --apply`。raw 的 gate 是 sidecar 加 `dsh.md` 逐行确认。
 - 适配开发：维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
 - adapted/base：跑 skills 和 playbooks，与 raw/base 对比，生成 `reports/approvals/adapted-base.md`。不通过回适配开发。
-- official-plugins：每个插件跑 base 与插件环境，生成 `reports/approvals/official-plugins.md`。插件限制写 `dsh.md` 和根 README。
+- official-plugins：每个插件跑 base 与插件环境，生成 `reports/approvals/official-plugins.md`。环境限制按能力类别记录，不写具体包名。
 - README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
 
 ## dsh.md
 
 - `playground/raw/dsh.md` 是 raw 基准答案，`port/dsh.md` 是最终随包答案，两者不能合并。
+- dsh.md 只描述 DSH 能力，不写具体插件、包、外部二进制或服务的安装建议；可选能力用泛化能力类别说明。
 - 生成 `dsh.md` 时先复制上游 `claude-code.md` 的结构并清空答案，再由 agent 和用户逐条提案、审批、写入；已有答案作为默认提案但仍逐条确认。
 - `dsh.zh.md` 是逐行中文翻译，只供审阅，生成器不读。
 - `playground/raw/dsh-evidence.md` 保存判定依据。
