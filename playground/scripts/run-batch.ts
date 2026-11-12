@@ -30,7 +30,7 @@ import {
 import { listScenarioIds, listScenariosForSkill, loadScenario } from "./lib/scenarios.ts";
 import { workerCount } from "./lib/worker.ts";
 
-const VPX = process.platform === "win32" ? "vpx.cmd" : "vpx";
+const VPX = "vpx";
 const GROUPS = new Set<string>(SCENARIO_GROUPS);
 const GROUP_USAGE = SCENARIO_GROUPS.join(",");
 

@@ -25,7 +25,7 @@ export const PROFILE_TEMPLATE_DIR = join(REPOSITORY_ROOT, "playground/profile");
 export const DEFAULT_HOST_PATCH_FILE = join(homedir(), ".dsh/profiles/web/cordis.patch.yml");
 export const DEFAULT_CREDENTIALS_FILE = join(homedir(), ".dsh/.credentials.yaml");
 export const HOST = "127.0.0.1";
-const DSH_BIN = process.env.DSH_BIN ?? (process.platform === "win32" ? "dsh.cmd" : "dsh");
+const DSH_BIN = process.env.DSH_BIN ?? "dsh";
 
 export { DEFAULT_CONFIG_FILE as CONFIG_FILE, RAW_ROOT, RAW_SKILLS } from "./run-metadata.ts";
 

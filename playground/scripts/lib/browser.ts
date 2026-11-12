@@ -10,12 +10,7 @@ import { dirname, join } from "node:path";
 
 import { REPOSITORY_ROOT } from "./run-metadata.ts";
 
-const BIN = join(
-  REPOSITORY_ROOT,
-  "node_modules",
-  ".bin",
-  process.platform === "win32" ? "agent-browser.cmd" : "agent-browser",
-);
+const BIN = join(REPOSITORY_ROOT, "node_modules", ".bin", "agent-browser");
 
 export function agentBrowserBin(): string {
   return BIN;
@@ -28,7 +23,7 @@ export function chromeExecutable(): string {
   const candidates: string[] = [];
   if (existsSync(root)) {
     for (const name of readdirSync(root)) {
-      const binary = join(root, name, process.platform === "win32" ? "chrome.exe" : "chrome");
+      const binary = join(root, name, "chrome");
       if (existsSync(binary)) candidates.push(binary);
     }
   }
