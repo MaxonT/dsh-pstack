@@ -27,7 +27,12 @@ export function reportRunId(records: RunRecord[]): string {
     .map((record) => record.capturedAt)
     .sort()
     .at(-1);
-  return (capturedAt ?? new Date().toISOString()).replace(/[:.]/g, "-");
+  const date = new Date(capturedAt ?? Date.now());
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return (
+    [date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate())].join("-") +
+    `_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`
+  );
 }
 
 export function readReportManifest(directory: string): ReportManifest | null {

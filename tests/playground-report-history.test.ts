@@ -68,12 +68,16 @@ describe("report history", () => {
     expect(existsSync(join(reports, "scenarios", "skills", "current-case", "raw-base"))).toBe(true);
   });
 
-  it("derives a stable run id from the latest captured record", () => {
+  it("derives a local-time run id from the latest captured record", () => {
+    const timestamp = "2026-11-12T02:00:00.000Z";
+    const date = new Date(timestamp);
+    const pad = (value: number) => String(value).padStart(2, "0");
+    const expected = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
     expect(
       reportRunId([
         { capturedAt: "2026-11-12T01:00:00.000Z" } as never,
-        { capturedAt: "2026-11-12T02:00:00.000Z" } as never,
+        { capturedAt: timestamp } as never,
       ]),
-    ).toBe("2026-11-12T02-00-00-000Z");
+    ).toBe(expected);
   });
 });
