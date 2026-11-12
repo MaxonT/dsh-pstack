@@ -323,7 +323,10 @@ export function writeMirroredReports(
 ): void {
   const latest = latestRecords(allRecords);
   const current = latest.filter(
-    (record) => record.phase === phase && record.environment.matrix.id === environmentId,
+    (record) =>
+      record.phase === phase &&
+      record.environment.matrix.id === environmentId &&
+      (phase !== "raw" || loadScenario(record.scenarioId).group !== "official-plugins"),
   );
   for (const legacy of ["skills", "playbooks", "official-plugins", "summary"]) {
     rmSync(join(REPORT_DIRECTORY, legacy), { recursive: true, force: true });
@@ -331,9 +334,12 @@ export function writeMirroredReports(
   rmSync(join(REPORT_DIRECTORY, "approval-adapted-base.md"), { force: true });
   rmSync(join(REPORT_DIRECTORY, "approval-official-plugins.md"), { force: true });
   mkdirSync(join(REPORT_DIRECTORY, "approvals"), { recursive: true });
+  const selectedIds = listScenarioIds().filter(
+    (id) => phase !== "raw" || loadScenario(id).group !== "official-plugins",
+  );
   const rows: string[] = [];
   const groupRows = new Map<string, string[]>();
-  for (const id of listScenarioIds()) {
+  for (const id of selectedIds) {
     const scenario = loadScenario(id);
     const group = scenario.group ?? "skills";
     const record = current.find((entry) => entry.scenarioId === id);
@@ -354,7 +360,7 @@ export function writeMirroredReports(
   const summary = [
     `# ${phase} ${environmentId} summary`,
     "",
-    `Registered scenarios: ${listScenarioIds().length}.`,
+    `Registered scenarios: ${selectedIds.length}.`,
     "",
     "| scenario | group | verdict | runtime review | skill load | dependencies | warnings |",
     "| --- | --- | --- | --- | --- | --- | --- |",
@@ -363,6 +369,9 @@ export function writeMirroredReports(
   ].join("\n");
   const runPath = join(REPORT_DIRECTORY, "runs", `${phase}-${environmentId}`);
   mkdirSync(runPath, { recursive: true });
+  for (const name of readdirSync(runPath)) {
+    if (/^summary-.*\.md$/.test(name)) rmSync(join(runPath, name), { force: true });
+  }
   writeFileSync(join(runPath, "summary.md"), summary);
   for (const [group, groupLines] of groupRows) {
     mkdirSync(runPath, { recursive: true });

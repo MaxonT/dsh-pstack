@@ -59,7 +59,13 @@ export function ensureRuntimeReviewNotes(
   findings: Array<{ id: string }>,
 ): RuntimeReviewNotes {
   const existing = readRuntimeReviewNotes(phase, environment);
+  const currentIds = new Set(findings.map((finding) => finding.id));
   let changed = false;
+  for (const id of Object.keys(existing.notes)) {
+    if (currentIds.has(id)) continue;
+    delete existing.notes[id];
+    changed = true;
+  }
   for (const finding of findings) {
     if (existing.notes[finding.id] !== undefined) continue;
     existing.notes[finding.id] = { decision: "pending", comment: "" };
