@@ -52,6 +52,7 @@ export interface BrowserSession {
   click(selector: string): string;
   keyboardType(text: string): string;
   press(key: string): string;
+  setViewport(width: number, height: number): string;
   screenshot(path: string, options?: { full?: boolean }): string;
   close(): void;
 }
@@ -79,6 +80,49 @@ export function browserEnv(browserDir: string): NodeJS.ProcessEnv {
     XDG_RUNTIME_DIR: socketDir,
     AGENT_BROWSER_SOCKET_DIR: socketDir,
   };
+}
+
+/**
+ * Capture the whole conversation, not just the viewport. DSH uses an inner scroll
+ * container, so Playwright's `--full` only sees the page viewport. Grow the
+ * viewport to the tallest scrollable content, take a normal screenshot, then
+ * restore the original viewport so the next case starts at a stable size.
+ */
+export function captureFullPage(session: BrowserSession, path: string): void {
+  const metrics = session.eval<{ width: number; height: number; scrollHeight: number }>(
+    `(() => {
+      const candidates = [...document.querySelectorAll("*")]
+        .filter((element) => {
+          const style = getComputedStyle(element);
+          return (style.overflowY === "auto" || style.overflowY === "scroll") &&
+            element.clientHeight > 100 &&
+            element.scrollHeight > element.clientHeight + 4;
+        })
+        .sort(
+          (left, right) =>
+            right.scrollHeight - right.clientHeight - (left.scrollHeight - left.clientHeight),
+        );
+      const target = candidates[0];
+      return {
+        width: Math.max(window.innerWidth, document.documentElement.scrollWidth || 0),
+        height: window.innerHeight,
+        scrollHeight: Math.max(
+          target?.scrollHeight ?? 0,
+          document.documentElement.scrollHeight || 0,
+          window.innerHeight,
+        ),
+      };
+    })()`,
+  );
+  const width = Math.max(metrics.width, 1024);
+  const height = Math.min(Math.max(metrics.height, metrics.scrollHeight + 200), 16_000);
+  try {
+    session.setViewport(width, height);
+    session.wait(300);
+    session.screenshot(path);
+  } finally {
+    session.setViewport(metrics.width, metrics.height);
+  }
 }
 
 export function createBrowserSession(options: BrowserOptions): BrowserSession {
@@ -134,6 +178,7 @@ export function createBrowserSession(options: BrowserOptions): BrowserSession {
     click: (selector) => raw(["click", selector]),
     keyboardType: (text) => raw(["keyboard", "type", text]),
     press: (key) => raw(["press", key]),
+    setViewport: (width, height) => raw(["set", "viewport", String(width), String(height)]),
     screenshot,
     close: () => {
       try {

@@ -11,7 +11,7 @@ import { dirname, join } from "node:path";
 
 import type { BehaviorScenario, Phase, RunRecord, SessionFacts, TestTarget } from "../types.ts";
 import { analyzeSession } from "./lib/analysis.ts";
-import { createBrowserSession, type BrowserSession } from "./lib/browser.ts";
+import { captureFullPage, createBrowserSession, type BrowserSession } from "./lib/browser.ts";
 import {
   assertSafeRecord,
   digestSession,
@@ -355,7 +355,7 @@ function attemptScenario(input: AttemptInput): {
     const matched: MatchResult = match;
     session.wait(1000);
     session.screenshot(screenshotFile);
-    session.screenshot(fullScreenshotFile, { full: true });
+    captureFullPage(session, fullScreenshotFile);
     if (!existsSync(matched.file)) throw new InfraError("session log vanished before reading");
     try {
       return {
