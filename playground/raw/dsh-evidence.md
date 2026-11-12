@@ -2,6 +2,8 @@
 
 本文件保存 `playground/raw/dsh.md` 当前内容的逐行判定证据。它不是运行时文件，生成器不读；DSH 升级后复核 `dsh.md` 时直接引用这里的事实。
 
+本轮 raw 规则把 pstack 角色文件改为 `$DSH_HOME/pstack-models.json`。这是 raw 适配的目标格式；`port` 插件当前实现仍读取 `.mdc`，迁移完成后再同步 `port/dsh.md` 和 `src/role-config.ts`。
+
 ## 覆盖检查
 
 | 章节 | dsh.md 行数 | 证据行数 |
@@ -27,7 +29,7 @@
 | 提问 | `AskQuestion` 单问题、选项 | `ask_user_question` 支持 `questions[]` 批量，`multi_select`，答案 `selected`/`custom` | 空 `selected` 且无 `custom` 是用户明确跳过，不是超时；超时是 `pending`，问题仍可回答 |
 | 子代理 | `Task` 有 subagent_type/readonly/run_in_background/environment 等字段 | `subagent`/`subagent_fork` 只接受 cwd/description/prompt 和可选路由；续聊用 `send_message` | 没有沙箱字段、后台字段、云环境字段；readonly 靠会话权限和 prompt，云环境用本地 worktree |
 | 技能调用 | `/name` 或 **name** skill | `skill` 工具按 name 加载；用户 `/name` 是独立手势，直接注入 `<skill_content>` | `disable-model-invocation: true` 只影响模型目录，不阻止用户手势；不要为手势再调 `skill` |
-| 模型规则 | `~/.cursor/rules/pstack-models.mdc` | `$DSH_HOME/pstack-models.mdc`，由 pstack 适配器读取；base DSH 没有 `.mdc` 和 rules 目录 | 角色行不放进 AGENTS.md 或 CLAUDE.md；格式为 `<provider>/<model> <effort>` |
+| 模型规则 | `~/.cursor/rules/pstack-models.mdc` | `$DSH_HOME/pstack-models.json`，pstack 适配器迁移后读取；base DSH 没有 `.mdc` 和 rules 目录 | 角色配置不放进 AGENTS.md 或 CLAUDE.md；JSON 的 `roles` 值是路由数组 |
 | 会话转录 | `~/.cursor/projects/<slug>/agent-transcripts/` | `$DSH_HOME/sessions/<workspace-key>/<session>.jsonl` | 搜索转录需要可选 session-search 插件；base 没有模型可见的 session_search 工具 |
 
 ## Tools
@@ -62,15 +64,15 @@
 | `claude-<family>-<version>-<effort>[-fast]` | Cursor 的 Claude slug，可带 `-fast` | 委派路由：`provider` + `model` + `reasoning_effort`；有效 id 来自 `list_subagent_models` | 没有 `-fast` 区分，去掉后缀；`provider` 和 `model` 必须一起提供；能列出的 id 才可用 | `dsh-tool-subagent/lib/index.js` 的 `list_subagent_models` 与 `provider`/`model`/`reasoning_effort` 参数；`modelDiscovery` 配置 |
 | `grok-*`, `gpt-*` 等非 Claude slug | Cursor 模型 slug | 路由与 provider 无关；选 `list_subagent_models` 公布的最接近 `provider`/`model`；无匹配时省略两者，回退父路由并说明 | 不要把 Cursor slug 直接当 `model`；没有匹配就承认回退，不要猜测 | 同上 |
 | `auto` / `inherit-parent` | 自动或继承父模型 | 省略 `provider` 和 `model`；省略时用子代理默认值并回退兼容父值；路由变化时省略的 `reasoning_effort` 用模型默认值 | `inherit-parent` 不是可传值，省略才是语义；不要伪造 `auto` 路由 | 同上 |
-| `pstack-models.mdc`/`~/.cursor/rules/pstack-models.mdc` | Cursor 规则文件 | pstack 角色文件是 `$DSH_HOME/pstack-models.mdc`；base DSH 没有 `.mdc` 和 `rules/`，pstack 适配器在委派时读取该文件。`AGENTS.md` 兼容链只承载会话指令，不能替代角色文件 | 不要创建 `.cursor/rules`；角色行不能写进 `AGENTS.md` 或 `CLAUDE.md`；文件不在上下文时用 `read` | `src/role-manifest.ts` 的 `PSTACK_MODELS_FILENAME`；`src/role-config.ts`；`dsh-home-paths`；`port/dsh.md` |
-| 角色值 `<model> <effort>` | Cursor 角色值 | DSH 角色值是 `<provider>/<model> <effort>`；拆成 `provider`/`model`/`reasoning_effort` | effort 是最后一个 token；角色行写在 `$DSH_HOME/pstack-models.mdc` 的注释、`# budget` 行和角色行块中 | `dsh-tool-subagent` 路由参数；`src/role-config.ts`；`setup-pstack` 步骤 |
+| `pstack-models.mdc`/`~/.cursor/rules/pstack-models.mdc` | Cursor 规则文件 | pstack 角色文件的目标格式是 `$DSH_HOME/pstack-models.json`：顶层有 `version`、可选 `budget`，`roles` 对象的值是路由字符串数组。base DSH 不读它；pstack 适配器迁移后每次委派读取。`AGENTS.md` 兼容链只承载会话指令，不能替代角色文件 | 不要创建 `.cursor/rules`；角色配置不能写进 `AGENTS.md` 或 `CLAUDE.md`；JSON 中的 `roles` 用数组表达单路由和多路由，缺少角色表示继承父路由 | raw 规则见 `playground/raw/AGENTS.md`；迁移目标见 `src/role-config.ts`、`src/role-manifest.ts` 的路径常量；当前 port 仍读 `.mdc` |
+| 角色值 `<model> <effort>` | Cursor 角色值 | DSH 角色值是 `<provider>/<model> <effort>`；拆成 `provider`/`model`/`reasoning_effort` | effort 是最后一个 token；写入 JSON 的 `roles.<role>` 数组，顶层 `budget` 保存全局目标；不要写 `# budget` 行 | `dsh-tool-subagent` 路由参数；`src/role-config.ts`；`setup-pstack` 步骤 |
 
 ## 角色文件为什么是特例
 
 | 方案 | 实际行为 | 结论 |
 | --- | --- | --- |
 | 写入 `$DSH_HOME/AGENTS.md` | `dsh-agent-instructions` 把它作为持久会话指令加载，会进入每次请求并可能被预算截断或去重；需要解析自由文本，角色变更也不会在每次委派时重新读取 | 不采用 |
-| 保留 `$DSH_HOME/pstack-models.mdc` | `pstack` 的 `role-config` 在每次委派时读取；文件缺失时角色继承父路由，不可读或坏行显式报错；设置页可以原子编辑该文件 | 采用 |
+| 保留 `$DSH_HOME/pstack-models.json` | `pstack` 的 `role-config` 迁移后每次委派读取；文件缺失时角色继承父路由，JSON 结构可做 schema 校验，设置页可以原子编辑 | 采用，raw 规则先切换 |
 
 ## Paths
 
@@ -78,7 +80,7 @@
 | --- | --- | --- | --- | --- |
 | `.cursor/skills/`, `~/.cursor/skills/` | Cursor 项目/用户技能目录 | 项目 `.dsh/skills/` 或 `.agents/skills/`；用户 `$DSH_HOME/skills/` 或 `$DSH_AGENTS_HOME/skills/`（默认 `~/.agents`） | 不是 `.cursor` 目录；项目技能优先放在工作区内的 `.dsh/skills` 或 `.agents/skills`；用户技能放 DSH_HOME/DSH_AGENTS_HOME | `dsh-skill-filesystem` 的 join 声明；`dsh-home-paths` 的 `DSH_HOME`/`DSH_AGENTS_HOME` |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | Cursor 插件目录和 manifest | profile 为 `$DSH_HOME/profiles/<name>/`，含 `package.json`（有序 bundle 列表）和 `cordis.patch.yml`；插件 manifest 是 `package.json` 的 `dsh` 段 | 没有 `.cursor-plugin/plugin.json`；插件通过 `plugin_manager` 管理；安装包在 profile 的 `node_modules` | `dsh-app-boot` 的 `PROFILES_DIR`/`PROFILE_PATCH_FILENAME`；`dsh-package-manifest`；`dsh-plugin-manager/tools` |
-| `.cursor/rules/*.mdc`, always-applied rules | Cursor 规则文件 | 通用规则用 `AGENTS.md` 兼容链；DSH 不读 `.mdc`；项目 `AGENTS.md`/`AGENTS.local.md`，用户全局 `$DSH_HOME/AGENTS.md`。pstack 角色文件 `$DSH_HOME/pstack-models.mdc` 是例外，由 pstack 适配器读取 | 不要写 `.mdc` 作为通用规则；角色行只写 `pstack-models.mdc`，不能写进 `AGENTS.md` 或项目文件 | `dsh-agent-instructions`；`dsh-home-paths`；`src/role-manifest.ts` |
+| `.cursor/rules/*.mdc`, always-applied rules | Cursor 规则文件 | 通用规则用 `AGENTS.md` 兼容链；DSH 不读 `.mdc`；项目 `AGENTS.md`/`AGENTS.local.md`，用户全局 `$DSH_HOME/AGENTS.md`。pstack 角色文件 `$DSH_HOME/pstack-models.json` 是例外，由 pstack 适配器读取 | 不要写 `.mdc` 作为通用规则；角色配置只写 `pstack-models.json`，不能写进 `AGENTS.md` 或项目文件 | `dsh-agent-instructions`；`dsh-home-paths`；`src/role-manifest.ts` |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | Cursor 仓库链接 | 本地 `<pstack>/<path>`；插件随包带 `skills/`、`docs/guide/`、`README.md` | 读本地副本，不 fetch；给用户链接时用原 URL | `pstack/docs` 目录；生成器复制规则 |
 | `~/.cursor/projects/<slug>/agent-transcripts/` | Cursor 会话转录 | `$DSH_HOME/sessions/`，每个会话一个 append-only `.jsonl`，按 workspace 路径分目录 | 搜索需要 `@deepseek-ai/dsh-experimental-session-search`；base 没有模型可见的 `session_search` 工具；用 `read`/`grep` 读当前 workspace 的目录 | `dsh-session-persistence-jsonl` 的 `projectKey`/`encodeSegment`；`dsh-official-bundles` |
 
@@ -95,9 +97,9 @@
 
 | dsh.md 断言 | DSH 事实 | 差异与写法 | 证据 |
 | --- | --- | --- | --- |
-| 没有 rules 目录，不读 `.mdc` 作为会话规则 | 正确；DSH 加载 AGENTS.md 兼容链，pstack 适配器另行读取角色文件 | Cursor 的 `pstack-models.mdc` 内容要迁到 `$DSH_HOME/pstack-models.mdc`，不是 `AGENTS.md`；项目 `AGENTS.md` 不放角色行 | `dsh-agent-instructions`；`src/role-manifest.ts`；`port/dsh.md` |
+| 没有 rules 目录，不读 `.mdc` 作为会话规则 | 正确；DSH 加载 AGENTS.md 兼容链，pstack 适配器另行读取角色文件 | Cursor 的 `pstack-models.mdc` 内容要迁到 `$DSH_HOME/pstack-models.json`，不是 `AGENTS.md`；项目 `AGENTS.md` 不放角色配置 | `dsh-agent-instructions`；raw 规则；`src/role-manifest.ts` |
 | 检测模型用 `list_subagent_models` | 正确；无参数列 provider，带 provider 列模型，带 provider+model 列 effort | 只能使用返回的 id；不能把 Cursor slug 当 DSH 路由 | `dsh-tool-subagent/lib/index.js` 的 `list_subagent_models` |
-| 写入 `$DSH_HOME/pstack-models.mdc` | 正确；无 frontmatter；保留用户自己的指导；替换旧角色行块 | 不要写 `.cursor/rules`；不要覆盖项目 `AGENTS.md` 或 `CLAUDE.md` | `src/role-config.ts`；`port/dsh.md`；`setup-pstack` 步骤 |
+| 写入 `$DSH_HOME/pstack-models.json` | 正确；JSON 包含 `version`、可选 `budget` 和 `roles` 对象；覆盖整个文件 | 不要写 `.cursor/rules`；不要覆盖项目 `AGENTS.md` 或 `CLAUDE.md` | raw 规则；`src/role-config.ts` 迁移后；`setup-pstack` 步骤 |
 
 ## 补充工具
 
