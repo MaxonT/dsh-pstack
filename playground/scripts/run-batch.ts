@@ -30,7 +30,6 @@ import {
   writeProgress,
   type ProgressState,
 } from "./lib/progress.ts";
-import { hideSensitiveDirectories } from "./lib/scenario-isolation.ts";
 import { listScenarioIds, listScenariosForSkill, loadScenario } from "./lib/scenarios.ts";
 import { workerCount } from "./lib/worker.ts";
 
@@ -226,8 +225,6 @@ async function main(): Promise<void> {
     ...process.env,
     PLAYGROUND_SCENARIO_BUNDLE: bundle.file,
   };
-  const restore = hideSensitiveDirectories();
-  process.once("exit", restore);
   try {
     await Promise.all(
       queues.map(async (queue, worker) => {
@@ -281,7 +278,6 @@ async function main(): Promise<void> {
       }),
     );
   } finally {
-    restore();
     rmSync(bundle.directory, { recursive: true, force: true });
   }
   console.log(`[run-batch] log=${logFile}`);

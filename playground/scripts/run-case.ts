@@ -27,7 +27,6 @@ import {
 } from "./lib/evidence.ts";
 import { readHomePlan, readPlaygroundConfig, readWebUrl, CONFIG_FILE } from "./lib/env.ts";
 import { createEnvironment, environmentMatrix, REPORT_DIRECTORY } from "./lib/run-metadata.ts";
-import { hideSensitiveDirectories } from "./lib/scenario-isolation.ts";
 import { workerPaths, type WorkerPaths } from "./lib/worker.ts";
 
 const COMPOSER_SELECTOR = '[data-composer-input="true"]';
@@ -463,8 +462,6 @@ async function main(): Promise<void> {
         return found;
       })()
     : (await import("./lib/scenarios.ts")).loadScenario(scenarioId);
-  const restore = bundlePath ? () => {} : hideSensitiveDirectories();
-  process.once("exit", restore);
   const configFile = argValue("--config") ?? process.env.PLAYGROUND_CONFIG_FILE ?? CONFIG_FILE;
   const config = readPlaygroundConfig(configFile);
   const expectedTarget = readHomePlan(paths);
@@ -544,7 +541,6 @@ async function main(): Promise<void> {
     Object.values(config.providers).map((provider) => provider.apiKey),
   );
   writeFileSync(recordFile, `${JSON.stringify(record, null, 2)}\n`);
-  restore();
   console.log(`[run-case] ${scenarioId} ${phase} ${matrix.id} ${record.verdict.status}`);
   console.log(`[run-case] evidence=${recordFile}`);
   console.log(`[run-case] reports=${REPORT_DIRECTORY}`);
