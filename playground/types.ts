@@ -1,4 +1,5 @@
-export type Phase = "raw" | "adapted";
+export const PHASES = ["raw", "adapted"] as const;
+export type Phase = (typeof PHASES)[number];
 
 export interface TestTarget {
   provider: string;
@@ -58,7 +59,10 @@ export interface ScenarioSource {
   regression?: string;
 }
 
-export type ScenarioGroup = "skills" | "playbooks" | "official-plugins";
+export const SCENARIO_GROUPS = ["skills", "playbooks", "official-plugins"] as const;
+export type ScenarioGroup = (typeof SCENARIO_GROUPS)[number];
+export const DEFAULT_SCENARIO_GROUP: ScenarioGroup = "skills";
+export const OFFICIAL_PLUGIN_GROUP: ScenarioGroup = "official-plugins";
 
 export interface BehaviorScenario {
   type: "behavior";
@@ -128,6 +132,7 @@ export interface ToolCallEvidence {
   errorText?: string;
 }
 
+export const SKILL_TOOL_NAMES = ["skill", "pstack_skill", "pstack-skill"] as const;
 export type SkillLoadPath = "skill" | "pstack_skill" | "read" | "user-gesture" | "none";
 
 export interface SkillInvocationAnalysis {
@@ -183,32 +188,42 @@ export interface ArtifactEvidence {
   observed: string[];
 }
 
+export const SEMANTIC_REVIEW_STATUSES = ["supported", "gap", "inconclusive"] as const;
+export type SemanticReviewStatus = (typeof SEMANTIC_REVIEW_STATUSES)[number];
+
 export type SemanticReview =
   | { status: "pending"; reason: string }
   | {
-      status: "supported" | "gap" | "inconclusive";
+      status: SemanticReviewStatus;
       reason: string;
       reviewer: { kind: "model"; route: TestTarget } | { kind: "human"; name: string };
     };
 
-export type RuntimeFindingKind =
-  | "runtime-missing"
-  | "runtime-difference"
-  | "adapter-gap"
-  | "plugin-gap"
-  | "environment-only"
-  | "upstream-skill"
-  | "unclear";
+export const RUNTIME_FINDING_KINDS = [
+  "runtime-missing",
+  "runtime-difference",
+  "adapter-gap",
+  "plugin-gap",
+  "environment-only",
+  "upstream-skill",
+  "unclear",
+] as const;
+export type RuntimeFindingKind = (typeof RUNTIME_FINDING_KINDS)[number];
 
-export type RuntimeDecision =
-  | "dsh-md"
-  | "plugin"
-  | "skip"
-  | "ignore-environment"
-  | "upstream"
-  | "needs-human";
+export const RUNTIME_DECISIONS = [
+  "dsh-md",
+  "plugin",
+  "skip",
+  "ignore-environment",
+  "upstream",
+  "needs-human",
+] as const;
+export type RuntimeDecision = (typeof RUNTIME_DECISIONS)[number];
 
-export type RuntimeSeverity = "blocker" | "major" | "minor" | "info";
+export const RUNTIME_SEVERITIES = ["blocker", "major", "minor", "info"] as const;
+export type RuntimeSeverity = (typeof RUNTIME_SEVERITIES)[number];
+export const BLOCKING_RUNTIME_SEVERITIES: readonly RuntimeSeverity[] = ["blocker", "major"];
+export const BLOCKING_RUNTIME_DECISIONS: readonly RuntimeDecision[] = ["dsh-md", "plugin", "skip"];
 
 export interface RuntimeFinding {
   kind: RuntimeFindingKind;
@@ -219,18 +234,30 @@ export interface RuntimeFinding {
   evidence: string;
 }
 
-export type RuntimeReviewStatus =
-  | "clean"
-  | "findings"
-  | "blocked"
-  | "environment-only"
-  | "upstream-only"
-  | "needs-review";
+export const RUNTIME_REVIEW_STATUSES = [
+  "clean",
+  "findings",
+  "blocked",
+  "environment-only",
+  "upstream-only",
+  "needs-review",
+] as const;
+export type RuntimeReviewStatus = (typeof RUNTIME_REVIEW_STATUSES)[number];
 
 export interface RuntimeReview {
   status: RuntimeReviewStatus;
   findings: RuntimeFinding[];
 }
+
+export const VERDICT_STATUSES = [
+  "observed",
+  "gap",
+  "blocked",
+  "unobserved",
+  "verified",
+  "not-verified",
+  "inconclusive",
+] as const;
 
 export type Verdict =
   | { phase: "raw"; status: "observed"; gaps: string[] }

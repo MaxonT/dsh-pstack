@@ -2,6 +2,7 @@ import { zstdDecompressSync } from "node:zlib";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import { SKILL_TOOL_NAMES } from "../../types.ts";
 import type {
   Assertion,
   BehaviorScenario,
@@ -187,7 +188,7 @@ export function digestEvents(events: SessionEvent[], sessionId: string, worker =
         };
         toolCalls.push(call);
         callsById.set(callId, call);
-        if (["skill", "pstack_skill", "pstack-skill"].includes(name)) {
+        if (SKILL_TOOL_NAMES.some((tool) => tool === name)) {
           const args = parseArguments(data.arguments);
           const skill = typeof args.name === "string" ? args.name : "";
           const resource = typeof args.resource === "string" ? args.resource : "";

@@ -3,11 +3,24 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { dirname, join } from "node:path";
 
 import type { Phase, RuntimeFinding } from "../../types.ts";
-import { PLAYGROUND_DIRECTORY } from "./run-metadata.ts";
+import { REVIEWS_DIRECTORY } from "./review.ts";
 
-export const RUNTIME_REVIEW_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reviews/runtime-review");
+export const RUNTIME_REVIEW_DIRECTORY = join(REVIEWS_DIRECTORY, "runtime-review");
 
-export type RuntimeReviewNoteDecision = "pending" | "accept" | "reject" | "needs-human";
+export const RUNTIME_REVIEW_NOTE_DECISIONS = [
+  "pending",
+  "accept",
+  "reject",
+  "needs-human",
+] as const;
+export type RuntimeReviewNoteDecision = (typeof RUNTIME_REVIEW_NOTE_DECISIONS)[number];
+export type RuntimeReviewNoteCounts = Record<RuntimeReviewNoteDecision, number>;
+
+export function emptyRuntimeReviewNoteCounts(): RuntimeReviewNoteCounts {
+  return Object.fromEntries(
+    RUNTIME_REVIEW_NOTE_DECISIONS.map((decision) => [decision, 0]),
+  ) as RuntimeReviewNoteCounts;
+}
 
 export interface RuntimeReviewNote {
   decision: RuntimeReviewNoteDecision;
@@ -45,11 +58,25 @@ export function readRuntimeReviewNotes(phase: Phase, environment: string): Runti
   const file = runtimeReviewNotesFile(phase, environment);
   if (!existsSync(file)) return { phase, environment, notes: {} };
   const parsed = JSON.parse(readFileSync(file, "utf8")) as Partial<RuntimeReviewNotes>;
-  return {
-    phase,
-    environment,
-    notes: parsed.notes ?? {},
-  };
+  if (parsed.notes === undefined) return { phase, environment, notes: {} };
+  if (typeof parsed.notes !== "object" || parsed.notes === null || Array.isArray(parsed.notes)) {
+    throw new Error(`${file}: notes must be an object`);
+  }
+  const decisions = new Set<string>(RUNTIME_REVIEW_NOTE_DECISIONS);
+  const notes: Record<string, RuntimeReviewNote> = {};
+  for (const [id, note] of Object.entries(parsed.notes)) {
+    if (
+      typeof note !== "object" ||
+      note === null ||
+      typeof note.decision !== "string" ||
+      !decisions.has(note.decision) ||
+      typeof note.comment !== "string"
+    ) {
+      throw new Error(`${file}: invalid note for ${id}`);
+    }
+    notes[id] = { decision: note.decision as RuntimeReviewNoteDecision, comment: note.comment };
+  }
+  return { phase, environment, notes };
 }
 
 /** Create missing skeleton entries without overwriting existing comments. */
@@ -68,7 +95,7 @@ export function ensureRuntimeReviewNotes(
   }
   for (const finding of findings) {
     if (existing.notes[finding.id] !== undefined) continue;
-    existing.notes[finding.id] = { decision: "pending", comment: "" };
+    existing.notes[finding.id] = { decision: RUNTIME_REVIEW_NOTE_DECISIONS[0], comment: "" };
     changed = true;
   }
   if (changed || !existsSync(runtimeReviewNotesFile(phase, environment))) {

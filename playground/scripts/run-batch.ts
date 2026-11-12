@@ -9,6 +9,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 
+import { DEFAULT_SCENARIO_GROUP, SCENARIO_GROUPS } from "../types.ts";
 import type { Phase, RunRecord, Verdict } from "../types.ts";
 import { latestRecords } from "./lib/evidence.ts";
 import { computeWorkers } from "./lib/capacity.ts";
@@ -30,7 +31,8 @@ import { listScenarioIds, listScenariosForSkill, loadScenario } from "./lib/scen
 import { workerCount } from "./lib/worker.ts";
 
 const VPX = process.platform === "win32" ? "vpx.cmd" : "vpx";
-const GROUPS = new Set(["skills", "playbooks", "official-plugins"]);
+const GROUPS = new Set<string>(SCENARIO_GROUPS);
+const GROUP_USAGE = SCENARIO_GROUPS.join(",");
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -88,7 +90,7 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
       if (!GROUPS.has(group)) throw new Error(`unknown scenario group ${JSON.stringify(group)}`);
     }
     return listScenarioIds().filter((id) => {
-      const group = loadScenario(id).group ?? "skills";
+      const group = loadScenario(id).group ?? DEFAULT_SCENARIO_GROUP;
       if (!selected.has(group)) return false;
       return true;
     });
@@ -104,7 +106,7 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
       .map((record) => record.scenarioId);
   }
   throw new Error(
-    "run-batch requires --groups <skills,playbooks,official-plugins>, --scenarios <ids>, --skills <names>, or --only-failed",
+    `run-batch requires --groups <${GROUP_USAGE}>, --scenarios <ids>, --skills <names>, or --only-failed`,
   );
 }
 
@@ -155,7 +157,7 @@ async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   if (phase !== "raw" && phase !== "adapted") {
     throw new Error(
-      "usage: run-batch.ts --phase raw|adapted [--environment base] [--groups skills,playbooks,official-plugins|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]",
+      `usage: run-batch.ts --phase raw|adapted [--environment base] [--groups ${GROUP_USAGE}|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]`,
     );
   }
   if (process.argv.includes("--all")) {

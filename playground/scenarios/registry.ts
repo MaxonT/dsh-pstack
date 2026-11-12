@@ -1,6 +1,7 @@
+import { SCENARIO_GROUPS } from "../types.ts";
 import type { BehaviorScenario, ScenarioGroup } from "../types.ts";
 
-const modules = import.meta.glob(["./skills/*.ts", "./playbooks/*.ts", "./official-plugins/*.ts"], {
+const modules = import.meta.glob("./*/*.ts", {
   eager: true,
 }) as Record<string, Record<string, unknown>>;
 
@@ -16,10 +17,9 @@ function isBehaviorScenario(value: unknown): value is BehaviorScenario {
 }
 
 function groupOf(path: string): ScenarioGroup {
-  if (path.includes("/skills/")) return "skills";
-  if (path.includes("/playbooks/")) return "playbooks";
-  if (path.includes("/official-plugins/")) return "official-plugins";
-  throw new Error(`scenario file is outside a known group: ${path}`);
+  const group = SCENARIO_GROUPS.find((name) => path.includes(`/${name}/`));
+  if (group === undefined) throw new Error(`scenario file is outside a known group: ${path}`);
+  return group;
 }
 
 const collected = Object.entries(modules).flatMap(([path, module]) => {

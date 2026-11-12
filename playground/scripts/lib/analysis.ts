@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
+import { SKILL_TOOL_NAMES } from "../../types.ts";
 import type {
   BehaviorScenario,
   DependencyAnalysis,
@@ -11,7 +12,7 @@ import type {
 } from "../../types.ts";
 import { REPOSITORY_ROOT } from "./run-metadata.ts";
 
-const SKILL_TOOLS = new Set(["skill", "pstack_skill", "pstack-skill"]);
+const SKILL_TOOLS = new Set<string>(SKILL_TOOL_NAMES);
 
 function skillDirs(name: string): string[] {
   return [

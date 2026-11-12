@@ -9,16 +9,25 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
+import {
+  PHASES,
+  RUNTIME_DECISIONS,
+  RUNTIME_FINDING_KINDS,
+  RUNTIME_REVIEW_STATUSES,
+  RUNTIME_SEVERITIES,
+  SEMANTIC_REVIEW_STATUSES,
+} from "../../types.ts";
 import type {
   Phase,
   RunRecord,
   RuntimeDecision,
   RuntimeFinding,
   RuntimeFindingKind,
+  RuntimeSeverity,
   RuntimeReview,
   RuntimeReviewStatus,
-  RuntimeSeverity,
   SemanticReview,
+  SemanticReviewStatus,
   TestTarget,
 } from "../../types.ts";
 import { evaluateAssertions, isRunRecord, latestRecords, verdictFor } from "./evidence.ts";
@@ -27,37 +36,9 @@ import { loadScenario } from "./scenarios.ts";
 
 export const REVIEWS_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reviews");
 
-const REVIEWED_STATUSES = ["supported", "gap", "inconclusive"] as const;
-export type ReviewedStatus = (typeof REVIEWED_STATUSES)[number];
+export type ReviewedStatus = SemanticReviewStatus;
 export type Review = Extract<SemanticReview, { status: ReviewedStatus }>;
 export type ReviewFile = Review & { reviewedAt: string; runtime?: RuntimeReview };
-
-const RUNTIME_STATUSES: readonly RuntimeReviewStatus[] = [
-  "clean",
-  "findings",
-  "blocked",
-  "environment-only",
-  "upstream-only",
-  "needs-review",
-];
-const RUNTIME_KINDS: readonly RuntimeFindingKind[] = [
-  "runtime-missing",
-  "runtime-difference",
-  "adapter-gap",
-  "plugin-gap",
-  "environment-only",
-  "upstream-skill",
-  "unclear",
-];
-const RUNTIME_DECISIONS: readonly RuntimeDecision[] = [
-  "dsh-md",
-  "plugin",
-  "skip",
-  "ignore-environment",
-  "upstream",
-  "needs-human",
-];
-const RUNTIME_SEVERITIES: readonly RuntimeSeverity[] = ["blocker", "major", "minor", "info"];
 
 export interface ReviewIdentity {
   scenarioId: string;
@@ -70,8 +51,6 @@ export interface ReviewSidecar {
   identity: ReviewIdentity;
   review: ReviewFile;
 }
-
-const PHASES: readonly Phase[] = ["raw", "adapted"];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -114,10 +93,10 @@ function parseRuntimeValue(value: unknown): { runtime?: RuntimeReview; errors: s
   if (!isRecord(value)) return { errors: ["runtime must be an object when present"] };
   if (
     !nonEmptyString(value.status) ||
-    !RUNTIME_STATUSES.includes(value.status as RuntimeReviewStatus)
+    !RUNTIME_REVIEW_STATUSES.includes(value.status as RuntimeReviewStatus)
   ) {
     errors.push(
-      `runtime.status must be one of ${RUNTIME_STATUSES.map((status) => JSON.stringify(status)).join(", ")}`,
+      `runtime.status must be one of ${RUNTIME_REVIEW_STATUSES.map((status) => JSON.stringify(status)).join(", ")}`,
     );
   }
   if (!Array.isArray(value.findings)) {
@@ -137,7 +116,7 @@ function parseRuntimeValue(value: unknown): { runtime?: RuntimeReview; errors: s
       }
     }
     const kind = rawFinding.kind;
-    if (!nonEmptyString(kind) || !RUNTIME_KINDS.includes(kind as RuntimeFindingKind)) {
+    if (!nonEmptyString(kind) || !RUNTIME_FINDING_KINDS.includes(kind as RuntimeFindingKind)) {
       errors.push(`runtime.findings[${index}].kind is invalid`);
     }
     const severity = rawFinding.severity;
@@ -151,7 +130,7 @@ function parseRuntimeValue(value: unknown): { runtime?: RuntimeReview; errors: s
     if (
       fields.every((field) => nonEmptyString(rawFinding[field])) &&
       nonEmptyString(kind) &&
-      RUNTIME_KINDS.includes(kind as RuntimeFindingKind) &&
+      RUNTIME_FINDING_KINDS.includes(kind as RuntimeFindingKind) &&
       nonEmptyString(severity) &&
       RUNTIME_SEVERITIES.includes(severity as RuntimeSeverity) &&
       nonEmptyString(decision) &&
@@ -191,9 +170,11 @@ export function parseReviewValue(value: unknown): { review?: ReviewFile; errors:
   if (!isRecord(value)) return { errors: ["review must be a JSON object"] };
   if (
     !nonEmptyString(value.status) ||
-    !REVIEWED_STATUSES.includes(value.status as ReviewedStatus)
+    !SEMANTIC_REVIEW_STATUSES.includes(value.status as ReviewedStatus)
   ) {
-    errors.push('status must be one of "supported", "gap", "inconclusive"');
+    errors.push(
+      `status must be one of ${SEMANTIC_REVIEW_STATUSES.map((status) => JSON.stringify(status)).join(", ")}`,
+    );
   }
   if (!nonEmptyString(value.reason)) errors.push("reason must be a non-empty string");
   if (!nonEmptyString(value.reviewedAt) || Number.isNaN(Date.parse(value.reviewedAt))) {
