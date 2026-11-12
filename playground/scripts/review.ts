@@ -1,6 +1,7 @@
 import { workersDirectory } from "./lib/run-metadata.ts";
 import {
   applyReviews,
+  archiveStaleReviewSidecars,
   inspectReviews,
   REVIEWS_DIRECTORY,
   type ReviewIdentity,
@@ -12,10 +13,12 @@ function label(identity: ReviewIdentity): string {
 }
 
 function main(): void {
+  const scenarioIds = listReviewScenarioIds();
+  archiveStaleReviewSidecars(REVIEWS_DIRECTORY, scenarioIds);
   const input = {
     reviewsDirectory: REVIEWS_DIRECTORY,
     workersDirectory: workersDirectory(),
-    scenarioIds: listReviewScenarioIds(),
+    scenarioIds,
   };
   if (process.argv.includes("--apply")) {
     const result = applyReviews(input);

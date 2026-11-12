@@ -255,6 +255,28 @@ function identityFromTreeFile(
   return identity;
 }
 
+export function archiveStaleReviewSidecars(
+  reviewsDirectory: string,
+  scenarioIds: string[],
+): number {
+  const scenariosDirectory = join(reviewsDirectory, "scenarios");
+  if (!existsSync(scenariosDirectory)) return 0;
+  const known = new Set(scenarioIds);
+  const runId = new Date().toISOString().replace(/[:.]/g, "-");
+  let archived = 0;
+  for (const file of reviewFiles(scenariosDirectory)) {
+    const parts = relative(scenariosDirectory, file).split(/[\\/]/);
+    if (parts[0] === "history" || parts.length < 4) continue;
+    const [group, scenarioId] = parts;
+    if (group === undefined || scenarioId === undefined || known.has(scenarioId)) continue;
+    const target = join(scenariosDirectory, "history", runId, group, scenarioId, ...parts.slice(2));
+    mkdirSync(dirname(target), { recursive: true });
+    renameSync(file, target);
+    archived += 1;
+  }
+  return archived;
+}
+
 export function readReviewSidecars(
   reviewsDirectory: string,
   scenarioIds: string[],

@@ -36,6 +36,14 @@ import {
   workersDirectory,
 } from "./lib/run-metadata.ts";
 import {
+  archivePreviousReport,
+  pruneStalePhaseEvidence,
+  readReportManifest,
+  reportRunId,
+  writeReportManifest,
+} from "./lib/report-history.ts";
+import {
+  archiveRuntimeReviewNotes,
   emptyRuntimeReviewNoteCounts,
   ensureRuntimeReviewNotes,
   readRuntimeReviewNotes,
@@ -260,7 +268,12 @@ function comparisonMarkdown(scenarioId: string, current: RunRecord, latest: RunR
   ].join("\n");
 }
 
-function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: string): void {
+function writeRuntimeReviews(
+  current: RunRecord[],
+  phase: Phase,
+  environmentId: string,
+  runId: string,
+): void {
   const counts: Record<string, number> = {};
   const findings = new Map<
     string,
@@ -321,6 +334,7 @@ function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: 
     force: true,
   });
   rmSync(join(REPORT_DIRECTORY, REPORT_LAYOUT.runtimeReview), { force: true });
+  archiveRuntimeReviewNotes(phase, environmentId, runId);
   const directory = join(REPORT_DIRECTORY, REPORT_LAYOUT.runs, `${phase}-${environmentId}`);
   const file = join(directory, REPORT_LAYOUT.runtimeReview);
   if (findings.size === 0) {
@@ -367,6 +381,18 @@ export function writeMirroredReports(
       record.environment.matrix.id === environmentId &&
       phaseEligible(record.scenarioId, phase),
   );
+  const runPath = join(REPORT_DIRECTORY, REPORT_LAYOUT.runs, `${phase}-${environmentId}`);
+  const runId = reportRunId(current);
+  const previous = readReportManifest(runPath);
+  if (previous && previous.runId !== runId) {
+    archivePreviousReport(REPORT_DIRECTORY, phase, environmentId, previous.runId);
+  }
+  pruneStalePhaseEvidence(
+    REPORT_DIRECTORY,
+    phase,
+    environmentId,
+    new Set(current.map((record) => record.scenarioId)),
+  );
   for (const legacy of [...SCENARIO_GROUPS, "summary"]) {
     rmSync(join(REPORT_DIRECTORY, legacy), { recursive: true, force: true });
   }
@@ -381,7 +407,9 @@ export function writeMirroredReports(
     const record = current.find((entry) => entry.scenarioId === id);
     const caseRoot = join(REPORT_DIRECTORY, REPORT_LAYOUT.scenarios, group, id);
     if (record) {
-      copyRunEvidence(record, join(caseRoot, `${phase}-${environmentId}`));
+      const caseDirectory = join(caseRoot, `${phase}-${environmentId}`);
+      rmSync(caseDirectory, { recursive: true, force: true });
+      copyRunEvidence(record, caseDirectory);
       if (phase === "adapted") {
         writeFileSync(join(caseRoot, "comparison.md"), comparisonMarkdown(id, record, latest));
       }
@@ -403,7 +431,6 @@ export function writeMirroredReports(
     ...rows,
     "",
   ].join("\n");
-  const runPath = join(REPORT_DIRECTORY, REPORT_LAYOUT.runs, `${phase}-${environmentId}`);
   mkdirSync(runPath, { recursive: true });
   for (const name of readdirSync(runPath)) {
     if (/^summary-.*\.md$/.test(name)) rmSync(join(runPath, name), { force: true });
@@ -424,7 +451,7 @@ export function writeMirroredReports(
     );
   }
 
-  writeRuntimeReviews(current, phase, environmentId);
+  writeRuntimeReviews(current, phase, environmentId, runId);
 
   if (phase === "adapted" && environmentId === "base") {
     const failed = current.filter((record) => record.verdict.status !== "verified");
@@ -558,6 +585,13 @@ export function writeMirroredReports(
       ].join("\n"),
     );
   }
+  writeReportManifest(runPath, {
+    runId,
+    phase,
+    environment: environmentId,
+    generatedAt: new Date().toISOString(),
+    scenarioIds: current.map((record) => record.scenarioId),
+  });
   writeFileSync(
     join(REPORT_DIRECTORY, "index.md"),
     [

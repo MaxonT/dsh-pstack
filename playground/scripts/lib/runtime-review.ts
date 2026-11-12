@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import type { Phase, RuntimeFinding } from "../../types.ts";
@@ -110,6 +110,14 @@ export function ensureRuntimeReviewNotes(
     );
   }
   return existing;
+}
+
+export function archiveRuntimeReviewNotes(phase: Phase, environment: string, runId: string): void {
+  const file = runtimeReviewNotesFile(phase, environment);
+  if (!existsSync(file)) return;
+  const target = join(RUNTIME_REVIEW_DIRECTORY, "history", `${runId}.json`);
+  mkdirSync(dirname(target), { recursive: true });
+  copyFileSync(file, target);
 }
 
 export function removeRuntimeReviewNotes(phase: Phase, environment: string): void {
