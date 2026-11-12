@@ -33,7 +33,7 @@
 - 每个 finding 必须有 `kind`、`severity`、`decision`、`observation`、`action`、`evidence`。
 - `decision` 只能是 `dsh-md`、`plugin`、`skip`、`ignore-environment`、`upstream` 或 `needs-human`。DSH 有等价能力但语义不同时走 `dsh-md`；需要新增工具、预设或可选包时走 `plugin`；只有环境权限、凭据、网络或无头限制时走 `ignore-environment`；技能自身问题走 `upstream`。
 - 无法可靠分类、或分类会影响后续方案却证据不足时，必须使用 `kind: "unclear"`、`decision: "needs-human"`、`status: "needs-review"`，交给用户亲自审查。禁止默认忽略、默认归为上游或默认选一个 decision 来消除告警。
-- `collect` 必须按 skill 输出 `runtime-review/` 报告，并在 summary、comparison 和 approval 中区分 semantic 与 runtime；`needs-review` 和未填写的 runtime review 不能被当作 clean。
+- `collect` 必须按 group 输出 `runtime-review.md`，并在 summary、comparison 和 approval 中区分 semantic 与 runtime；`needs-review` 和未填写的 runtime review 不能被当作 clean。
 
 ## 流程与审批
 

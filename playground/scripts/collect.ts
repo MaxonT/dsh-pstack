@@ -4,6 +4,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
@@ -221,37 +222,40 @@ function comparisonMarkdown(scenarioId: string, current: RunRecord, latest: RunR
 }
 
 function writeRuntimeReviews(current: RunRecord[], phase: Phase, environmentId: string): void {
-  const bySkill = new Map<string, { group: string; skill: string; records: RunRecord[] }>();
+  const byGroup = new Map<string, RunRecord[]>();
   for (const record of current) {
-    const scenario = loadScenario(record.scenarioId);
-    const group = scenario.group ?? "skills";
-    const key = `${group}\0${scenario.skill}`;
-    const bucket = bySkill.get(key) ?? { group, skill: scenario.skill, records: [] };
-    bucket.records.push(record);
-    bySkill.set(key, bucket);
+    const group = loadScenario(record.scenarioId).group ?? "skills";
+    const bucket = byGroup.get(group) ?? [];
+    bucket.push(record);
+    byGroup.set(group, bucket);
   }
-  for (const { group, skill, records } of bySkill.values()) {
+  for (const [group, records] of byGroup) {
+    const counts: Record<string, number> = {};
     const rows = records.flatMap((record) => {
       const runtime = runtimeOf(record);
+      counts[runtime.status] = (counts[runtime.status] ?? 0) + 1;
+      if (runtime.status === "clean") return [];
+      const skill = loadScenario(record.scenarioId).skill;
       if (runtime.findings.length === 0) {
-        return [`| ${record.scenarioId} | ${runtime.status} | - | - | - | - | - | - |`];
+        return [`| ${skill} | ${record.scenarioId} | ${runtime.status} | - | - | - | - | - | - |`];
       }
       return runtime.findings.map(
         (finding) =>
-          `| ${record.scenarioId} | ${runtime.status} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.observation)} | ${escape(finding.action)} | ${escape(finding.evidence)} |`,
+          `| ${skill} | ${record.scenarioId} | ${runtime.status} | ${finding.kind} | ${finding.severity} | ${finding.decision} | ${escape(finding.observation)} | ${escape(finding.action)} | ${escape(finding.evidence)} |`,
       );
     });
-    const directory = join(REPORT_DIRECTORY, group, "runtime-review");
+    const directory = join(REPORT_DIRECTORY, group);
+    rmSync(join(directory, "runtime-review"), { recursive: true, force: true });
     mkdirSync(directory, { recursive: true });
     writeFileSync(
-      join(directory, `${skill.replace(/[^a-z0-9-]+/gi, "-") || "skill"}.md`),
+      join(directory, "runtime-review.md"),
       [
-        `# ${skill} runtime review`,
+        `# ${group} runtime review`,
         "",
-        `Phase: ${phase}. Environment: ${environmentId}. Scenarios: ${records.length}.`,
+        `Phase: ${phase}. Environment: ${environmentId}. Scenarios: ${records.length}. Clean: ${counts["clean"] ?? 0}.`,
         "",
-        "| scenario | runtime status | finding | severity | decision | observation | action | evidence |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| skill | scenario | runtime status | finding | severity | decision | observation | action | evidence |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
         ...rows,
         "",
       ].join("\n"),
@@ -448,7 +452,7 @@ export function writeMirroredReports(
       "# Playground reports",
       "",
       "- `summary/`：按 phase 与环境汇总。",
-      "- `skills/`、`playbooks/`、`official-plugins/`：每个 case 的运行记录、截图、comparison、组根 `summary-*.md` 和 `runtime-review/`。",
+      "- `skills/`、`playbooks/`、`official-plugins/`：每个 case 的运行记录、截图、comparison、组根 `summary-*.md` 和 `runtime-review.md`。",
       "- `approval-adapted-base.md`：移植验收审批。",
       "- `approval-official-plugins.md`：官方插件矩阵审批。",
       "",
