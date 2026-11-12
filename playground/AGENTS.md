@@ -14,8 +14,8 @@
 - `scenarios/<group>/<scenario>.ts`：一个场景一个文件；group 由目录和注册表决定。playbook 场景的 prompt 以 `/poteto-mode ` 开头。
 - `scenarios/registry.ts`：用 `import.meta.glob` 自动发现组目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
 - `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
-- `reports/scenarios/`：镜像 `scenarios/` 的 case 证据组。`reports/runs/`：按 phase/environment 汇总的 `summary.md`、`summary-<group>.md` 和 `runtime-review.md`。`reports/approvals/`：最终审批。`record.json`、截图、session 日志不提交；其余报告文件提交。
-- `reviews/scenarios/<group>/<scenario>/<phase>-<environment>.json`：审核侧车，提交进库；`reviews/runtime-review/<phase>-<environment>.json`：运行时点评。
+- `reports/scenarios/`：镜像 `scenarios/` 的 case 证据组。`reports/runs/`：按 phase/environment 汇总的 `summary.md`、`summary-<group>.md` 和 `runtime-review.md`。`reports/approvals/`：最终审批。`reports/history/`：本地运行快照，不提交；`record.json`、截图、session 日志不提交；其余报告文件提交。
+- `reviews/scenarios/<group>/<scenario>/<phase>-<environment>.json`：审核侧车，提交进库；`reviews/runtime-review/<phase>-<environment>.json`：运行时点评。删除场景或 finding 变化时，旧点评归档到 `reviews/history/`，不直接删除。
 - 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
 
 ## 场景要求
