@@ -6,48 +6,27 @@ export const broPlainRestate: BehaviorScenario = {
   skill: "bro",
   turns: [
     {
-      prompt: "解释一下这个工作区里 cache.js 那段缓存失效逻辑是怎么工作的。",
+      prompt:
+        "我们准备把订单服务里的同步 RPC 调用改成事件驱动，通过 outbox 表做最终一致，读路径走物化视图，写路径走命令总线，同时用幂等键去重。你怎么看这套改造？",
     },
     {
-      prompt: "你刚才那段说得太专业了，用大白话、像跟朋友聊天一样再讲一遍，别用术语。",
+      prompt: "/bro 用大白话把你刚才那段再讲一遍，别用行话。",
     },
   ],
   workspace: {
-    files: {
-      "README.md": "# cache-demo\n\n一个带 30 秒有效期的小缓存工具。\n",
-      "cache.js": [
-        "const store = new Map();",
-        "const TTL_MS = 30_000;",
-        "export function get(key, now = Date.now()) {",
-        "  const entry = store.get(key);",
-        "  if (!entry) return undefined;",
-        "  if (now - entry.at > TTL_MS) { store.delete(key); return undefined; }",
-        "  return entry.value;",
-        "}",
-        "export function set(key, value, now = Date.now()) {",
-        "  store.set(key, { value, at: now });",
-        "}",
-        "",
-      ].join("\n"),
-    },
+    files: { "README.md": "# order-service\n\n订单服务，当前用同步 RPC 调其他服务。\n" },
   },
-  assertions: [{ kind: "turn-completed" }, { kind: "assistant-contains", text: "缓存" }],
+  assertions: [{ kind: "turn-completed" }],
   rubric: {
     prompt:
-      "这是纯文本复述技能（bro），判定复述质量。效果成立的标志：第二轮把上一段关于缓存失效的解释用简单、连贯、少术语的说法重讲一遍，像一个人对另一个人讲话，保留原意且不新增错误（例如仍说清『过期后旧值被丢掉，下次再取就没有了』这类要点）。若仍然堆砌术语、只是照抄原回复、或信息明显失真，记 gap。技能加载只是过程证据，不等于复述效果成立。",
+      "bro 的效果成立的标志：把上一条回复用平实的人话重讲一遍，去掉 outbox、最终一致、物化视图、命令总线、幂等键这类行话或当场解释成人话，句子短，像一个人跟另一个人说话；意思与原回复一致，不新增结论、不丢关键意思。gap：仍堆砌术语；只做同义词替换没有真正讲清；改变或新增了原回复没有的判断。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
-    {
-      id: "completed-turns",
-      description: "两轮对话都自然结束，没有自动点击停止。",
-    },
-    {
-      id: "response-visible",
-      description: "浏览器中能看到第二轮用大白话重讲的完整回复。",
-    },
+    { id: "completed-turn", description: "两轮对话都自然结束，没有自动点击停止。" },
+    { id: "response-visible", description: "浏览器中能看到平实重述的完整回复。" },
   ],
   source: {
     upstreamSkill: "pstack/skills/bro/SKILL.md",
-    regression: "同一 scenario id 用于 raw 与 adapted 证据",
+    regression: "主路径：把上一条技术回复改写成无行话的人话",
   },
 };

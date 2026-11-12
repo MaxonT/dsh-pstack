@@ -6,31 +6,42 @@ export const lazinessProtocolApply: BehaviorScenario = {
   skill: "principle-laziness-protocol",
   turns: [
     {
-      prompt:
-        "有个 30 行的小工具函数被三个调用点复用。我想给它抽一层接口、加一个配置对象，再包一个 provider，方便以后扩展。你看这个改动该怎么定？",
+      prompt: "这个格式化金额的小工具现在有点绕，帮我整理一下，让它更好读。注意别越整理越大。",
     },
   ],
   workspace: {
     files: {
-      "src/format.ts":
-        "export function formatMoney(cents: number): string {\n  return (cents / 100).toFixed(2);\n}\n",
-      "src/caller.ts":
-        'import { formatMoney } from "./format.ts";\nexport const price = formatMoney(1999);\n',
+      "src/money.ts": [
+        "function toCents(amount: number): number {",
+        "  return Math.round(amount * 100);",
+        "}",
+        "",
+        "class MoneyFormatter {",
+        '  constructor(private readonly locale = "zh-CN") {}',
+        "  format(cents: number): string {",
+        '    return new Intl.NumberFormat(this.locale, { style: "currency", currency: "CNY" }).format(cents / 100);',
+        "  }",
+        "}",
+        "",
+        "// 这一层只有一个调用方，只是把参数原样转给 MoneyFormatter",
+        "export function formatMoney(amount: number): string {",
+        "  const cents = toCents(amount);",
+        "  return new MoneyFormatter().format(cents);",
+        "}",
+        "",
+      ].join("\n"),
     },
   },
-  assertions: [{ kind: "turn-completed" }, { kind: "assistant-contains", text: "最小" }],
+  assertions: [{ kind: "turn-completed" }],
   rubric: {
     prompt:
-      "回复应主张用最小改动解决当前问题、优先删除和复用而不是提前抽接口/配置/provider 这些层，并说明等三个调用点出现真实差异后再抽象。认可一上来就加多层抽象、或只复述原则名字而没有给出更小的做法，记 gap。技能加载只是过程证据，不等于效果成立。",
+      "回答应偏向变小、变直接的整理：删掉只有一个调用方的包装层，把 `toCents` 与格式化合到一处需要的地方，保留原有行为（人民币、两位小数），能删则删而不是引入新接口、新抽象或配置文件。gap：为了“可扩展”新增 formatter 接口/工厂/策略；把代码变大；改变金额格式行为。若只是把同样结构换个名字，也算没有真正减小读者负担。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
-    {
-      id: "response-visible",
-      description: "浏览器中能看到完整回复，回复选择最小改动、拒绝过早抽象并说明理由。",
-    },
+    { id: "response-visible", description: "浏览器中能看到更小更直接的整理结果与行为保持说明。" },
   ],
   source: {
     upstreamSkill: "pstack/skills/principle-laziness-protocol/SKILL.md",
-    regression: "该原则在 DSH 会话中仍被应用",
+    regression: "该原则在 DSH 会话中仍被应用：优先删除与最小改动，不新增抽象",
   },
 };

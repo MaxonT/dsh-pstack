@@ -7,7 +7,7 @@ export const swarmBoundaryScan: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "src 下这几个工具函数我想统一过一遍健壮性。请并行地把 safeDivide、parseConfig、clamp、slugify 都查一下有没有没处理的边界或会直接抛异常的情况，最后汇总成一张表，列出每个文件的问题和是否确认。",
+        "src 下这几个工具函数我想统一过一遍健壮性。请分头并行地把 safeDivide、parseConfig、clamp、slugify 都查一下有没有没处理的边界或会直接抛异常的情况，最后合并成一张表，列出每个文件的问题和是否确认。",
     },
   ],
   workspace: {
@@ -43,29 +43,34 @@ export const swarmBoundaryScan: BehaviorScenario = {
     { kind: "skill-loaded", skill: "swarm" },
     { kind: "assistant-contains", text: "safeDivide" },
     { kind: "assistant-contains", text: "parseConfig" },
+    { kind: "assistant-contains", text: "clamp" },
     { kind: "assistant-contains", text: "slugify" },
   ],
   rubric: {
     prompt:
-      "最终应是一份合并后的报告：一张覆盖全部四个切片的表，每行给出文件、PASS 或 ISSUES 与证据；safeDivide（分母为 0 未设防）与 parseConfig（未包裹 JSON.parse）应被标为确认问题并附一句说明，clamp 与 slugify 应判为通过；同时说明是否有切片缺口或工人掉线。gap：漏查部分文件；只贴各工人的原始输出而未合并；问题没有证据；或把已防护的文件误报为问题。技能加载是过程证据，不等于效果成立。",
+      "最终应是一份合并后的报告：一张覆盖全部四个切片的表，每行给出文件、PASS 或 ISSUES 与证据；safeDivide（分母为 0 未设防，返回 Infinity）与 parseConfig（未包裹 JSON.parse，非法输入直接抛异常）应被标为确认问题并附一句说明，clamp 与 slugify 应判为通过；同时说明是否有切片缺口或工人掉线。gap：漏查部分文件；只贴各工人原始输出而未合并；问题没有证据；或把已防护的文件误报为问题。若并行子代理在本环境不可用，技能应如实说明并降级为顺序切片完成，不据此判缺口。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     {
+      id: "response-visible",
+      description: "浏览器中能看到完整回复，含合并后的结果表而非多段原始输出。",
+    },
+    {
       id: "consolidated-table",
-      description: "回复中出现合并后的结果表，覆盖四个文件而非粘贴多段原始输出。",
+      description: "人工确认回复出现一张覆盖四个文件的合并表，而不是粘贴多段工人原文。",
     },
     {
       id: "pass-issues-marks",
-      description: "每个切片带 PASS/ISSUES 结论与简短依据，问题项可读。",
+      description: "人工确认每个切片带 PASS/ISSUES 结论与简短依据，问题项可读。",
     },
     {
       id: "gaps-noted",
-      description: "若有切片缺口或工人掉线，报告中有明确说明。",
+      description: "人工确认若有切片缺口或工人掉线，报告中有明确说明。",
     },
   ],
   source: {
     upstreamSkill: "pstack/skills/swarm/SKILL.md",
     regression:
-      "guards swarm's fan-out-and-drain behavior: parallel slices each return a result and the run yields one consolidated coverage report with per-slice verdicts.",
+      "主路径：并行切片后合并成一份带 PASS/ISSUES 的报告；子代理不可用时如实降级为顺序切片，不据此判缺口",
   },
 };

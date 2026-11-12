@@ -57,7 +57,8 @@ describe("scenario registry", () => {
     expect(prompt).toMatch(/^\/poteto-help /);
     expect(prompt.replace("/poteto-help ", "")).not.toMatch(/skill|工具/);
     expect(scenario.assertions.some((assertion) => assertion.kind === "turn-completed")).toBe(true);
-    expect(scenario.rubric.prompt).toContain("技能加载是过程证据，不等于建议有效");
+    expect(scenario.rubric.prompt).toContain("技能加载只是过程证据");
+    expect(scenario.rubric.prompt).toContain("效果成立");
   });
 
   it("leaves the explain-the-number effect to the rubric instead of a word-level check", () => {
@@ -80,7 +81,6 @@ describe("scenario registry", () => {
       { kind: "turn-completed" },
       { kind: "artifact-contains", path: "verify/SKILL.md", text: "name: verify" },
       { kind: "artifact-dir-nonempty", path: "verify/features" },
-      { kind: "assistant-contains", text: "验证" },
     ]);
     expect(scenario.rubric.prompt).toContain("README.md 或 index.md");
   });

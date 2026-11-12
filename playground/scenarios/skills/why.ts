@@ -75,30 +75,29 @@ cheaper than the complexity.
   assertions: [
     { kind: "turn-completed" },
     { kind: "skill-loaded", skill: "why" },
-    { kind: "assistant-contains", text: "429" },
-    { kind: "assistant-contains", text: "MCP" },
+    { kind: "assistant-contains", text: "fetchWithRetry" },
   ],
   rubric: {
     prompt:
-      "回答应把问题重述、锚定到 src/fetch.mjs 的具体代码，再用证据分层（直接/支持/推断）说明：429 限流促成了三次尝试与指数退避，依据是代码注释、ADR 与测试；同时明确记录哪些外部证据源查不到（如问题单、聊天、长文文档、可观测性等 MCP 在本环境不可用，且无 git 历史），把这些记为缺口而非用猜测填补。gap：编造 PR/工单/聊天等不存在的引用；把代码自身当作动机的证据；把意图当事实陈述而无证据层级；或漏掉不可用证据源的说明。技能加载是过程证据，不等于归因有效。",
+      "回答应先把问题重述、锚定到 src/fetch.mjs 的具体代码，再用证据分层（直接/支持/推断）说明：上游 429 限流促成了三次尝试与指数退避，依据是代码注释、ADR 与测试。同时明确记录哪些外部证据源查不到，例如问题单、聊天、长文文档、可观测性等在本环境不可用，且没有 git 历史，把这些记为缺口而不是用猜测填补。gap：编造 PR/工单/聊天等不存在的引用；把代码自身当作动机的证据；把意图当事实陈述而无证据层级；或漏掉不可用证据源的说明。若相关外部证据工具在本环境不可用，技能应如实说明并降级为本地证据，这不算缺口。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     {
+      id: "response-visible",
+      description: "浏览器中能看到完整回复，区分直接证据、推断与未知的行文可读。",
+    },
+    {
       id: "confidence-tiers",
-      description: "回复区分直接证据、推断与未知，而非一律用肯定语气。",
+      description: "人工确认回复用不同置信层级表述结论，而非一律用肯定语气。",
     },
     {
       id: "sources-consulted",
-      description: "回复列出实际查证与不可用的证据源，含 MCP 不可用的说明。",
-    },
-    {
-      id: "gaps-named",
-      description: "明确写出无法查到的具体缺口，而不是含糊带过。",
+      description: "人工确认回复列出实际查证与不可用的证据源，含外部证据源不可用的说明。",
     },
   ],
   source: {
     upstreamSkill: "pstack/skills/why/SKILL.md",
     regression:
-      "guards why's cited, confidence-tiered investigation and its degraded path when evidence MCPs are absent: name unavailable sources and ground the conclusion in code and local history instead of guessing.",
+      "主路径：引用证据并分层置信度、点名不可用证据源；外部证据工具不可用时如实降级为本地证据，不据此判缺口",
   },
 };

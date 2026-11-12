@@ -7,57 +7,58 @@ export const benchmarkChecklist: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "这份导出性能报告我想直接对外发布，你先帮我复核一下里面的测量站不站得住。别客气，先直说这个 47% 的提升可不可信，再逐条指出报告里哪些测量点有问题、应该怎么补。不要改实现代码，只给复核意见。",
+        "这份导出性能报告我打算对外发布，发布前请你按基准测量的标准帮我复核一遍：这个提升数字站不站得住，还差哪些证据才能发布。别动实现代码，只给我复核结论。",
     },
   ],
   workspace: {
     files: {
       "bench/report.md": [
-        "# Export performance report",
+        "# 导出性能报告",
         "",
-        "We made JSON export 47% faster.",
+        "我们把 JSON 导出做快了 47%。",
         "",
-        "- Before: 1820 ms",
-        "- After: 964 ms",
-        "- Measured on my laptop, one run on each side.",
-        "- The before number came from the default dev build; the after number came from a release build.",
-        "- p50 taken from a single run.",
+        "- 改动前：1820 ms",
+        "- 改动后：964 ms",
+        "- 在我的笔记本上，两侧各跑一次。",
+        "- 改动前用的是默认开发构建，改动后用的是发布构建。",
+        "- p50 取自单次运行。",
         "",
-        "Conclusion: ship it, export is now 47% faster.",
+        "测量脚本见 run-export.mjs。",
+        "",
+        "结论：可以发布，导出现在快了 47%。",
         "",
       ].join("\n"),
       "bench/run-export.mjs": [
-        "// Measures one export pass and prints the elapsed milliseconds.",
-        "const rows = Array.from({ length: 60000 }, (_, i) => ({ id: i, name: `row-${i}` }));",
+        "// 报告里的数字来自这个测量脚本。",
+        "function* rowSource(count) {",
+        "  for (let i = 0; i < count; i++) yield { id: i, name: 'row-' + i };",
+        "}",
         "",
         "const started = performance.now();",
-        "JSON.stringify(rows);",
+        "const payload = JSON.stringify(rowSource(60000));",
         "const elapsed = performance.now() - started;",
         "",
-        "console.log(`elapsed ${elapsed.toFixed(1)} ms over ${rows.length} rows`);",
+        "console.log('elapsed ' + elapsed.toFixed(1) + ' ms, bytes=' + payload.length);",
+        "// payload 从不写到磁盘、不返回给调用方，也没有校验任何一行真的被导出。",
         "",
       ].join("\n"),
     },
   },
-  assertions: [
-    { kind: "turn-completed" },
-    { kind: "assistant-contains", text: "47%" },
-    { kind: "assistant-contains", text: "次" },
-  ],
+  assertions: [{ kind: "turn-completed" }, { kind: "assistant-contains", text: "47%" }],
   rubric: {
     prompt:
-      "目标是让助手在采纳或发布一个性能数字前先按基准复核清单审查它。合格的回复必须给出明确的判定（可信、不可信或证据不足），并至少点出这些可疑点中的主要部分：单次运行没有重复测量、两侧构建配置不同（dev 对 release，未调优）、没有错误或失败计数、未指明限制因素（limiter）、未确认被计时的区域真的跑了活。仅仅加载技能或复述报告数字不算效果成立。若助手直接认可 47% 的提升、或只列问题而不给判定，记为缺口。",
+      "目标是让助手在发布或采纳一个性能数字前，先按基准复核的标准审它。合格的回复要给出明确判定（可信、不可信或证据不足），并至少点出这些关键缺陷中的主要部分：一是可重复性，两侧各只跑一次、没有重复与区间，单次测量无法和运行间波动区分；二是错误与失败计数，脚本不统计失败和异常，也不校验输出正确，只打印耗时；三是限速因素，没有指出这次耗时被什么限制，无法说明改动为何会或不会移动这个数；四是工作是否真的发生，被计时的区域把一个生成器当数据源序列化，结果只是一个空对象，导出的字节从未写出也没被读回，代码也没使用结果，所以测到的并不是导出工作。可顺带指出两侧构建配置不同（开发构建对发布构建，未调优）以及这只是内存中的微基准、不代表用户等待的端到端路径。仅加载技能或复述报告数字不算效果成立。若直接认可 47% 的提升、或只罗列问题而不给判定，记为缺口；若因环境无法执行脚本而如实说明并依据脚本字面证据给出判定，则不算缺口。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     { id: "completed-turn", description: "会话自然结束，没有自动点击停止或无限重试。" },
     {
-      id: "verdict-visible",
-      description: "浏览器里能看到一条直接回答“可不可信”的判定，并跟着具体的测量缺陷清单。",
+      id: "response-visible",
+      description: "浏览器中能看到一条直接回答「可不可信」的判定，并跟着具体的测量缺陷清单。",
     },
   ],
   source: {
     upstreamSkill: "pstack/skills/benchmark-checklist/SKILL.md",
     regression:
-      "适配后仍必须先给判定，并点名单次运行、未调优的一侧和缺失的错误计数；退化为一句话背书即为回归。",
+      "适配后仍必须先给判定，并点出可重复性、错误计数、限速因素和工作是否真的发生；退化为一句话背书即为回归。",
   },
 };

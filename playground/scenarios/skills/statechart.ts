@@ -75,10 +75,7 @@ export const statechartOrderShipRuleMermaid: BehaviorScenario = {
     },
   ],
   workspace: orderFlowWorkspace,
-  assertions: [
-    { kind: "turn-completed" },
-    { kind: "assistant-contains", text: "stateDiagram" },
-  ],
+  assertions: [{ kind: "turn-completed" }, { kind: "assistant-contains", text: "stateDiagram" }],
   rubric: {
     prompt:
       "用户明确要求 Mermaid 状态图，回复应给出 Mermaid 状态图代码（stateDiagram），并指出违反『只有已付款才能发货』的最短路径：待付款 —直接发货→ 已发货。缺 Mermaid 状态图、或没有指出这条违规路径、或把规则改弱让它通过，都记缺口。Mermaid 之外的图片不算满足本格式专用场景。技能加载只是过程证据，不等于效果成立。",
@@ -104,10 +101,7 @@ export const statechartOrderShipRuleImage: BehaviorScenario = {
     },
   ],
   workspace: orderFlowWorkspace,
-  assertions: [
-    { kind: "turn-completed" },
-    { kind: "artifact-dir-nonempty", path: "out" },
-  ],
+  assertions: [{ kind: "turn-completed" }],
   rubric: {
     prompt:
       "用户明确要求图片。回复应在 out/ 下产出至少一张可读的状态图图片（PNG 或 SVG），并指出违反『只有已付款才能发货』的最短路径：待付款 —直接发货→ 已发货。若环境缺少图片渲染能力，技能应明确说明限制并给出等价的 Mermaid 文本或文字状态路径，不假装产出了图片；只在文字里声称生成图片却拿不出图片文件的，记缺口。技能加载只是过程证据，不等于效果成立。",

@@ -63,7 +63,12 @@ export interface ScenarioSource {
   regression?: string;
 }
 
-export const SCENARIO_GROUPS = ["skills", "playbooks", "official-plugins", "runtime-tools"] as const;
+export const SCENARIO_GROUPS = [
+  "skills",
+  "playbooks",
+  "official-plugins",
+  "runtime-tools",
+] as const;
 export type ScenarioGroup = (typeof SCENARIO_GROUPS)[number];
 export const SCENARIO_GROUP_PHASES: Record<ScenarioGroup, readonly Phase[]> = {
   skills: ["raw", "adapted"],
@@ -98,9 +103,7 @@ export interface BehaviorScenario {
 
 export type Scenario = BehaviorScenario;
 
-export function isOfficialPluginScenario(
-  scenario: Pick<BehaviorScenario, "plugin">,
-): boolean {
+export function isOfficialPluginScenario(scenario: Pick<BehaviorScenario, "plugin">): boolean {
   return scenario.plugin !== undefined;
 }
 

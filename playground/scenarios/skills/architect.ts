@@ -7,7 +7,7 @@ export const architectDiscountStrategy: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "我在这个订单定价模块里想支持可插拔的折扣策略，百分比、满减、买赠以后都可能加进来。先别写实现：把这套折扣策略的类型、函数签名和模块边界设计清楚，先写调用方怎么用，再给类型草稿和取舍理由，策略接口就叫 DiscountStrategy，整理成一份设计文档放到 docs/discount-design.md。",
+        "我在这个订单定价模块里想支持可插拔的折扣，百分比、满减、买赠以后都可能加进来。先把这套折扣怎么接进现有定价的整体设计讲清楚，我想先看到形状和取舍，再谈实现。策略接口我想叫 DiscountStrategy。整理成一份设计文档放到 docs/discount-design.md，先别写实现。",
     },
   ],
   workspace: {
@@ -68,21 +68,26 @@ export function orderTotal(order: Order): number {
   ],
   rubric: {
     prompt:
-      "设计文档应先把 DiscountStrategy 的调用方视角写出来（如何注册一个折扣、如何作用到订单总价），再由用法推导出类型草稿、函数签名和模块边界，并说明接口深度与至少一个被否决的替代方案。结论应让下一个工程师能照着类型上手。gap：直接写实现或只给一种形状且无取舍；缺调用方用法；没有模块边界或替代方案；只罗列类型而无理由。技能加载是过程证据，不等于设计有效。",
+      "设计文档应先把 DiscountStrategy 的调用方视角写出来：调用方如何注册一个折扣、它如何作用到订单总价，再由这个用法推导出类型草稿、函数签名和模块边界。至少要给出两个结构不同的形状并比较接口深度，记录取舍与至少一个被否决的替代方案，让下一个工程师能照着类型上手。gap：直接进入实现或只给一种形状而无取舍；没有调用方用法；没有模块边界或替代方案；只罗列类型而无理由。若多模型并行设计或子代理在本环境不可用，技能应如实说明并自行降级成多个候选形状的对比，这不算缺口。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     {
-      id: "usage-before-shape",
-      description: "回复与文档先呈现调用方用法，再呈现类型草稿，顺序可读。",
+      id: "response-visible",
+      description: "浏览器中能看到完整回复，先呈现调用方用法，再呈现类型草稿与取舍。",
     },
     {
-      id: "design-doc-rendered",
-      description: "浏览器里能看到 docs/discount-design.md 的正文与标题结构。",
+      id: "usage-before-shape",
+      description: "人工确认文档与回复的顺序：调用方用法在类型与模块边界之前。",
+    },
+    {
+      id: "artifact-visible",
+      description:
+        "人工确认 docs/discount-design.md 已生成，含标题结构与 DiscountStrategy 的类型草稿。",
     },
   ],
   source: {
     upstreamSkill: "pstack/skills/architect/SKILL.md",
     regression:
-      "guards architect's design-first behavior: caller usage first, type sketch and module boundaries derived from it, tradeoffs recorded, no implementation before the sketch.",
+      "主路径：先调用方用法与类型草图、记录取舍，再谈实现；多模型或子代理不可用时如实降级，不据此判缺口",
   },
 };

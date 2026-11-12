@@ -53,25 +53,29 @@ test("sums multiple line items at zero discount", () => {
   ],
   rubric: {
     prompt:
-      "报告应按 intent、findings、dropped 组织：每条存活的缺陷带确切的复现命令、实际打印输出、以及它如何违背意图（此处 applyDiscount 把百分数当倍数用，10% 折扣把 90 算成 -900）；只保留被运行证实的问题，并说明各对抗路丢掉了多少未证实项。不得修改代码。gap：只列风格、命名或需要未来改动才成立的风险；声称缺陷却没有命令与输出；直接改代码；或错误地报无缺陷。技能加载是过程证据，不等于效果成立。",
+      "报告应按 intent、findings、dropped 组织：每条存活的缺陷带确切的复现命令、实际打印输出、以及它如何违背意图（此处 applyDiscount 把百分数当倍数用，10% 折扣把应为 90 的结果算成 -900）；只保留被运行证实的问题，并说明各对抗路丢掉了多少未证实项。不得修改代码。gap：只列风格、命名或需要未来改动才成立的风险；声称缺陷却没有命令与输出；直接改代码；或错误地报无缺陷。若多模型对抗在本环境不可用，技能应如实说明并以单路验证降级完成，不据此判缺口。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     {
+      id: "response-visible",
+      description: "浏览器中能看到完整回复，呈现 intent、findings、dropped 三段结构。",
+    },
+    {
       id: "intent-findings-dropped",
-      description: "回复呈现 intent 重述、findings 列表、dropped 统计三段结构。",
+      description: "人工确认回复有意图重述、findings 列表与 dropped 统计三段。",
     },
     {
       id: "finding-has-run-output",
-      description: "每条缺陷附带命令与实际输出代码块，能看到错误数值。",
+      description: "人工确认每条缺陷附带命令与实际输出，能看到错误数值。",
     },
     {
       id: "no-code-edits",
-      description: "src/cart.mjs 与测试文件在审查后未被修改。",
+      description: "人工确认 src/cart.mjs 与测试文件在审查后未被修改。",
     },
   ],
   source: {
     upstreamSkill: "pstack/skills/interrogate/SKILL.md",
     regression:
-      "guards interrogate's adversarial, run-proven reporting: only verified findings with command and output survive, intent is restated, and no fixes are applied.",
+      "主路径：只报被运行证明的发现、带命令与输出、按 intent/findings/dropped 组织且不改代码；多模型不可用时如实降级，不据此判缺口",
   },
 };

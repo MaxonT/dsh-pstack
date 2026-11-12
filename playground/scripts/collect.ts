@@ -506,8 +506,8 @@ export function writeMirroredReports(
       (record) =>
         record.phase === "adapted" && isOfficialPluginScenario(loadScenario(record.scenarioId)),
     );
-    const registeredOfficial = listScenarioIds().filter(
-      (id) => isOfficialPluginScenario(loadScenario(id)),
+    const registeredOfficial = listScenarioIds().filter((id) =>
+      isOfficialPluginScenario(loadScenario(id)),
     ).length;
     const recordedScenarios = new Set(official.map((record) => record.scenarioId)).size;
     const officialRuntimeEntries = official.flatMap((record) =>

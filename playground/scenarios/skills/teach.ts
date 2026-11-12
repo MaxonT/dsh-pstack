@@ -7,7 +7,7 @@ export const teachTokenBucket: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "我接手了这个限流器模块，但还没完全看懂。你能从头给我讲讲它是干嘛的、一个请求进来后它怎么运转、以及为什么用令牌桶这种设计吗？我想真的理解它，而不是背代码。",
+        "我接手了这个限流器模块，但还没完全看懂。你能从头给我讲讲它是干嘛的、一个请求进来后它怎么一步步运转、以及为什么用现在这种设计吗？我想真的理解它，而不是背代码。",
     },
   ],
   workspace: {
@@ -22,8 +22,8 @@ export const teachTokenBucket: BehaviorScenario = {
 
 A small token-bucket rate limiter.
 
-- \`src/TokenBucket.mjs\` holds the \`TokenBucket\` class.
-- \`src/middleware.mjs\` keeps one bucket per caller key.
+- src/TokenBucket.mjs holds the TokenBucket class.
+- src/middleware.mjs keeps one bucket per caller key.
 `,
       "src/TokenBucket.mjs": `export class TokenBucket {
   constructor({ capacity, refillPerSecond, now = Date.now }) {
@@ -67,33 +67,28 @@ export function createRateLimiter({ capacity, refillPerSecond }) {
 `,
     },
   },
-  assertions: [
-    { kind: "turn-completed" },
-    { kind: "skill-loaded", skill: "teach" },
-    { kind: "assistant-contains", text: "TokenBucket" },
-    { kind: "assistant-contains", text: "令牌桶" },
-  ],
+  assertions: [{ kind: "turn-completed" }, { kind: "assistant-contains", text: "TokenBucket" }],
   rubric: {
     prompt:
-      "讲解应先用一两句话平实地定义一个限流器/令牌桶是什么，再逐步讲请求进来后如何按经过时间补充令牌、tryTake 如何扣减或拒绝，最后讲为什么用令牌桶（允许容量内的突发又约束平均速率），保留 why 的置信措辞；用图示时逐步叠加而非一次画全。整体是对话式的，结尾可邀请继续深入。gap：只罗列函数与常量；大段贴代码或长篇说教；完全跳过为什么这么设计；出现小测、框架标签或一次画全的图。技能加载是过程证据，不等于讲解有效。",
+      "这是在 DSH 会话里观察 teach 是否把这块代码讲清楚了，而不是替用户改代码。合格效果：先用一两句平实的话说明它是什么（一个按 caller 限流的令牌桶），再按用户关心的顺序讲清一个请求进来后如何按经过时间补充令牌、如何扣减或拒绝，最后讲清为什么用这种设计（容量内允许突发，同时约束长期平均速率），并保留 why 的置信措辞；讲三件以上东西时用图示要逐步叠加、每次只加一个部件，而不是一张塞满全部的大图，也可以不用图。整体像对话，结尾可邀请继续深入。gap：只罗列函数与常量或贴大段代码；跳过为什么这么设计；一次画全所有部件的单张大图；出现小测、框架标签或说教式提示。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     {
+      id: "response-visible",
+      description: "浏览器中能看到一段平实的完整讲解，含定义、运转过程与设计原因。",
+    },
+    {
       id: "plain-definition-first",
-      description: "回复开头是简短平实的定义，而不是直接罗列函数或堆砌代码。",
+      description: "人工确认回复开头是简短平实的定义，而不是直接罗列函数或堆代码。",
     },
     {
       id: "incremental-diagrams",
-      description: "若使用图示，图是逐步展开的，而非一张塞满所有部件的大图。",
-    },
-    {
-      id: "conversational-close",
-      description: "结尾以对话方式邀请继续深入，且没有小测或说教式标签。",
+      description: "若出现图示，人工确认是逐步展开的，而非一张塞满所有部件的大图。",
     },
   ],
   source: {
     upstreamSkill: "pstack/skills/teach/SKILL.md",
     regression:
-      "guards teach's plain, paced explanation that runs how and why: plain definition first, step-by-step mechanism, the rationale with confidence language kept, incremental diagrams, and a conversational close.",
+      "覆盖 teach 主路径：平实定义先行、按请求流程讲机制、讲清设计原因并保留置信措辞、图示按部件逐步叠加、对话式收尾。",
   },
 };

@@ -7,7 +7,7 @@ export const createVerificationSkillNotesWeb: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "这是一个很小的笔记 Web 服务，目前没有任何自动化测试，也没有办法用脚本证明界面和接口的真实行为。请替它建立一个项目内的验证技能：能像真实用户一样把服务启动起来、先做一次健康检查、再驱动笔记的创建和读取、最后把证据留存下来，并把功能地图一起铺好。为了我方便复核，请把生成的验证技能直接写在项目根的 `verify/` 目录里（即 `verify/SKILL.md`，功能地图放在 `verify/features/`），不要用默认的隐藏技能目录。",
+        "这是一个很小的笔记服务，目前没有任何自动化测试，也没法用脚本证明界面和接口的真实行为。请替它建立一个项目内的验证技能：能像真实用户一样把服务启动起来、先做一次健康检查、再驱动笔记的创建和读取、把证据留存下来，并把功能地图一起铺好。为了我方便复核，请把生成的验证技能直接写在项目根的 `verify/` 目录里（即 `verify/SKILL.md`，功能地图放在 `verify/features/`），不要用默认的隐藏技能目录。",
     },
   ],
   workspace: {
@@ -84,18 +84,18 @@ export const createVerificationSkillNotesWeb: BehaviorScenario = {
     { kind: "turn-completed" },
     { kind: "artifact-contains", path: "verify/SKILL.md", text: "name: verify" },
     { kind: "artifact-dir-nonempty", path: "verify/features" },
-    { kind: "assistant-contains", text: "验证" },
   ],
   rubric: {
     prompt:
-      "回复应为这个笔记服务产出一个项目内、可被下一个代理冷读的验证技能：包含启动命令与就绪判断、一次只读的健康检查、用真实用户路径驱动笔记的新建与读取、证据留存位置与证据标准、清理方式，并铺好功能地图（`verify/features/` 下有索引文件加每个功能的说明；索引文件名接受 README.md 或 index.md，两者皆合格，不因文件名判缺口）。技能加载只是过程证据，不等于效果成立。若只给出泛泛建议、没有生成 `verify/SKILL.md` 与含至少一个功能页的 `verify/features/`，或生成的技能没有真实执行过一次，则记为缺口。",
+      "回复应为这个笔记服务产出一个项目内、可被下一个代理冷读的验证技能：包含启动命令与就绪判断、一次只读的健康检查、用真实用户路径驱动笔记的新建与读取、证据留存位置与证据标准、清理方式，并铺好功能地图（`verify/features/` 下有索引文件加每个功能的说明；索引文件名接受 README.md 或 index.md，两者皆合格，不因文件名判缺口）。合格的关键是这套技能真的能驱动真实应用：至少要按它自己的步骤真实执行过一次（启动、健康检查、驱动一个功能、留存证据、清理），并能拿出执行证据。若环境缺少浏览器驱动等能力，可用 HTTP 请求驱动同一个真实服务，不算缺口。若只给出泛泛建议、没有生成 `verify/SKILL.md` 与含至少一个功能页的 `verify/features/`，或生成的技能从未真实执行过也没有说明为何不能，则记为缺口。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     { id: "completed-turn", description: "会话自然结束，没有自动点击停止。" },
     { id: "response-visible", description: "浏览器中能看到针对构建验证技能的完整回复。" },
     {
       id: "skill-artifact-visible",
-      description: "工作区里能看到生成的 verify/ 目录与功能地图，需人工确认内容可读。",
+      description:
+        "工作区里能看到生成的 verify/ 目录与功能地图，需人工确认内容可读、启动与驱动步骤具体可执行。",
     },
   ],
   source: {

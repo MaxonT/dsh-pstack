@@ -7,28 +7,48 @@ export const experienceFirstApply: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "这个版本还剩两周，产品希望一次上线 10 个小功能。我更倾向先把其中 3 个体验打磨到位，剩下的往后放；也有人主张先把 10 个都做出来、细节以后再说。你支持哪种取舍，为什么？",
+        "设置页现在已经堆了二十多个开关。下个版本还要加三四个功能开关。工程上最快是继续往这个列表里加；另一个做法是花时间把设置重新分组、合并同类项。你建议怎么处理，为什么？",
     },
   ],
   workspace: {
     files: {
-      "roadmap.md":
-        "# 本版本候选功能\n1. 搜索建议\n2. 批量选择\n3. 快捷键面板\n4. 深色模式\n5. 导出分享\n6. 空状态引导\n7. 通知中心\n8. 模板库\n9. 内联编辑\n10. 移动端适配\n",
+      "src/settings.ts": [
+        "export interface SettingsFlags {",
+        "  notifyEmail: boolean;",
+        "  notifyPush: boolean;",
+        "  notifySms: boolean;",
+        "  digestDaily: boolean;",
+        "  digestWeekly: boolean;",
+        "  themeDark: boolean;",
+        "  compactMode: boolean;",
+        "  reduceMotion: boolean;",
+        "}",
+        "",
+        "export const defaultFlags: SettingsFlags = {",
+        "  notifyEmail: true,",
+        "  notifyPush: true,",
+        "  notifySms: false,",
+        "  digestDaily: false,",
+        "  digestWeekly: true,",
+        "  themeDark: false,",
+        "  compactMode: false,",
+        "  reduceMotion: false,",
+        "};",
+        "",
+      ].join("\n"),
+      "README.md": "# settings\n\n设置页把上面的布尔开关逐项渲染成一行一个开关，没有分组。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }, { kind: "assistant-contains", text: "体验" }],
+  assertions: [{ kind: "turn-completed" }],
   rubric: {
     prompt:
-      "回复应站在用户体验一侧，支持少而精（把 3 个打磨到位）而不是多而糙，并说明每个功能都要为其体验价值负责、实现便利不能压过用户观感。只比较排期、只复述原则名字、或含糊两可而不给取舍判断，记 gap。技能加载只是过程证据，不等于效果成立。",
+      "回答应把用户能看到的结果放在实现便利之上：指出无节制增加开关会让设置页难用，主张先精简并论证每个开关是否必要、按用户任务重新分组或合并，而不是仅因为工程上最快就继续堆开关。可以从用户视角比较两个做法的收益与代价，并给出可执行的推进方式（例如先删冗余开关、再分组）。gap：只用“实现方便”作为理由继续加开关；不权衡用户体验；或只复述原则名字没有针对这组开关的具体判断。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
-    {
-      id: "response-visible",
-      description: "浏览器中能看到完整回复，回复明确选择少而精并说明体验优先的理由。",
-    },
+    { id: "response-visible", description: "浏览器中能看到对两种做法的中立权衡与具体建议。" },
   ],
   source: {
     upstreamSkill: "pstack/skills/principle-experience-first/SKILL.md",
-    regression: "该原则在 DSH 会话中仍被应用",
+    regression: "该原则在 DSH 会话中仍被应用：以用户体验为准做产品取舍，而非只图实现省事",
   },
 };

@@ -7,28 +7,31 @@ export const guardTheContextWindowApply: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "我要审计仓库里 300 个源文件的错误处理。我的计划是让当前这个主会话把每个文件都读一遍、逐个分析，最后在主线程里汇总一张表。请帮我规划怎么执行这个任务。",
+        "logs/ 下是上周整周的访问日志，量很大。帮我统计每个接口的请求数和 p95 延迟，最后给我一张汇总表就行。",
     },
   ],
   workspace: {
     files: {
-      "repo/file-list.txt":
-        "src/a.ts\nsrc/b.ts\nsrc/c.ts\nsrc/d.ts\nsrc/e.ts\n...（共 300 个文件）\n",
+      "logs/mon.log":
+        "2026-01-05T00:00:01Z GET /api/orders 200 34\n2026-01-05T00:00:02Z GET /api/orders 200 41\n2026-01-05T00:00:03Z POST /api/login 200 120\n2026-01-05T00:00:04Z GET /api/orders 500 900\n",
+      "logs/tue.log":
+        "2026-01-06T08:00:01Z GET /api/users 200 22\n2026-01-06T08:00:02Z GET /api/users 200 25\n2026-01-06T08:00:03Z GET /api/orders 200 30\n",
+      "logs/wed.log":
+        "2026-01-07T09:00:01Z POST /api/orders 201 88\n2026-01-07T09:00:02Z GET /api/users 404 12\n",
+      "README.md":
+        "# logs\n\n按天切分的访问日志，每行：时间 方法 路径 状态码 耗时ms。真实环境里一周可能几十到几百 MB。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }, { kind: "assistant-contains", text: "子代理" }],
+  assertions: [{ kind: "turn-completed" }],
   rubric: {
     prompt:
-      "回复应把大批量读取和分析分派给子代理、只在主线程保留摘要和结论，并给分批/限制每批文件数、设轮次预算的做法，而不是让主会话把 300 个文件原文都读进来。让主线程逐个读全部原文、或只复述原则名字而没有分流方案，记 gap。技能加载只是过程证据，不等于效果成立。",
+      "回答应避免把整份日志灌进上下文：先用脚本/命令行聚合（按接口统计请求数与分位耗时），或把大文件分片交给子代理解析、主线只拿汇总，再把结果整理成一张覆盖各接口的汇总表。gap：把大量原始日志贴进回复或反复整份读取；不给汇总表；声称统计了却没有可执行的方法或结果。日志量在真实环境可能很大，本条只看是否用聚合/分片并把主线保持在汇总层面。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
-    {
-      id: "response-visible",
-      description: "浏览器中能看到完整回复，回复把批量读取分给子代理并只在主线程保留摘要。",
-    },
+    { id: "response-visible", description: "浏览器中能看到按接口汇总的请求数与 p95 表。" },
   ],
   source: {
     upstreamSkill: "pstack/skills/principle-guard-the-context-window/SKILL.md",
-    regression: "该原则在 DSH 会话中仍被应用",
+    regression: "该原则在 DSH 会话中仍被应用：大批量数据走聚合/子代理，主线只留汇总",
   },
 };

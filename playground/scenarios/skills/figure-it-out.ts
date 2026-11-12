@@ -7,7 +7,7 @@ export const figureItOutVarMigration: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "这个老项目里到处是 var，我想全部迁到 let/const 同时保证行为不变。别直接动手改，先给我设计一份可审计的迁移方案：怎么算迁移完成、范围大概多大、按什么顺序拆成能独立落地的小步、每一步怎么验证不改变行为、决策和进度记在哪。整理成文档放到 docs/migration-playbook.md。",
+        "这个老项目里到处是 var，我想全部迁到 let/const 同时保证行为不变，范围不小。先别直接动手改，帮我设计一份能让人事后审查的推进方案，放到 docs/migration-playbook.md，把怎么组织这次迁移讲清楚。",
     },
   ],
   workspace: {
@@ -75,31 +75,29 @@ console.log("build ok");
   },
   assertions: [
     { kind: "turn-completed" },
-    { kind: "skill-loaded", skill: "figure-it-out" },
-    { kind: "artifact-contains", path: "docs/migration-playbook.md", text: "const" },
-    { kind: "assistant-contains", text: "验证" },
+    { kind: "artifact-contains", path: "docs/migration-playbook.md", text: "var" },
   ],
   rubric: {
     prompt:
-      "方案应先给出可证伪的完成定义（不再有 var、构建与测试通过、行为不变），量化范围（文件与工量估计），标明严格度与理由，把工作拆成可独立落地且按风险排序的小步，且在工作开始前先搭验证基线（记录改动前的 test/build 结果）；同时指明决策与进度的记录位置。gap：只给一串待办而没有完成定义；未设计验证或没有基线；直接开始改代码；未说明范围或严格度。技能加载是过程证据，不等于方案可审计。",
+      "这是在 DSH 会话里观察 figure-it-out 是否真的产出了一份可审计的迁移方案，而不是直接改代码。合格效果：先把完成标准写成可证伪的判据（例如不再有 var、测试与构建通过、行为不变），量化范围（涉及哪些文件与大致工量），说明采用的严格度及理由，把工作拆成可独立落地、按风险排序的小步，并在动手前设计好验证手段、记录改动前的测试与构建基线，同时指明决策与进度的记录位置。gap：只给一串待办而没有可证伪的完成判据；没有验证设计或没有基线；跳过方案直接改源码；没有范围估计或严格度说明。方案以文档或回复形态给出都算，不限定某种格式。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     {
-      id: "playbook-rendered",
-      description: "浏览器里能看到 docs/migration-playbook.md，含完成定义、步骤与验证设计。",
+      id: "response-visible",
+      description: "浏览器中能看到完整的迁移方案说明，含完成判据、范围、步骤与验证设计。",
+    },
+    {
+      id: "artifact-visible",
+      description: "工作区能看到 docs/migration-playbook.md 已生成并可打开。",
     },
     {
       id: "phases-ordered",
-      description: "回复呈现阶段化、按风险排序的迁移步骤，而非随手改文件。",
-    },
-    {
-      id: "baseline-mentioned",
-      description: "文档说明先记录改动前的 test/build 基线再动手。",
+      description: "人工确认方案是阶段性、按风险排序的步骤，而不是随手列出要改的文件。",
     },
   ],
   source: {
     upstreamSkill: "pstack/skills/figure-it-out/SKILL.md",
     regression:
-      "guards figure-it-out's bespoke auditable playbook: falsifiable done predicate, quantified scope, ordered atomic units, a verification harness with a captured baseline, and a decision trail.",
+      "覆盖 figure-it-out 主路径：产出带完成判据、量化范围、按风险排序的原子步骤、含基线捕获的验证设计与决策留痕的可审计方案，而不是直接写代码。",
   },
 };

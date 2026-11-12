@@ -82,25 +82,25 @@ export function decode(id) {
   ],
   rubric: {
     prompt:
-      "解释应达到资深工程师接手子系统的程度：先说清这个服务是什么、做什么，再给出关键概念（请求、短码、缓存），然后按 handleRequest -> CacheStore / shortener 的顺序逐步走运行时流程并引用具体文件与函数，最后说明各文件位置与非显而易见的坑。gap：只罗列文件或函数清单；没有逐步流程；没有引用真实符号；或只是贴源码没有心智模型。技能加载是过程证据，不等于解释有效。",
+      "解释应达到资深工程师接手子系统的程度，并按概览（Overview）、关键概念（Key Concepts）、如何运作（How It Works）、文件位置（Where Things Live）、坑（Gotchas）组织，不适用的分节可省略。如何运作部分要按 handleRequest 到 CacheStore / shortener 的顺序逐步走运行时流程并引用具体文件与真实符号，最后点出非显而易见的坑，例如缓存未命中就返回 404、短码解码只对 http 开头的 id 才成立，所以检索实际依赖缓存。gap：只罗列文件或函数清单；没有逐步流程；没有引用真实符号；只有源码没有心智模型；或漏掉明显的坑。若探索所需的子代理在本环境不可用，技能应如实说明并直接自行探索讲解，这不算缺口。技能加载只是过程证据，不等于效果成立。",
   },
   uiObservations: [
     {
-      id: "flow-explained",
-      description: "回复含从入口到缓存再到短码处理的逐步说明，而非文件清单。",
+      id: "response-visible",
+      description: "浏览器中能看到完整回复，含从入口到缓存再到短码处理的逐步说明，而非文件清单。",
     },
     {
-      id: "diagram-or-structure",
-      description: "若出现流程图或结构图，能帮助理解组件调用关系。",
+      id: "flow-explained",
+      description: "人工确认说明按运行时顺序推进，并引用真实文件与函数。",
     },
     {
       id: "sections-present",
-      description: "解释呈现概览、关键概念、如何运作、文件位置这类分节。",
+      description: "人工确认解释呈现概览、关键概念、如何运作、文件位置、坑这类分节。",
     },
   ],
   source: {
     upstreamSkill: "pstack/skills/how/SKILL.md",
     regression:
-      "guards how's subsystem explanation: a working mental model with key concepts, a step-by-step runtime flow citing real files and symbols, where things live, and gotchas.",
+      "主路径：产出 Overview/Key Concepts/How It Works/Where Things Live/Gotchas 结构的心智模型；子代理不可用时如实降级，不据此判缺口",
   },
 };
