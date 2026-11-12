@@ -89,8 +89,27 @@ function validateWorker(paths: WorkerPaths): string[] {
     }
     if (!body.includes(defaultTitle))
       failures.push(`page does not show workspace "${defaultTitle}"`);
+    const modelSelected = session.eval<boolean>(
+      `(() => {
+        const provider = ${JSON.stringify(plan.provider)};
+        const model = ${JSON.stringify(plan.model)};
+        const visible = (element) => !!element && (element.offsetParent !== null || element.getClientRects().length > 0);
+        return [...document.querySelectorAll("[data-model-id]")].some((element) => {
+          if (!visible(element) || element.getAttribute("data-model-id") !== model) return false;
+          const elementProvider = element.getAttribute("data-provider-id");
+          return elementProvider === null || elementProvider === provider;
+        });
+      })()`,
+    );
+    const modelLabels = [
+      plan.name,
+      plan.model,
+      `${plan.provider}/${plan.model}`,
+      plan.model.split("/").at(-1),
+    ].filter((label): label is string => typeof label === "string" && label.length > 0);
     const nameShown =
-      body.toLowerCase().includes(plan.name.toLowerCase()) || body.includes(plan.model);
+      modelSelected ||
+      modelLabels.some((label) => body.toLowerCase().includes(label.toLowerCase()));
     if (!nameShown) failures.push(`page does not show model chip "${plan.name}"`);
     const effortShown =
       body.toLowerCase().includes(plan.effort.toLowerCase()) || body.includes("低");
