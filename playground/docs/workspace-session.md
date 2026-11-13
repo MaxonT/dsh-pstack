@@ -34,7 +34,7 @@ vp run playground:run -- --worker 0 --environment base --phase adapted --scenari
 vp run playground:collect -- --phase adapted --environment base
 ```
 
-run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮要等到会话真正空闲才采集最终 assistant 消息和截图，不能把某个中间 turn 的输出当成最终答复。截图前会自动折叠左侧栏，隐藏会话列表和账户名，扩大右侧会话区。worker 的模型显示名统一为匿名模型，内部 id 保留用于路由匹配。浏览器或会话日志不可读时记录基础设施未决，不自动重试。`run` 是单场景命令，不写 batch progress；多场景进度由 `run-batch` 写入 `playground/.workers/<phase>/<environment>/progress.json`，用 `playground:status` 查看。
+run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮要等到会话真正空闲才采集最终 assistant 消息和截图，不能把某个中间 turn 的输出当成最终答复。截图前会自动折叠左侧栏，隐藏会话列表和账户名，扩大右侧会话区。worker 的模型显示名统一为匿名模型，内部 id 保留用于路由匹配。浏览器或会话日志不可读时记录基础设施未决，不自动重试。`run` 是单场景命令，不写 batch progress；多场景进度由 `run-batch` 写入 `playground/.workers/<phase>/<environment>/progress.json`，用 `playground:status -- --phase <phase> --environment <environment>` 查看。
 
 ## 外部停止
 
