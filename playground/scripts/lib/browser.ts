@@ -102,7 +102,7 @@ export function collapseSidebar(session: BrowserSession): void {
  * Capture the whole conversation, not just the viewport. DSH uses an inner scroll
  * container, so Playwright's `--full` only sees the page viewport. Grow the
  * viewport to the main conversation scroll area, never the workspace sidebar,
- * take a normal screenshot, then restore the original viewport.
+ * capture the full page, then restore the original viewport.
  */
 export function captureFullPage(session: BrowserSession, path: string): void {
   const metrics = session.eval<{ width: number; height: number; scrollHeight: number }>(

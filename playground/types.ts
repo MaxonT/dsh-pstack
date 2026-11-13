@@ -215,56 +215,6 @@ export type SemanticReview =
       reviewer: { kind: "model"; route: TestTarget } | { kind: "human"; name: string };
     };
 
-export const RUNTIME_FINDING_KINDS = [
-  "runtime-missing",
-  "runtime-difference",
-  "adapter-gap",
-  "plugin-gap",
-  "environment-only",
-  "upstream-skill",
-  "unclear",
-] as const;
-export type RuntimeFindingKind = (typeof RUNTIME_FINDING_KINDS)[number];
-
-export const RUNTIME_DECISIONS = [
-  "dsh-md",
-  "plugin",
-  "skip",
-  "ignore-environment",
-  "upstream",
-  "needs-human",
-] as const;
-export type RuntimeDecision = (typeof RUNTIME_DECISIONS)[number];
-
-export const RUNTIME_SEVERITIES = ["blocker", "major", "minor", "info"] as const;
-export type RuntimeSeverity = (typeof RUNTIME_SEVERITIES)[number];
-export const BLOCKING_RUNTIME_SEVERITIES: readonly RuntimeSeverity[] = ["blocker", "major"];
-export const BLOCKING_RUNTIME_DECISIONS: readonly RuntimeDecision[] = ["dsh-md", "plugin", "skip"];
-
-export interface RuntimeFinding {
-  kind: RuntimeFindingKind;
-  severity: RuntimeSeverity;
-  decision: RuntimeDecision;
-  observation: string;
-  action: string;
-  evidence: string;
-}
-
-export const RUNTIME_REVIEW_STATUSES = [
-  "clean",
-  "findings",
-  "blocked",
-  "environment-only",
-  "upstream-only",
-  "needs-review",
-] as const;
-export type RuntimeReviewStatus = (typeof RUNTIME_REVIEW_STATUSES)[number];
-
-export interface RuntimeReview {
-  status: RuntimeReviewStatus;
-  findings: RuntimeFinding[];
-}
-
 export const VERDICT_STATUSES = [
   "observed",
   "gap",
@@ -294,8 +244,6 @@ export interface RunRecord {
   session: SessionFacts | null;
   artifacts: ArtifactEvidence;
   semanticReview: SemanticReview;
-  /** Optional on records written before runtime review existed. */
-  runtimeReview?: RuntimeReview;
   /**
    * Every mechanical check result at capture time (assertions, workspace, entry, route).
    * Always recorded: an unobserved or inconclusive verdict must not hide them, and a
@@ -307,6 +255,4 @@ export interface RunRecord {
   capturedAt: string;
   /** Batch that produced this record; optional on records written before current snapshots. */
   batchId?: string;
-  /** Set on a review revision: the reviewedAt of the sidecar that produced this record. */
-  reviewedAt?: string;
 }

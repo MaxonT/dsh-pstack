@@ -4,7 +4,7 @@
 
 ## 隔离运行环境
 
-一个 worker 有一套独立运行环境。home、浏览器 profile、证据、pid 和日志在仓库内 `playground/.workers/<phase>/<environmentId>/w<k>`，便于审计；被测会话的工作区和 raw 技能挂载在仓库外隔离根 `<isolatedRoot>/<phase>/<environmentId>/w<k>`（默认 `os.tmpdir()/dsh-pstack-playground`，环境变量 `PLAYGROUND_WORKSPACE_ROOT` 可覆盖）。沙箱只限写不限读，所以工作区与挂载路径都不得暴露仓库根。prepare 会为每个 worker 写入结构化的 `$DSH_HOME/AGENTS.md` 读取边界，明确只能读取当前工作区和系统挂载的只读运行时输入，禁止读取、列出或搜索工作区外路径。若仍有被测会话读取到场景定义、rubric、断言或评审侧车，该次结果不能作为技能独立效果的证据，必须标为待人工审查并重采。environmentId 属于 RunRecord 的身份，不能只靠时间戳区分。
+一个 worker 有一套独立运行环境。home、浏览器 profile、证据、pid 和日志在仓库内 `playground/.workers/<phase>/<environmentId>/w<k>`，便于审计；被测会话的工作区和 raw 技能挂载在仓库外隔离根 `<isolatedRoot>/<phase>/<environmentId>/w<k>`（默认 `os.tmpdir()/dsh-pstack-playground`，环境变量 `PLAYGROUND_WORKSPACE_ROOT` 可覆盖）。沙箱只限写不限读，所以工作区与挂载路径都不得暴露仓库根。prepare 会为每个 worker 写入结构化的 `$DSH_HOME/AGENTS.md` 读取边界，明确只能读取当前工作区和系统挂载的只读运行时输入，禁止读取、列出或搜索工作区外路径。若仍有被测会话读取到场景定义、rubric、断言或当前评审快照，该次结果不能作为技能独立效果的证据，必须标为待人工审查并重采。environmentId 属于 RunRecord 的身份，不能只靠时间戳区分。
 
 每个 scenario workspace 在写入 fixture 后执行本地 `git init`，不设置 origin；worker 的 DSH 环境不携带 Git/GitHub 凭证。
 

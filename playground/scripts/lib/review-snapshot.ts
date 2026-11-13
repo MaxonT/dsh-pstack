@@ -116,7 +116,7 @@ function sourceFor(record: RunRecord): RecordSource {
       EVIDENCE_FILES.sourceSuffix,
     ),
   );
-  if (!existsSync(sourceFile)) throw new Error(`missing evidence source sidecar: ${sourceFile}`);
+  if (!existsSync(sourceFile)) throw new Error(`missing evidence source file: ${sourceFile}`);
   return JSON.parse(readFileSync(sourceFile, "utf8")) as RecordSource;
 }
 

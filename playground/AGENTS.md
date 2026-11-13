@@ -15,7 +15,7 @@
 - `scenarios/registry.ts`：用 `import.meta.glob` 自动发现组目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
 - `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
 - `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<group>/<scenario>/<phase>-<environment>/` 保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
-- `reviews/.staging/`：批次运行中的临时目录，不提交。`reports/` 不再生成。
+- `reviews/.staging/`：批次运行中的临时目录，不提交。
 - 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
 
 ## 场景要求
@@ -29,7 +29,7 @@
 
 ## 证据分析
 
-- `collect` 只写 `reviews/<phase>-<environment>/` 的当前快照，不生成额外的汇总或审批文件。
+- `collect` 只写 `reviews/<phase>-<environment>/` 的当前快照。
 - 每轮结束后在新会话按 [docs/evidence-analysis.md](./docs/evidence-analysis.md) 分析全部证据，填写 `index.md`；提交前按 [docs/evidence-redaction.md](./docs/evidence-redaction.md) 生成 `record.safe.json` 并运行 `playground:redact --apply`。
 - 分析必须按「根因 + 建议动作」去重，同一问题的影响场景和证据合并到一条问答。
 - 无法可靠分类的问题一律标为待用户判断，禁止默认忽略、默认归为上游或默认选一个 decision。

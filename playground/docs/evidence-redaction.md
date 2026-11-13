@@ -4,7 +4,7 @@
 
 ## 两层流程
 
-1. `run-case` 在 worker 生成机械脱敏后的 `record.json`，并把真实 artifact/session 路径写入本地 `record.source.json`；`collect` 只从 source sidecar 复制证据。
+1. `run-case` 在 worker 生成机械脱敏后的 `record.json`，并把真实 artifact/session 路径写入本地 `record.source.json`；`collect` 只从 `record.source.json` 复制证据。
 2. 独立分析会话读取该 `record.json`，按本规则产出 `record.safe.json`。
 3. 运行：
 

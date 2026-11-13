@@ -230,8 +230,8 @@ export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, _phase: P
     {
       id: "permission",
       name: "@deepseek-ai/dsh-permission-presets",
-      // Approval "never" keeps gated actions from blocking the absent user. 待冒烟验证：workspace-write
-      // 与 never 的配对是否被 base bundle 接受；若被拒，退回脱敏沙箱的 danger-full-access + never。
+      // Approval "never" keeps gated actions from blocking the absent user. The worker uses
+      // the fixed workspace-write + never preset; a base-bundle rejection is a prepare failure.
       config: {
         presets: { unattended: { sandbox: "workspace-write", approval: "never" } },
         defaultPreset: "unattended",

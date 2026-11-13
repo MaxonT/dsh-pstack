@@ -20,7 +20,7 @@ export function listScenarioIds(group?: ScenarioGroup): string[] {
     .map((scenario) => scenario.id);
 }
 
-/** Behavior scenario ids: every owner of a review sidecar. */
+/** Behavior scenario ids registered for review. */
 export function listReviewScenarioIds(): string[] {
   return registry.reviewScenarioIds();
 }

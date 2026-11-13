@@ -1,10 +1,11 @@
 # 决策：以场景测试与审核侧车驱动移植，发布兼容键迁到 baseline.json
 
-Status: proposed
+Status: superseded
 Date: 2026-11-11
 Scope: playground/**, scripts/generate-pstack.mjs, scripts/release-compatibility.ts, port/AGENTS.md, docs/architecture.md, docs/glossary.md, docs/decisions/**
 Implemented-by: -
 Review: 2026-11-11
+Superseded-by: docs/decisions/2026-11-13-current-review-snapshot.md — 证据、审核和报告结构已改为当前快照。
 
 ## 背景
 
@@ -35,5 +36,3 @@ Review: 2026-11-11
 - `reports/` 镜像 `scenarios/` 的三组目录。每个 case 的 `record.json`、截图和 session 日志不提交；`index.md`、`summary-*.md`、`comparison.md`、`approval-*.md` 提交。
 - 上游 pstack 或 DSH 升级时按 `playground/raw/AGENTS.md` 重新判定适配文档，按场景注册表重跑 raw 与 adapted，不需要旧 lock 或审批轮次。
 - 本记录替代 [2026-11-08-release-compatibility-metadata.md](./2026-11-08-release-compatibility-metadata.md)。实现正在 `refactor/test-driven-pstack-port` 分支按批次提交；合入默认分支后补实现锚点。
-
-> 更新：`reports/`、`reviews/scenarios`、`reviews/runtime-review` 和 history 的旧结构已被 [2026-11-13-current-review-snapshot.md](./2026-11-13-current-review-snapshot.md) 取代；本记录其余场景注册表和 `playground/baseline.json` 决策仍然有效。
