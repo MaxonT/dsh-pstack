@@ -4,7 +4,7 @@ import { join, relative } from "node:path";
 import { formatTimestamp } from "./progress.ts";
 import { REPOSITORY_ROOT, upstreamRevision } from "./run-metadata.ts";
 
-export type CapabilityStatus = "discovered" | "covered" | "excluded" | "retired";
+export type CapabilityStatus = "discovered" | "covered" | "excluded";
 
 export interface CapabilityEntry {
   id: string;
@@ -52,10 +52,20 @@ function slug(value: string): string {
     .replace(/^-|-$/g, "");
 }
 
-function readRows(file: string): Map<string, string> {
+const IGNORED_SECTIONS = new Set(["Paths", "路径", "Cursor-only features"]);
+
+function readRows(file: string, ignoredSections = IGNORED_SECTIONS): Map<string, string> {
   const rows = new Map<string, string>();
+  let section = "";
   let inTable = false;
   for (const line of readFileSync(file, "utf8").split("\n")) {
+    const heading = line.match(/^##\s+(.+)/)?.[1]?.trim();
+    if (heading !== undefined) {
+      section = heading;
+      inTable = false;
+      continue;
+    }
+    if (ignoredSections.has(section)) continue;
     if (line.startsWith("|")) {
       const cells = line
         .split("|")
@@ -80,14 +90,32 @@ function dshRows(): Array<{ key: string; description: string }> {
   }));
 }
 
+interface ExclusionDecision {
+  reason: string;
+  decidedBy: "user";
+}
+
 function readExclusions(): Map<string, string> {
   if (!existsSync(EXCLUSIONS)) return new Map();
   const parsed = JSON.parse(readFileSync(EXCLUSIONS, "utf8")) as Record<string, unknown>;
-  return new Map(
-    Object.entries(parsed).filter(
-      (entry): entry is [string, string] => typeof entry[1] === "string",
-    ),
-  );
+  const decisions = new Map<string, string>();
+  for (const [id, value] of Object.entries(parsed)) {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error(
+        `capability exclusion ${id} must be a user decision object; unapproved candidates belong in capability-exclusions.proposed.json`,
+      );
+    }
+    const decision = value as Partial<ExclusionDecision>;
+    if (
+      decision.decidedBy !== "user" ||
+      typeof decision.reason !== "string" ||
+      decision.reason.trim() === ""
+    ) {
+      throw new Error(`capability exclusion ${id} must include reason and decidedBy: "user"`);
+    }
+    decisions.set(id, decision.reason);
+  }
+  return decisions;
 }
 
 function upstreamSources(term: string): { sources: string[]; requiredBy: string[] } {
@@ -145,17 +173,10 @@ export function buildCapabilityInventory(): CapabilityInventory {
       ...(exclusionReason === undefined ? {} : { exclusionReason }),
     };
   });
-  const previous: CapabilityEntry[] = existsSync(INVENTORY)
-    ? (JSON.parse(readFileSync(INVENTORY, "utf8")) as CapabilityInventory).capabilities
-    : [];
-  const currentIds = new Set(current.map((entry) => entry.id));
-  const retired = previous
-    .filter((entry) => !currentIds.has(entry.id) && entry.status !== "retired")
-    .map((entry) => ({ ...entry, status: "retired" as const }));
   return {
     generatedAt: formatTimestamp(),
     upstreamRevision: upstreamRevision(),
-    capabilities: [...current, ...retired],
+    capabilities: current,
   };
 }
 

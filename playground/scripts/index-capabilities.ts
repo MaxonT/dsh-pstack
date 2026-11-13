@@ -6,9 +6,8 @@ function main(): void {
   const check = process.argv.includes("--check");
   const inventory = checkOrWriteInventory(!check);
   const covered = inventory.capabilities.filter((entry) => entry.status === "covered").length;
-  const retired = inventory.capabilities.filter((entry) => entry.status === "retired").length;
   console.log(
-    `[capabilities] ${check ? "checked" : "wrote"} ${inventory.capabilities.length} entries, covered=${covered}, retired=${retired}`,
+    `[capabilities] ${check ? "checked" : "wrote"} ${inventory.capabilities.length} entries, covered=${covered}`,
   );
   console.log(`[capabilities] inventory=${inventoryPath()}`);
 }

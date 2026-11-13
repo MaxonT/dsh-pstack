@@ -10,6 +10,7 @@ playground/scenarios/
 ├── <environment>/         # 仅该环境需要的能力或冲突 probe
 ├── capability-inventory.json
 ├── capability-exclusions.json
+├── capability-exclusions.proposed.json
 ├── environments.ts
 ├── index.ts
 └── registry.ts
@@ -24,10 +25,12 @@ playground/scenarios/
 
 - `capabilities/` 存放 base 环境的通用能力 probe。
 - 能力从 `upstream/cursor-plugins/pstack/` 源树中的上游文档，以及 `playground/raw/dsh.md` 的映射行提取，归一化为稳定的 capability id；提取不依赖固定子目录名。
+- `dsh.md` 的 `Paths`（路径布局）和 `Cursor-only features`（Cursor 专属能力）不纳入能力提取；它们是适配事实或跳过规则，不是可验证的会话能力。
 - 一个 capability 对应一个 probe；不同行为、环境或冲突分支使用不同的 capability id。
 - 每个场景必须设置 `capability` 字段，并默认导出 `BehaviorScenario`。
 - 能力清单由 `playground:capabilities` 从同一来源生成，不在代码里手写固定能力列表。
-- 新增 probe 后运行 `playground:capabilities` 重新生成 inventory 并检查覆盖状态；确实不需要的能力写入 `capability-exclusions.json` 并保留原因。
+- 新增 probe 后运行 `playground:capabilities` 重新生成 inventory 并检查覆盖状态。
+- agent 可以整理排除建议到 `capability-exclusions.proposed.json`，但只有用户批准后才能写入 `capability-exclusions.json`。
 
 ## 文件约定
 
@@ -89,9 +92,11 @@ export default scenario;
 
 - `capability-inventory.json` 由 `playground:capabilities` 从上游 pstack 和 `raw/dsh.md` 生成，不手写固定清单。
 - `description` 优先取 `raw/dsh.zh.md`，缺失时用 `raw/dsh.md`，统一中文；`generatedAt` 使用本地时间；`upstreamRevision` 使用实际上游 revision。
-- `status` 只能是 `discovered`、`covered`、`excluded` 或 `retired`。
+- `status` 只能是 `discovered`、`covered` 或 `excluded`。
 - `covered` 必须有对应 `capability` probe；`excluded` 必须写 `exclusionReason`。
-- 确实不需要的能力写入 `capability-exclusions.json`，保留来源并标记 `excluded`，不要静默删除。
+- agent 可以把候选排除理由写入 `capability-exclusions.proposed.json`；该文件不产生 `excluded` 状态。
+- 只有用户明确批准时，才把决定写入 `capability-exclusions.json`，格式为 `{"capability-id": {"reason": "...", "decidedBy": "user"}}`；生成器只消费这份批准文件。
+- `excluded` 必须有用户批准的决定和原因，不能自动排除，也不能静默删除。
 - 新增 probe 后重新运行生成器并确认 inventory 与 probe 一致。
 
 ## 验证

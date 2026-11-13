@@ -1,0 +1,9 @@
+{
+  "readonly-false": "默认即可写，没有独立的可观察行为：可写默认路径已在 `subagent-type-generalpurpose` 用例（通用执行者真实写入文件）中验证，单列一个 probe 只会重复同一机制。",
+  "environment-local": "省略该字段即为本地、沿用会话目录，是默认路径而非独立行为；`expectedWorkspace` 机械检查已在每个用例里约束会话必须在本工作区运行，单列 probe 无新增观察点。",
+  "environment-cloud": "DSH 无云端执行环境；该行在无 worktree 插件时按“跳过行”处理，属于可选插件环境，不在 base 环境做运行时观察。",
+  "cloud-base-branch-b": "DSH 无该字段，只有存在 `create_worktree` 时才映射到 `from`；依赖可选 worktree 插件，不在 base 环境观察。",
+  "run-in-background-true": "子代理本就立即返回并在完成时通知，没有可切换的独立开关行为；该语义已被 `task` 用例的运行方式覆盖，单列 probe 无可区分的观察点。",
+  "a-grok-gpt-or-other-non-claude-slug": "非 Claude slug 的“回退到最近路由”是模型路由选择的一个分支，已由 `claude-family-version-effort-fast-such-as-claude-opus-5-5-xhigh` 用例覆盖模型发现与路由选择，无需单列。",
+  "a-role-value-model-effort-such-as-opus-high": "把 `<provider>/<model> <effort>` 拆成路由字段属于角色配置语法，已由 `the-pstack-models-mdc-rule-cursor-rules-pstack-models-mdc` 与模型路由用例覆盖，不是独立的会话行为。"
+}

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13 16:33:35",
+  "generatedAt": "2026-11-13 18:17:50",
   "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
   "capabilities": [
     {
@@ -35,7 +35,8 @@
         "swarm",
         "why"
       ],
-      "status": "discovered"
+      "probe": "capability-task",
+      "status": "covered"
     },
     {
       "id": "askquestion",
@@ -50,7 +51,8 @@
         "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
       ],
       "requiredBy": ["automate-me", "poteto-mode", "setup-pstack"],
-      "status": "discovered"
+      "probe": "capability-askquestion",
+      "status": "covered"
     },
     {
       "id": "open-a-todolist",
@@ -66,7 +68,8 @@
         "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
       ],
       "requiredBy": ["architect", "arena", "figure-it-out", "poteto-mode", "swarm"],
-      "status": "discovered"
+      "probe": "capability-open-a-todolist",
+      "status": "covered"
     },
     {
       "id": "run-another-pstack-skill-name-or-the-name-skill",
@@ -77,7 +80,8 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "status": "discovered"
+      "probe": "capability-skill-loading",
+      "status": "covered"
     },
     {
       "id": "grep-glob",
@@ -88,7 +92,8 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "status": "discovered"
+      "probe": "capability-grep-glob",
+      "status": "covered"
     },
     {
       "id": "subagent-type-generalpurpose",
@@ -102,7 +107,8 @@
         "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
       ],
       "requiredBy": ["how", "reflect", "swarm"],
-      "status": "discovered"
+      "probe": "capability-subagent-general",
+      "status": "covered"
     },
     {
       "id": "poteto-agent-comment-sicko",
@@ -113,7 +119,8 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "status": "discovered"
+      "probe": "capability-poteto-agent",
+      "status": "covered"
     },
     {
       "id": "readonly-true",
@@ -125,7 +132,8 @@
         "upstream/cursor-plugins/pstack/skills/how/SKILL.md"
       ],
       "requiredBy": ["how"],
-      "status": "discovered"
+      "probe": "capability-readonly-true",
+      "status": "covered"
     },
     {
       "id": "readonly-false",
@@ -207,7 +215,8 @@
         "upstream/cursor-plugins/pstack/skills/recall/SKILL.md"
       ],
       "requiredBy": ["poteto-mode", "recall"],
-      "status": "discovered"
+      "probe": "capability-resume",
+      "status": "covered"
     },
     {
       "id": "file-attachments",
@@ -218,7 +227,8 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "status": "discovered"
+      "probe": "capability-file-attachments",
+      "status": "covered"
     },
     {
       "id": "claude-family-version-effort-fast-such-as-claude-opus-5-5-xhigh",
@@ -229,7 +239,8 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "status": "discovered"
+      "probe": "capability-model-route",
+      "status": "covered"
     },
     {
       "id": "a-grok-gpt-or-other-non-claude-slug",
@@ -259,7 +270,8 @@
         "upstream/cursor-plugins/pstack/skills/why/SKILL.md"
       ],
       "requiredBy": ["arena", "how", "poteto-help", "poteto-mode", "reflect", "swarm", "why"],
-      "status": "discovered"
+      "probe": "capability-inherit-parent",
+      "status": "covered"
     },
     {
       "id": "the-pstack-models-mdc-rule-cursor-rules-pstack-models-mdc",
@@ -270,7 +282,8 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "status": "discovered"
+      "probe": "capability-role-file",
+      "status": "covered"
     },
     {
       "id": "a-role-value-model-effort-such-as-opus-high",
@@ -281,115 +294,6 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "status": "discovered"
-    },
-    {
-      "id": "cursor-skills-cursor-skills",
-      "description": "项目技能放在 `.dsh/skills/` 或 `.agents/skills/`。用户技能放在 `$DSH_HOME/skills/` 或 `$DSH_AGENTS_HOME/skills/`；后者默认 `~/.agents`。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
-        "upstream/cursor-plugins/pstack/skills/reflect/references/divergent-reviewer.md",
-        "upstream/cursor-plugins/pstack/skills/reflect/references/judgment-reviewer.md",
-        "upstream/cursor-plugins/pstack/skills/reflect/references/tooling-reviewer.md"
-      ],
-      "requiredBy": ["reflect"],
-      "status": "discovered"
-    },
-    {
-      "id": "cursor-plugins-cursor-plugin-plugin-json",
-      "description": "profile 是 `$DSH_HOME/profiles/<name>/`，包含 `package.json` 和 `cordis.patch.yml`；插件 manifest 是 `package.json` 的 `dsh` 段。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
-      ],
-      "requiredBy": [],
-      "status": "discovered"
-    },
-    {
-      "id": "cursor-rules-mdc-always-applied-rules",
-      "description": "通用规则使用 `AGENTS.md` 兼容链；DSH 从不读取 `.mdc`。pstack 角色文件 `$DSH_HOME/pstack-models.json` 是例外，由 pstack 适配器读取。项目 `AGENTS.md`/`AGENTS.local.md` 加用户全局 `$DSH_HOME/AGENTS.md`。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
-      ],
-      "requiredBy": [],
-      "status": "discovered"
-    },
-    {
-      "id": "https-github-com-cursor-plugins-blob-main-pstack-path",
-      "description": "文件存在时用 `<pstack>/<path>`。读本地副本，不要抓取；需要时把 URL 给用户。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
-      ],
-      "requiredBy": [],
-      "status": "discovered"
-    },
-    {
-      "id": "transcripts-in-cursor-projects-slug-agent-transcripts",
-      "description": "`$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`，每个会话一个 append-only 日志。可选 session-search 增加模型可见的搜索工具。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
-      ],
-      "requiredBy": [],
-      "status": "discovered"
-    },
-    {
-      "id": "cursor-automations-routines-update-state-routine-calls-api2-cursor-sh-automations-webhooks-routine-wakes-and-sendtouser-secret-requests",
-      "description": "用跳过行。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
-      ],
-      "requiredBy": [],
-      "status": "discovered"
-    },
-    {
-      "id": "bugbot",
-      "description": "把 PR 评论当作普通 review thread，使用步骤给的 `gh` 命令；没有 check 或评论时跳过启动或等待 Bugbot。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
-        "upstream/cursor-plugins/pstack/skills/poteto-help/SKILL.md",
-        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
-        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/babysit.md",
-        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
-        "upstream/cursor-plugins/pstack/skills/poteto-mode/references/bugbot-triage.md",
-        "upstream/cursor-plugins/pstack/skills/reflect/references/synthesizer.md"
-      ],
-      "requiredBy": ["poteto-help", "poteto-mode", "reflect"],
-      "status": "discovered"
-    },
-    {
-      "id": "cursor-cloud-agents",
-      "description": "把 `environment: \"cloud\"` 映射到本地 worktree；跳过需要云机器本身的步骤。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
-      ],
-      "requiredBy": [],
-      "status": "discovered"
-    },
-    {
-      "id": "a-built-in-pr-tool",
-      "description": "通过 `bash` 使用步骤给的 `gh` 命令；这不是跳过，不要写跳过行。",
-      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
-      "sources": [
-        "playground/raw/dsh.md",
-        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
-        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/opening-a-pr.md"
-      ],
-      "requiredBy": ["poteto-mode"],
       "status": "discovered"
     }
   ]
