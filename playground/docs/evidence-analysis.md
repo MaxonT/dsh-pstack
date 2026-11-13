@@ -33,7 +33,7 @@
 - 证据：
   - [record](scenarios/skills/a/raw-base/record.json)
   - [截图](scenarios/skills/a/raw-base/screenshot.png)
-  - [session](scenarios/skills/a/raw-base/session.jsonl.zstd)
+  - session 只在本地 worker，按 `record.session.sessionId` 读取，不在快照中链接
 - 现象：
 - 根因：
 - 与当前阶段 dsh.md 的关系：raw 写 `raw/dsh.md`，adapted 写 `port/dsh.md`
@@ -56,7 +56,7 @@ raw 分析只审查 `playground/raw/dsh.md`，adapted 分析只审查 `port/dsh.
 
 ## 判定顺序
 
-1. 先判问题是否真实：看 record、完整页面截图、session 最后 assistant 消息和工具调用。
+1. 先判问题是否真实：看 record 的 assistant 文本和工具调用、完整页面截图；需要完整事件时再按 sessionId 读取本地 worker session。
 2. 再判根因：场景 prompt 是否触发技能；技能是否加载；适配说明是否覆盖；环境是否限制；上游技能自身是否缺陷。
 3. raw 分析只判断 `playground/raw/dsh.md` 是否缺失或误导；adapted 分析只判断 `port/dsh.md` 是否缺失或误导。
 4. 当前阶段的 `dsh-md` 结论只改当前阶段对应的 dsh.md；raw 阶段不改 `port/dsh.md`。
