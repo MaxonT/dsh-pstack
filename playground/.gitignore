@@ -15,9 +15,6 @@ node_modules
 
 # Regenerated raw baseline. The generator never writes the upstream checkout.
 raw/pstack/
-raw/upstream/
-raw/scripts/
-raw/manifest.json
 
 # Review snapshots under reviews/ are committed source; only in-flight staging is transient.
 reviews/.staging/

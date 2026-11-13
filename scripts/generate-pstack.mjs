@@ -5,7 +5,6 @@
 
 import {
   chmodSync,
-  cpSync,
   existsSync,
   mkdirSync,
   readdirSync,
@@ -15,7 +14,6 @@ import {
   writeFileSync,
 } from "node:fs";
 import { checkDshAdapters } from "./check-dsh-adapters.mjs";
-import { createHash } from "node:crypto";
 import { dirname, join, posix, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -32,7 +30,6 @@ const isRaw = TARGET === "raw";
 const ADAPTER_SOURCE = isRaw ? "playground/raw/dsh.md" : "port/dsh.md";
 const ADAPTER_TREE = "docs/harness/dsh.md";
 const OUT = isRaw ? join(ROOT, "playground/raw/pstack") : join(ROOT, "pstack");
-const RAW_ROOT = join(ROOT, "playground/raw");
 const COMMAND = `vpx scripts/generate-pstack.mjs --target ${TARGET}`;
 const INJECTION = isRaw
   ? `In DSH, read [the DSH adapter](../../${ADAPTER_TREE}) once per session before you follow this skill. It maps the Cursor names in pstack skills to DSH.`
@@ -206,17 +203,6 @@ for (const [path, entry] of rendered) {
 for (const link of dangling) console.log(`FAIL ${link}`);
 if (dangling.length > 0) process.exit(1);
 
-function digestTree(root) {
-  const hash = createHash("sha256");
-  for (const path of walk(root).sort()) {
-    hash.update(relative(root, path));
-    hash.update("\0");
-    hash.update(readFileSync(path));
-    hash.update("\0");
-  }
-  return hash.digest("hex");
-}
-
 if (process.argv.includes("--check")) {
   const onDisk = new Map(
     existsSync(OUT) ? walk(OUT).map((path) => [relative(OUT, path), file(path)]) : [],
@@ -241,34 +227,6 @@ if (process.argv.includes("--check")) {
     mkdirSync(dirname(join(OUT, path)), { recursive: true });
     writeFileSync(join(OUT, path), bytes);
     chmodSync(join(OUT, path), executable ? 0o755 : 0o644);
-  }
-  if (isRaw) {
-    const upstreamOut = join(RAW_ROOT, "upstream");
-    rmSync(upstreamOut, { recursive: true, force: true });
-    cpSync(SOURCE, upstreamOut, {
-      recursive: true,
-      filter: (source) => !/\/(automations|\.git|node_modules)(\/|$)/.test(source),
-    });
-    const scriptsOut = join(RAW_ROOT, "scripts");
-    rmSync(scriptsOut, { recursive: true, force: true });
-    mkdirSync(scriptsOut, { recursive: true });
-    cpSync(
-      join(ROOT, "upstream/cursor-plugins/scripts/generate-pstack-harness-trees.mjs"),
-      join(scriptsOut, "generate-pstack-harness-trees.mjs"),
-    );
-    writeFileSync(
-      join(RAW_ROOT, "manifest.json"),
-      `${JSON.stringify(
-        {
-          target: "raw",
-          source: "upstream/cursor-plugins/pstack",
-          tree: "pstack",
-          digest: digestTree(OUT),
-        },
-        null,
-        2,
-      )}\n`,
-    );
   }
   const wrapped = [...classes.values()].filter(({ wrap }) => wrap).length;
   console.log(
