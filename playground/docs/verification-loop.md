@@ -1,6 +1,6 @@
 # Playground 验证闭环
 
-本文件给出 `playground/AGENTS.md` 的完整阶段、命令和交接条件。所有命令在仓库根执行，Linux 是唯一官方支持平台。`prepare → bootstrap → run-batch → collect` 必须作为同一个长期存活的 background job 串行执行，shell 要活到 collect 结束；不要用 `&`、`nohup` 或 `tee`。
+本文件给出 `playground/AGENTS.md` 的完整阶段、命令和交接条件。所有命令在仓库根执行，Linux 是唯一官方支持平台。
 
 场景编写见 [`scenarios/AGENTS.md`](../scenarios/AGENTS.md)。证据分析见 [`evidence-analysis.md`](./evidence-analysis.md)。
 

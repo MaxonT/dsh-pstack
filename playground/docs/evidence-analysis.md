@@ -82,12 +82,7 @@ raw 分析只审查 `playground/raw/dsh.md`，adapted 分析只审查 `port/dsh.
 7. 环境权限、凭据、网络或无头限制进入 `ignore-environment`。
 8. 证据不足或分类会影响方案时，一律标 `待你判断`，不得默认忽略。
 
-## 批次与增量
-
-- `full` 批次覆盖全部适用场景，`collect` 后整份当前快照更新。
-- `incremental` 批次只覆盖选中场景，`collect` 只替换这些场景的证据；未覆盖场景保留当前快照。
-- 删除场景时 `collect` 删除对应证据目录；分析会话同步删除只指向该场景的问答条目。
-- 上游更新先由 diff 映射到受影响技能和场景，再跑对应 `incremental` 批次；不要因为只跑部分技能就把它当全量结论。
+批次模式和快照范围的完整规则见 [verification-loop.md](./verification-loop.md)。分析会话只需处理当前快照；删除场景时，同步删除只指向该场景的问答条目。
 
 ## 链接与提交
 

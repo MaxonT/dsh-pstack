@@ -40,6 +40,5 @@
 
 - 阶段隔离按 [scenarios/AGENTS.md](./scenarios/AGENTS.md) 和 [evidence-analysis.md](./docs/evidence-analysis.md) 执行。
 - `prepare → bootstrap → run-batch → collect` 必须在同一个长期存活的 background job 中串行执行，shell 保持到 collect 结束。
-- `playground/raw/dsh.md` 是 raw 基准答案，`port/dsh.md` 是最终随包答案，两者不能合并。
-- dsh.md 只描述 DSH 能力，不写具体插件、包、外部二进制或服务的安装建议。
+- dsh.md 的分离、修改和描述边界见 [verification-loop.md](./docs/verification-loop.md#dshmd)。
 - `scripts/generate-pstack.mjs --target port|raw` 是唯一生成器。

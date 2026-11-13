@@ -94,14 +94,8 @@ export default scenario;
 - 确实不需要的能力写入 `capability-exclusions.json`，保留来源并标记 `excluded`，不要静默删除。
 - 新增 probe 后重新运行生成器并确认 inventory 与 probe 一致。
 
-能力生成和一致性检查：
-
-```sh
-vp run playground:capabilities
-vp run playground:capabilities -- --check
-```
-
 ## 验证
 
 - 新增或修改场景后运行 `vp check --fix` 和 `vp test`。
-- 修改能力来源、inventory 或环境后运行 `vp run playground:capabilities --check`。
+- 生成或更新 inventory 后运行 `vp run playground:capabilities`。
+- 检查 inventory 与当前来源、probe 是否一致时运行 `vp run playground:capabilities -- --check`。
