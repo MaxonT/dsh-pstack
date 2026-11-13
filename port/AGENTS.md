@@ -15,7 +15,7 @@
 
 ## 从 0 到 1
 
-1. 按审核通过的适配说明编写 `port/dsh.md`，同时产出对应的本地化版本。
+1. 按审核通过的适配说明编写 `port/dsh.md`，同时产出本地化版本 `port/dsh.zh.md`。
 2. 维护可选插件表，以包名为主键，不另外维护编号。
 3. 用 `scripts/generate-pstack.mjs --target port` 生成根 `pstack/`，加 `--check` 检查生成漂移。
 4. 验证生成树中的链接、适配提示与已确认行为。

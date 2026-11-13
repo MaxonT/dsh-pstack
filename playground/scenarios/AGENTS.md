@@ -88,7 +88,7 @@ export default scenario;
 ## 能力清单与排除
 
 - `capability-inventory.json` 由 `playground:capabilities` 从上游 pstack 和 `raw/dsh.md` 生成，不手写固定清单。
-- `description` 优先取对应本地化 `dsh` 文档，缺失时用默认文档，使用项目当前约定的描述语言；`generatedAt` 使用本地时间；`upstreamRevision` 使用实际上游 revision。
+- `description` 优先取 `raw/dsh.zh.md`，缺失时用 `raw/dsh.md`，统一中文；`generatedAt` 使用本地时间；`upstreamRevision` 使用实际上游 revision。
 - `status` 只能是 `discovered`、`covered`、`excluded` 或 `retired`。
 - `covered` 必须有对应 `capability` probe；`excluded` 必须写 `exclusionReason`。
 - 确实不需要的能力写入 `capability-exclusions.json`，保留来源并标记 `excluded`，不要静默删除。

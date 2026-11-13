@@ -14,7 +14,7 @@ Review: 2026-11-13
 
 - 覆盖单位是 capability，不是 skill/playbook 文件数量；skill/playbook 只作为能力消费者登记。
 - 能力需求只从 pstack 使用和 `playground/raw/dsh.md` 提取；DSH 运行时、profile 和 `raw/dsh-evidence.md` 只作为执行或证据，不作为能力来源。
-- `playground/scenarios/capability-inventory.json` 是派生清单；`description` 使用项目当前约定的描述语言，生成时间和上游 revision 可审计；排除项写入 `capability-exclusions.json`。
+- `playground/scenarios/capability-inventory.json` 是派生清单；`description` 使用中文，生成时间和上游 revision 可审计；排除项写入 `capability-exclusions.json`。
 - capability probe 放在 `playground/scenarios/capabilities/`；特殊环境 probe 放在与它平级的、和环境 id 一致的环境目录。
 - 默认只保留 `base` 环境；`agent-team` 只用于用户明确指定的 pstack 与 Agent Teams 冲突 probe，其他环境按需增加。
 - 现有 skill/playbook 场景不再作为覆盖守卫；旧的按 skill/playbook 分组模型由 capability probe 取代。
