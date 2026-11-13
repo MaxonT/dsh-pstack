@@ -24,6 +24,7 @@
 
 - `reviews/<phase>-<environment>/`：当前完整快照；`manifest.json` 是机器清单，`index.md` 是分析问答，场景证据在 `scenarios/<scenario>/<phase>-<environment>/`。`session.jsonl.zstd` 和 `record.safe.json` 不提交。
 - `raw/`：`dsh.md`、`dsh.zh.md` 和 `dsh-evidence.md` 是 raw 基准与证据；`raw/pstack` 是生成物，不作为能力来源。
+- `baseline.json`：发布兼容键元数据，不是能力或场景基线；读取 `compatibilityKey`，字段和更新规则见 [port/AGENTS.md](../port/AGENTS.md#破坏性变更)。
 
 ## 流程
 
