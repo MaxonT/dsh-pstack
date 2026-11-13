@@ -5,7 +5,7 @@
 ## 输入
 
 - `reviews/<phase>-<environment>/manifest.json`：本轮覆盖的场景、最后批次、上游 revision 和 port revision。
-- `reviews/<phase>-<environment>/scenarios/**`：每个场景的 `record.json`、`screenshot.png`、`full.png`、`session.jsonl.zstd`。
+- `reviews/<phase>-<environment>/scenarios/**`：每个场景的 `record.json`、`screenshot.png`、`full.png`；`session.jsonl.zstd` 只保留本地，不提交。
 - `scenarios/**/*.ts`：场景 prompt、assertions、rubric；只作为判据，不把 rubric 当答案抄进结论。
 - `playground/raw/dsh.md`：只在 raw 分析时逐条对照。
 - `port/dsh.md`：只在 adapted 分析时逐条对照。
@@ -75,5 +75,5 @@ raw 分析只审查 `playground/raw/dsh.md`，adapted 分析只审查 `port/dsh.
 ## 链接与提交
 
 - `index.md` 使用相对链接直接指向同一快照里的证据文件。
-- 当前快照下所有场景证据文件都提交，不只提交被引用到的部分。
+- `record.json` 和截图提交；`session.jsonl.zstd` 只保留本地，不提交，避免泄露宿主路径或凭证。
 - `.staging` 不提交。

@@ -21,3 +21,6 @@ raw/manifest.json
 
 # Review snapshots under reviews/ are committed source; only in-flight staging is transient.
 reviews/.staging/
+
+# Session logs contain host paths and may contain credentials; keep local only.
+reviews/**/session.jsonl.zstd

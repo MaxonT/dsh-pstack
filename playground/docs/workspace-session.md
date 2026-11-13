@@ -50,7 +50,7 @@ vp run playground:stop-task -- --phase raw --environment base --worker <N>
 
 RunRecord 的身份是 scenarioId、phase、environmentId。记录包含实际 DSH 版本、安装版本、实际模型路由、上游 revision、配置 hash、会话事实、产物和裁决。密钥只用于进程环境，不能进入记录。
 
-`collect` 读取全部 worker 的 RunRecord，把当前 phase/environment 的最新证据复制到 `reviews/<phase>-<environment>/scenarios/<group>/<scenario>/<phase>-<environment>/`。每个目录保存 `record.json`、`screenshot.png`、`full.png` 和 `session.jsonl.zstd`。
+`collect` 读取全部 worker 的 RunRecord，把当前 phase/environment 的最新证据复制到 `reviews/<phase>-<environment>/scenarios/<group>/<scenario>/<phase>-<environment>/`。每个目录保存 `record.json`、`screenshot.png`、`full.png`；`session.jsonl.zstd` 只保留本地，不提交。
 
 `manifest.json` 记录当前快照的来源和覆盖场景；`index.md` 是分析会话填写的问答文件。未出现在当前快照中的场景目录会被删除，分析文件里的对应问答也要清理。
 

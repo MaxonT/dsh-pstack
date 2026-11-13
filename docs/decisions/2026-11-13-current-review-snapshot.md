@@ -13,7 +13,7 @@ Review: 2026-11-13
 ## 决策
 
 - 每个 `phase/environment` 只保留一份当前完整快照：`playground/reviews/<phase>-<environment>/`。
-- 快照包含 `manifest.json`、`index.md` 和 `scenarios/<group>/<scenario>/<phase>-<environment>/`；每个场景目录保存 `record.json`、两张截图和 `session.jsonl.zstd`。
+- 快照包含 `manifest.json`、`index.md` 和 `scenarios/<group>/<scenario>/<phase>-<environment>/`；每个场景目录保存 `record.json` 和两张截图；`session.jsonl.zstd` 只保留本地，不提交。
 - `collect` 只更新当前快照，不生成 summary、runtime-review、approval 或 history。
 - `run-batch` 在批次开始时生成 `batchId`、mode 和 scope，并写入 `.workers` 的当前批次元数据；增量批次只替换本次跑到的场景。
 - 全量批次整体更新快照；增量批次只替换选中场景，未覆盖场景保留。
@@ -26,7 +26,7 @@ Review: 2026-11-13
 
 **保留 review sidecar 作为唯一审核源。** sidecar 是逐场景的，同一根因跨场景时会重复；Q&A 文件更适合逐条判断和后续写 dsh.md。该方案被否决。
 
-**只提交问答引用到的证据。** 当前快照是一份完整证据集，只提交部分文件会让快照不完整；采用当前快照的所有证据文件提交。
+**只提交问答引用到的证据。** `record.json` 和截图必须提交；`session.jsonl.zstd` 含宿主路径和潜在凭证，只保留本地，不提交。
 
 ## 后果
 

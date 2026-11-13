@@ -14,7 +14,7 @@
 - `scenarios/<group>/<scenario>.ts`：一个场景一个文件；group 由目录和注册表决定。playbook 场景的 prompt 以 `/poteto-mode ` 开头。
 - `scenarios/registry.ts`：用 `import.meta.glob` 自动发现组目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
 - `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
-- `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<group>/<scenario>/<phase>-<environment>/` 保存 `record.json`、两张截图和 `session.jsonl.zstd`。
+- `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<group>/<scenario>/<phase>-<environment>/` 保存 `record.json` 和两张截图；`session.jsonl.zstd` 只保留本地，不提交。
 - `reviews/.staging/`：批次运行中的临时目录，不提交。`reports/` 不再生成。
 - 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
 

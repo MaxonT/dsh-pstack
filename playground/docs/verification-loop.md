@@ -9,7 +9,7 @@
 - 每个 `phase/environment` 只保留一份当前完整快照：`reviews/<phase>-<environment>/`。
 - `manifest.json` 记录最后批次、mode、覆盖场景、上游 revision 和 port revision。
 - `index.md` 是问答文件，也是后续修改 `dsh.md` 和插件开发的决策源。
-- `reviews/<phase>-<environment>/scenarios/**` 保存每个场景的 `record.json`、`screenshot.png`、`full.png` 和 `session.jsonl.zstd`。
+- `reviews/<phase>-<environment>/scenarios/**` 保存每个场景的 `record.json`、`screenshot.png`、`full.png`；`session.jsonl.zstd` 只保留本地，不提交。
 - `reviews/.staging/` 是批次运行中的临时目录，不提交。
 - `reports/` 不再存在。
 
