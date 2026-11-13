@@ -48,8 +48,8 @@
 - 类型：dsh-md | plugin | upstream | ignore-environment | 待你判断
 - 影响场景：`a`、`b`
 - 证据：
-  - [record](scenarios/skills/a/raw-base/record.json)
-  - [截图](scenarios/skills/a/raw-base/screenshot.png)
+  - [record](scenarios/capabilities/a/raw-base/record.json)
+  - [截图](scenarios/capabilities/a/raw-base/screenshot.png)
   - session 只在本地 worker，按 `record.session.sessionId` 读取，不在快照中链接
 - 现象：
 - 根因：

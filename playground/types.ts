@@ -64,19 +64,9 @@ export interface ScenarioSource {
   regression?: string;
 }
 
-export const SCENARIO_GROUPS = [
-  "skills",
-  "playbooks",
-  "official-plugins",
-  "runtime-tools",
-  "capabilities",
-] as const;
+export const SCENARIO_GROUPS = ["capabilities"] as const;
 export type ScenarioGroup = (typeof SCENARIO_GROUPS)[number];
 export const SCENARIO_GROUP_PHASES: Record<ScenarioGroup, readonly Phase[]> = {
-  skills: ["raw", "adapted"],
-  playbooks: ["raw", "adapted"],
-  "official-plugins": ["adapted"],
-  "runtime-tools": ["adapted"],
   capabilities: ["raw", "adapted"],
 };
 
@@ -94,10 +84,6 @@ export interface BehaviorScenario {
   answers?: Array<{ match: string; selected?: string[]; custom?: string }>;
   /** Set by the registry from the directory name. */
   group?: ScenarioGroup;
-  /** Upstream playbook filename stem for playbook scenarios. */
-  playbook?: string;
-  /** Official plugin package id for official-plugin scenarios. */
-  plugin?: string;
   /** Environments a plugin scenario runs in; omitted means base only. */
   environments?: string[];
   /** Skill names the scenario should observe for availability and loading. */
@@ -105,17 +91,6 @@ export interface BehaviorScenario {
 }
 
 export type Scenario = BehaviorScenario;
-
-export function isOfficialPluginScenario(scenario: Pick<BehaviorScenario, "plugin">): boolean {
-  return scenario.plugin !== undefined;
-}
-
-export interface Exclusion {
-  id: string;
-  skill: string;
-  reason: string;
-  evidence: string;
-}
 
 export interface EnvironmentMatrix {
   id: string;

@@ -1,5 +1,7 @@
 import type { Phase } from "./types.ts";
 
+export type CapabilityStatus = "pending" | "covered";
+
 export interface Capability {
   id: string;
   description: string;
@@ -7,19 +9,28 @@ export interface Capability {
   source: string;
   requiredBy: readonly string[];
   phases: readonly Phase[];
-  /** Behavior scenario that probes this capability in the listed phases. */
-  probe: string;
+  status: CapabilityStatus;
+  /** Set when a probe scenario has been written. */
+  probe?: string;
 }
 
+/**
+ * Capability catalog. Requirements come from pstack usage plus raw/dsh.md.
+ * DSH runtime/profile is evidence and execution environment only, never the source
+ * of a raw capability requirement.
+ *
+ * A new capability test must add or update an entry here and set `status: "covered"`
+ * with its probe scenario id.
+ */
 export const CAPABILITIES: readonly Capability[] = [
   {
     id: "model.discovery",
     description:
-      "Discover the providers, models, and reasoning efforts available to the session before choosing a route.",
+      "Discover available providers, models, and reasoning efforts before choosing a route.",
     source: "pstack setup/setup-pstack usage; raw/dsh.md Models",
     requiredBy: ["setup-pstack"],
     phases: ["raw", "adapted"],
-    probe: "capability-resource-routing",
+    status: "pending",
   },
   {
     id: "role.catalog",
@@ -28,15 +39,15 @@ export const CAPABILITIES: readonly Capability[] = [
     source: "pstack role usage; raw/dsh.md Models/subagent mapping",
     requiredBy: ["poteto-mode", "setup-pstack"],
     phases: ["raw", "adapted"],
-    probe: "capability-resource-routing",
+    status: "pending",
   },
   {
     id: "role.routing",
-    description: "Route a child to a role with the role's configured provider, model, and effort.",
+    description: "Route a child to a role with its configured provider, model, and effort.",
     source: "pstack playbooks and skills that delegate by role",
     requiredBy: ["poteto-mode", "orchestrate"],
     phases: ["adapted"],
-    probe: "capability-resource-routing",
+    status: "pending",
   },
   {
     id: "delegation.subagent",
@@ -45,7 +56,7 @@ export const CAPABILITIES: readonly Capability[] = [
     source: "pstack Task usage; raw/dsh.md Tools/Subagent fields",
     requiredBy: ["poteto-mode", "orchestrate", "swarm"],
     phases: ["raw", "adapted"],
-    probe: "capability-resource-routing",
+    status: "pending",
   },
   {
     id: "delegation.model-effort",
@@ -53,7 +64,7 @@ export const CAPABILITIES: readonly Capability[] = [
     source: "pstack Task/model usage; raw/dsh.md Subagent fields/Models",
     requiredBy: ["poteto-mode", "swarm"],
     phases: ["raw", "adapted"],
-    probe: "capability-resource-routing",
+    status: "pending",
   },
   {
     id: "nontext.output",
@@ -61,6 +72,6 @@ export const CAPABILITIES: readonly Capability[] = [
     source: "pstack skills that request images, diagrams, or video",
     requiredBy: ["ketchup", "ketchup-video", "statechart"],
     phases: ["raw", "adapted"],
-    probe: "ketchup-recap-visual",
+    status: "pending",
   },
 ];

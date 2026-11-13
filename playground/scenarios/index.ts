@@ -5,4 +5,3 @@ export {
   scenariosById,
 } from "./registry.ts";
 export { environments } from "./environments.ts";
-export { exclusions } from "./exclusions.ts";

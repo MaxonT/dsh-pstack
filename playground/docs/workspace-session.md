@@ -22,7 +22,7 @@
 vp run playground:raw-generate
 vp run playground:prepare -- --phase raw --environment base --reset
 vp run playground:bootstrap -- --worker 0 --environment base
-vp run playground:run -- --worker 0 --environment base --phase raw --scenario poteto-help-smoke
+vp run playground:run -- --worker 0 --environment base --phase raw --scenario <capability-probe-id>
 vp run playground:collect -- --phase raw --environment base
 ```
 
@@ -30,7 +30,7 @@ adapted 重建自己的环境。它选择 poteto-mode preset，不再挂载 raw 
 
 ```sh
 vp run playground:prepare -- --phase adapted --environment base --reset
-vp run playground:run -- --worker 0 --environment base --phase adapted --scenario poteto-help-smoke
+vp run playground:run -- --worker 0 --environment base --phase adapted --scenario <capability-probe-id>
 vp run playground:collect -- --phase adapted --environment base
 ```
 

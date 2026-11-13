@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
-import type { Assertion, RunRecord, SessionFacts } from "../playground/types.ts";
+import type { Assertion, BehaviorScenario, RunRecord, SessionFacts } from "../playground/types.ts";
 import {
   mountRawTree,
   profileManifest,
@@ -34,7 +34,6 @@ import {
   publicConfigHash,
   REPOSITORY_ROOT,
 } from "../playground/scripts/lib/run-metadata.ts";
-import { behaviorScenario } from "../playground/scenarios/index.ts";
 import {
   workerPaths,
   phaseWorkersDirectory,
@@ -45,8 +44,20 @@ import {
 const temporary = mkdtempSync(join(tmpdir(), "pstack-execution-test-"));
 afterAll(() => rmSync(temporary, { recursive: true, force: true }));
 
+const testScenario: BehaviorScenario = {
+  type: "behavior",
+  id: "capability-test",
+  skill: "poteto-help",
+  turns: [{ prompt: "/poteto-help 检查当前工作区。" }],
+  workspace: { files: {} },
+  assertions: [{ kind: "turn-completed" }, { kind: "skill-loaded", skill: "poteto-help" }],
+  rubric: { prompt: "测试宿主。" },
+  uiObservations: [],
+  source: { upstreamSkill: "pstack/skills/poteto-help/SKILL.md" },
+};
+
 function record(phase: "raw" | "adapted", environmentId: string): RunRecord {
-  const scenario = behaviorScenario("poteto-help-smoke");
+  const scenario = testScenario;
   const target = { provider: "provider-a", model: "model-a", effort: "low" };
   const config = {
     testModel: target,
@@ -143,7 +154,7 @@ describe("execution contracts", () => {
   it("compares actual routes, natural language, upstream and public config hashes", () => {
     const raw = record("raw", "base");
     const adapted = record("adapted", "base");
-    expect(assertSameEntry(raw, adapted, behaviorScenario(raw.scenarioId))).toEqual([]);
+    expect(assertSameEntry(raw, adapted, testScenario)).toEqual([]);
     expect(JSON.stringify(raw)).not.toContain("secret-value");
     expect(() =>
       assertSafeRecord({ ...raw, artifacts: { recordFile: "secret-value", observed: [] } }, [
@@ -154,7 +165,7 @@ describe("execution contracts", () => {
       ...adapted,
       target: { ...adapted.target, effort: "high" } as RunRecord["target"],
     };
-    expect(assertSameEntry(raw, wrongRoute, behaviorScenario(raw.scenarioId))).toContain(
+    expect(assertSameEntry(raw, wrongRoute, testScenario)).toContain(
       "raw and adapted actual model routes differ",
     );
   });
@@ -414,7 +425,7 @@ describe("artifact-dir-nonempty assertion", () => {
 
 describe("mechanical failures", () => {
   it("lists every mechanical failure independent of the semantic verdict", () => {
-    const scenario = behaviorScenario("poteto-help-smoke");
+    const scenario = testScenario;
     const target = { provider: "provider-a", model: "model-a", effort: "low" };
     const session: SessionFacts = {
       sessionId: "session",
