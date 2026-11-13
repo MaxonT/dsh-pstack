@@ -15,7 +15,7 @@ export const playbookScenario: BehaviorScenario = {
       "README.md": [
         "# checkout-service",
         "",
-        "结账服务。功能改动按会话记录交接，历史记录在 agent-transcripts/ 下。",
+        "结账服务。功能改动按会话记录交接，历史记录在 `agent-transcripts/2026-11-10-coupon-discount.md`。",
         "用 `node --test` 跑测试。",
         "",
       ].join("\n"),
