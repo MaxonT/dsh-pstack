@@ -11,9 +11,11 @@ import { dirname, join } from "node:path";
 
 import { SCENARIO_GROUP_PHASES } from "../../types.ts";
 import type { Phase, RunEnvironment, RunRecord } from "../../types.ts";
-import { isRunRecord, latestRecords } from "./evidence.ts";
+import { isRunRecord, latestRecords, recordFileName } from "./evidence.ts";
+import { sanitizeRecord } from "./redaction.ts";
 import { PLAYGROUND_DIRECTORY, workersDirectory } from "./run-metadata.ts";
 import { loadScenario, listScenarioIds } from "./scenarios.ts";
+import { workerPaths } from "./worker.ts";
 
 export const REVIEWS_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reviews");
 export const STAGING_DIRECTORY = join(REVIEWS_DIRECTORY, ".staging");
@@ -95,57 +97,47 @@ function phaseEligible(id: string, phase: Phase): boolean {
   return group !== undefined && SCENARIO_GROUP_PHASES[group].includes(phase);
 }
 
-const SECRET_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
-  [/sk-[A-Za-z0-9_-]{8,}/g, "<REDACTED_API_KEY>"],
-  [/gh[pousr]_[A-Za-z0-9_]{8,}/g, "<REDACTED_GITHUB_TOKEN>"],
-  [/AKIA[0-9A-Z]{12,}/g, "<REDACTED_AWS_KEY>"],
-  [/Bearer\s+[A-Za-z0-9._-]{8,}/gi, "Bearer <REDACTED_TOKEN>"],
-];
-
-const PATH_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
-  [/\/home\/[^\s"'\\]+/g, "<HOST_PATH>"],
-  [/\/tmp\/[^\s"'\\]+/g, "<TEMP_PATH>"],
-];
-
-function sanitizeText(value: string): string {
-  return [...SECRET_PATTERNS, ...PATH_PATTERNS].reduce(
-    (text, [pattern, replacement]) => text.replace(pattern, replacement),
-    value,
-  );
+interface RecordSource {
+  recordFile?: string;
+  screenshotFile?: string;
+  fullScreenshotFile?: string;
+  sessionFile?: string;
 }
 
-function sanitizeRecord(record: RunRecord): string {
-  const copy = JSON.parse(JSON.stringify(record)) as RunRecord;
-  if (copy.session) {
-    copy.session.sessionFile = "session.jsonl.zstd";
-    copy.session.workspacePath = "<WORKSPACE>";
-    for (const call of copy.session.toolCalls) {
-      call.argsSummary = sanitizeText(call.argsSummary);
-      if (call.errorText) call.errorText = sanitizeText(call.errorText);
-    }
-    copy.session.assistantText = sanitizeText(copy.session.assistantText);
-    copy.session.userText = sanitizeText(copy.session.userText);
-    copy.session.userTexts = copy.session.userTexts.map(sanitizeText);
-  }
-  copy.artifacts.recordFile = "record.json";
-  if (copy.artifacts.screenshotFile) copy.artifacts.screenshotFile = "screenshot.png";
-  if (copy.artifacts.fullScreenshotFile) copy.artifacts.fullScreenshotFile = "full.png";
-  return sanitizeText(JSON.stringify(copy, null, 2)) + "\n";
+function sourceFor(record: RunRecord): RecordSource {
+  const paths = workerPaths(record.environment.worker, record.environment.matrix.id, record.phase);
+  const stamp = record.capturedAt.replace(/[:.]/g, "-");
+  const sourceFile = join(
+    paths.evidenceDir,
+    recordFileName(record.scenarioId, record.phase, record.environment.matrix.id, stamp).replace(
+      /\.json$/,
+      ".source.json",
+    ),
+  );
+  if (existsSync(sourceFile)) return JSON.parse(readFileSync(sourceFile, "utf8")) as RecordSource;
+  return {
+    recordFile: record.artifacts.recordFile,
+    screenshotFile: record.artifacts.screenshotFile,
+    fullScreenshotFile: record.artifacts.fullScreenshotFile,
+    sessionFile: record.session?.sessionFile,
+  };
 }
 
 function copyRunEvidence(record: RunRecord, directory: string): void {
   mkdirSync(directory, { recursive: true });
-  if (existsSync(record.artifacts.recordFile)) {
-    writeFileSync(join(directory, "record.json"), sanitizeRecord(record));
+  const source = sourceFor(record);
+  writeFileSync(
+    join(directory, "record.json"),
+    `${JSON.stringify(sanitizeRecord(record), null, 2)}\n`,
+  );
+  if (source.screenshotFile && existsSync(source.screenshotFile)) {
+    copyFileSync(source.screenshotFile, join(directory, "screenshot.png"));
   }
-  if (record.artifacts.screenshotFile && existsSync(record.artifacts.screenshotFile)) {
-    copyFileSync(record.artifacts.screenshotFile, join(directory, "screenshot.png"));
+  if (source.fullScreenshotFile && existsSync(source.fullScreenshotFile)) {
+    copyFileSync(source.fullScreenshotFile, join(directory, "full.png"));
   }
-  if (record.artifacts.fullScreenshotFile && existsSync(record.artifacts.fullScreenshotFile)) {
-    copyFileSync(record.artifacts.fullScreenshotFile, join(directory, "full.png"));
-  }
-  if (record.session?.sessionFile && existsSync(record.session.sessionFile)) {
-    copyFileSync(record.session.sessionFile, join(directory, "session.jsonl.zstd"));
+  if (source.sessionFile && existsSync(source.sessionFile)) {
+    copyFileSync(source.sessionFile, join(directory, "session.jsonl.zstd"));
   }
 }
 

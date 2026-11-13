@@ -5,35 +5,12 @@ import { pathToFileURL } from "node:url";
 import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
 import { environmentMatrix } from "./lib/run-metadata.ts";
+import { residualKinds } from "./lib/redaction.ts";
 import { reviewSnapshotDirectory } from "./lib/review-snapshot.ts";
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
   return index >= 0 ? process.argv[index + 1] : undefined;
-}
-
-const SECRET_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
-  [/sk-[A-Za-z0-9_-]{8,}/g, "api-key"],
-  [/gh[pousr]_[A-Za-z0-9_]{8,}/g, "github-token"],
-  [/github_pat_[A-Za-z0-9_]{8,}/g, "github-token"],
-  [/AKIA[0-9A-Z]{12,}/g, "aws-key"],
-  [/Bearer\s+[A-Za-z0-9._-]{8,}/gi, "bearer-token"],
-  [/-----BEGIN [A-Z ]*PRIVATE KEY-----/g, "private-key"],
-];
-
-const PATH_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
-  [/\/home\/[^\s"'\\]+/g, "host-path"],
-  [/\/tmp\/[^\s"'\\]+/g, "temp-path"],
-  [/\/Users\/[^\s"'\\]+/g, "host-path"],
-  [/[A-Za-z]:\\\\[^\s"'\\]+/g, "host-path"],
-];
-
-export function residualKinds(text: string): string[] {
-  const kinds: string[] = [];
-  for (const [pattern, kind] of [...SECRET_PATTERNS, ...PATH_PATTERNS]) {
-    if (pattern.test(text)) kinds.push(kind);
-  }
-  return [...new Set(kinds)];
 }
 
 function walk(dir: string): string[] {

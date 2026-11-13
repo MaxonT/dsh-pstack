@@ -32,6 +32,7 @@ import {
   type SessionDigest,
 } from "./lib/evidence.ts";
 import { readHomePlan, readPlaygroundConfig, readWebUrl, CONFIG_FILE } from "./lib/env.ts";
+import { sanitizeRecord } from "./lib/redaction.ts";
 import { createEnvironment, environmentMatrix } from "./lib/run-metadata.ts";
 import { reviewSnapshotDirectory } from "./lib/review-snapshot.ts";
 import { stopRequestFile, workerPaths, type WorkerPaths } from "./lib/worker.ts";
@@ -604,7 +605,21 @@ async function main(): Promise<void> {
     record,
     Object.values(config.providers).map((provider) => provider.apiKey),
   );
-  writeFileSync(recordFile, `${JSON.stringify(record, null, 2)}\n`);
+  const sourceFile = recordFile.replace(/\.json$/, ".source.json");
+  writeFileSync(
+    sourceFile,
+    `${JSON.stringify(
+      {
+        recordFile,
+        screenshotFile,
+        fullScreenshotFile,
+        sessionFile: record.session?.sessionFile ?? null,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  writeFileSync(recordFile, `${JSON.stringify(sanitizeRecord(record), null, 2)}\n`);
   console.log(`[run-case] ${scenarioId} ${phase} ${matrix.id} ${record.verdict.status}`);
   console.log(`[run-case] evidence=${recordFile}`);
   console.log(`[run-case] reviews=${reviewSnapshotDirectory(phase, matrix.id)}`);
