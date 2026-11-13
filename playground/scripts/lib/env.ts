@@ -205,6 +205,15 @@ export function writeWorkerInstructions(paths: WorkerPaths): void {
   writeFileSync(join(paths.home, "AGENTS.md"), renderWorkerInstructions());
 }
 
+export function writeRoleFile(paths: WorkerPaths, config: PlaygroundConfig): void {
+  if (config.roleModels === undefined || Object.keys(config.roleModels).length === 0) return;
+  const lines = ["# pstack role routes"];
+  for (const [role, route] of Object.entries(config.roleModels)) {
+    lines.push(`${role}: ${route.provider}/${route.model} [${route.effort}]`);
+  }
+  writeFileSync(join(paths.home, "pstack-models.mdc"), `${lines.join("\n")}\n`);
+}
+
 export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, _phase: Phase): void {
   mkdirSync(paths.home, { recursive: true });
   const patch = [

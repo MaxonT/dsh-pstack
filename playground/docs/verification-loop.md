@@ -60,7 +60,7 @@ flowchart TD
 vp run playground:raw-generate
 vp run playground:prepare -- --phase raw --environment base --reset
 vp run playground:bootstrap -- --phase raw --environment base --all
-vp run playground:run-batch -- --phase raw --environment base --full
+vp run playground:run-batch -- --phase raw --environment base --groups capabilities
 vp run playground:collect -- --phase raw --environment base
 ```
 
@@ -71,7 +71,7 @@ vp run playground:collect -- --phase raw --environment base
 ```sh
 vp run playground:prepare -- --phase adapted --environment base --reset
 vp run playground:bootstrap -- --phase adapted --environment base --all
-vp run playground:run-batch -- --phase adapted --environment base --full
+vp run playground:run-batch -- --phase adapted --environment base --groups capabilities
 vp run playground:collect -- --phase adapted --environment base
 ```
 
@@ -79,7 +79,7 @@ vp run playground:collect -- --phase adapted --environment base
 
 ```sh
 vp run playground:prepare -- --phase adapted --environment <environment> --reset
-vp run playground:run-batch -- --phase adapted --environment <environment> --full
+vp run playground:run-batch -- --phase adapted --environment <environment> --groups capabilities
 vp run playground:collect -- --phase adapted --environment <environment>
 ```
 

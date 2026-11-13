@@ -84,9 +84,24 @@ export function parseConfig(
   if (!efforts.includes(testModel.effort)) {
     throw new Error("testModel effort must be allowed for the selected model");
   }
+  const roleModels: PlaygroundConfig["roleModels"] = {};
+  if (input.roleModels !== undefined) {
+    for (const [role, value] of Object.entries(object(input.roleModels, "roleModels"))) {
+      const route = target(value, `roleModels.${role}`);
+      const allowed = providers[route.provider]?.models[route.model];
+      if (allowed === undefined) {
+        throw new Error(`roleModels.${role} names an unknown provider or model`);
+      }
+      if (!allowed.includes(route.effort)) {
+        throw new Error(`roleModels.${role} effort is not allowed`);
+      }
+      roleModels[role] = route;
+    }
+  }
   return {
     testModel,
     providers,
+    ...(Object.keys(roleModels).length === 0 ? {} : { roleModels }),
     ...(input.hostPatchFile === undefined
       ? {}
       : { hostPatchFile: string(input.hostPatchFile, "hostPatchFile") }),

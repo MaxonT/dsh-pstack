@@ -19,6 +19,7 @@ export interface ProviderAllowance {
 export interface PlaygroundConfig {
   testModel: TestTarget;
   providers: Record<string, ProviderAllowance>;
+  roleModels?: Record<string, TestTarget>;
   hostPatchFile?: string;
   credentialsFile?: string;
 }
@@ -68,6 +69,7 @@ export const SCENARIO_GROUPS = [
   "playbooks",
   "official-plugins",
   "runtime-tools",
+  "capabilities",
 ] as const;
 export type ScenarioGroup = (typeof SCENARIO_GROUPS)[number];
 export const SCENARIO_GROUP_PHASES: Record<ScenarioGroup, readonly Phase[]> = {
@@ -75,6 +77,7 @@ export const SCENARIO_GROUP_PHASES: Record<ScenarioGroup, readonly Phase[]> = {
   playbooks: ["raw", "adapted"],
   "official-plugins": ["adapted"],
   "runtime-tools": ["adapted"],
+  capabilities: ["raw", "adapted"],
 };
 
 export interface BehaviorScenario {

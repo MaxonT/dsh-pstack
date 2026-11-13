@@ -24,7 +24,7 @@
 - `SessionAnalysis` 必须写入 RunRecord，包含 `skillInvocation`、`dependencies`、`tools`、`userGesture` 和 warnings。
 - 截图保存为完整页面 `screenshot.png`；捕获失败直接抛异常，不写入降级截图。
 - 非文本产物以实际呈现结果为准；源码块、文件存在、路径、文件卡片和 assistant 文本不能单独证明渲染或播放成立。
-- 每个上游技能和 playbook 必须有场景或明确排除。排除只给上游明确依赖 Cursor 云服务的条目，理由和证据写进 `exclusions.ts`。
+- 覆盖单位是 [playground/capabilities.ts](./capabilities.ts) 的 capability（说明见 [docs/capabilities.md](./docs/capabilities.md)）；skill/playbook 只登记依赖的 capability，不要求每个都有真实场景。能力探针覆盖 raw 或 adapted 的实际观察，排除只给明确依赖 Cursor 云服务的条目。
 - 带环境矩阵的场景不预设冲突；具体环境只用于运行矩阵，结果由会话文件和界面观察决定。
 - 每个 scenario workspace 由 runner 初始化本地 `git init`，不设置 origin；worker 不携带 Git/GitHub 凭证，避免真实远端副作用。
 
@@ -46,7 +46,7 @@
 - prepare 为每个 worker 写入 `$DSH_HOME/AGENTS.md` 的结构化读边界；所有 phase 生效，限制只能读取工作区和系统挂载的只读输入。
 - 任务超过 10 分钟时读取该 worker 的真实 session 文件判断是否仍有效推进；确认无效后执行 `playground:stop-task`，保留当前证据并继续后续任务。
 - worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
-- raw：生成 `playground/raw/pstack`，`run-batch --full` 跑 raw 可用组，collect，在新会话按证据分析规则填写 `reviews/raw-base/index.md`。
+- raw：生成 `playground/raw/pstack`，先用 `run-batch --groups capabilities` 跑能力探针，collect，再在新会话按证据分析规则填写 `reviews/raw-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。
 - 适配开发：根据分析结论维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
 - adapted/base：`run-batch --full` 跑 adapted 可用组，collect，分析 `reviews/adapted-base/index.md`。不通过回适配开发。
 - 适配后环境组：按环境矩阵跑对应 batch，collect，分析 `reviews/adapted-<environment>/index.md`。环境限制按能力类别记录；带显式环境矩阵的元数据可以写包名或 ID。

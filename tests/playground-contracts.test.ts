@@ -1,18 +1,8 @@
-import { readdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-
 import { describe, expect, it } from "vite-plus/test";
 
+import { CAPABILITIES } from "../playground/capabilities.ts";
 import { parseConfig } from "../playground/scripts/lib/config.ts";
-import {
-  behaviorScenario,
-  behaviorScenarios,
-  environments,
-  exclusions,
-} from "../playground/scenarios/index.ts";
-
-const repository = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+import { behaviorScenario, environments, exclusions } from "../playground/scenarios/index.ts";
 
 function config(provider = "provider-a", model = "model-a", effort = "low") {
   return {
@@ -46,6 +36,20 @@ describe("playground configuration", () => {
 
   it("uses the existing bare model ids in the provider allowlist", () => {
     expect(parseConfig(config()).providers["provider-a"]?.models).toHaveProperty("model-a");
+  });
+
+  it("accepts role model routes that resolve against the provider allowlist", () => {
+    const parsed = parseConfig({
+      ...config(),
+      roleModels: {
+        "bug-fix": { provider: "provider-a", model: "model-a", effort: "low" },
+      },
+    });
+    expect(parsed.roleModels?.["bug-fix"]).toEqual({
+      provider: "provider-a",
+      model: "model-a",
+      effort: "low",
+    });
   });
 });
 
@@ -98,32 +102,15 @@ describe("scenario registry", () => {
     expect(exclusions.map((entry) => entry.id)).toEqual(["make-bot-ui", "automations-benny"]);
   });
 
-  it("covers every upstream playbook with a scenario", () => {
-    const playbooksDir = join(
-      repository,
-      "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks",
-    );
-    const upstream = readdirSync(playbooksDir)
-      .filter((name) => name.endsWith(".md"))
-      .map((name) => name.slice(0, -".md".length));
-    const covered = new Set(
-      behaviorScenarios
-        .map((scenario) => scenario.playbook)
-        .filter((name): name is string => typeof name === "string"),
-    );
-    expect(upstream.filter((name) => !covered.has(name))).toEqual([]);
-  });
-
-  it("covers every upstream skill with a scenario or an explicit exclusion", () => {
-    const skillsDir = join(repository, "upstream/cursor-plugins/pstack/skills");
-    const upstream = readdirSync(skillsDir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name);
-    const covered = new Set(behaviorScenarios.map((scenario) => scenario.skill));
-    const excluded = new Set(exclusions.map((entry) => entry.skill));
-    const uncovered = upstream.filter((skill) => !covered.has(skill) && !excluded.has(skill));
-    expect(uncovered).toEqual([]);
-    const stale = [...covered].filter((skill) => !upstream.includes(skill));
-    expect(stale).toEqual([]);
+  it("covers every capability with a probe scenario in its declared phases", () => {
+    for (const capability of CAPABILITIES) {
+      expect(capability.id).not.toBe("");
+      expect(capability.source).not.toBe("");
+      expect(capability.requiredBy.length).toBeGreaterThan(0);
+      expect(capability.phases.length).toBeGreaterThan(0);
+      const scenario = behaviorScenario(capability.probe);
+      expect(scenario.id).toBe(capability.probe);
+      expect(scenario.turns.length).toBeGreaterThan(0);
+    }
   });
 });

@@ -10,6 +10,7 @@
 - `playground/raw/dsh.md`：只在 raw 分析时逐条对照。
 - `port/dsh.md`：只在 adapted 分析时逐条对照。
 - 必要时读 `playground/raw/dsh-evidence.md` 和上游技能原文。
+- `playground/capabilities.ts`：能力清单和 probe 来源；不要从 DSH 运行时反推 raw 能力需求。
 
 ## 阶段隔离
 

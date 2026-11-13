@@ -11,5 +11,17 @@
         "your-model": ["low", "high"]
       }
     }
+  },
+  "roleModels": {
+    "bug-fix": {
+      "provider": "your-provider",
+      "model": "your-model",
+      "effort": "low"
+    },
+    "judgment and prose": {
+      "provider": "your-provider",
+      "model": "your-model",
+      "effort": "high"
+    }
   }
 }
