@@ -16,6 +16,7 @@ import {
   startWeb,
   stopWeb,
   writeHomePatch,
+  writeWorkerInstructions,
   CONFIG_FILE,
   type ProviderPlan,
 } from "./lib/env.ts";
@@ -90,6 +91,7 @@ async function main(): Promise<void> {
     // cleared temp root does not restart raw workers with missing skills.
     for (const worker of workers) {
       if (readPhase(worker) === "raw") mountRawTree(worker);
+      writeWorkerInstructions(worker);
     }
     await startWorkers(workers, plan);
     return;
