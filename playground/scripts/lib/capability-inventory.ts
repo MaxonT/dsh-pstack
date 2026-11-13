@@ -161,7 +161,25 @@ export function buildCapabilityInventory(): CapabilityInventory {
 
 export function checkOrWriteInventory(write: boolean): CapabilityInventory {
   const inventory = buildCapabilityInventory();
-  if (write) writeFileSync(INVENTORY, `${JSON.stringify(inventory, null, 2)}\n`);
+  if (write) {
+    writeFileSync(INVENTORY, `${JSON.stringify(inventory, null, 2)}\n`);
+    return inventory;
+  }
+  if (!existsSync(INVENTORY)) {
+    throw new Error(`capability inventory is missing: ${INVENTORY}; run playground:capabilities`);
+  }
+  const existing = JSON.parse(readFileSync(INVENTORY, "utf8")) as CapabilityInventory;
+  const currentContent = JSON.stringify({
+    upstreamRevision: inventory.upstreamRevision,
+    capabilities: inventory.capabilities,
+  });
+  const existingContent = JSON.stringify({
+    upstreamRevision: existing.upstreamRevision,
+    capabilities: existing.capabilities,
+  });
+  if (currentContent !== existingContent) {
+    throw new Error(`capability inventory is stale: ${INVENTORY}; run playground:capabilities`);
+  }
   return inventory;
 }
 
