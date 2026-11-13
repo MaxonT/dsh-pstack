@@ -7,6 +7,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 
 import { isPhase } from "../types.ts";
@@ -171,6 +172,9 @@ function materializeWorkspace(paths: WorkerPaths, scenario: BehaviorScenario): s
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, content);
   }
+  const git = spawnSync("git", ["init", "-q"], { cwd: workspace, encoding: "utf8" });
+  if (git.error) throw new Error(`git init failed: ${git.error.message}`);
+  if (git.status !== 0) throw new Error(`git init failed: ${git.stderr.trim() || git.status}`);
   return workspace;
 }
 
