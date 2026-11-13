@@ -12,7 +12,12 @@ import { dirname, join } from "node:path";
 import { isPhase } from "../types.ts";
 import type { BehaviorScenario, Phase, RunRecord, SessionFacts, TestTarget } from "../types.ts";
 import { analyzeSession } from "./lib/analysis.ts";
-import { captureFullPage, createBrowserSession, type BrowserSession } from "./lib/browser.ts";
+import {
+  captureFullPage,
+  collapseSidebar,
+  createBrowserSession,
+  type BrowserSession,
+} from "./lib/browser.ts";
 import {
   assertSafeRecord,
   digestSession,
@@ -383,6 +388,7 @@ function attemptScenario(input: AttemptInput): {
     if (!match) throw new InfraError("no session matched the scenario");
     const matched: MatchResult = match;
     session.wait(1000);
+    collapseSidebar(session);
     session.screenshot(screenshotFile);
     captureFullPage(session, fullScreenshotFile);
     if (!existsSync(matched.file)) throw new InfraError("session log vanished before reading");

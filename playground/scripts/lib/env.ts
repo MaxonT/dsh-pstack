@@ -146,6 +146,20 @@ function persistentInstructions(rawMount: string): string {
   ].join("\n\n");
 }
 
+function anonymousProviders(providers: ProviderPlan["providers"]): ProviderPlan["providers"] {
+  return Object.fromEntries(
+    Object.entries(providers).map(([id, provider]) => [
+      id,
+      {
+        ...provider,
+        ...(provider.models === undefined
+          ? {}
+          : { models: provider.models.map((model) => ({ ...model, name: "匿名模型" })) }),
+      },
+    ]),
+  );
+}
+
 export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, phase: Phase): void {
   mkdirSync(paths.home, { recursive: true });
   const patch = [
@@ -158,7 +172,11 @@ export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, phase: Ph
         reasoningEffort: plan.main.effort,
       },
     },
-    { id: "llm-pi-ai", name: "@deepseek-ai/dsh-llm-pi-ai", config: { providers: plan.providers } },
+    {
+      id: "llm-pi-ai",
+      name: "@deepseek-ai/dsh-llm-pi-ai",
+      config: { providers: anonymousProviders(plan.providers) },
+    },
     {
       id: "approval",
       name: "@deepseek-ai/dsh-user-approval",
@@ -206,7 +224,7 @@ export function readHomePlan(paths: WorkerPaths): HomePlan {
     provider: config.provider,
     model: config.model,
     effort: config.reasoningEffort,
-    name: config.model,
+    name: "匿名模型",
   };
 }
 

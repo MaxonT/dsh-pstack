@@ -5,7 +5,7 @@
 
 import { join } from "node:path";
 
-import { createBrowserSession } from "./lib/browser.ts";
+import { collapseSidebar, createBrowserSession } from "./lib/browser.ts";
 import { readHomePlan, readWebUrl, readWorkspaceStore } from "./lib/env.ts";
 import { listWorkers, workerPaths, type WorkerPaths } from "./lib/worker.ts";
 import type { Phase } from "../types.ts";
@@ -117,6 +117,7 @@ function validateWorker(paths: WorkerPaths): string[] {
     if (/登录|401|authentication required|sign in|unauthorized|认证失败/i.test(body))
       failures.push("page shows a login / 401 / authentication wall");
 
+    collapseSidebar(session);
     session.screenshot(join(paths.browserDir, "ready.png"));
 
     if (failures.length > 0) {

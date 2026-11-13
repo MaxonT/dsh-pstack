@@ -78,6 +78,27 @@ export function browserEnv(browserDir: string): NodeJS.ProcessEnv {
 }
 
 /**
+ * Collapse the left sidebar before taking screenshots. It hides the session list
+ * and account name and widens the conversation area; an already collapsed sidebar
+ * is left alone.
+ */
+export function collapseSidebar(session: BrowserSession): void {
+  const collapsed = session.eval<boolean>(
+    `document.querySelector("[data-sidebar-collapsed]") !== null`,
+  );
+  if (collapsed) return;
+  const clicked = session.eval<boolean>(
+    `(() => {
+      const button = document.querySelector("[data-sidebar-toggle]");
+      if (!button) return false;
+      button.click();
+      return true;
+    })()`,
+  );
+  if (clicked) session.wait(500);
+}
+
+/**
  * Capture the whole conversation, not just the viewport. DSH uses an inner scroll
  * container, so Playwright's `--full` only sees the page viewport. Grow the
  * viewport to the main conversation scroll area, never the workspace sidebar,
