@@ -537,7 +537,7 @@ async function main(): Promise<void> {
       expectedPreset,
     });
     const session = sessionFacts(outcome.digest, outcome.file, outcome.answers);
-    session.analysis = analyzeSession(scenario, session);
+    session.analysis = analyzeSession(scenario, session, phase);
     const failures = mechanicalFailures({
       scenario,
       session,

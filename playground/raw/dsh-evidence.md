@@ -2,7 +2,7 @@
 
 本文件保存 `playground/raw/dsh.md` 当前内容的逐行判定证据。它不是运行时文件，生成器不读；DSH 升级后复核 `dsh.md` 时直接引用这里的事实。
 
-本轮 raw 规则把 pstack 角色文件改为 `$DSH_HOME/pstack-models.json`。这是 raw 适配的目标格式；`port` 插件当前实现仍读取 `.mdc`，迁移完成后再同步 `port/dsh.md` 和 `src/role-config.ts`。
+本文件只记录 raw DSH 的事实和判定依据；port 实现、适配结论和当前插件行为不作为 raw 证据。
 
 ## 覆盖检查
 

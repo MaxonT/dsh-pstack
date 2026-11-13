@@ -11,6 +11,13 @@
 - `port/dsh.md`：只在 adapted 分析时逐条对照。
 - 必要时读 `playground/raw/dsh-evidence.md` 和上游技能原文。
 
+## 阶段隔离
+
+- raw 分析只能读 `reviews/raw-*/`、`playground/raw/dsh.md`、`playground/raw/dsh-evidence.md`、场景文件和相关原始 session。
+- raw 分析不得读取 `port/dsh.md`、当前适配实现、当前插件树或 adapted 证据，也不得引用这些内容作为 raw 结论。
+- adapted 分析只读 adapted 快照、`port/dsh.md` 和当前适配实现；不得用 raw 的缺失直接替代 adapted 的验证。
+- 违反阶段隔离得出的结论视为无效，必须丢弃并重新分析。
+
 ## 输出
 
 只写 `reviews/<phase>-<environment>/index.md`。分析完成后按 [evidence-redaction.md](./evidence-redaction.md) 生成 `record.safe.json` 并通过 `playground:redact --apply`。

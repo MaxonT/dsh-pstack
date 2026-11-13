@@ -20,7 +20,7 @@
 
 ## 场景要求
 
-- 每个场景只观察 DSH 可观察行为：技能是否加载（`skill`、`pstack_skill`、`read` 回退或 `/name` 用户手势）、依赖是否可用和加载、工具调用与重试、turn 是否结束、最终答复或产物是否存在。
+- 每个场景只观察当前 phase 实际提供的能力；技能加载路径按该 phase 的原生或适配工具集判断，raw 只记录原生能力，adapted 才记录适配工具；同时观察依赖可用性、工具调用与重试、turn 是否结束、最终答复或产物是否存在。
 - `SessionAnalysis` 必须写入 RunRecord，包含 `skillInvocation`、`dependencies`、`tools`、`userGesture` 和 warnings。
 - 截图保存为完整页面 `screenshot.png`；捕获失败直接抛异常，不写入降级截图。
 - 每个上游技能和 playbook 必须有场景或明确排除。排除只给上游明确依赖 Cursor 云服务的条目，理由和证据写进 `exclusions.ts`。
