@@ -19,16 +19,5 @@ raw/upstream/
 raw/scripts/
 raw/manifest.json
 
-# Generated per-run reports: evidence files are ignored, summaries/approvals are committed.
-reports/**/record.json
-reports/**/screenshot.png
-reports/**/full.png
-reports/**/session.jsonl.zstd
-
-# Per-run report snapshots are local comparison history, not repository content.
-reports/**/history/
-
-# Legacy archived evidence; regenerated per run.
-reports/evidence/
-
-# Review sidecars under reviews/ are reviewed source files committed with the repo; never ignore them.
+# Review snapshots under reviews/ are committed source; only in-flight staging is transient.
+reviews/.staging/

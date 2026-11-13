@@ -1,12 +1,4 @@
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -27,14 +19,14 @@ import type {
   RuntimeReviewStatus,
   ScenarioGroup,
 } from "../types.ts";
-import { assertSameEntry, isRunRecord, latestRecords } from "./lib/evidence.ts";
+import { assertSameEntry, latestRecords } from "./lib/evidence.ts";
 import {
   APPROVAL_FILES,
   environmentMatrix,
   REPORT_DIRECTORY,
   REPORT_LAYOUT,
-  workersDirectory,
 } from "./lib/run-metadata.ts";
+import { collectReviewSnapshot, REVIEWS_DIRECTORY } from "./lib/review-snapshot.ts";
 import {
   archivePreviousReport,
   pruneStalePhaseEvidence,
@@ -143,21 +135,6 @@ const SEVERITY_PRIORITY: Record<string, number> = {
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
   return index >= 0 ? process.argv[index + 1] : undefined;
-}
-
-function records(directory: string): RunRecord[] {
-  if (!existsSync(directory)) return [];
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const file = join(directory, entry.name);
-    if (entry.isDirectory()) return records(file);
-    if (!entry.name.endsWith(".json")) return [];
-    try {
-      const parsed: unknown = JSON.parse(readFileSync(file, "utf8"));
-      return isRunRecord(parsed) ? [parsed] : [];
-    } catch {
-      return [];
-    }
-  });
 }
 
 function escape(value: string): string {
@@ -766,8 +743,8 @@ function main(): void {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) throw new Error("collect requires --phase raw|adapted --environment ID");
   const matrix = environmentMatrix(argValue("--environment"));
-  writeMirroredReports(phase, matrix.id, records(workersDirectory()));
-  console.log(`[collect] reports=${REPORT_DIRECTORY}`);
+  collectReviewSnapshot(phase, matrix.id);
+  console.log(`[collect] reviews=${REVIEWS_DIRECTORY}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

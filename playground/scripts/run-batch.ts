@@ -18,8 +18,8 @@ import { latestRecords } from "./lib/evidence.ts";
 import { computeWorkers } from "./lib/capacity.ts";
 import {
   environmentMatrix,
-  REPORT_DIRECTORY,
   REPOSITORY_ROOT,
+  upstreamRevision,
   workersDirectory,
 } from "./lib/run-metadata.ts";
 import {
@@ -31,6 +31,7 @@ import {
   type ProgressState,
 } from "./lib/progress.ts";
 import { listScenarioIds, listScenariosForSkill, loadScenario } from "./lib/scenarios.ts";
+import { writeBatchMetadata } from "./lib/review-snapshot.ts";
 import { workerCount } from "./lib/worker.ts";
 
 const VPX = "vpx";
@@ -71,7 +72,7 @@ function readRecords(directory: string): RunRecord[] {
 }
 
 function allRecords(): RunRecord[] {
-  return [...readRecords(join(REPORT_DIRECTORY, "evidence")), ...readRecords(workersDirectory())];
+  return readRecords(workersDirectory());
 }
 
 function selectedScenarios(phase: Phase, environmentId: string): string[] {
@@ -79,8 +80,21 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
   const skills = argValue("--skills");
   const groups = argValue("--groups");
   const failed = process.argv.includes("--only-failed");
-  if ([scenarios, skills, groups, failed ? "failed" : undefined].filter(Boolean).length > 1) {
-    throw new Error("--scenarios, --skills, --groups and --only-failed are mutually exclusive");
+  const full = process.argv.includes("--full");
+  if (
+    [scenarios, skills, groups, failed ? "failed" : undefined, full ? "full" : undefined].filter(
+      Boolean,
+    ).length > 1
+  ) {
+    throw new Error(
+      "--full, --scenarios, --skills, --groups and --only-failed are mutually exclusive",
+    );
+  }
+  if (full) {
+    return listScenarioIds().filter((id) => {
+      const group = loadScenario(id).group;
+      return group !== undefined && SCENARIO_GROUP_PHASES[group].includes(phase);
+    });
   }
   if (scenarios) return parseList(scenarios);
   if (skills)
@@ -173,7 +187,7 @@ async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) {
     throw new Error(
-      `usage: run-batch.ts --phase raw|adapted [--environment base] [--groups ${GROUP_USAGE}|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]`,
+      `usage: run-batch.ts --phase raw|adapted [--environment base] [--full|--groups ${GROUP_USAGE}|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]`,
     );
   }
   if (process.argv.includes("--all")) {
@@ -220,9 +234,21 @@ async function main(): Promise<void> {
   mkdirSync(join(workersDirectory(), phase, matrix.id), { recursive: true });
   const logFile = join(workersDirectory(), phase, matrix.id, "batch.log");
   writeFileSync(logFile, `phase=${phase} environment=${matrix.id} round=${round}\n`);
+  const batchId = `${phase}-${matrix.id}-${formatTimestamp().replace(/[-: ]/g, "")}`;
+  const mode = process.argv.includes("--full") ? "full" : "incremental";
+  writeBatchMetadata({
+    batchId,
+    phase,
+    environment: matrix.id,
+    mode,
+    scope: ids,
+    startedAt: new Date().toISOString(),
+    upstreamRevision: upstreamRevision(),
+  });
   const bundle = createScenarioBundle(ids);
   const childEnvironment = {
     ...process.env,
+    PLAYGROUND_BATCH_ID: batchId,
     PLAYGROUND_SCENARIO_BUNDLE: bundle.file,
   };
   try {

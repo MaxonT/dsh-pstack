@@ -306,6 +306,8 @@ export interface RunRecord {
   mechanicalFailures: string[];
   verdict: Verdict;
   capturedAt: string;
+  /** Batch that produced this record; optional on records written before current snapshots. */
+  batchId?: string;
   /** Set on a review revision: the reviewedAt of the sidecar that produced this record. */
   reviewedAt?: string;
 }

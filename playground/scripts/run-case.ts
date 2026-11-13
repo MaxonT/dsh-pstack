@@ -26,7 +26,8 @@ import {
   type SessionDigest,
 } from "./lib/evidence.ts";
 import { readHomePlan, readPlaygroundConfig, readWebUrl, CONFIG_FILE } from "./lib/env.ts";
-import { createEnvironment, environmentMatrix, REPORT_DIRECTORY } from "./lib/run-metadata.ts";
+import { createEnvironment, environmentMatrix } from "./lib/run-metadata.ts";
+import { reviewSnapshotDirectory } from "./lib/review-snapshot.ts";
 import { workerPaths, type WorkerPaths } from "./lib/worker.ts";
 
 const COMPOSER_SELECTOR = '[data-composer-input="true"]';
@@ -432,6 +433,7 @@ function blockedRecord(input: {
       semanticReview: pendingSemanticReview(),
       blockedReason: input.reason,
     }),
+    batchId: process.env.PLAYGROUND_BATCH_ID,
     capturedAt,
   };
 }
@@ -519,6 +521,7 @@ async function main(): Promise<void> {
       semanticReview,
       mechanicalFailures: failures,
       verdict: verdictFor({ phase, failures, semanticReview }),
+      batchId: process.env.PLAYGROUND_BATCH_ID,
       capturedAt,
     };
   } catch (error) {
@@ -543,7 +546,7 @@ async function main(): Promise<void> {
   writeFileSync(recordFile, `${JSON.stringify(record, null, 2)}\n`);
   console.log(`[run-case] ${scenarioId} ${phase} ${matrix.id} ${record.verdict.status}`);
   console.log(`[run-case] evidence=${recordFile}`);
-  console.log(`[run-case] reports=${REPORT_DIRECTORY}`);
+  console.log(`[run-case] reviews=${reviewSnapshotDirectory(phase, matrix.id)}`);
   process.exitCode =
     record.verdict.status === "verified"
       ? 0
