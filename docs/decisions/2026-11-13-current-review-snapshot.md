@@ -1,0 +1,36 @@
+# 决策：用每个 phase/environment 的当前快照取代 reports 汇总和 review sidecar
+
+Status: accepted
+Date: 2026-11-13
+Scope: playground/scripts/collect.ts, playground/scripts/lib/review-snapshot.ts, playground/scripts/run-batch.ts, playground/scripts/run-case.ts, playground/AGENTS.md, playground/docs/verification-loop.md, playground/docs/evidence-analysis.md, playground/reviews/**
+Implemented-by: commit:ef01e56
+Review: 2026-11-13
+
+## 背景
+
+旧的 `reports/` 需要维护 `runs/`、`scenarios/`、`approvals/` 和 `history/` 多层目录，同时生成 summary、runtime-review 和 approval 等叙述文件。`reviews/scenarios/**/*.json` 和 `reviews/runtime-review/*.json` 又维护一套独立的审核 sidecar。随着证据量增加，自动汇总无法替代逐条判断，批次历史也不断膨胀，阅读和提交成本都在上升。
+
+## 决策
+
+- 每个 `phase/environment` 只保留一份当前完整快照：`playground/reviews/<phase>-<environment>/`。
+- 快照包含 `manifest.json`、`index.md` 和 `scenarios/<group>/<scenario>/<phase>-<environment>/`；每个场景目录保存 `record.json`、两张截图和 `session.jsonl.zstd`。
+- `collect` 只更新当前快照，不生成 summary、runtime-review、approval 或 history。
+- `run-batch` 在批次开始时生成 `batchId`、mode 和 scope，并写入 `.workers` 的当前批次元数据；增量批次只替换本次跑到的场景。
+- 全量批次整体更新快照；增量批次只替换选中场景，未覆盖场景保留。
+- 逐条证据分析由独立会话按 [evidence-analysis.md](../../playground/docs/evidence-analysis.md) 写入 `index.md`，并按根因去重。
+- `reports/`、review sidecar 和 history 不再写入工作区；需要历史查看 Git 提交。
+
+## 替代方案
+
+**保留旧 reports + runtime-review + approval + history。** 汇总文件不提供逐条判断，history 造成大量本地证据堆积，无法解决“证据太多但看不过来”的问题。该方案被否决。
+
+**保留 review sidecar 作为唯一审核源。** sidecar 是逐场景的，同一根因跨场景时会重复；Q&A 文件更适合逐条判断和后续写 dsh.md。该方案被否决。
+
+**只提交问答引用到的证据。** 当前快照是一份完整证据集，只提交部分文件会让快照不完整；采用当前快照的所有证据文件提交。
+
+## 后果
+
+- `playground/reviews/<phase>-<environment>/` 是当前唯一审核快照；`reports/` 不再生成。
+- `index.md` 成为后续 dsh.md 和插件开发的问题来源。
+- 提交体积从完整的多轮 history 降低为当前快照；历史依赖 Git，不在工作区保留。
+- 本记录取代 [2026-11-11-test-driven-port-baseline.md](./2026-11-11-test-driven-port-baseline.md) 中 `reports/`、`reviews/scenarios`、`reviews/runtime-review` 和 `history` 相关部分；其余场景注册表与 baseline.json 决策仍有效。
