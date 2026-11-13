@@ -21,10 +21,11 @@
 | [workspace-session.md](./docs/workspace-session.md) | worker 隔离、会话执行、停止和证据目录 |
 | [evidence-analysis.md](./docs/evidence-analysis.md) | 每轮证据分析和 `index.md` 格式 |
 | [evidence-redaction.md](./docs/evidence-redaction.md) | 证据脱敏和提交门 |
+| [baseline.md](./docs/baseline.md) | 发布兼容键字段和更新规则 |
 
 - `reviews/<phase>-<environment>/`：当前完整快照；`manifest.json` 是机器清单，`index.md` 是分析问答，场景证据在 `scenarios/<scenario>/<phase>-<environment>/`。`session.jsonl.zstd` 和 `record.safe.json` 不提交。
 - `raw/`：`dsh.md`、`dsh.zh.md` 和 `dsh-evidence.md` 是 raw 基准与证据；`raw/pstack` 是生成物，不作为能力来源。
-- `baseline.json`：发布兼容键元数据，不是能力或场景基线；读取 `compatibilityKey`，字段和更新规则见 [port/AGENTS.md](../port/AGENTS.md#破坏性变更)。
+- `baseline.json`：发布兼容键元数据，不是能力或场景基线；字段和更新规则见 [docs/baseline.md](./docs/baseline.md)。
 
 ## 流程
 
