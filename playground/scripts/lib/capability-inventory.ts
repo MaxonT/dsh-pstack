@@ -26,10 +26,9 @@ export interface CapabilityInventory {
 const RAW_DSH = join(REPOSITORY_ROOT, "playground/raw/dsh.md");
 const RAW_DSH_ZH = join(REPOSITORY_ROOT, "playground/raw/dsh.zh.md");
 const UPSTREAM = join(REPOSITORY_ROOT, "upstream/cursor-plugins/pstack");
-const UPSTREAM_SKILLS = join(UPSTREAM, "skills");
 
 function assertUpstreamSource(): void {
-  if (!existsSync(UPSTREAM) || !existsSync(UPSTREAM_SKILLS)) {
+  if (!existsSync(UPSTREAM)) {
     throw new Error(`capability source tree is missing: ${UPSTREAM}`);
   }
 }
@@ -112,7 +111,12 @@ function scenarioProbes(): Map<string, string> {
     const text = readFileSync(file, "utf8");
     const id = text.match(/\bid:\s*"([^"]+)"/)?.[1];
     const capability = text.match(/\bcapability:\s*"([^"]+)"/)?.[1];
-    if (id && capability) probes.set(capability, id);
+    if (!id || !capability) continue;
+    const previous = probes.get(capability);
+    if (previous !== undefined) {
+      throw new Error(`capability ${capability} has multiple probes: ${previous}, ${id}`);
+    }
+    probes.set(capability, id);
   }
   return probes;
 }

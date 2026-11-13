@@ -59,13 +59,7 @@ export interface UiObservation {
   description: string;
 }
 
-export interface ScenarioSource {
-  upstreamSkill: string;
-  regression?: string;
-}
-
 export interface BehaviorScenario {
-  type: "behavior";
   id: string;
   skill?: string;
   turns: Array<{ prompt: string }>;
@@ -73,11 +67,10 @@ export interface BehaviorScenario {
   assertions: Assertion[];
   rubric: SemanticRubric;
   uiObservations: UiObservation[];
-  source: ScenarioSource;
   environmentId?: string;
   answers?: Array<{ match: string; selected?: string[]; custom?: string }>;
   /** Capability id this probe covers. */
-  capability?: string;
+  capability: string;
   /** Skill names the scenario should observe for availability and loading. */
   dependencies?: string[];
 }

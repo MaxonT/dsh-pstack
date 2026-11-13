@@ -45,15 +45,14 @@ const temporary = mkdtempSync(join(tmpdir(), "pstack-execution-test-"));
 afterAll(() => rmSync(temporary, { recursive: true, force: true }));
 
 const testScenario: BehaviorScenario = {
-  type: "behavior",
   id: "capability-test",
+  capability: "capability-test",
   skill: "poteto-help",
   turns: [{ prompt: "/poteto-help 检查当前工作区。" }],
   workspace: { files: {} },
   assertions: [{ kind: "turn-completed" }, { kind: "skill-loaded", skill: "poteto-help" }],
   rubric: { prompt: "测试宿主。" },
   uiObservations: [],
-  source: { upstreamSkill: "pstack/skills/poteto-help/SKILL.md" },
 };
 
 function record(phase: "raw" | "adapted", environmentId: string): RunRecord {

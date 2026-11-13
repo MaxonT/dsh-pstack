@@ -4,7 +4,7 @@
 
 ## 来源
 
-- `upstream/cursor-plugins/pstack/` 下的 skills、playbooks、commands、agents 文件。
+- `upstream/cursor-plugins/pstack/` 源树中的上游文档，不依赖固定子目录名。
 - `playground/raw/dsh.md` 的映射行。
 - 从上述来源由 agent 现场整理的能力清单；仓库不提交固定能力清单。
 

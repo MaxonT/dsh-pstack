@@ -23,8 +23,8 @@ playground/scenarios/
 ## capabilities 目录
 
 - `capabilities/` 存放 base 环境的通用能力 probe。
-- 能力从 `upstream/cursor-plugins/pstack/` 的 skills、playbooks、commands、agents 文件，以及 `playground/raw/dsh.md` 的映射行提取，归一化为稳定的 capability id。
-- 一个 capability 可以拆成多个行为分支 probe；一个文件只放一个独立 probe。
+- 能力从 `upstream/cursor-plugins/pstack/` 源树中的上游文档，以及 `playground/raw/dsh.md` 的映射行提取，归一化为稳定的 capability id；提取不依赖固定子目录名。
+- 一个 capability 对应一个 probe；不同行为、环境或冲突分支使用不同的 capability id。
 - 每个场景必须设置 `capability` 字段，并默认导出 `BehaviorScenario`。
 - 能力清单由 `playground:capabilities` 从同一来源生成，不在代码里手写固定能力列表。
 - 新增 probe 后更新 capability inventory 的覆盖状态；确实不需要的能力写入 `capability-exclusions.json` 并保留原因。
@@ -39,15 +39,14 @@ export default scenario;
 ```
 
 - 文件路径决定环境：`capabilities/` 为 `base`，其他目录使用目录名。
-- `skill` 可选，不要求绑定某个技能。
 - 不同能力分支拆成不同文件。
-- registry 依赖默认导出和类型定义，不在运行时做 shape guard。
+- registry 按默认导出的 `BehaviorScenario` 类型收集场景。
 
 ## 能力来源
 
 能力需求只来自：
 
-- `upstream/cursor-plugins/pstack/` 下的 skills、playbooks、commands、agents 文件。
+- `upstream/cursor-plugins/pstack/` 源树中的上游文档。
 - `playground/raw/dsh.md` 的映射行。
 
 以下内容只作为执行环境或 `dsh.md` 证据，不是能力来源：
@@ -64,7 +63,7 @@ export default scenario;
 - adapted probe 才验证适配实现。
 - raw 不读取或引用 `port/dsh.md`、当前实现和 adapted 证据。
 - adapted 不反推 raw 结论。
-- 跨阶段结论无效，必须丢弃重做。
+- 分析必须避免引用其他阶段的文档、实现和证据；发现跨阶段引用时停止并重做，不能作为当前阶段结论。
 
 ## 场景写法
 
