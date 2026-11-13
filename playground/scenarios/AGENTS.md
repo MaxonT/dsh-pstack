@@ -1,13 +1,13 @@
 # 场景目录规则
 
-本文件约束 `playground/scenarios/` 下的全部能力探针。场景是能力的运行时证据，不按上游 skill/playbook 数量复制用例。
+本文件约束 `playground/scenarios/` 下的全部能力探针。场景是能力的运行时证据，每个 probe 对应一个明确的能力观察目标。
 
 ## 目录结构
 
 ```text
 playground/scenarios/
 ├── capabilities/          # base 环境的通用能力 probe
-├── <environment>/         # 仅该环境需要的能力/冲突 probe
+├── <environment>/         # 仅该环境需要的能力或冲突 probe
 ├── capability-inventory.json
 ├── capability-exclusions.json
 ├── environments.ts
@@ -15,14 +15,23 @@ playground/scenarios/
 └── registry.ts
 ```
 
-- `capabilities/` 默认对应 `base`。
-- 其他场景目录的名字必须与 `environments.ts` 中的环境 id 完全一致。
-- 只有实际存在 probe 时才建立环境目录；不要预建空环境。
-- 不按 skill、playbook 或插件名称建立子目录。
+- `capabilities/` 对应 `base`。
+- 其他场景目录名必须与 `environments.ts` 中的环境 id 完全一致。
+- 目录按执行环境组织；能力通过场景的 `capability` 字段表达。
+- 只有实际存在 probe 时才建立环境目录。
+
+## capabilities 目录
+
+- `capabilities/` 存放 base 环境的通用能力 probe。
+- 能力从 pstack 的实际使用和 `playground/raw/dsh.md` 的映射行提取，归一化为稳定的 capability id。
+- 一个 capability 可以拆成多个行为分支 probe；一个文件只放一个独立 probe。
+- 每个场景必须设置 `capability` 字段，并默认导出 `BehaviorScenario`。
+- 能力清单由 `playground:capabilities` 从同一来源生成，不在代码里手写固定能力列表。
+- 新增 probe 后更新 capability inventory 的覆盖状态；确实不需要的能力写入 `capability-exclusions.json` 并保留原因。
 
 ## 文件约定
 
-- 一个文件只放一个独立 probe，默认导出 `BehaviorScenario`：
+- 一个文件默认导出一个 `BehaviorScenario`：
 
 ```ts
 const scenario: BehaviorScenario = { ... };
@@ -30,8 +39,8 @@ export default scenario;
 ```
 
 - 文件路径决定环境：`capabilities/` 为 `base`，其他目录使用目录名。
-- 场景必须设置 `capability`；`skill` 可选，不要求绑定某个技能。
-- 不要在一个文件里导出多个独立场景；不同分支拆成不同文件。
+- `skill` 可选，不要求绑定某个技能。
+- 不同能力分支拆成不同文件。
 - registry 依赖默认导出和类型定义，不在运行时做 shape guard。
 
 ## 能力来源
@@ -63,13 +72,13 @@ export default scenario;
 - `assertions` 只做机械事实；语义效果由 rubric、实际 tool call、截图和产物共同判断。
 - 非文本产物必须检查实际呈现；源码、路径、文件卡片和 assistant 文本不能替代渲染或播放结果。
 - 环境缺失或能力不可用时按 `ignore-environment` 或 `待你判断` 记录，不因降级直接判通过。
-- 一个 probe 只覆盖一个能力分支；拆分的是行为/环境/降级分支，不是技能数量。
+- 一个 probe 只覆盖一个能力分支；分支按行为、环境或降级路径拆分。
 
-## 环境
+## 其他环境
 
 - `base` 是默认环境，不加载额外插件。
-- 只有某个 probe 确实需要特殊环境时才加入对应环境目录和 `environments.ts` 条目。
-- 冲突环境必须由用户明确指定；没有对应 probe 时不启动。
+- 其他环境必须在 `environments.ts` 中登记，并写清 `description`、`kind` 和需要的插件包。
+- 只有 probe 确实需要该环境时才建立目录；冲突环境只用于用户明确指定的冲突验证。
 - `run-batch --full --environment <id>` 只运行该环境目录下的 probe，不跨环境启动。
 
 ## 能力清单与排除
