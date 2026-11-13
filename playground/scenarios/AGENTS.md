@@ -27,7 +27,8 @@ playground/scenarios/
 - 能力从 `upstream/cursor-plugins/pstack/` 源树中的上游文档，以及 `playground/raw/dsh.md` 的映射行提取，归一化为稳定的 capability id；提取不依赖固定子目录名。
 - 输出形态属于能力提取范围：上游文档要求截图、图片、图表、Mermaid/画布、实际 UI 渲染、视频或音频播放时，必须提取对应的 `render-*` 能力，并建立独立 probe；不能只依赖一条“非文本产物要检查”的通用场景写法。
 - `dsh.md` 的 `Paths`（路径布局）和 `Cursor-only features`（Cursor 专属能力）不纳入能力提取；它们是适配事实或跳过规则，不是可验证的会话能力。
-- 一个 capability 对应一个 probe；不同行为、环境或冲突分支使用不同的 capability id。
+- 一个 capability 对应一个 probe；渲染等环境对照可以在环境目录中保留同 prompt、同 observation 的 re-export probe，并使用独立的场景 `id`；inventory 用 `probes.base` / `probes.render` 记录两个环境入口。
+- 不同行为、环境或冲突分支使用不同的 capability id，环境 re-export 除外。
 - 每个场景必须设置 `capability` 字段，并默认导出 `BehaviorScenario`。
 - 能力清单由 agent 从上游 pstack 和 `raw/dsh.md` 现场提取后手工维护 `capability-inventory.json`；不解析上游表格，也不预置固定能力列表。
 - 新增或删除 probe 后同步更新 inventory 的 `probe`、`status` 和能力记录。
@@ -88,6 +89,7 @@ export default scenario;
 - `base` 是默认环境，不加载额外插件。
 - 其他环境必须在 `environments.ts` 中登记 `description`、`kind` 和 `enabledPluginPackages`；文档只引用环境 id、用途和对照方式，不写具体第三方包名。
 - `render` 是 `kind: "capability"` 的渲染对照环境，具体插件配置以 `environments.ts` 为准。
+- `render/` 下存放与 `capabilities/` 同 prompt、同 observation 的 re-export probe；场景 `id` 单独命名，`capability` 保持一致，方便同一能力在 base/render 两边对照。
 - 环境文档只描述环境 id、用途和对照方式；具体包名以 `environments.ts` 为准，避免第三方插件替换导致文档漂移。
 - 只有 probe 确实需要该环境时才建立目录；冲突环境只用于用户明确指定的冲突验证。
 - `run-batch --full --environment <id>` 只运行该环境目录下的 probe，不跨环境启动。

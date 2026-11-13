@@ -295,7 +295,11 @@
       ],
       "requiredBy": ["create-verification-skill", "ketchup", "poteto-mode", "teach"],
       "probe": "capability-render-screenshot",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-render-screenshot",
+        "render": "capability-render-screenshot-render"
+      }
     },
     {
       "id": "render-generated-image",
@@ -304,7 +308,11 @@
       "sources": ["upstream/cursor-plugins/pstack/skills/teach/SKILL.md"],
       "requiredBy": ["teach"],
       "probe": "capability-render-generated-image",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-render-generated-image",
+        "render": "capability-render-generated-image-render"
+      }
     },
     {
       "id": "render-mermaid-diagram",
@@ -318,7 +326,11 @@
       ],
       "requiredBy": ["how", "ketchup", "statechart", "teach"],
       "probe": "capability-render-mermaid-diagram",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-render-mermaid-diagram",
+        "render": "capability-render-mermaid-diagram-render"
+      }
     },
     {
       "id": "render-svg-chart",
@@ -330,7 +342,11 @@
       ],
       "requiredBy": ["statechart"],
       "probe": "capability-render-svg-chart",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-render-svg-chart",
+        "render": "capability-render-svg-chart-render"
+      }
     },
     {
       "id": "render-video",
@@ -339,7 +355,11 @@
       "sources": ["upstream/cursor-plugins/pstack/skills/ketchup-video/SKILL.md"],
       "requiredBy": ["ketchup-video"],
       "probe": "capability-render-video",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-render-video",
+        "render": "capability-render-video-render"
+      }
     }
   ]
 }
