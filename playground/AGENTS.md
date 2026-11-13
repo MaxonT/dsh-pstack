@@ -33,7 +33,7 @@
 2. 运行 raw 能力 probe，collect，生成 raw 分析。
 3. 根据 raw 分析更新 `dsh.md`、适配代码和生成树，build 后运行 adapted。
 4. 运行 adapted 能力 probe，collect 并分析。
-5. 通过后更新 README/兼容表并停在 release-ready；冲突环境只在用户明确要求时运行。
+5. 通过后更新 README/兼容表并停在 release-ready；特殊环境只在用户明确指定时运行。
 
 批次命令、阶段交接和失败处理以 [verification-loop.md](./docs/verification-loop.md) 为准，不在此重复。
 
