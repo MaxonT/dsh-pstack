@@ -36,7 +36,7 @@ DSH 运行时和 profile 只用于执行 probe 和解释结果，不作为能力
 
 ## 描述与排除
 
-- 清单里的 `description` 来自 `raw/dsh.md` 对应行的 DSH 替换说明，用来解释能力实际做什么。
+- 清单里的 `description` 优先取 `raw/dsh.zh.md` 对应行的中文说明，缺失时回退 `raw/dsh.md`；用来说明能力实际做什么。
 - 能力确实不需要时，在 `playground/scenarios/capability-exclusions.json` 写：
 
 ```json

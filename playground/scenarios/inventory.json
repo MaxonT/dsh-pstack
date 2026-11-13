@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-13 16:28:19",
+  "generatedAt": "2026-11-13 16:33:35",
   "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
   "capabilities": [
     {
       "id": "task",
-      "description": "`subagent` returns an id immediately and notifies on completion; `subagent_fork` inherits the conversation. Put the role in `prompt` and the directory in `cwd`; see Subagent fields for the missing Cursor fields.",
+      "description": "`subagent` 立即返回 id，并在完成时通知；`subagent_fork` 继承当前对话。把角色写进 `prompt`，把目录写进 `cwd`；缺失的 Cursor 字段见“子代理字段”表。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -39,7 +39,7 @@
     },
     {
       "id": "askquestion",
-      "description": "`ask_user_question` takes a batch of questions. Empty `selected` with no `custom` means the user skipped; a timeout is `pending`, not skipped. Ask in plain text when the tool is absent.",
+      "description": "`ask_user_question` 接受一批问题。`selected` 为空且没有 `custom` 表示用户跳过；超时是 `pending`，不是跳过。工具不存在时用纯文本提问。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -54,7 +54,7 @@
     },
     {
       "id": "open-a-todolist",
-      "description": "`todo_write` replaces the whole list; statuses are `pending`, `in_progress`, and `completed`. A skipped step stays `pending` with content `skip: <reason>`; there is no `skipped` status.",
+      "description": "`todo_write` 替换整个列表；状态为 `pending`、`in_progress` 和 `completed`。跳过的步骤保留为 `pending`，内容写 `skip: <reason>`；没有 `skipped` 状态。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -70,7 +70,7 @@
     },
     {
       "id": "run-another-pstack-skill-name-or-the-name-skill",
-      "description": "`skill` loads a catalog skill by name. For `disable-model-invocation: true`, `read` `<pstack>/skills/<name>/SKILL.md`. A user `/name` gesture injects the skill directly; do not call `skill` again.",
+      "description": "`skill` 按名称加载目录中的技能。`disable-model-invocation: true` 时，用 `read` 读取 `<pstack>/skills/<name>/SKILL.md`。用户 `/name` 手势会直接注入技能；不要再调用 `skill`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -81,7 +81,7 @@
     },
     {
       "id": "grep-glob",
-      "description": "`grep` and `glob` are native tools; call them directly. Use `bash` with `rg` only when the session has neither.",
+      "description": "`grep` 和 `glob` 是原生工具，直接调用。只有会话两者都没有时，才用 `bash` 运行 `rg`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -92,7 +92,7 @@
     },
     {
       "id": "subagent-type-generalpurpose",
-      "description": "No such field; omit it. The role comes from `prompt`, or from `<pstack>/agents/<name>.md` when named.",
+      "description": "没有这个字段；省略它。角色来自 `prompt`，命名角色时来自 `<pstack>/agents/<name>.md`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -106,7 +106,7 @@
     },
     {
       "id": "poteto-agent-comment-sicko",
-      "description": "No native equivalents. Read `<pstack>/agents/<name>.md` and pass it as `prompt`, or write the role yourself.",
+      "description": "没有原生等价物。读取 `<pstack>/agents/<name>.md` 并作为 `prompt` 传入，或自己写角色说明。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -117,7 +117,7 @@
     },
     {
       "id": "readonly-true",
-      "description": "No sandbox field. Put \"do not edit files\" in `prompt`, rely on the session permission mode, and check `git status`.",
+      "description": "没有沙箱字段。在 `prompt` 写“不要编辑文件”，依赖会话权限模式，并检查 `git status`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -129,7 +129,7 @@
     },
     {
       "id": "readonly-false",
-      "description": "Omit. Writable is the default under the session permission mode.",
+      "description": "省略。在会话权限模式下默认可写。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -142,7 +142,7 @@
     },
     {
       "id": "environment-cloud",
-      "description": "No cloud agents. Use `create_worktree` when available and pass its checkout as `cwd`; otherwise skip with the line.",
+      "description": "没有云代理。有 `create_worktree` 时使用它，并把 checkout 作为 `cwd`；否则写跳过行。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -155,7 +155,7 @@
     },
     {
       "id": "environment-local",
-      "description": "Omit. Local is the default.",
+      "description": "省略。默认就是本地。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -167,7 +167,7 @@
     },
     {
       "id": "cloud-base-branch-b",
-      "description": "No such field. Pass `<b>` as `create_worktree.from`; otherwise tell the child to check out `<b>`.",
+      "description": "没有这个字段。把 `<b>` 传给 `create_worktree.from`；否则告诉子代理先 checkout `<b>`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -178,7 +178,7 @@
     },
     {
       "id": "run-in-background-true",
-      "description": "Omit. `subagent` always returns immediately and notifies on completion.",
+      "description": "省略。`subagent` 总是立即返回，并在完成时通知。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -192,7 +192,7 @@
     },
     {
       "id": "resume",
-      "description": "`send_message` to the child's `agent_id` continues it; start a new `subagent` only when the execution stopped permanently.",
+      "description": "向子代理的 `agent_id` 发送 `send_message` 可以继续；只有执行永久停止时才新建 `subagent`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -211,7 +211,7 @@
     },
     {
       "id": "file-attachments",
-      "description": "No such field. List the paths in `prompt`; the child reads them.",
+      "description": "没有这个字段。把路径列在 `prompt` 里；子代理会读取它们。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -222,7 +222,7 @@
     },
     {
       "id": "claude-family-version-effort-fast-such-as-claude-opus-5-5-xhigh",
-      "description": "Route with `provider`, `model`, and `reasoning_effort`; drop `-fast`. Valid ids come from `list_subagent_models`.",
+      "description": "用 `provider`、`model` 和 `reasoning_effort` 组成路由；去掉 `-fast`。有效 id 来自 `list_subagent_models`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -233,7 +233,7 @@
     },
     {
       "id": "a-grok-gpt-or-other-non-claude-slug",
-      "description": "Pick the closest advertised route. If none matches, omit `provider` and `model`, let the child fall back, and say so.",
+      "description": "选择最接近的已公布路由。没有匹配时省略 `provider` 和 `model`，让子代理回退，并说明这一点。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -244,7 +244,7 @@
     },
     {
       "id": "auto-or-inherit-parent",
-      "description": "Omit `provider` and `model`; omitted values use child or parent defaults.",
+      "description": "省略 `provider` 和 `model`；省略时使用子代理或父级默认值。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -263,7 +263,7 @@
     },
     {
       "id": "the-pstack-models-mdc-rule-cursor-rules-pstack-models-mdc",
-      "description": "The pstack role file is `$DSH_HOME/pstack-models.json`. Base DSH never reads it; the pstack adapter reads this JSON on every delegation. Read it when it is not in context.",
+      "description": "pstack 角色文件是 `$DSH_HOME/pstack-models.json`。base DSH 从不读取它；pstack 适配器在每次委派时读取这个 JSON。文件不在上下文时读取它。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -274,7 +274,7 @@
     },
     {
       "id": "a-role-value-model-effort-such-as-opus-high",
-      "description": "Write `<provider>/<model> <effort>`; split it into `provider`, `model`, and `reasoning_effort`.",
+      "description": "写成 `<provider>/<model> <effort>`；拆成 `provider`、`model` 和 `reasoning_effort`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -285,7 +285,7 @@
     },
     {
       "id": "cursor-skills-cursor-skills",
-      "description": "Project skills live in `.dsh/skills/` or `.agents/skills/`. User skills live in `$DSH_HOME/skills/` or `$DSH_AGENTS_HOME/skills/`; the latter defaults to `~/.agents`.",
+      "description": "项目技能放在 `.dsh/skills/` 或 `.agents/skills/`。用户技能放在 `$DSH_HOME/skills/` 或 `$DSH_AGENTS_HOME/skills/`；后者默认 `~/.agents`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -299,7 +299,7 @@
     },
     {
       "id": "cursor-plugins-cursor-plugin-plugin-json",
-      "description": "A profile is `$DSH_HOME/profiles/<name>/`, holding `package.json` and `cordis.patch.yml`; a plugin manifest is the `dsh` section of its `package.json`.",
+      "description": "profile 是 `$DSH_HOME/profiles/<name>/`，包含 `package.json` 和 `cordis.patch.yml`；插件 manifest 是 `package.json` 的 `dsh` 段。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -310,7 +310,7 @@
     },
     {
       "id": "cursor-rules-mdc-always-applied-rules",
-      "description": "General rules use the `AGENTS.md`-compatible chain; DSH never reads `.mdc`. The pstack role file `$DSH_HOME/pstack-models.json` is the exception, read by the pstack adapter. Project `AGENTS.md`/`AGENTS.local.md` plus user-global `$DSH_HOME/AGENTS.md`.",
+      "description": "通用规则使用 `AGENTS.md` 兼容链；DSH 从不读取 `.mdc`。pstack 角色文件 `$DSH_HOME/pstack-models.json` 是例外，由 pstack 适配器读取。项目 `AGENTS.md`/`AGENTS.local.md` 加用户全局 `$DSH_HOME/AGENTS.md`。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -321,7 +321,7 @@
     },
     {
       "id": "https-github-com-cursor-plugins-blob-main-pstack-path",
-      "description": "`<pstack>/<path>` when the file exists. Read the local copy, never fetch it; give the user the URL when needed.",
+      "description": "文件存在时用 `<pstack>/<path>`。读本地副本，不要抓取；需要时把 URL 给用户。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -332,7 +332,7 @@
     },
     {
       "id": "transcripts-in-cursor-projects-slug-agent-transcripts",
-      "description": "`$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`, one append-only log per session. Optional session-search adds model-facing search tools.",
+      "description": "`$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`，每个会话一个 append-only 日志。可选 session-search 增加模型可见的搜索工具。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -343,7 +343,7 @@
     },
     {
       "id": "cursor-automations-routines-update-state-routine-calls-api2-cursor-sh-automations-webhooks-routine-wakes-and-sendtouser-secret-requests",
-      "description": "Skip with the line.",
+      "description": "用跳过行。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -354,7 +354,7 @@
     },
     {
       "id": "bugbot",
-      "description": "Treat PR comments as ordinary review threads and use the step's `gh` command; skip starting or waiting for Bugbot when there is no check or comment.",
+      "description": "把 PR 评论当作普通 review thread，使用步骤给的 `gh` 命令；没有 check 或评论时跳过启动或等待 Bugbot。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -371,7 +371,7 @@
     },
     {
       "id": "cursor-cloud-agents",
-      "description": "Map `environment: \"cloud\"` to a local worktree; skip steps that need the cloud machine itself.",
+      "description": "把 `environment: \"cloud\"` 映射到本地 worktree；跳过需要云机器本身的步骤。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",
@@ -382,7 +382,7 @@
     },
     {
       "id": "a-built-in-pr-tool",
-      "description": "Use the step's `gh` command through `bash`; that is not a skip, so write no line.",
+      "description": "通过 `bash` 使用步骤给的 `gh` 命令；这不是跳过，不要写跳过行。",
       "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
       "sources": [
         "playground/raw/dsh.md",

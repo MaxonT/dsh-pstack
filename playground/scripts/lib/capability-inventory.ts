@@ -24,6 +24,7 @@ export interface CapabilityInventory {
 }
 
 const RAW_DSH = join(REPOSITORY_ROOT, "playground/raw/dsh.md");
+const RAW_DSH_ZH = join(REPOSITORY_ROOT, "playground/raw/dsh.zh.md");
 const UPSTREAM = join(REPOSITORY_ROOT, "upstream/cursor-plugins/pstack");
 const SCENARIO_ROOT = join(REPOSITORY_ROOT, "playground/scenarios/capabilities");
 const INVENTORY = join(REPOSITORY_ROOT, "playground/scenarios/inventory.json");
@@ -45,23 +46,32 @@ function slug(value: string): string {
     .replace(/^-|-$/g, "");
 }
 
-function dshRows(): Array<{ key: string; description: string }> {
-  const rows: Array<{ key: string; description: string }> = [];
+function readRows(file: string): Map<string, string> {
+  const rows = new Map<string, string>();
   let inTable = false;
-  for (const line of readFileSync(RAW_DSH, "utf8").split("\n")) {
+  for (const line of readFileSync(file, "utf8").split("\n")) {
     if (line.startsWith("|")) {
       const cells = line
         .split("|")
         .slice(1, -1)
         .map((cell) => cell.trim());
       if (cells[0] === "Cursor" || cells[0] === "dsh.md 行" || /^---+$/.test(cells[0])) continue;
-      if (cells[0] !== "") rows.push({ key: cells[0], description: cells.slice(1).join(" ") });
+      if (cells[0] !== "" && !rows.has(cells[0])) rows.set(cells[0], cells.slice(1).join(" "));
       inTable = true;
     } else if (inTable) {
       inTable = false;
     }
   }
-  return [...new Map(rows.map((row) => [row.key, row])).values()];
+  return rows;
+}
+
+function dshRows(): Array<{ key: string; description: string }> {
+  const english = readRows(RAW_DSH);
+  const chinese = readRows(RAW_DSH_ZH);
+  return [...english.entries()].map(([key, description]) => ({
+    key,
+    description: chinese.get(key) ?? description,
+  }));
 }
 
 function readExclusions(): Map<string, string> {
