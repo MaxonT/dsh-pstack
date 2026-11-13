@@ -14,7 +14,7 @@
 
 先运行 raw 生成器，再准备 raw 环境。`raw/base` 不加载适配插件或额外环境包，只使用标准 preset 和 raw 提示；`raw/<capability-environment>` 按 `environments.ts` 加载该环境的对照包。
 
-完整 prepare、bootstrap、run-batch 和 collect 命令见 [verification-loop.md](./verification-loop.md)。单场景调试时，在准备和 bootstrap 完成后使用：
+完整 prepare、bootstrap、run-batch 和 collect 命令见 [verification-loop.md](./verification-loop.md)。`bootstrap` 成功会写 `bootstrap-ready.json`；同一 worker 已有记录时重复执行会直接通过，`prepare` 重置/复用或 worker stop 会清除该记录。单场景调试时，在准备和 bootstrap 完成后使用：
 
 ```sh
 vp run playground:run -- --worker 0 --environment base --phase raw --scenario <capability-probe-id>

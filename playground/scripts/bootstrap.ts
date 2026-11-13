@@ -3,12 +3,19 @@
 // chip instead of a login or 401 wall. `--worker <k>` checks one, `--all` checks all,
 // default is the first worker.
 
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { collapseSidebar, createBrowserSession } from "./lib/browser.ts";
 import { UI_LABELS } from "./lib/runtime.ts";
 import { readHomePlan, readWebUrl, readWorkspaceStore } from "./lib/env.ts";
-import { listWorkers, workerPaths, type WorkerPaths } from "./lib/worker.ts";
+import {
+  bootstrapReadyFile,
+  hasBootstrapReady,
+  listWorkers,
+  workerPaths,
+  type WorkerPaths,
+} from "./lib/worker.ts";
 import type { Phase } from "../types.ts";
 
 const { continue: CONTINUE_LABEL, previewNotice: PREVIEW_NOTICE } = UI_LABELS;
@@ -144,7 +151,19 @@ async function main(): Promise<void> {
   const workers = selectWorkers();
   let failed = 0;
   for (const paths of workers) {
-    if (validateWorker(paths).length > 0) failed += 1;
+    if (hasBootstrapReady(paths)) {
+      console.log(`[bootstrap] worker ${paths.index} already ready`);
+      continue;
+    }
+    const failures = validateWorker(paths);
+    if (failures.length > 0) {
+      failed += 1;
+    } else {
+      writeFileSync(
+        bootstrapReadyFile(paths),
+        `${JSON.stringify({ checkedAt: new Date().toISOString() }, null, 2)}\n`,
+      );
+    }
   }
   if (failed > 0) process.exitCode = 1;
 }

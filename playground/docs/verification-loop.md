@@ -81,6 +81,8 @@ vp run playground:collect -- --phase adapted --environment base
 
 渲染能力用 `base` 与 `render` 两个环境对照；`render` 的插件配置以 `environments.ts` 为准。`render/` 下的 probe 是对应 `capabilities/` base 场景的 re-export，只覆盖环境字段，任务和观察保持一致。
 
+`bootstrap` 成功后会在该 worker 目录写 `bootstrap-ready.json`。同一 worker 已有该记录时，重复执行 `bootstrap` 会直接通过；`prepare --reset`、`prepare --reuse` 或 worker stop 会清除该 worker 的记录。
+
 ```sh
 vp run playground:prepare -- --phase raw --environment render --reset
 vp run playground:bootstrap -- --phase raw --environment render --all

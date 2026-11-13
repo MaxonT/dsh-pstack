@@ -23,7 +23,13 @@ import {
 } from "./lib/env.ts";
 import { listScenarioIds } from "./lib/scenarios.ts";
 import { computeWorkers } from "./lib/capacity.ts";
-import { listWorkers, resetPhase, workerPaths, type WorkerPaths } from "./lib/worker.ts";
+import {
+  clearBootstrapReady,
+  listWorkers,
+  resetPhase,
+  workerPaths,
+  type WorkerPaths,
+} from "./lib/worker.ts";
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -95,6 +101,7 @@ async function main(): Promise<void> {
     // The reused profile points at the worker's raw mount outside the repo; refresh it so a
     // cleared temp root does not restart raw workers with missing skills.
     for (const worker of workers) {
+      clearBootstrapReady(worker);
       if (readPhase(worker) === "raw") mountRawTree(worker);
       writeWorkerInstructions(worker);
       if (readPhase(worker) === "adapted") writeRoleFile(worker, config);
@@ -115,6 +122,7 @@ async function main(): Promise<void> {
   mkdirSync(workersDirectory(), { recursive: true });
   let installed: WorkerPaths | null = null;
   for (const worker of workers) {
+    clearBootstrapReady(worker);
     if (reset) resetHome(worker);
     else mkdirSync(worker.home, { recursive: true });
     if (phase === "raw") mountRawTree(worker);

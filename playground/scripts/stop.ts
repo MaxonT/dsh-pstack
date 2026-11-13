@@ -1,7 +1,7 @@
 import { createBrowserSession } from "./lib/browser.ts";
 import { stopWeb } from "./lib/env.ts";
 import { environmentMatrix } from "./lib/run-metadata.ts";
-import { listWorkers } from "./lib/worker.ts";
+import { clearBootstrapReady, listWorkers } from "./lib/worker.ts";
 import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
 
@@ -19,6 +19,7 @@ for (const paths of listWorkers({
   ...(phase === undefined ? {} : { phase }),
 })) {
   const result = stopWeb(paths);
+  clearBootstrapReady(paths);
   console.log(
     `[stop] ${paths.phase}/${paths.environmentId}/w${paths.index} stopped=${result.stopped}`,
   );

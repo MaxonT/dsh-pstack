@@ -53,6 +53,18 @@ export function stopRequestFile(paths: WorkerPaths): string {
   return join(paths.root, "stop-request");
 }
 
+export function bootstrapReadyFile(paths: WorkerPaths): string {
+  return join(paths.root, "bootstrap-ready.json");
+}
+
+export function hasBootstrapReady(paths: WorkerPaths): boolean {
+  return existsSync(bootstrapReadyFile(paths));
+}
+
+export function clearBootstrapReady(paths: WorkerPaths): void {
+  rmSync(bootstrapReadyFile(paths), { force: true });
+}
+
 export function currentTaskFile(paths: WorkerPaths): string {
   return join(paths.root, "current-task.json");
 }
