@@ -2,6 +2,8 @@
 
 本目录只保存 raw 基准的生成规则。`dsh.md` 是 agent 依据 DSH 实际能力逐条填写、由用户确认的答案文件；`dsh.zh.md` 是它的中文审阅译文，不参与生成。生成器只读取 `dsh.md`，不改写内容。
 
+`playground/raw/dsh.md` 的编写、结构、单元格和逐行证据规则统一见 [docs/harness/AGENTS.md](../../docs/harness/AGENTS.md)；本文件只保留 raw 生成规则。
+
 ## 生成器
 
 `scripts/generate-pstack.mjs --target raw` 只做以下事情：
