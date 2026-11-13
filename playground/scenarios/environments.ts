@@ -1,19 +1,11 @@
 import type { EnvironmentMatrix } from "../types.ts";
 
 /**
- * The official-plugin environments the port is verified against. `prepare` adds
- * `dsh-pstack` to every adapted profile automatically, so `enabledPluginPackages` holds
- * only the extra official packages layered on top of the base bundle.
+ * Environment matrix for capability probes. `prepare` adds the port package to every
+ * adapted profile; this list only holds additional packages layered on top of the base bundle.
  *
- * Two environments force-load packages the pinned dsh runtime would otherwise disable.
- * `session-search`'s experimental plugin pins its session-query packages to an older runtime
- * line the pinned dsh rejects, and `agent-team` ships experimental Agent Teams plugins
- * whose peer range omits the runtime. The loader disables those rows unless the exact package is
- * exempted, so `versionExemptions` lists the packages to force-load through
- * `dsh plugin allow-version`.
- *
- * `agent-team` is a neutral plugin scenario. It does not assume a conflict with the pstack
- * root preset; the probe records whatever the session and UI show.
+ * `versionExemptions` force-loads packages whose peer range does not match the pinned
+ * runtime. It is configuration for the probe environment, not a capability declaration.
  */
 export const environments: readonly EnvironmentMatrix[] = [
   { id: "base", enabledPluginPackages: [] },

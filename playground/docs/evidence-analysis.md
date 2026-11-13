@@ -10,7 +10,7 @@
 - `playground/raw/dsh.md`：只在 raw 分析时逐条对照。
 - `port/dsh.md`：只在 adapted 分析时逐条对照。
 - 必要时读 `playground/raw/dsh-evidence.md` 和上游技能原文。
-- `playground/scenarios/inventory.json`：由上游和 raw/dsh 生成的派生能力清单；不要从 DSH 运行时反推 raw 能力需求。
+- `playground/scenarios/capability-inventory.json`：由上游和 raw/dsh 生成的派生能力清单；不要从 DSH 运行时反推 raw 能力需求。
 
 ## 阶段隔离
 

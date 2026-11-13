@@ -1,6 +1,6 @@
 # 能力用例编写规则
 
-本文件约束 `playground/scenarios/capabilities/` 下的能力探针。场景是能力证据，不是某个 skill/playbook 的效果验收。
+本文件约束 `playground/scenarios/capabilities/` 下的能力探针。场景是能力证据，不按 skill/playbook 数量组织。
 
 ## 能力来源
 
@@ -18,7 +18,7 @@ DSH 运行时和 profile 只用于执行 probe 和解释结果，不能作为 ra
 - `assertions` 只做机械事实；能力是否成立由 `rubric`、实际 tool call、截图和产物共同判断。
 - 非文本产物必须检查实际呈现，源码、文件路径、文件卡片和 assistant 文本不能替代渲染或播放结果。
 - 场景不要求某个工具名、某个插件或某个具体实现；能力缺失、部分支持、环境限制和未知按证据记录。
-- 新能力由 pstack 使用和 `raw/dsh.md` 现场提取后直接写成 probe；场景必须设置 `capability` 字段。仓库不维护固定能力清单，排除项写进 `capability-exclusions.json`。
+- 新能力由 pstack 使用和 `raw/dsh.md` 现场提取后直接写成 probe；场景必须设置 `capability` 字段，不要求绑定 skill。仓库不维护固定能力清单，排除项写进 `capability-exclusions.json`。
 
 ## 完成条件
 

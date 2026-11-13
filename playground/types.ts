@@ -67,7 +67,7 @@ export interface ScenarioSource {
 export interface BehaviorScenario {
   type: "behavior";
   id: string;
-  skill: string;
+  skill?: string;
   turns: Array<{ prompt: string }>;
   workspace: WorkspaceFixture;
   assertions: Assertion[];

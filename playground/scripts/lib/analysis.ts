@@ -68,6 +68,7 @@ function invocationAnalysis(
   phase: Phase,
 ): { loadedVia: SkillLoadPath; attempts: number; errors: string[] } {
   const requested = scenario.skill;
+  if (requested === undefined) return { loadedVia: "none", attempts: 0, errors: [] };
   const skillTools = phase === "raw" ? new Set<string>(["skill"]) : SKILL_TOOLS;
   const matching = session.toolCalls.filter(
     (call) =>
@@ -100,7 +101,9 @@ export function analyzeSession(
   const dependencies = dependencyAnalysis(scenario, session, phase);
   const tools = toolAnalysis(session);
   const warnings: string[] = [];
-  if (invocation.loadedVia === "none") warnings.push(`skill ${scenario.skill} was not loaded`);
+  if (scenario.skill !== undefined && invocation.loadedVia === "none") {
+    warnings.push(`skill ${scenario.skill} was not loaded`);
+  }
   for (const dependency of dependencies) {
     if (!dependency.available) warnings.push(`dependency ${dependency.name} is unavailable`);
     else if (!dependency.loaded) warnings.push(`dependency ${dependency.name} was not loaded`);
@@ -111,10 +114,12 @@ export function analyzeSession(
     }
   }
   return {
-    skillInvocation: { requested: scenario.skill, ...invocation },
+    skillInvocation: { requested: scenario.skill ?? "", ...invocation },
     dependencies,
     tools,
-    userGesture: session.userTexts.some((text) => text.includes(`/${scenario.skill}`)),
+    userGesture:
+      scenario.skill !== undefined &&
+      session.userTexts.some((text) => text.includes(`/${scenario.skill}`)),
     artifacts: session.toolCalls
       .filter((call) => call.name === "write" || call.name === "edit")
       .map((call) => call.argsSummary)

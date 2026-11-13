@@ -10,7 +10,6 @@ function isBehaviorScenario(value: unknown): value is BehaviorScenario {
   return (
     candidate.type === "behavior" &&
     typeof candidate.id === "string" &&
-    typeof candidate.skill === "string" &&
     Array.isArray(candidate.turns)
   );
 }

@@ -32,7 +32,7 @@ DSH 运行时和 profile 只用于执行 probe 和解释结果，不作为能力
 
 ## 覆盖守卫
 
-场景文件是能力提取的产物。新会话按本文件的提取流程在 `scenarios/capabilities/` 下生成 probe；`scenarios/inventory.json` 是由上游和 raw/dsh 生成的派生清单，不是手写预设。skill/playbook 不要求各自拥有完整 worker 场景，只作为能力消费者登记。
+场景文件是能力提取的产物。新会话按本文件的提取流程在 `scenarios/capabilities/` 下生成 probe；`scenarios/capability-inventory.json` 是由上游和 raw/dsh 生成的派生清单，不是手写预设。skill/playbook 不要求各自拥有完整 worker 场景，只作为能力消费者登记。
 
 ## 描述与排除
 
