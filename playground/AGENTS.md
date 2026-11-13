@@ -7,7 +7,7 @@
 - 真实 DSH Web 会话，Linux 是唯一官方支持平台；其他平台先运行 `playground:doctor`。
 - 每个 worker 使用独立 home、浏览器 profile、证据目录和隔离工作区；worker 不携带 Git/GitHub 凭证。
 - 真实模型选择由用户确认；RunRecord 记录实际路由、DSH 版本、上游 revision 和配置 hash。
-- `raw` 阶段只观察原生 DSH；`adapted` 阶段验证适配实现。
+- `raw/base` 观察原生 DSH；`raw/<capability-environment>` 是对照用的可选环境；`adapted` 阶段验证适配实现。
 
 ## 目录
 

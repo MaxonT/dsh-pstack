@@ -65,11 +65,12 @@ export default scenario;
 
 | 阶段 | 允许输入 | 禁止输入 | probe 目标 |
 | --- | --- | --- | --- |
-| raw | `reviews/raw-*`、`playground/raw/dsh.md`、上游 pstack 源树、场景 fixture、当前 raw session | `port/dsh.md`、`src/**`、已发布的端口实现、插件工具、`reviews/adapted-*`、adapted 证据 | 观察原生 DSH 能力 |
+| raw | `reviews/raw-*`、`playground/raw/dsh.md`、上游 pstack 源树、场景 fixture、当前 raw session、已登记的 capability 对照环境 | `port/dsh.md`、`src/**`、已发布的端口实现、`reviews/adapted-*`、adapted 证据 | 观察原生 DSH 能力；capability 环境只做对照 |
 | adapted | `reviews/adapted-*`、`port/dsh.md`、`src/**`、当前适配实现和环境文件、当前 adapted session | `reviews/raw-*`、raw 分析结论、raw 证据 | 验证适配实现 |
 
 - 场景声明 `phases` 时，只能在该阶段运行；不声明表示 raw/adapted 都允许。
 - 阶段专属环境或能力必须显式声明 `phases`，例如 `phases: ["adapted"]`。
+- `raw/base` 是 native baseline；`raw/<capability-environment>` 只用于证明可选依赖是否改变结果，不能替代 base 对照。
 - 发现需要读取跨阶段文件时，停止该 probe 或分析并重新选择来源，不能把跨阶段内容作为当前阶段依据。
 - raw 不预置适配工具或环境文件；adapted 不反推 raw 结论。
 
@@ -86,6 +87,7 @@ export default scenario;
 
 - `base` 是默认环境，不加载额外插件。
 - 其他环境必须在 `environments.ts` 中登记，并写清 `description`、`kind` 和需要的插件包。
+- `render` 是 `kind: "capability"` 的渲染对照环境，加载 `@changfenhuang/dsh-genui`；用于和 `base` 比较渲染结果。
 - 只有 probe 确实需要该环境时才建立目录；冲突环境只用于用户明确指定的冲突验证。
 - `run-batch --full --environment <id>` 只运行该环境目录下的 probe，不跨环境启动。
 

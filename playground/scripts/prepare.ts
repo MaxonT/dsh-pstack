@@ -71,11 +71,13 @@ async function main(): Promise<void> {
   const environmentId = argValue("--environment");
   if (environmentId === undefined) throw new Error("--environment is required");
   const matrix = environmentMatrix(environmentId);
-  if (phase === "raw" && matrix.enabledPluginPackages.length > 0) {
-    throw new Error("raw baseline does not allow additional plugin packages");
+  if (phase === "raw" && matrix.enabledPluginPackages.length > 0 && matrix.kind !== "capability") {
+    throw new Error("raw only accepts additional packages in an explicit capability environment");
   }
   const enabledPackages =
-    phase === "adapted" ? ["dsh-pstack", ...matrix.enabledPluginPackages] : [];
+    phase === "adapted"
+      ? ["dsh-pstack", ...matrix.enabledPluginPackages]
+      : matrix.enabledPluginPackages;
   const configFile = argValue("--config") ?? process.env.PLAYGROUND_CONFIG_FILE ?? CONFIG_FILE;
   const config = readPlaygroundConfig(configFile);
   const plan = loadProviderPlan(config);

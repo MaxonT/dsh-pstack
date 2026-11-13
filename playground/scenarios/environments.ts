@@ -9,6 +9,13 @@ export const environments: readonly EnvironmentMatrix[] = [
     enabledPluginPackages: [],
   },
   {
+    id: "render",
+    description:
+      "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+    kind: "capability",
+    enabledPluginPackages: ["@changfenhuang/dsh-genui"],
+  },
+  {
     id: "agent-team",
     description: "用于验证 pstack 与 Agent Teams 插件是否冲突；只有明确指定的冲突 probe 使用。",
     kind: "conflict",

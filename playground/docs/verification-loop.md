@@ -75,6 +75,18 @@ vp run playground:run-batch -- --phase adapted --environment base --full
 vp run playground:collect -- --phase adapted --environment base
 ```
 
+### render 对照 probe
+
+渲染能力用 `base` 与 `render` 两个环境对照；`render` 加载 `@changfenhuang/dsh-genui`：
+
+```sh
+vp run playground:prepare -- --phase raw --environment render --reset
+vp run playground:run-batch -- --phase raw --environment render --full
+vp run playground:collect -- --phase raw --environment render
+```
+
+同时保留 `raw/base` 的同题结果，才能判断差异来自插件还是 base。
+
 ### 冲突 probe
 
 只在用户明确要求验证指定环境冲突时运行：
