@@ -1,6 +1,6 @@
 # 能力覆盖
 
-测试覆盖单位是 capability，不是上游 skill 或 playbook。skill/playbook 是能力的消费者，只有依赖关系；只有能力和它的 probe 进入 raw/adapted 覆盖。
+测试覆盖单位是 capability。能力由 probe 验证并进入 raw/adapted 覆盖；场景按能力组织，不按上游文件数量复制。
 
 ## 来源
 
@@ -16,7 +16,7 @@
 
 - 能力标识和用户可观察行为
 - 来自哪些 pstack 使用和 raw 映射
-- 哪些 skill/playbook 消费它
+- 哪些能力分支或 probe 覆盖它
 - 适用阶段
 - 对应 probe 场景文件
 
@@ -32,7 +32,7 @@
 
 ## 覆盖守卫
 
-场景文件是能力提取的产物。新会话按本文件的提取流程在 `scenarios/capabilities/` 下生成 probe；`scenarios/capability-inventory.json` 是由上游和 raw/dsh 生成的派生清单，不是手写预设。skill/playbook 不要求各自拥有完整 worker 场景，只作为能力消费者登记。
+场景文件是能力提取的产物。新会话按本文件的提取流程在 `scenarios/capabilities/` 或对应环境目录下生成 probe；`scenarios/capability-inventory.json` 是由上游和 raw/dsh 生成的派生清单，不是手写预设。能力不要求按上游文件数量复制 worker 场景。
 
 ## 描述与排除
 

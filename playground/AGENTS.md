@@ -1,62 +1,46 @@
 # Playground 运转规则
 
-本文件是 playground 的唯一严格规则源。完整阶段、命令和交接条件见 [docs/verification-loop.md](./docs/verification-loop.md)。README 只是入口，不承载流程。
+本文件是 playground 的入口规则，只保留环境、目录职责、流程摘要和硬约束。完整阶段、命令和交接见 [docs/verification-loop.md](./docs/verification-loop.md)。
 
-## 边界
+## 环境
 
-- playground 用真实 DSH Web 会话验证移植。Linux 是唯一官方支持的平台；其他系统由 `playground:doctor` 明确报告不支持。
-- 上游技能自身的文案、结构、依赖缺口和质量问题不属于本仓回归范围。这里只验证移植后在 DSH 内的运转和结果渲染。
-- 禁止在 prompt、assertions、rubric、uiObservations 中预设目标运行时能力或预期缺口。能力缺失由会话证据和 review 发现。
-- 真实模型选择由用户确认；每条 RunRecord 记录实际路由、DSH 版本、上游 revision 和配置 hash。
+- 真实 DSH Web 会话，Linux 是唯一官方支持平台；其他平台先运行 `playground:doctor`。
+- 每个 worker 使用独立 home、浏览器 profile、证据目录和隔离工作区；worker 不携带 Git/GitHub 凭证。
+- 真实模型选择由用户确认；RunRecord 记录实际路由、DSH 版本、上游 revision 和配置 hash。
+- `raw` 阶段只观察原生 DSH；`adapted` 阶段验证 port 实现和角色/插件接入。
 
 ## 目录
 
-- `scenarios/capabilities/<scenario>.ts`：base 环境的能力场景；`scenarios/<environment>/<scenario>.ts`：该环境专属 probe；默认导出 `BehaviorScenario`。
-- `scenarios/registry.ts`：用 `import.meta.glob("./*/*.ts")` 自动发现按环境目录组织的场景；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
-- `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
-- `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<scenario>/<phase>-<environment>/` 保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
-- `reviews/.staging/`：批次运行中的临时目录，不提交。
+- `scenarios/`：能力 probe 目录。编写规则见 [scenarios/AGENTS.md](./scenarios/AGENTS.md)；能力提取、inventory 和排除规则见 [docs/capabilities.md](./docs/capabilities.md)。
+- `scripts/`：prepare、bootstrap、run-batch、run-case、collect、redact 等 CLI 入口。
+- `docs/`：
+
+| 文档 | 用途 |
+| --- | --- |
+| [verification-loop.md](./docs/verification-loop.md) | 阶段、命令、批次和交接条件 |
+| [workspace-session.md](./docs/workspace-session.md) | worker 隔离、会话执行、停止和证据目录 |
+| [evidence-analysis.md](./docs/evidence-analysis.md) | 每轮证据分析和 `index.md` 格式 |
+| [evidence-redaction.md](./docs/evidence-redaction.md) | 证据脱敏和提交门 |
+| [capabilities.md](./docs/capabilities.md) | 能力来源、inventory、排除和 probe 规则 |
+
+- `reviews/<phase>-<environment>/`：当前完整快照；`manifest.json` 是机器清单，`index.md` 是分析问答，场景证据在 `scenarios/<scenario>/<phase>-<environment>/`。`session.jsonl.zstd` 和 `record.safe.json` 不提交。
+- `raw/`：`dsh.md`、`dsh.zh.md` 和 `dsh-evidence.md` 是 raw 基准与证据；`raw/pstack` 是生成物，不作为能力来源。
 - 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
 
-## 场景要求
+## 流程
 
-- 每个场景只观察当前 phase 实际提供的能力；技能加载路径按该 phase 的原生或适配工具集判断，raw 只记录原生能力，adapted 才记录适配工具；同时观察依赖可用性、工具调用与重试、turn 是否结束、最终答复或产物是否存在。
-- `SessionAnalysis` 必须写入 RunRecord，包含 `tools`、`artifacts` 和 warnings。
-- 截图保存为完整页面 `screenshot.png`；捕获失败直接抛异常，不写入降级截图。
-- 非文本产物以实际呈现结果为准；源码块、文件存在、路径、文件卡片和 assistant 文本不能单独证明渲染或播放成立。
-- 覆盖单位是 capability。每次从 pstack 使用和 `raw/dsh.md` 提取能力，再由 agent 在 `scenarios/capabilities/` 或对应环境目录生成 probe；仓库不预置能力清单，场景按能力组织而不是按上游文件数量复制。
-- 带环境矩阵的场景不预设冲突；具体环境只用于运行矩阵，结果由会话文件和界面观察决定。
-- 每个 scenario workspace 由 runner 初始化本地 `git init`，不设置 origin；worker 不携带 Git/GitHub 凭证，避免真实远端副作用。
+1. 生成 raw 树，准备 `raw` 环境和 worker。
+2. 运行 raw 能力 probe，collect，生成 raw 分析。
+3. 根据 raw 分析更新 `dsh.md`、适配代码和生成树，build 后运行 adapted。
+4. 运行 adapted 能力 probe，collect 并分析。
+5. 通过后更新 README/兼容表并停在 release-ready；冲突环境只在用户明确要求时运行。
 
-## 证据分析
+批次命令、阶段交接和失败处理以 [verification-loop.md](./docs/verification-loop.md) 为准，不在此重复。
 
-- `collect` 只写 `reviews/<phase>-<environment>/` 的当前快照。
-- 每轮结束后在新会话按 [docs/evidence-analysis.md](./docs/evidence-analysis.md) 分析全部证据，填写 `index.md`；提交前按 [docs/evidence-redaction.md](./docs/evidence-redaction.md) 生成 `record.safe.json` 并运行 `playground:redact --apply`。
-- 分析必须按「根因 + 建议动作」去重，同一问题的影响场景和证据合并到一条问答。
-- 无法可靠分类的问题一律标为待用户判断，禁止默认忽略、默认归为上游或默认选一个 decision。
-- raw 分析只对照 `playground/raw/dsh.md`；adapted 分析只对照 `port/dsh.md`。
-- 结论必须由证据和根因支撑，不能把单一观察直接等同于适配说明缺陷。
-- 只有当前阶段明确落到 `dsh-md` 或 `plugin` 的结论才进入该阶段的适配修改；`upstream`、`ignore-environment` 和 `needs-human` 按结论分流。
+## 硬约束
 
-## 流程与交接
-
-- 每个会话只接一个阶段，入口条件、产物和下一步以 `docs/verification-loop.md` 的“阶段交接”表为准；review 后必须落到具体 decision，不能停在“看起来没问题”。
-- 进程生命周期：每次 bash 调用都在独立的 PID namespace/cgroup 里。`prepare` 启动的 DSH Web 即使使用 detached，也会在 job shell 退出时被销毁；不要把 `prepare` 和 `bootstrap` 拆成两次调用。
-- `prepare → bootstrap → run-batch → collect` 必须在同一个长期存活的 background job 中执行，shell 保持到 collect 结束。不要用 `&`、`nohup` 或 `tee`；`vp run` wrapper 被 SIGTERM 时改用 `vpx playground/scripts/*.ts` 直调。
-- prepare 为每个 worker 写入 `$DSH_HOME/AGENTS.md` 的结构化读边界；所有 phase 生效，限制只能读取工作区和系统挂载的只读输入。
-- 任务超过 10 分钟时读取该 worker 的真实 session 文件判断是否仍有效推进；确认无效后执行 `playground:stop-task`，保留当前证据并继续后续任务。
-- worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
-- raw：生成 `playground/raw/pstack`，先用 `run-batch --full` 跑能力探针，collect，再在新会话按证据分析规则填写 `reviews/raw-base/index.md`；需要消费者回归时再显式选择 representative capability probe 场景。
-- 适配开发：根据分析结论维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
-- adapted/base：优先 `run-batch --full` 验证能力实现，collect，分析 `reviews/adapted-base/index.md`；需要消费者回归时再显式选择 representative capability probe 场景。不通过回适配开发。
-- 冲突环境：只有明确要求验证 pstack 与 Agent Teams 冲突时，才运行 `agent-team` 环境的 probe；没有对应 probe 不启动。
-- README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
-
-## dsh.md
-
+- 阶段隔离按 [scenarios/AGENTS.md](./scenarios/AGENTS.md) 和 [evidence-analysis.md](./docs/evidence-analysis.md) 执行。
+- `prepare → bootstrap → run-batch → collect` 必须在同一个长期存活的 background job 中串行执行，shell 保持到 collect 结束。
 - `playground/raw/dsh.md` 是 raw 基准答案，`port/dsh.md` 是最终随包答案，两者不能合并。
-- dsh.md 只描述 DSH 能力，不写具体插件、包、外部二进制或服务的安装建议；可选能力用泛化能力类别说明。
-- 生成 `dsh.md` 时先复制上游 `claude-code.md` 的结构并清空答案，再由 agent 和用户逐条提案、审批、写入；已有答案作为默认提案但仍逐条确认。
-- `dsh.zh.md` 是逐行中文翻译，只供审阅，生成器不读。
-- `playground/raw/dsh-evidence.md` 保存判定依据。
-- `scripts/generate-pstack.mjs --target port|raw` 是唯一生成器；`--target port` 写根 `pstack/`，`--target raw` 写 `playground/raw/pstack/`。
+- dsh.md 只描述 DSH 能力，不写具体插件、包、外部二进制或服务的安装建议。
+- `scripts/generate-pstack.mjs --target port|raw` 是唯一生成器。
