@@ -24,3 +24,6 @@ reviews/.staging/
 
 # Session logs contain host paths and may contain credentials; keep local only.
 reviews/**/session.jsonl.zstd
+
+# Agent redaction candidate; only validated record.json is committed.
+reviews/**/record.safe.json

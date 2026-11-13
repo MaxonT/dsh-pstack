@@ -13,7 +13,7 @@
 
 ## 输出
 
-只写 `reviews/<phase>-<environment>/index.md`，不生成额外的汇总或审批文件。
+只写 `reviews/<phase>-<environment>/index.md`，不生成额外的汇总或审批文件。分析完成后按 [evidence-redaction.md](./evidence-redaction.md) 生成 `record.safe.json` 并通过 `playground:redact --apply`。
 
 `index.md` 固定包含：
 

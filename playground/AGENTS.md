@@ -30,7 +30,7 @@
 ## 证据分析
 
 - `collect` 只写 `reviews/<phase>-<environment>/` 的当前快照，不生成额外的汇总或审批文件。
-- 每轮结束后在新会话按 [docs/evidence-analysis.md](./docs/evidence-analysis.md) 分析全部证据，填写 `index.md`。
+- 每轮结束后在新会话按 [docs/evidence-analysis.md](./docs/evidence-analysis.md) 分析全部证据，填写 `index.md`；提交前按 [docs/evidence-redaction.md](./docs/evidence-redaction.md) 生成 `record.safe.json` 并运行 `playground:redact --apply`。
 - 分析必须按「根因 + 建议动作」去重，同一问题的影响场景和证据合并到一条问答。
 - 无法可靠分类的问题一律标为待用户判断，禁止默认忽略、默认归为上游或默认选一个 decision。
 - raw 分析只对照 `playground/raw/dsh.md`；adapted 分析只对照 `port/dsh.md`。

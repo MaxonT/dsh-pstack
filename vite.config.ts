@@ -109,6 +109,10 @@ export default defineConfig({
         command: "vpx playground/scripts/stop-task.ts",
         cache: false,
       },
+      "playground:redact": {
+        command: "vpx playground/scripts/redact.ts",
+        cache: false,
+      },
       "playground:run": {
         command: "vpx playground/scripts/run-case.ts",
         cache: false,
