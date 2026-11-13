@@ -1,18 +1,14 @@
 import type { BehaviorScenario } from "../types.ts";
 import { environments } from "./environments.ts";
 
-const modules = import.meta.glob("./*/*.ts", {
+const modules = import.meta.glob<Record<string, unknown>>("./*/*.ts", {
   eager: true,
-}) as Record<string, Record<string, unknown>>;
+});
 
 function isBehaviorScenario(value: unknown): value is BehaviorScenario {
   if (value === null || typeof value !== "object") return false;
-  const candidate = value as Partial<BehaviorScenario>;
-  return (
-    candidate.type === "behavior" &&
-    typeof candidate.id === "string" &&
-    Array.isArray(candidate.turns)
-  );
+  const record = value as Record<string, unknown>;
+  return record.type === "behavior" && typeof record.id === "string" && Array.isArray(record.turns);
 }
 
 const environmentIds = new Set([
