@@ -31,7 +31,7 @@ flowchart TD
   adaptedFull --> collectAdapted[collect]
   collectAdapted --> analyzeAdapted[新会话分析 adapted 证据]
   analyzeAdapted -->|dsh-md / plugin| portChange
-  analyzeAdapted -->|通过| envGroup[agent-team 冲突 probe]
+  analyzeAdapted -->|通过| envGroup[冲突 probe]
   envGroup --> release[README + release-ready]
   upstream[上游只更新部分技能] --> rawDelta[raw incremental]
   rawDelta --> analyzeRaw
@@ -47,9 +47,9 @@ flowchart TD
 | 2. raw 分析 | raw 快照完整 | `reviews/raw-base/index.md` 的问答和 dsh.md 审查 | `dsh-md` 回适配开发；`upstream` / `ignore-environment` / `待你判断` 分别分流 |
 | 3. 适配开发 | 分析给出当前阶段的 `dsh-md` 或 `plugin` | 更新当前阶段对应的 dsh.md、适配代码、生成树和 build | adapted/base |
 | 4. adapted/base | 新 build 完成 | `reviews/adapted-base/` 当前快照 | 新会话分析 `reviews/adapted-base/index.md` |
-| 5. adapted 分析 | adapted 快照完整 | `reviews/adapted-base/index.md` 和当前阶段 dsh.md 审查 | 通过后进 README/release-ready；用户明确要求冲突验证时再跑 agent-team |
-| 6. agent-team 冲突 probe | adapted/base 通过且用户明确要求验证冲突 | `reviews/adapted-agent-team/` 当前快照 | 冲突分析 |
-| 7. 冲突分析 | agent-team 快照完整 | `reviews/adapted-agent-team/index.md` | 通过后进 README/release-ready |
+| 5. adapted 分析 | adapted 快照完整 | `reviews/adapted-base/index.md` 和当前阶段 dsh.md 审查 | 通过后进 README/release-ready；用户明确要求冲突验证时再跑冲突 probe |
+| 6. 冲突 probe | adapted/base 通过且用户明确要求验证冲突 | `reviews/adapted-<conflict-environment>/` 当前快照 | 冲突分析 |
+| 7. 冲突分析 | 冲突快照完整 | `reviews/adapted-<conflict-environment>/index.md` | 通过后进 README/release-ready |
 | 8. README + release-ready | 前面分析通过 | README/兼容表、`vp run ci` 通过 | 用户手动 `vp run release` |
 
 ## 命令
@@ -75,14 +75,14 @@ vp run playground:run-batch -- --phase adapted --environment base --full
 vp run playground:collect -- --phase adapted --environment base
 ```
 
-### agent-team 冲突 probe
+### 冲突 probe
 
-只在用户明确要求验证 pstack 与 Agent Teams 冲突时运行：
+只在用户明确要求验证指定环境冲突时运行：
 
 ```sh
-vp run playground:prepare -- --phase adapted --environment agent-team --reset
-vp run playground:run-batch -- --phase adapted --environment agent-team --full
-vp run playground:collect -- --phase adapted --environment agent-team
+vp run playground:prepare -- --phase adapted --environment <conflict-environment> --reset
+vp run playground:run-batch -- --phase adapted --environment <conflict-environment> --full
+vp run playground:collect -- --phase adapted --environment <conflict-environment>
 ```
 
 ### 增量与上游更新

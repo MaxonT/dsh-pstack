@@ -62,12 +62,12 @@ export default scenario;
 | 阶段 | 允许输入 | 禁止输入 | probe 目标 |
 | --- | --- | --- | --- |
 | raw | `reviews/raw-*`、`playground/raw/dsh.md`、上游 pstack 源树、场景 fixture、当前 raw session | `port/dsh.md`、`src/**`、已发布的端口实现、插件工具、`reviews/adapted-*`、adapted 证据 | 观察原生 DSH 能力 |
-| adapted | `reviews/adapted-*`、`port/dsh.md`、`src/**`、当前插件实现和角色文件、当前 adapted session | `reviews/raw-*`、raw 分析结论、raw 证据 | 验证适配实现 |
+| adapted | `reviews/adapted-*`、`port/dsh.md`、`src/**`、当前适配实现和环境文件、当前 adapted session | `reviews/raw-*`、raw 分析结论、raw 证据 | 验证适配实现 |
 
 - 场景声明 `phases` 时，只能在该阶段运行；不声明表示 raw/adapted 都允许。
 - 阶段专属环境或能力必须显式声明 `phases`，例如 `phases: ["adapted"]`。
 - 发现需要读取跨阶段文件时，停止该 probe 或分析并重新选择来源，不能把跨阶段内容作为当前阶段依据。
-- raw 不预置 port 工具或角色文件；adapted 不反推 raw 结论。
+- raw 不预置适配工具或环境文件；adapted 不反推 raw 结论。
 
 ## 场景写法
 
@@ -88,9 +88,18 @@ export default scenario;
 ## 能力清单与排除
 
 - `capability-inventory.json` 由 `playground:capabilities` 从上游 pstack 和 `raw/dsh.md` 生成，不手写固定清单。
-- `description` 使用中文；`generatedAt` 使用本地时间；`upstreamRevision` 使用实际上游 revision。
+- `description` 优先取 `raw/dsh.zh.md`，缺失时用 `raw/dsh.md`，统一中文；`generatedAt` 使用本地时间；`upstreamRevision` 使用实际上游 revision。
+- `status` 只能是 `discovered`、`covered`、`excluded` 或 `retired`。
+- `covered` 必须有对应 `capability` probe；`excluded` 必须写 `exclusionReason`。
 - 确实不需要的能力写入 `capability-exclusions.json`，保留来源并标记 `excluded`，不要静默删除。
 - 新增 probe 后重新运行生成器并确认 inventory 与 probe 一致。
+
+能力生成和一致性检查：
+
+```sh
+vp run playground:capabilities
+vp run playground:capabilities -- --check
+```
 
 ## 验证
 

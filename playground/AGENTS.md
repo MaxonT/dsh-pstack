@@ -7,11 +7,11 @@
 - 真实 DSH Web 会话，Linux 是唯一官方支持平台；其他平台先运行 `playground:doctor`。
 - 每个 worker 使用独立 home、浏览器 profile、证据目录和隔离工作区；worker 不携带 Git/GitHub 凭证。
 - 真实模型选择由用户确认；RunRecord 记录实际路由、DSH 版本、上游 revision 和配置 hash。
-- `raw` 阶段只观察原生 DSH；`adapted` 阶段验证 port 实现和角色/插件接入。
+- `raw` 阶段只观察原生 DSH；`adapted` 阶段验证适配实现。
 
 ## 目录
 
-- `scenarios/`：能力 probe 目录。编写规则见 [scenarios/AGENTS.md](./scenarios/AGENTS.md)；能力提取、inventory 和排除规则见 [docs/capabilities.md](./docs/capabilities.md)。
+- `scenarios/`：能力 probe 目录；能力提取、场景编写、inventory 和排除规则的唯一来源是 [scenarios/AGENTS.md](./scenarios/AGENTS.md)。
 - `scripts/`：prepare、bootstrap、run-batch、run-case、collect、redact 等 CLI 入口。
 - `docs/`：
 
@@ -21,11 +21,9 @@
 | [workspace-session.md](./docs/workspace-session.md) | worker 隔离、会话执行、停止和证据目录 |
 | [evidence-analysis.md](./docs/evidence-analysis.md) | 每轮证据分析和 `index.md` 格式 |
 | [evidence-redaction.md](./docs/evidence-redaction.md) | 证据脱敏和提交门 |
-| [capabilities.md](./docs/capabilities.md) | 能力来源、inventory、排除和 probe 规则 |
 
 - `reviews/<phase>-<environment>/`：当前完整快照；`manifest.json` 是机器清单，`index.md` 是分析问答，场景证据在 `scenarios/<scenario>/<phase>-<environment>/`。`session.jsonl.zstd` 和 `record.safe.json` 不提交。
 - `raw/`：`dsh.md`、`dsh.zh.md` 和 `dsh-evidence.md` 是 raw 基准与证据；`raw/pstack` 是生成物，不作为能力来源。
-- 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
 
 ## 流程
 

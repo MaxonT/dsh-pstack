@@ -4,7 +4,7 @@
 
 ## 隔离运行环境
 
-一个 worker 有一套独立运行环境。home、浏览器 profile、证据、pid 和日志在仓库内 `playground/.workers/<phase>/<environmentId>/w<k>`，便于审计；被测会话的工作区和 raw 技能挂载在仓库外隔离根 `<isolatedRoot>/<phase>/<environmentId>/w<k>`（默认 `os.tmpdir()/dsh-pstack-playground`，环境变量 `PLAYGROUND_WORKSPACE_ROOT` 可覆盖）。沙箱只限写不限读，所以工作区与挂载路径都不得暴露仓库根。prepare 会为每个 worker 写入结构化的 `$DSH_HOME/AGENTS.md` 读取边界，明确只能读取当前工作区和系统挂载的只读运行时输入，禁止读取、列出或搜索工作区外路径。若仍有被测会话读取到场景定义、rubric、断言或当前评审快照，该次结果不能作为技能独立效果的证据，必须标为待人工审查并重采。environmentId 属于 RunRecord 的身份，不能只靠时间戳区分。
+一个 worker 有一套独立运行环境。home、浏览器 profile、证据、pid 和日志在仓库内 `playground/.workers/<phase>/<environmentId>/w<k>`，便于审计；被测会话的工作区和 raw 资源挂载在仓库外隔离根 `<isolatedRoot>/<phase>/<environmentId>/w<k>`（默认系统临时目录，环境变量 `PLAYGROUND_WORKSPACE_ROOT` 可覆盖）。沙箱只限写不限读，所以工作区与挂载路径都不得暴露仓库根。prepare 会为每个 worker 写入结构化的 `$DSH_HOME/AGENTS.md` 读取边界，明确只能读取当前工作区和系统挂载的只读运行时输入，禁止读取、列出或搜索工作区外路径。若仍有被测会话读取到场景定义、rubric、断言或当前评审快照，该次结果不能作为能力独立效果的证据，必须标为待人工审查并重采。environmentId 属于 RunRecord 的身份，不能只靠时间戳区分。
 
 每个 scenario workspace 在写入 fixture 后执行本地 `git init`，不设置 origin；worker 的 DSH 环境不携带 Git/GitHub 凭证。
 
@@ -12,7 +12,7 @@
 
 ## 准备和运行
 
-先运行 raw 生成器，再准备 raw 环境。raw 不能包含 dsh-pstack 或其他附加插件。standard preset 加 raw systemPrompt 提示提供与 poteto-mode 相同的常驻工作流入口。
+先运行 raw 生成器，再准备 raw 环境。raw 不加载适配插件或额外环境包，只使用标准 preset 和 raw 提示。
 
 `prepare` 启动的 DSH Web 只在当前 job 的 PID namespace/cgroup 内存活。`prepare`、`bootstrap`、`run-batch` 和 `collect` 必须放在同一个长期存活的 background job 中，不能拆成多次 bash 调用；`vp run` wrapper 被 SIGTERM 时改用 `vpx` 直调。
 
@@ -26,7 +26,7 @@ vp run playground:run -- --worker 0 --environment base --phase raw --scenario <c
 vp run playground:collect -- --phase raw --environment base
 ```
 
-adapted 重建自己的环境。它选择 poteto-mode preset，不再挂载 raw 提示。额外环境能力必须列在 EnvironmentMatrix 中。环境开关属于环境矩阵，不是场景复制。
+adapted 重建自己的环境，使用适配预设，不再挂载 raw 提示。额外环境能力必须列在 EnvironmentMatrix 中。环境开关属于环境矩阵，不是场景复制。
 
 ```sh
 vp run playground:prepare -- --phase adapted --environment base --reset
