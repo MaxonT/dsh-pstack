@@ -22,8 +22,10 @@
         "swarm",
         "why"
       ],
-      "probe": "capability-task",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-task"
+      }
     },
     {
       "id": "askquestion",
@@ -37,8 +39,10 @@
         "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
       ],
       "requiredBy": ["automate-me", "poteto-mode", "setup-pstack"],
-      "probe": "capability-askquestion",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-askquestion"
+      }
     },
     {
       "id": "open-a-todolist",
@@ -52,8 +56,10 @@
         "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
       ],
       "requiredBy": ["architect", "arena", "figure-it-out", "poteto-mode", "swarm"],
-      "probe": "capability-open-a-todolist",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-open-a-todolist"
+      }
     },
     {
       "id": "skill-loading",
@@ -65,8 +71,10 @@
         "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md"
       ],
       "requiredBy": [],
-      "probe": "capability-skill-loading",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-skill-loading"
+      }
     },
     {
       "id": "grep-glob",
@@ -77,8 +85,10 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "probe": "capability-grep-glob",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-grep-glob"
+      }
     },
     {
       "id": "subagent-general",
@@ -92,8 +102,10 @@
         "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
       ],
       "requiredBy": ["how", "reflect", "swarm"],
-      "probe": "capability-subagent-general",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-subagent-general"
+      }
     },
     {
       "id": "poteto-agent",
@@ -106,8 +118,10 @@
         "upstream/cursor-plugins/pstack/agents/comment-sicko.md"
       ],
       "requiredBy": ["poteto-mode"],
-      "probe": "capability-poteto-agent",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-poteto-agent"
+      }
     },
     {
       "id": "readonly-true",
@@ -119,8 +133,10 @@
         "upstream/cursor-plugins/pstack/skills/how/SKILL.md"
       ],
       "requiredBy": ["how"],
-      "probe": "capability-readonly-true",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-readonly-true"
+      }
     },
     {
       "id": "readonly-false",
@@ -133,8 +149,10 @@
         "upstream/cursor-plugins/pstack/skills/why/SKILL.md"
       ],
       "requiredBy": ["reflect", "why"],
-      "probe": "capability-readonly-false",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-readonly-false"
+      }
     },
     {
       "id": "environment-cloud",
@@ -147,8 +165,10 @@
         "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
       ],
       "requiredBy": ["poteto-mode", "swarm"],
-      "probe": "capability-environment-cloud",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-environment-cloud"
+      }
     },
     {
       "id": "environment-local",
@@ -160,8 +180,10 @@
         "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
       ],
       "requiredBy": ["swarm"],
-      "probe": "capability-environment-local",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-environment-local"
+      }
     },
     {
       "id": "cloud-base-branch",
@@ -172,8 +194,10 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "probe": "capability-cloud-base-branch",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-cloud-base-branch"
+      }
     },
     {
       "id": "run-in-background",
@@ -186,8 +210,10 @@
         "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
       ],
       "requiredBy": ["arena", "poteto-mode", "swarm"],
-      "probe": "capability-run-in-background",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-run-in-background"
+      }
     },
     {
       "id": "resume",
@@ -200,8 +226,10 @@
         "upstream/cursor-plugins/pstack/skills/recall/SKILL.md"
       ],
       "requiredBy": ["poteto-mode", "recall"],
-      "probe": "capability-resume",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-resume"
+      }
     },
     {
       "id": "file-attachments",
@@ -212,8 +240,10 @@
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
       ],
       "requiredBy": [],
-      "probe": "capability-file-attachments",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-file-attachments"
+      }
     },
     {
       "id": "model-route",
@@ -225,8 +255,10 @@
         "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
       ],
       "requiredBy": [],
-      "probe": "capability-model-route",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-model-route"
+      }
     },
     {
       "id": "non-claude-route",
@@ -238,8 +270,10 @@
         "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
       ],
       "requiredBy": [],
-      "probe": "capability-non-claude-route",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-non-claude-route"
+      }
     },
     {
       "id": "inherit-parent",
@@ -252,8 +286,10 @@
         "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md"
       ],
       "requiredBy": ["arena", "how", "poteto-help", "poteto-mode", "reflect", "swarm", "why"],
-      "probe": "capability-inherit-parent",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-inherit-parent"
+      }
     },
     {
       "id": "role-file",
@@ -265,8 +301,10 @@
         "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
       ],
       "requiredBy": [],
-      "probe": "capability-role-file",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-role-file"
+      }
     },
     {
       "id": "role-value",
@@ -278,8 +316,10 @@
         "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
       ],
       "requiredBy": [],
-      "probe": "capability-role-value",
-      "status": "covered"
+      "status": "covered",
+      "probes": {
+        "base": "capability-role-value"
+      }
     },
     {
       "id": "render-screenshot",
@@ -294,7 +334,6 @@
         "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/prototype.md"
       ],
       "requiredBy": ["create-verification-skill", "ketchup", "poteto-mode", "teach"],
-      "probe": "capability-render-screenshot",
       "status": "covered",
       "probes": {
         "base": "capability-render-screenshot",
@@ -307,7 +346,6 @@
       "source": "upstream/cursor-plugins/pstack 生成图片使用",
       "sources": ["upstream/cursor-plugins/pstack/skills/teach/SKILL.md"],
       "requiredBy": ["teach"],
-      "probe": "capability-render-generated-image",
       "status": "covered",
       "probes": {
         "base": "capability-render-generated-image",
@@ -325,7 +363,6 @@
         "upstream/cursor-plugins/pstack/skills/statechart/SKILL.md"
       ],
       "requiredBy": ["how", "ketchup", "statechart", "teach"],
-      "probe": "capability-render-mermaid-diagram",
       "status": "covered",
       "probes": {
         "base": "capability-render-mermaid-diagram",
@@ -341,7 +378,6 @@
         "upstream/cursor-plugins/pstack/skills/statechart/SKILL.md"
       ],
       "requiredBy": ["statechart"],
-      "probe": "capability-render-svg-chart",
       "status": "covered",
       "probes": {
         "base": "capability-render-svg-chart",
@@ -354,7 +390,6 @@
       "source": "upstream/cursor-plugins/pstack 视频使用",
       "sources": ["upstream/cursor-plugins/pstack/skills/ketchup-video/SKILL.md"],
       "requiredBy": ["ketchup-video"],
-      "probe": "capability-render-video",
       "status": "covered",
       "probes": {
         "base": "capability-render-video",

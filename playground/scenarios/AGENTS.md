@@ -28,12 +28,13 @@ playground/scenarios/
 - 输出形态属于能力提取范围：上游文档要求截图、图片、图表、Mermaid/画布、实际 UI 渲染、视频或音频播放时，必须提取对应的 `render-*` 能力，并建立独立 probe；不能只依赖一条“非文本产物要检查”的通用场景写法。
 - `dsh.md` 的 `Paths`（路径布局）和 `Cursor-only features`（Cursor 专属能力）不纳入能力提取；它们是适配事实或跳过规则，不是可验证的会话能力。
 - 每个 capability 有一个 base probe，放在 `capabilities/`。
-- 环境对照不复制场景内容：环境目录中的 probe 从对应 base 场景 import 默认对象，spread 后只覆盖 `id`、`phases` 等环境字段；`prompt`、`workspace`、`assertions`、`rubric`、`uiObservations` 继承 base。
-- `capability` 保持同一 id；inventory 的 `probe` 指向 base probe，并用 `probes.base` / `probes.render` 记录环境入口。
+- 只有能力对照环境（如 `render`）使用 re-export：环境目录中的 probe 从对应 base 场景 import 默认对象，spread 后只覆盖 `id`、`phases` 等环境字段；`prompt`、`workspace`、`assertions`、`rubric`、`uiObservations` 继承 base。
+- 冲突场景使用独立用例，不复用 base prompt，也不走 re-export。
+- `capability` 保持同一 id；inventory 的 `probes` 按环境记录场景 id：普通能力为 `probes.base`，render 能力为 `probes.base` 加 `probes.render`。
 - 不同行为或冲突分支使用不同的 capability id；环境 re-export 不另起 capability。
 - 每个场景必须设置 `capability` 字段，并默认导出 `BehaviorScenario`。
 - 能力清单由 agent 从上游 pstack 和 `raw/dsh.md` 现场提取后手工维护 `capability-inventory.json`；不解析上游表格，也不预置固定能力列表。
-- 新增或删除 probe 后同步更新 inventory 的 `probe`、`status` 和能力记录。
+- 新增或删除 probe 后同步更新 inventory 的 `probes`、`status` 和能力记录。
 - agent 可以整理排除建议到 `capability-exclusions.proposed.json`，但只有用户批准后才能写入 `capability-exclusions.json`。
 
 ## 文件约定
@@ -93,6 +94,7 @@ export default scenario;
 - `render` 是 `kind: "capability"` 的渲染对照环境，具体插件配置以 `environments.ts` 为准。
 - `render/` 下的文件 import 对应 `capabilities/` 的默认场景，spread 后只覆盖 `id`、`phases` 等环境字段；任务和观察保持一致。
 - 环境文档只描述环境 id、用途和对照方式；具体包名以 `environments.ts` 为准，避免第三方插件替换导致文档漂移。
+- 唯一可 re-export 的是同题能力对照环境；冲突环境使用独立场景，不能 import base 场景。
 - 只有 probe 确实需要该环境时才建立目录；冲突环境只用于用户明确指定的冲突验证。
 - `run-batch --full --environment <id>` 只运行该环境目录下的 probe，不跨环境启动。
 
@@ -101,7 +103,7 @@ export default scenario;
 - `capability-inventory.json` 是 agent 手工维护的派生清单；不编写自动解析上游文档的脚本。
 - `description` 优先取 `raw/dsh.zh.md`，缺失时用 `raw/dsh.md`，统一中文。
 - `status` 只能是 `discovered`、`covered` 或 `excluded`。
-- `covered` 必须有对应 `capability` probe；`excluded` 必须写 `exclusionReason`。
+- `covered` 必须有 `probes.base` 或对应环境 probe；`excluded` 必须写 `exclusionReason`。
 - agent 可以把候选排除理由写入 `capability-exclusions.proposed.json`；该文件不产生 `excluded` 状态。
 - 只有用户明确批准时，才把决定写入 `capability-exclusions.json`，格式为 `{"capability-id": {"reason": "...", "decidedBy": "user"}}`；inventory 只消费这份批准文件。
 - `excluded` 必须有用户批准的决定和原因，不能自动排除，也不能静默删除。
