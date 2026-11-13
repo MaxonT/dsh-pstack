@@ -96,6 +96,12 @@ function listSessionFiles(paths: WorkerPaths): SessionFile[] {
   });
 }
 
+function latestSessionFile(paths: WorkerPaths): SessionFile | null {
+  const files = listSessionFiles(paths);
+  files.sort((left, right) => statSync(right.file).mtimeMs - statSync(left.file).mtimeMs);
+  return files[0] ?? null;
+}
+
 function waitFor(predicate: () => boolean, timeoutMs: number): boolean {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -434,11 +440,27 @@ function blockedRecord(input: {
   configFile: string;
   recordFile: string;
   screenshotFile: string;
+  fullScreenshotFile?: string;
+  sessionFile?: string;
+  sessionId?: string;
   reason: string;
 }): RunRecord {
   const config = readPlaygroundConfig(input.configFile);
   const matrix = environmentMatrix(input.paths.environmentId);
   const capturedAt = new Date().toISOString();
+  const session = input.sessionFile
+    ? (() => {
+        try {
+          return sessionFacts(
+            digestSession(input.sessionFile as string, input.sessionId ?? "", input.paths.index),
+            input.sessionFile as string,
+            [],
+          );
+        } catch {
+          return null;
+        }
+      })()
+    : null;
   return {
     scenarioId: input.scenarioId,
     phase: input.phase,
@@ -450,8 +472,15 @@ function blockedRecord(input: {
       paths: input.paths,
     }),
     target: null,
-    session: null,
-    artifacts: { recordFile: input.recordFile, screenshotFile: input.screenshotFile, observed: [] },
+    session,
+    artifacts: {
+      recordFile: input.recordFile,
+      screenshotFile: input.screenshotFile,
+      ...(input.fullScreenshotFile === undefined
+        ? {}
+        : { fullScreenshotFile: input.fullScreenshotFile }),
+      observed: [],
+    },
     semanticReview: pendingSemanticReview(),
     mechanicalFailures: [],
     verdict: verdictFor({
@@ -554,6 +583,7 @@ async function main(): Promise<void> {
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
+    const lastSession = latestSessionFile(paths);
     record = blockedRecord({
       scenarioId,
       phase,
@@ -561,6 +591,9 @@ async function main(): Promise<void> {
       configFile,
       recordFile,
       screenshotFile,
+      fullScreenshotFile,
+      sessionFile: reason.includes("external stop") ? lastSession?.file : undefined,
+      sessionId: reason.includes("external stop") ? lastSession?.id : undefined,
       reason,
     });
     if (!(error instanceof InfraError)) {
