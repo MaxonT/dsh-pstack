@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
 import { environmentMatrix } from "./lib/run-metadata.ts";
+import { EVIDENCE_FILES } from "./lib/evidence-files.ts";
 import { residualKinds } from "./lib/redaction.ts";
 import { reviewSnapshotDirectory } from "./lib/review-snapshot.ts";
 
@@ -17,14 +18,16 @@ function walk(dir: string): string[] {
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = join(dir, entry.name);
-    return entry.isDirectory() ? walk(file) : entry.name === "record.json" ? [file] : [];
+    return entry.isDirectory() ? walk(file) : entry.name === EVIDENCE_FILES.record ? [file] : [];
   });
 }
 
 function main(): void {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) throw new Error("redact requires --phase raw|adapted");
-  const environment = environmentMatrix(argValue("--environment")).id;
+  const environmentId = argValue("--environment");
+  if (environmentId === undefined) throw new Error("--environment is required");
+  const environment = environmentMatrix(environmentId).id;
   const apply = process.argv.includes("--apply");
   const root = reviewSnapshotDirectory(phase, environment);
   const records = walk(root);
@@ -33,7 +36,7 @@ function main(): void {
   let errors = 0;
   let checked = 0;
   for (const record of records) {
-    const safe = join(dirname(record), "record.safe.json");
+    const safe = join(dirname(record), EVIDENCE_FILES.safe);
     const candidate = apply ? safe : existsSync(safe) ? safe : record;
     if (apply && !existsSync(safe)) {
       console.error(`[redact] MISSING ${relative(root, safe)}; create it in the redaction session`);

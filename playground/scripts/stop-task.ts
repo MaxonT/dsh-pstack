@@ -11,7 +11,8 @@ function argValue(flag: string): string | undefined {
 
 const phase = argValue("--phase") as Phase | undefined;
 if (!isPhase(phase)) throw new Error("stop-task requires --phase raw|adapted");
-const environment = argValue("--environment") ?? "base";
+const environment = argValue("--environment");
+if (environment === undefined) throw new Error("stop-task requires --environment");
 const worker = Number(argValue("--worker") ?? "0");
 if (!Number.isInteger(worker) || worker < 0) throw new Error("--worker must be non-negative");
 const paths = workerPaths(worker, environment, phase);

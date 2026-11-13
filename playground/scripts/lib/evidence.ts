@@ -33,11 +33,13 @@ export function readSessionEvents(file: string): SessionEvent[] {
   return text
     .split("\n")
     .filter((line) => line.trim() !== "")
-    .flatMap((line) => {
+    .map((line, index) => {
       try {
-        return [JSON.parse(line) as SessionEvent];
-      } catch {
-        return [];
+        return JSON.parse(line) as SessionEvent;
+      } catch (error) {
+        throw new Error(
+          `invalid session event at line ${index + 1} in ${file}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
 }
@@ -90,11 +92,16 @@ function parseArguments(raw: unknown): Record<string, unknown> {
   if (typeof raw === "string") {
     try {
       return JSON.parse(raw) as Record<string, unknown>;
-    } catch {
-      return {};
+    } catch (error) {
+      throw new Error(
+        `invalid tool arguments: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
-  return (raw as Record<string, unknown>) ?? {};
+  if (raw === null || typeof raw !== "object") {
+    throw new Error("tool arguments must be an object or JSON string");
+  }
+  return raw as Record<string, unknown>;
 }
 
 /**

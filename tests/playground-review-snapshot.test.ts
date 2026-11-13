@@ -1,10 +1,12 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import type { RunRecord } from "../playground/types.ts";
+import { recordFileName } from "../playground/scripts/lib/evidence.ts";
 import { writeReviewSnapshot } from "../playground/scripts/lib/review-snapshot.ts";
+import { workerPaths } from "../playground/scripts/lib/worker.ts";
 
 const directories: string[] = [];
 
@@ -15,6 +17,7 @@ function temporaryDirectory(): string {
 }
 
 afterEach(() => {
+  delete process.env.PLAYGROUND_WORKERS_DIR;
   for (const directory of directories.splice(0))
     rmSync(directory, { recursive: true, force: true });
 });
@@ -48,11 +51,26 @@ function record(capturedAt: string): RunRecord {
 describe("review snapshot", () => {
   it("writes the current evidence and removes scenarios absent from the snapshot", () => {
     const reviews = temporaryDirectory();
+    const workers = temporaryDirectory();
+    process.env.PLAYGROUND_WORKERS_DIR = workers;
     const artifacts = temporaryDirectory();
     const recordFile = join(artifacts, "record.json");
     writeFileSync(recordFile, "{}\n");
     const current = record("2026-11-13T01:00:00.000Z");
     current.artifacts.recordFile = recordFile;
+    const sourcePaths = workerPaths(0, "base", "raw");
+    mkdirSync(sourcePaths.evidenceDir, { recursive: true });
+    const stamp = current.capturedAt.replace(/[:.]/g, "-");
+    writeFileSync(
+      join(
+        sourcePaths.evidenceDir,
+        recordFileName(current.scenarioId, current.phase, "base", stamp).replace(
+          /\.json$/,
+          ".source.json",
+        ),
+      ),
+      `${JSON.stringify({ recordFile, screenshotFile: null, sessionFile: null })}\n`,
+    );
 
     const manifest = writeReviewSnapshot("raw", "base", null, [current], reviews);
     const scenario = join(

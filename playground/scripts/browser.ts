@@ -26,19 +26,14 @@ import type { Phase } from "../types.ts";
 function main(): void {
   const argv = process.argv.slice(2);
   let workerIndex = 0;
-  let environmentId = "base";
-  let phase = "adapted" as Phase;
   const environmentPos = argv.indexOf("--environment");
-  if (environmentPos >= 0) {
-    environmentId = argv[environmentPos + 1] as string;
-    argv.splice(environmentPos, 2);
-  }
+  const environmentId = environmentPos >= 0 ? (argv[environmentPos + 1] as string) : undefined;
+  if (environmentId === undefined) throw new Error("--environment is required");
+  if (environmentPos >= 0) argv.splice(environmentPos, 2);
   const phasePos = argv.indexOf("--phase");
-  if (phasePos >= 0) {
-    phase = argv[phasePos + 1] as Phase;
-    if (!isPhase(phase)) throw new Error("--phase must be raw or adapted");
-    argv.splice(phasePos, 2);
-  }
+  const phase = (phasePos >= 0 ? argv[phasePos + 1] : undefined) as Phase | undefined;
+  if (phase === undefined || !isPhase(phase)) throw new Error("--phase must be raw or adapted");
+  if (phasePos >= 0) argv.splice(phasePos, 2);
   const workerPos = argv.indexOf("--worker");
   if (workerPos >= 0) {
     const parsed = Number(argv[workerPos + 1]);

@@ -302,7 +302,7 @@ describe("tool call argument summaries", () => {
 
   it("keeps the bare tool name when no listed argument is present", () => {
     expect(summarizeToolArguments("job_list", {})).toBe("job_list");
-    expect(summarizeToolArguments("read", "not-json")).toBe("read");
+    expect(() => summarizeToolArguments("read", "not-json")).toThrow("invalid tool arguments");
   });
 
   it("surfaces out-of-workspace reads in the digest for auditing", () => {

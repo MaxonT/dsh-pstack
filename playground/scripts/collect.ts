@@ -13,7 +13,9 @@ function argValue(flag: string): string | undefined {
 function main(): void {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) throw new Error("collect requires --phase raw|adapted --environment ID");
-  const matrix = environmentMatrix(argValue("--environment"));
+  const environmentId = argValue("--environment");
+  if (environmentId === undefined) throw new Error("--environment is required");
+  const matrix = environmentMatrix(environmentId);
   collectReviewSnapshot(phase, matrix.id);
   console.log(`[collect] reviews=${REVIEWS_DIRECTORY}`);
 }

@@ -12,6 +12,7 @@ import { dirname, join } from "node:path";
 import { SCENARIO_GROUP_PHASES } from "../../types.ts";
 import type { Phase, RunEnvironment, RunRecord } from "../../types.ts";
 import { isRunRecord, latestRecords, recordFileName } from "./evidence.ts";
+import { EVIDENCE_DIRECTORIES, EVIDENCE_FILES } from "./evidence-files.ts";
 import { sanitizeRecord } from "./redaction.ts";
 import { PLAYGROUND_DIRECTORY, workersDirectory } from "./run-metadata.ts";
 import { loadScenario, listScenarioIds } from "./scenarios.ts";
@@ -86,8 +87,10 @@ function readRecords(directory: string): RunRecord[] {
     try {
       const parsed: unknown = JSON.parse(readFileSync(file, "utf8"));
       return isRunRecord(parsed) ? [parsed] : [];
-    } catch {
-      return [];
+    } catch (error) {
+      throw new Error(
+        `invalid RunRecord JSON in ${file}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   });
 }
@@ -110,29 +113,25 @@ function sourceFor(record: RunRecord): RecordSource {
     paths.evidenceDir,
     recordFileName(record.scenarioId, record.phase, record.environment.matrix.id, stamp).replace(
       /\.json$/,
-      ".source.json",
+      EVIDENCE_FILES.sourceSuffix,
     ),
   );
-  if (existsSync(sourceFile)) return JSON.parse(readFileSync(sourceFile, "utf8")) as RecordSource;
-  return {
-    recordFile: record.artifacts.recordFile,
-    screenshotFile: record.artifacts.screenshotFile,
-    sessionFile: record.session?.sessionFile,
-  };
+  if (!existsSync(sourceFile)) throw new Error(`missing evidence source sidecar: ${sourceFile}`);
+  return JSON.parse(readFileSync(sourceFile, "utf8")) as RecordSource;
 }
 
 function copyRunEvidence(record: RunRecord, directory: string): void {
   mkdirSync(directory, { recursive: true });
   const source = sourceFor(record);
   writeFileSync(
-    join(directory, "record.json"),
+    join(directory, EVIDENCE_FILES.record),
     `${JSON.stringify(sanitizeRecord(record), null, 2)}\n`,
   );
   if (source.screenshotFile && existsSync(source.screenshotFile)) {
-    copyFileSync(source.screenshotFile, join(directory, "screenshot.png"));
+    copyFileSync(source.screenshotFile, join(directory, EVIDENCE_FILES.screenshot));
   }
   if (source.sessionFile && existsSync(source.sessionFile)) {
-    copyFileSync(source.sessionFile, join(directory, "session.jsonl.zstd"));
+    copyFileSync(source.sessionFile, join(directory, EVIDENCE_FILES.session));
   }
 }
 
@@ -185,7 +184,7 @@ export function writeReviewSnapshot(
   );
   const currentIds = new Set(current.map((record) => record.scenarioId));
   const snapshot = reviewSnapshotDirectory(phase, environment, reviewsDirectory);
-  const scenarios = join(snapshot, "scenarios");
+  const scenarios = join(snapshot, EVIDENCE_DIRECTORIES.scenarios);
 
   if (existsSync(scenarios)) {
     for (const group of readdirSync(scenarios, { withFileTypes: true })) {

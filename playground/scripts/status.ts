@@ -12,7 +12,8 @@ function argValue(flag: string): string | undefined {
 
 const phase = argValue("--phase") as Phase | undefined;
 if (!isPhase(phase)) throw new Error("status requires --phase raw|adapted");
-const environment = argValue("--environment") ?? "base";
+const environment = argValue("--environment");
+if (environment === undefined) throw new Error("status requires --environment");
 const file = progressFilePath(environment, phase);
 const state = readProgress(file);
 if (!state) {

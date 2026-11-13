@@ -65,8 +65,10 @@ function readRecords(directory: string): RunRecord[] {
       return typeof record.scenarioId === "string" && typeof record.phase === "string"
         ? [record]
         : [];
-    } catch {
-      return [];
+    } catch (error) {
+      throw new Error(
+        `invalid RunRecord JSON in ${file}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   });
 }
@@ -183,13 +185,15 @@ async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) {
     throw new Error(
-      `usage: run-batch.ts --phase raw|adapted [--environment base] [--full|--groups ${GROUP_USAGE}|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]`,
+      `usage: run-batch.ts --phase raw|adapted --environment ID [--full|--groups ${GROUP_USAGE}|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]`,
     );
   }
   if (process.argv.includes("--all")) {
     throw new Error("--all is no longer supported; select --groups, --scenarios, or --skills");
   }
-  const matrix = environmentMatrix(argValue("--environment"));
+  const environmentId = argValue("--environment");
+  if (environmentId === undefined) throw new Error("--environment is required");
+  const matrix = environmentMatrix(environmentId);
   const ids = selectedScenarios(phase, matrix.id);
   for (const id of ids) {
     const group = loadScenario(id).group;

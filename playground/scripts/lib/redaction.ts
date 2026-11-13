@@ -1,4 +1,5 @@
 import type { RunRecord } from "../../types.ts";
+import { EVIDENCE_FILES } from "./evidence-files.ts";
 
 const SECRET_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
   [/sk-[A-Za-z0-9_-]{8,}/g, "<REDACTED_API_KEY>"],
@@ -40,7 +41,7 @@ function sanitizeText(value: string): string {
 export function sanitizeRecord(record: RunRecord): RunRecord {
   const copy = JSON.parse(JSON.stringify(record)) as RunRecord;
   if (copy.session) {
-    copy.session.sessionFile = "session.jsonl.zstd";
+    copy.session.sessionFile = EVIDENCE_FILES.session;
     copy.session.workspacePath = "<WORKSPACE>";
     for (const call of copy.session.toolCalls) {
       call.argsSummary = sanitizeText(call.argsSummary);
@@ -50,8 +51,8 @@ export function sanitizeRecord(record: RunRecord): RunRecord {
     copy.session.userText = sanitizeText(copy.session.userText);
     copy.session.userTexts = copy.session.userTexts.map(sanitizeText);
   }
-  copy.artifacts.recordFile = "record.json";
-  if (copy.artifacts.screenshotFile) copy.artifacts.screenshotFile = "screenshot.png";
+  copy.artifacts.recordFile = EVIDENCE_FILES.record;
+  if (copy.artifacts.screenshotFile) copy.artifacts.screenshotFile = EVIDENCE_FILES.screenshot;
   delete (copy.artifacts as { fullScreenshotFile?: string }).fullScreenshotFile;
   return sanitizeDeep(copy) as RunRecord;
 }
@@ -62,6 +63,7 @@ export function residualKinds(text: string): string[] {
     ...SECRET_PATTERNS.map(([pattern]) => [pattern, "secret"] as const),
     ...PATH_PATTERNS.map(([pattern]) => [pattern, "host-path"] as const),
   ]) {
+    pattern.lastIndex = 0;
     if (pattern.test(text)) kinds.push(kind);
   }
   return [...new Set(kinds)];

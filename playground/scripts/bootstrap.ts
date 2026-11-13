@@ -6,12 +6,12 @@
 import { join } from "node:path";
 
 import { collapseSidebar, createBrowserSession } from "./lib/browser.ts";
+import { UI_LABELS } from "./lib/runtime.ts";
 import { readHomePlan, readWebUrl, readWorkspaceStore } from "./lib/env.ts";
 import { listWorkers, workerPaths, type WorkerPaths } from "./lib/worker.ts";
 import type { Phase } from "../types.ts";
 
-const CONTINUE_LABEL = "继续";
-const PREVIEW_NOTICE = "预览版说明";
+const { continue: CONTINUE_LABEL, previewNotice: PREVIEW_NOTICE } = UI_LABELS;
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -19,8 +19,10 @@ function argValue(flag: string): string | undefined {
 }
 
 function selectWorkers(): WorkerPaths[] {
-  const environment = argValue("--environment") ?? "base";
-  const phase = (argValue("--phase") ?? "adapted") as Phase;
+  const environment = argValue("--environment");
+  if (environment === undefined) throw new Error("--environment is required");
+  const phase = argValue("--phase") as Phase;
+  if (phase !== "raw" && phase !== "adapted") throw new Error("--phase must be raw or adapted");
   if (process.argv.includes("--all")) {
     const workers = listWorkers({ environmentId: environment, phase });
     if (workers.length === 0)

@@ -32,16 +32,26 @@ import {
   type SessionDigest,
 } from "./lib/evidence.ts";
 import { readHomePlan, readPlaygroundConfig, readWebUrl, CONFIG_FILE } from "./lib/env.ts";
+import { EVIDENCE_FILES } from "./lib/evidence-files.ts";
 import { sanitizeRecord } from "./lib/redaction.ts";
+import {
+  DEFAULT_ANSWER_TEXT,
+  POLL_INTERVAL_MS,
+  PRESET_LABELS,
+  SETTLE_WINDOW_MS,
+  TURN_TIMEOUT_MS,
+  UI_LABELS,
+} from "./lib/runtime.ts";
 import { createEnvironment, environmentMatrix } from "./lib/run-metadata.ts";
 import { reviewSnapshotDirectory } from "./lib/review-snapshot.ts";
 import { stopRequestFile, workerPaths, type WorkerPaths } from "./lib/worker.ts";
 
-const COMPOSER_SELECTOR = '[data-composer-input="true"]';
-const NEW_SESSION_LABEL = "新会话";
-const PREVIEW_NOTICE = "预览版说明";
-const CONTINUE_LABEL = "继续";
-const POLL_INTERVAL_MS = 2_000;
+const {
+  composerSelector: COMPOSER_SELECTOR,
+  newSession: NEW_SESSION_LABEL,
+  previewNotice: PREVIEW_NOTICE,
+  continue: CONTINUE_LABEL,
+} = UI_LABELS;
 
 class InfraError extends Error {}
 
@@ -53,9 +63,6 @@ function argValue(flag: string): string | undefined {
 function sleep(ms: number): void {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
-
-const SETTLE_WINDOW_MS = 5_000;
-const TURN_TIMEOUT_MS = 180_000;
 
 function sessionSignature(file: string): string {
   const events = readSessionEvents(file);
@@ -137,11 +144,6 @@ function startSession(session: BrowserSession, scenarioId: string): void {
   if (started === "none") throw new Error("could not start a session in the scenario workspace");
 }
 
-const PRESET_LABELS: Record<string, string[]> = {
-  "poteto-mode": ["Poteto 模式", "Poteto mode"],
-  standard: ["标准模式", "Standard mode"],
-};
-
 function selectPreset(session: BrowserSession, preset: string): void {
   const seat = session.eval<string>(
     `(() => {
@@ -203,8 +205,6 @@ function findMatchingSession(
   }
   return null;
 }
-
-const DEFAULT_ANSWER_TEXT = "按你的最佳判断继续";
 
 /**
  * Answer the open ask_user_question card as the absent user would. The card is a
@@ -496,12 +496,14 @@ async function main(): Promise<void> {
   const scenarioId = argValue("--scenario");
   if (!isPhase(phase) || !scenarioId) {
     throw new Error(
-      "usage: run-case.ts --worker N --scenario ID --phase raw|adapted [--environment base] [--config FILE]",
+      "usage: run-case.ts --worker N --scenario ID --phase raw|adapted --environment ID [--config FILE]",
     );
   }
   const worker = Number(argValue("--worker") ?? "0");
   if (!Number.isInteger(worker) || worker < 0) throw new Error("--worker must be non-negative");
-  const matrix = environmentMatrix(argValue("--environment"));
+  const environmentId = argValue("--environment");
+  if (environmentId === undefined) throw new Error("--environment is required");
+  const matrix = environmentMatrix(environmentId);
   const paths = workerPaths(worker, matrix.id, phase);
   const preparedPhase = existsSync(paths.phaseFile)
     ? readFileSync(paths.phaseFile, "utf8").trim()
@@ -597,7 +599,7 @@ async function main(): Promise<void> {
     record,
     Object.values(config.providers).map((provider) => provider.apiKey),
   );
-  const sourceFile = recordFile.replace(/\.json$/, ".source.json");
+  const sourceFile = recordFile.replace(/\.json$/, EVIDENCE_FILES.sourceSuffix);
   writeFileSync(
     sourceFile,
     `${JSON.stringify(

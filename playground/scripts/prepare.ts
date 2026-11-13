@@ -64,10 +64,12 @@ async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) {
     throw new Error(
-      "usage: prepare.ts --phase raw|adapted [--environment base] [--workers N] [--reset|--reuse]",
+      "usage: prepare.ts --phase raw|adapted --environment ID [--workers N] [--reset|--reuse]",
     );
   }
-  const matrix = environmentMatrix(argValue("--environment"));
+  const environmentId = argValue("--environment");
+  if (environmentId === undefined) throw new Error("--environment is required");
+  const matrix = environmentMatrix(environmentId);
   if (phase === "raw" && matrix.enabledPluginPackages.length > 0) {
     throw new Error("raw baseline does not allow additional plugin packages");
   }

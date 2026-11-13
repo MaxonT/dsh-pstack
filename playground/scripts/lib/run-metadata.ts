@@ -33,9 +33,10 @@ export function isolatedRootDirectory(): string {
   return override ? resolve(override) : ISOLATED_ROOT;
 }
 
-export function environmentMatrix(id: string | undefined): RunEnvironment["matrix"] {
-  const matrix = environments.find((entry) => entry.id === (id ?? "base"));
-  if (!matrix) throw new Error(`unknown playground environment: ${id ?? "base"}`);
+export function environmentMatrix(id: string): RunEnvironment["matrix"] {
+  if (id.trim() === "") throw new Error("playground environment id is required");
+  const matrix = environments.find((entry) => entry.id === id);
+  if (!matrix) throw new Error(`unknown playground environment: ${id}`);
   return {
     id: matrix.id,
     enabledPluginPackages: [...matrix.enabledPluginPackages],
