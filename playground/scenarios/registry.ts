@@ -1,15 +1,9 @@
 import type { BehaviorScenario } from "../types.ts";
 import { environments } from "./environments.ts";
 
-const modules = import.meta.glob<Record<string, unknown>>("./*/*.ts", {
+const modules = import.meta.glob<{ default: BehaviorScenario }>("./*/*.ts", {
   eager: true,
 });
-
-function isBehaviorScenario(value: unknown): value is BehaviorScenario {
-  if (value === null || typeof value !== "object") return false;
-  const record = value as Record<string, unknown>;
-  return record.type === "behavior" && typeof record.id === "string" && Array.isArray(record.turns);
-}
 
 const environmentIds = new Set([
   "capabilities",
@@ -24,18 +18,15 @@ function environmentOf(path: string): string {
   return directory === "capabilities" ? "base" : directory;
 }
 
-const collected = Object.entries(modules).flatMap(([path, module]) => {
+const collected = Object.entries(modules).map(([path, module]) => {
   const environmentId = environmentOf(path);
-  return Object.values(module)
-    .filter(isBehaviorScenario)
-    .map((scenario) => {
-      if (scenario.environmentId !== undefined && scenario.environmentId !== environmentId) {
-        throw new Error(
-          `scenario ${scenario.id} declares ${scenario.environmentId}, but lives in ${environmentId}`,
-        );
-      }
-      return { ...scenario, environmentId };
-    });
+  const scenario = module.default;
+  if (scenario.environmentId !== undefined && scenario.environmentId !== environmentId) {
+    throw new Error(
+      `scenario ${scenario.id} declares ${scenario.environmentId}, but lives in ${environmentId}`,
+    );
+  }
+  return { ...scenario, environmentId };
 });
 
 const duplicates = collected

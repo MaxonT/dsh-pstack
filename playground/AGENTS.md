@@ -11,7 +11,7 @@
 
 ## 目录
 
-- `scenarios/capabilities/<scenario>.ts`：一个能力场景一个文件，场景文件平铺在 capabilities 子目录。
+- `scenarios/capabilities/<scenario>.ts`：一个能力场景一个文件，默认导出 `BehaviorScenario`；场景文件平铺在 capabilities 子目录。
 - `scenarios/registry.ts`：用 `import.meta.glob("./capabilities/*.ts")` 自动发现能力探针；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
 - `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
 - `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<scenario>/<phase>-<environment>/` 保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。

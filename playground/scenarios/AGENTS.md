@@ -12,6 +12,7 @@ DSH 运行时和 profile 只用于执行 probe 和解释结果，不能作为 ra
 
 ## 场景写法
 
+- 每个场景文件默认导出 `BehaviorScenario`；registry 依赖这个类型约定，不写运行时 shape guard。
 - 一个能力一个 probe；prompt 用自然语言描述用户目标，不写工具名或实现名。
 - raw probe 不预置 port 工具或角色文件；adapted probe 才验证 port 实现。
 - 不允许跨阶段：raw 不读取或引用 adapted 文档、当前实现和插件工具；adapted 不反推 raw 结论。

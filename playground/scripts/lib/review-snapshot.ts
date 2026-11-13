@@ -46,21 +46,27 @@ export function readBatchMetadata(phase: Phase, environment: string): BatchMetad
   const file = batchMetadataFile(phase, environment);
   if (!existsSync(file)) return null;
   try {
-    const parsed = JSON.parse(readFileSync(file, "utf8")) as Partial<BatchMetadata>;
+    const parsed = JSON.parse(readFileSync(file, "utf8")) as Record<string, unknown>;
+    const batchId = parsed.batchId;
+    const phaseValue = parsed.phase;
+    const environmentValue = parsed.environment;
+    const modeValue = parsed.mode;
     if (
-      typeof parsed.batchId !== "string" ||
-      parsed.phase !== phase ||
-      parsed.environment !== environment ||
-      (parsed.mode !== "full" && parsed.mode !== "incremental") ||
+      typeof batchId !== "string" ||
+      (phaseValue !== "raw" && phaseValue !== "adapted") ||
+      phaseValue !== phase ||
+      typeof environmentValue !== "string" ||
+      environmentValue !== environment ||
+      (modeValue !== "full" && modeValue !== "incremental") ||
       !Array.isArray(parsed.scope)
     ) {
       throw new Error("current batch metadata has an invalid shape");
     }
     return {
-      batchId: parsed.batchId,
-      phase: parsed.phase,
-      environment: parsed.environment,
-      mode: parsed.mode,
+      batchId,
+      phase: phaseValue,
+      environment: environmentValue,
+      mode: modeValue,
       scope: parsed.scope.filter((entry): entry is string => typeof entry === "string"),
       startedAt: typeof parsed.startedAt === "string" ? parsed.startedAt : "",
       ...(typeof parsed.upstreamRevision === "string"
