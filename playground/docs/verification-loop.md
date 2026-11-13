@@ -79,10 +79,11 @@ vp run playground:collect -- --phase adapted --environment base
 
 ### render 对照 probe
 
-渲染能力用 `base` 与 `render` 两个环境对照；`render` 的插件配置以 `environments.ts` 为准：
+渲染能力用 `base` 与 `render` 两个环境对照；`render` 的插件配置以 `environments.ts` 为准。`render/` 下的 probe 是对应 `capabilities/` base 场景的 re-export，只覆盖环境字段，任务和观察保持一致。
 
 ```sh
 vp run playground:prepare -- --phase raw --environment render --reset
+vp run playground:bootstrap -- --phase raw --environment render --all
 vp run playground:run-batch -- --phase raw --environment render --full
 vp run playground:collect -- --phase raw --environment render
 ```
