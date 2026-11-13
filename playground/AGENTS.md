@@ -14,7 +14,7 @@
 - `scenarios/<group>/<scenario>.ts`：一个场景一个文件；group 由目录和注册表决定。playbook 场景的 prompt 以 `/poteto-mode ` 开头。
 - `scenarios/registry.ts`：用 `import.meta.glob` 自动发现组目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
 - `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
-- `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<group>/<scenario>/<phase>-<environment>/` 保存 `record.json` 和两张截图；`session.jsonl.zstd` 只保留本地，不提交。
+- `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<group>/<scenario>/<phase>-<environment>/` 保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
 - `reviews/.staging/`：批次运行中的临时目录，不提交。`reports/` 不再生成。
 - 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
 
@@ -22,7 +22,7 @@
 
 - 每个场景只观察 DSH 可观察行为：技能是否加载（`skill`、`pstack_skill`、`read` 回退或 `/name` 用户手势）、依赖是否可用和加载、工具调用与重试、turn 是否结束、最终答复或产物是否存在。
 - `SessionAnalysis` 必须写入 RunRecord，包含 `skillInvocation`、`dependencies`、`tools`、`userGesture` 和 warnings。
-- 截图必须同时有 viewport 和 full-page；审阅以 full-page 为准。
+- 截图保存为完整页面 `screenshot.png`；捕获失败时才回退到 viewport 截图。
 - 每个上游技能和 playbook 必须有场景或明确排除。排除只给上游明确依赖 Cursor 云服务的条目，理由和证据写进 `exclusions.ts`。
 - 带环境矩阵的场景不预设冲突；具体环境只用于运行矩阵，结果由会话文件和界面观察决定。
 - 每个 scenario workspace 由 runner 初始化本地 `git init`，不设置 origin；worker 不携带 Git/GitHub 凭证，避免真实远端副作用。

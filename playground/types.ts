@@ -201,7 +201,6 @@ export interface SessionFacts {
 export interface ArtifactEvidence {
   recordFile: string;
   screenshotFile?: string;
-  fullScreenshotFile?: string;
   observed: string[];
 }
 

@@ -16,7 +16,21 @@ const PATH_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
   [/[A-Za-z]:\\\\[^\s"'\\]+/g, "<HOST_PATH>"],
 ];
 
-export function sanitizeText(value: string): string {
+export function sanitizeDeep(value: unknown): unknown {
+  if (typeof value === "string") return sanitizeText(value);
+  if (Array.isArray(value)) return value.map(sanitizeDeep);
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+        key,
+        sanitizeDeep(entry),
+      ]),
+    );
+  }
+  return value;
+}
+
+function sanitizeText(value: string): string {
   return [...SECRET_PATTERNS, ...PATH_PATTERNS].reduce(
     (text, [pattern, replacement]) => text.replace(pattern, replacement),
     value,
@@ -38,9 +52,8 @@ export function sanitizeRecord(record: RunRecord): RunRecord {
   }
   copy.artifacts.recordFile = "record.json";
   if (copy.artifacts.screenshotFile) copy.artifacts.screenshotFile = "screenshot.png";
-  if (copy.artifacts.fullScreenshotFile) copy.artifacts.fullScreenshotFile = "full.png";
-  copy.artifacts.observed = copy.artifacts.observed.map(sanitizeText);
-  return copy;
+  delete (copy.artifacts as { fullScreenshotFile?: string }).fullScreenshotFile;
+  return sanitizeDeep(copy) as RunRecord;
 }
 
 export function residualKinds(text: string): string[] {

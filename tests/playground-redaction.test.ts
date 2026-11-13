@@ -39,7 +39,6 @@ function record(): RunRecord {
     artifacts: {
       recordFile: "/home/leihaohao/worker/record.json",
       screenshotFile: "/home/leihaohao/worker/shot.png",
-      fullScreenshotFile: "/home/leihaohao/worker/full.png",
       observed: ["path /tmp/other"],
     },
     semanticReview: { status: "pending", reason: "pending" },

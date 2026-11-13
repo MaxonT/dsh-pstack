@@ -100,7 +100,6 @@ function phaseEligible(id: string, phase: Phase): boolean {
 interface RecordSource {
   recordFile?: string;
   screenshotFile?: string;
-  fullScreenshotFile?: string;
   sessionFile?: string;
 }
 
@@ -118,7 +117,6 @@ function sourceFor(record: RunRecord): RecordSource {
   return {
     recordFile: record.artifacts.recordFile,
     screenshotFile: record.artifacts.screenshotFile,
-    fullScreenshotFile: record.artifacts.fullScreenshotFile,
     sessionFile: record.session?.sessionFile,
   };
 }
@@ -132,9 +130,6 @@ function copyRunEvidence(record: RunRecord, directory: string): void {
   );
   if (source.screenshotFile && existsSync(source.screenshotFile)) {
     copyFileSync(source.screenshotFile, join(directory, "screenshot.png"));
-  }
-  if (source.fullScreenshotFile && existsSync(source.fullScreenshotFile)) {
-    copyFileSync(source.fullScreenshotFile, join(directory, "full.png"));
   }
   if (source.sessionFile && existsSync(source.sessionFile)) {
     copyFileSync(source.sessionFile, join(directory, "session.jsonl.zstd"));

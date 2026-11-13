@@ -125,10 +125,6 @@ export default defineConfig({
         command: "vpx playground/scripts/collect.ts",
         cache: false,
       },
-      "playground:review": {
-        command: "vpx playground/scripts/review.ts",
-        cache: false,
-      },
       "playground:browser": {
         command: "vpx playground/scripts/browser.ts",
         cache: false,

@@ -309,20 +309,21 @@ interface AttemptInput {
   url: string;
   expectedTarget: TestTarget;
   screenshotFile: string;
-  fullScreenshotFile: string;
   expectedPreset: string;
 }
 
-function throwIfStopped(
-  paths: WorkerPaths,
-  session: BrowserSession,
-  screenshotFile: string,
-  fullScreenshotFile: string,
-): void {
+function captureScreenshot(session: BrowserSession, path: string): void {
+  try {
+    captureFullPage(session, path);
+  } catch {
+    session.screenshot(path);
+  }
+}
+
+function throwIfStopped(paths: WorkerPaths, session: BrowserSession, screenshotFile: string): void {
   if (!existsSync(stopRequestFile(paths))) return;
   try {
-    session.screenshot(screenshotFile);
-    captureFullPage(session, fullScreenshotFile);
+    captureScreenshot(session, screenshotFile);
   } catch {
     // The stop happened before the page could be captured; the blocked record still remains.
   }
@@ -334,7 +335,7 @@ function attemptScenario(input: AttemptInput): {
   file: string;
   answers: SessionFacts["autoAnswers"];
 } {
-  const { paths, scenario, url, screenshotFile, fullScreenshotFile, expectedPreset } = input;
+  const { paths, scenario, url, screenshotFile, expectedPreset } = input;
   const preset = expectedPreset;
   const session = createBrowserSession({
     session: `${paths.environmentId}-w${paths.index}`,
@@ -383,7 +384,7 @@ function attemptScenario(input: AttemptInput): {
       }
       for (;;) {
         try {
-          throwIfStopped(paths, session, screenshotFile, fullScreenshotFile);
+          throwIfStopped(paths, session, screenshotFile);
           answerPendingQuestions(session, scenario, autoAnswers);
           // Only the first turn discovers a fresh session from its opening prompt. Every
           // later turn runs in that same session, whose first user message never changes,
@@ -417,8 +418,7 @@ function attemptScenario(input: AttemptInput): {
     const matched: MatchResult = match;
     session.wait(1000);
     collapseSidebar(session);
-    session.screenshot(screenshotFile);
-    captureFullPage(session, fullScreenshotFile);
+    captureScreenshot(session, screenshotFile);
     if (!existsSync(matched.file)) throw new InfraError("session log vanished before reading");
     try {
       return {
@@ -441,7 +441,6 @@ function blockedRecord(input: {
   configFile: string;
   recordFile: string;
   screenshotFile: string;
-  fullScreenshotFile?: string;
   sessionFile?: string;
   sessionId?: string;
   reason: string;
@@ -477,9 +476,6 @@ function blockedRecord(input: {
     artifacts: {
       recordFile: input.recordFile,
       screenshotFile: input.screenshotFile,
-      ...(input.fullScreenshotFile === undefined
-        ? {}
-        : { fullScreenshotFile: input.fullScreenshotFile }),
       observed: [],
     },
     semanticReview: pendingSemanticReview(),
@@ -532,7 +528,6 @@ async function main(): Promise<void> {
   mkdirSync(paths.evidenceDir, { recursive: true });
   const recordFile = join(paths.evidenceDir, recordFileName(scenarioId, phase, matrix.id, stamp));
   const screenshotFile = recordFile.replace(/\.json$/, ".png");
-  const fullScreenshotFile = recordFile.replace(/\.json$/, ".full.png");
   let record: RunRecord;
   try {
     const outcome = attemptScenario({
@@ -541,7 +536,6 @@ async function main(): Promise<void> {
       url: readWebUrl(paths),
       expectedTarget,
       screenshotFile,
-      fullScreenshotFile,
       expectedPreset,
     });
     const session = sessionFacts(outcome.digest, outcome.file, outcome.answers);
@@ -564,7 +558,6 @@ async function main(): Promise<void> {
       artifacts: {
         recordFile,
         screenshotFile,
-        fullScreenshotFile,
         observed: [
           `skillLoads=${session.skillLoads.join(",") || "none"}`,
           `toolCalls=${session.toolCalls.length}`,
@@ -592,7 +585,6 @@ async function main(): Promise<void> {
       configFile,
       recordFile,
       screenshotFile,
-      fullScreenshotFile,
       sessionFile: reason.includes("external stop") ? lastSession?.file : undefined,
       sessionId: reason.includes("external stop") ? lastSession?.id : undefined,
       reason,
@@ -612,7 +604,6 @@ async function main(): Promise<void> {
       {
         recordFile,
         screenshotFile,
-        fullScreenshotFile,
         sessionFile: record.session?.sessionFile ?? null,
       },
       null,

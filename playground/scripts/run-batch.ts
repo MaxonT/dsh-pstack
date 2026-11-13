@@ -203,7 +203,11 @@ async function main(): Promise<void> {
   }
   const requested = argValue("--workers") === undefined ? undefined : Number(argValue("--workers"));
   const prepared = workerCount(matrix.id, phase);
-  const workers = Math.min(computeWorkers(requested).workers, prepared || requested || 1);
+  const workers = Math.min(
+    computeWorkers(requested).workers,
+    prepared || requested || 1,
+    ids.length,
+  );
   const pending = [...ids];
   const roundFlag = argValue("--round");
   const file = progressFilePath(matrix.id, phase);
