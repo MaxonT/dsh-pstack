@@ -53,7 +53,6 @@ export function sanitizeRecord(record: RunRecord): RunRecord {
   }
   copy.artifacts.recordFile = EVIDENCE_FILES.record;
   if (copy.artifacts.screenshotFile) copy.artifacts.screenshotFile = EVIDENCE_FILES.screenshot;
-  delete (copy.artifacts as { fullScreenshotFile?: string }).fullScreenshotFile;
   return sanitizeDeep(copy) as RunRecord;
 }
 

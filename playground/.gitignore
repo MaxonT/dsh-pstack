@@ -2,11 +2,6 @@
 .workers/
 .workers-*/
 
-# Legacy single-instance runtime paths, kept ignored so stale dirs never leak.
-.dsh/
-.browser/
-.workspace/
-
 # Local config with provider keys and allowed routes; copy config.example.json and fill the real values.
 config.json
 node_modules
