@@ -4,10 +4,8 @@ import type { ReactElement, SVGProps } from "react";
 
 export type IconComponent = (props: IconProps) => ReactElement;
 
-export interface IconProps extends SVGProps<SVGSVGElement> {
+export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "width" | "height"> {
   readonly size?: number;
-  readonly width?: never;
-  readonly height?: never;
 }
 
 function icon(paths: ReactElement): IconComponent {

@@ -22,16 +22,7 @@ export interface SessionEvent {
   data?: Record<string, unknown>;
 }
 
-export interface SessionDigest {
-  sessionId: string;
-  workspacePath: string | null;
-  agentPreset: string | null;
-  skillLoads: string[];
-  toolCalls: ToolCallEvidence[];
-  turnEndReason: string | null;
-  assistantText: string;
-  userText: string;
-  userTexts: string[];
+export interface SessionDigest extends Omit<SessionFacts, "sessionFile" | "autoAnswers"> {
   route: TestTarget | null;
   worker: number;
 }
