@@ -92,8 +92,10 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
   }
   if (full) {
     return listScenarioIds().filter((id) => {
-      const group = loadScenario(id).group;
-      return group !== undefined && SCENARIO_GROUP_PHASES[group].includes(phase);
+      const scenario = loadScenario(id);
+      const group = scenario.group;
+      if (group === undefined || !SCENARIO_GROUP_PHASES[group].includes(phase)) return false;
+      return scenario.environments === undefined || scenario.environments.includes(environmentId);
     });
   }
   if (scenarios) return parseList(scenarios);

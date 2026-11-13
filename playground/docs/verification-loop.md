@@ -15,7 +15,7 @@
 
 ## 批次
 
-- `run-batch --full`：覆盖该 phase/environment 的全部适用场景，成功后整份当前快照更新。
+- `run-batch --full`：覆盖该 phase/environment 的全部适用场景，成功后整份当前快照更新。它不是跨 phase 全跑：raw full = `skills` + `playbooks`；adapted full = `skills` + `playbooks` + `official-plugins` + `runtime-tools`，并按场景声明的 `environments` 过滤当前环境。
 - `run-batch --scenarios/--skills/--groups`：增量批次，只替换本次跑到的场景；未跑到的场景保留当前快照。
 - 批次在启动时生成 `batchId`，不按记录时间推导。`batchId` 只写进 `.workers` 的 `current-batch.json` 和 `manifest.json`，不决定快照目录。
 - 同一 phase/environment 只允许一个批次写入；批次失败时 `.staging` 丢弃，当前快照不动。
@@ -112,7 +112,7 @@ vp run playground:collect -- --phase adapted --environment base
 - `ignore-environment`：记录环境权限、凭据、网络或无头限制。
 - `待你判断`：证据不足或分类会影响方案，交用户决定。
 
-分析必须先对照 `playground/raw/dsh.md` 和 `port/dsh.md`。技能未加载不能直接归因到 dsh.md；先判断场景 prompt 是否触发技能、raw 环境是否提供目录、适配说明是否缺失。
+raw 分析只对照 `playground/raw/dsh.md`，adapted 分析只对照 `port/dsh.md`。结论必须由证据和根因支撑，不能把单一观察直接等同于适配说明缺陷。
 
 ## dsh.md
 

@@ -7,7 +7,8 @@
 - `reviews/<phase>-<environment>/manifest.json`：本轮覆盖的场景、最后批次、上游 revision 和 port revision。
 - `reviews/<phase>-<environment>/scenarios/**`：每个场景的 `record.json`、`screenshot.png`、`full.png`、`session.jsonl.zstd`。
 - `scenarios/**/*.ts`：场景 prompt、assertions、rubric；只作为判据，不把 rubric 当答案抄进结论。
-- `playground/raw/dsh.md` 和 `port/dsh.md`：适配说明，逐条对照。
+- `playground/raw/dsh.md`：只在 raw 分析时逐条对照。
+- `port/dsh.md`：只在 adapted 分析时逐条对照。
 - 必要时读 `playground/raw/dsh-evidence.md` 和上游技能原文。
 
 ## 输出
@@ -35,8 +36,7 @@
   - [session](scenarios/skills/a/raw-base/session.jsonl.zstd)
 - 现象：
 - 根因：
-- 与 raw/dsh.md 的关系：
-- 与 port/dsh.md 的关系：
+- 与当前阶段 dsh.md 的关系：raw 写 `raw/dsh.md`，adapted 写 `port/dsh.md`
 - 建议动作：
 - 你的决定：
 ```
@@ -44,6 +44,8 @@
 同一根因命中多个场景时只写一条，把所有影响场景和证据列在下面；不要按 scenario 或 finding id 拆成多条。
 
 ## dsh.md 审查格式
+
+raw 分析只审查 `playground/raw/dsh.md`，adapted 分析只审查 `port/dsh.md`。不要把两个阶段合成一张表。
 
 ```markdown
 | 章节/行 | 当前说明 | 相关证据 | 结论 | 建议 |
@@ -56,11 +58,12 @@
 
 1. 先判问题是否真实：看 record、full-page 截图、session 最后 assistant 消息和工具调用。
 2. 再判根因：场景 prompt 是否触发技能；技能是否加载；适配说明是否覆盖；环境是否限制；上游技能自身是否缺陷。
-3. 只有根因落在 `raw/dsh.md` 或 `port/dsh.md` 的适配说明时，才进入 `dsh-md`，后续改 `port` 并跑 adapted。
-4. 需要新增工具、预设或可选包时进入 `plugin`。
-5. 上游技能自身问题进入 `upstream`，不在本仓修。
-6. 环境权限、凭据、网络或无头限制进入 `ignore-environment`。
-7. 证据不足或分类会影响方案时，一律标 `待你判断`，不得默认忽略。
+3. raw 分析只判断 `playground/raw/dsh.md` 是否缺失或误导；adapted 分析只判断 `port/dsh.md` 是否缺失或误导。
+4. 当前阶段的 `dsh-md` 结论只改当前阶段对应的 dsh.md；raw 阶段不改 `port/dsh.md`。
+5. 当前阶段的 `plugin` 结论才进入插件、工具或预设开发。
+6. 上游技能自身问题进入 `upstream`，不在本仓修。
+7. 环境权限、凭据、网络或无头限制进入 `ignore-environment`。
+8. 证据不足或分类会影响方案时，一律标 `待你判断`，不得默认忽略。
 
 ## 批次与增量
 

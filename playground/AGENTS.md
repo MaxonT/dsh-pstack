@@ -32,8 +32,9 @@
 - 每轮结束后在新会话按 [docs/evidence-analysis.md](./docs/evidence-analysis.md) 分析全部证据，填写 `index.md`。
 - 分析必须按「根因 + 建议动作」去重，同一问题的影响场景和证据合并到一条问答。
 - 无法可靠分类的问题一律标为待用户判断，禁止默认忽略、默认归为上游或默认选一个 decision。
-- 每条具体问题必须对照 `playground/raw/dsh.md` 和 `port/dsh.md` 判断是否属于适配说明缺口；不能把「技能未加载」直接当成 dsh.md 问题。
-- 只有明确落到 `dsh-md` 或 `plugin` 的结论才进入适配开发；`upstream`、`ignore-environment` 和 `needs-human` 按结论分流。
+- raw 分析只对照 `playground/raw/dsh.md`；adapted 分析只对照 `port/dsh.md`。
+- 结论必须由证据和根因支撑，不能把单一观察直接等同于适配说明缺陷。
+- 只有当前阶段明确落到 `dsh-md` 或 `plugin` 的结论才进入该阶段的适配修改；`upstream`、`ignore-environment` 和 `needs-human` 按结论分流。
 
 ## 流程与审批
 
