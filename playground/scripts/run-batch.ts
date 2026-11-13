@@ -12,8 +12,8 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { isPhase, SCENARIO_GROUP_PHASES, SCENARIO_GROUPS } from "../types.ts";
-import type { Phase, RunRecord, ScenarioGroup, Verdict } from "../types.ts";
+import { isPhase } from "../types.ts";
+import type { Phase, RunRecord, Verdict } from "../types.ts";
 import { latestRecords } from "./lib/evidence.ts";
 import { computeWorkers } from "./lib/capacity.ts";
 import {
@@ -35,8 +35,6 @@ import { writeBatchMetadata } from "./lib/review-snapshot.ts";
 import { currentTaskFile, stopRequestFile, workerCount, workerPaths } from "./lib/worker.ts";
 
 const VPX = "vpx";
-const GROUPS = new Set<string>(SCENARIO_GROUPS);
-const GROUP_USAGE = SCENARIO_GROUPS.join(",");
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -80,23 +78,17 @@ function allRecords(): RunRecord[] {
 function selectedScenarios(phase: Phase, environmentId: string): string[] {
   const scenarios = argValue("--scenarios");
   const skills = argValue("--skills");
-  const groups = argValue("--groups");
   const failed = process.argv.includes("--only-failed");
   const full = process.argv.includes("--full");
   if (
-    [scenarios, skills, groups, failed ? "failed" : undefined, full ? "full" : undefined].filter(
-      Boolean,
-    ).length > 1
+    [scenarios, skills, failed ? "failed" : undefined, full ? "full" : undefined].filter(Boolean)
+      .length > 1
   ) {
-    throw new Error(
-      "--full, --scenarios, --skills, --groups and --only-failed are mutually exclusive",
-    );
+    throw new Error("--full, --scenarios, --skills and --only-failed are mutually exclusive");
   }
   if (full) {
     return listScenarioIds().filter((id) => {
       const scenario = loadScenario(id);
-      const group = scenario.group;
-      if (group === undefined || !SCENARIO_GROUP_PHASES[group].includes(phase)) return false;
       return scenario.environments === undefined || scenario.environments.includes(environmentId);
     });
   }
@@ -105,23 +97,6 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
     return parseList(skills).flatMap((skill) =>
       listScenariosForSkill(skill).map((scenario) => scenario.id),
     );
-  if (groups) {
-    const selected = new Set(parseList(groups));
-    for (const group of selected) {
-      if (!GROUPS.has(group)) throw new Error(`unknown scenario group ${JSON.stringify(group)}`);
-      if (!SCENARIO_GROUP_PHASES[group as ScenarioGroup].includes(phase)) {
-        throw new Error(
-          `scenario group ${JSON.stringify(group)} is not available in phase ${phase}`,
-        );
-      }
-    }
-    return listScenarioIds().filter((id) => {
-      const group = loadScenario(id).group;
-      if (group === undefined) throw new Error(`scenario ${id} has no group`);
-      if (!selected.has(group)) return false;
-      return true;
-    });
-  }
   if (failed) {
     return latestRecords(allRecords())
       .filter((record) => record.phase === phase && record.environment.matrix.id === environmentId)
@@ -133,7 +108,7 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
       .map((record) => record.scenarioId);
   }
   throw new Error(
-    `run-batch requires --groups <${GROUP_USAGE}>, --scenarios <ids>, --skills <names>, or --only-failed`,
+    "run-batch requires --full, --scenarios <ids>, --skills <names>, or --only-failed",
   );
 }
 
@@ -185,22 +160,16 @@ async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) {
     throw new Error(
-      `usage: run-batch.ts --phase raw|adapted --environment ID [--full|--groups ${GROUP_USAGE}|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]`,
+      "usage: run-batch.ts --phase raw|adapted --environment ID [--full|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]",
     );
   }
   if (process.argv.includes("--all")) {
-    throw new Error("--all is no longer supported; select --groups, --scenarios, or --skills");
+    throw new Error("--all is no longer supported; select --full, --scenarios, or --skills");
   }
   const environmentId = argValue("--environment");
   if (environmentId === undefined) throw new Error("--environment is required");
   const matrix = environmentMatrix(environmentId);
   const ids = selectedScenarios(phase, matrix.id);
-  for (const id of ids) {
-    const group = loadScenario(id).group;
-    if (group === undefined || !SCENARIO_GROUP_PHASES[group].includes(phase)) {
-      throw new Error(`scenario ${id} is not available in phase ${phase}`);
-    }
-  }
   if (ids.length === 0) {
     console.log("[run-batch] no scenarios selected");
     return;

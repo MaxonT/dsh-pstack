@@ -2,7 +2,7 @@ import { fileURLToPath } from "node:url";
 
 import { runnerImport } from "vite-plus";
 
-import type { BehaviorScenario, ScenarioGroup } from "../../types.ts";
+import type { BehaviorScenario } from "../../types.ts";
 
 interface ScenarioRegistry {
   behaviorScenarios: readonly BehaviorScenario[];
@@ -14,10 +14,8 @@ const registryPath = fileURLToPath(new URL("../../scenarios/registry.ts", import
 const loaded = (await runnerImport(registryPath)) as { module: ScenarioRegistry };
 const registry = loaded.module;
 
-export function listScenarioIds(group?: ScenarioGroup): string[] {
-  return registry.behaviorScenarios
-    .filter((scenario) => group === undefined || scenario.group === group)
-    .map((scenario) => scenario.id);
+export function listScenarioIds(): string[] {
+  return registry.behaviorScenarios.map((scenario) => scenario.id);
 }
 
 /** Behavior scenario ids registered for review. */

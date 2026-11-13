@@ -10,7 +10,7 @@
 - `playground/raw/dsh.md`：只在 raw 分析时逐条对照。
 - `port/dsh.md`：只在 adapted 分析时逐条对照。
 - 必要时读 `playground/raw/dsh-evidence.md` 和上游技能原文。
-- `playground/capabilities.ts`：能力清单和 probe 来源；不要从 DSH 运行时反推 raw 能力需求。
+- `playground/scenarios/inventory.json`：由上游和 raw/dsh 生成的派生能力清单；不要从 DSH 运行时反推 raw 能力需求。
 
 ## 阶段隔离
 
@@ -48,8 +48,8 @@
 - 类型：dsh-md | plugin | upstream | ignore-environment | 待你判断
 - 影响场景：`a`、`b`
 - 证据：
-  - [record](scenarios/capabilities/a/raw-base/record.json)
-  - [截图](scenarios/capabilities/a/raw-base/screenshot.png)
+  - [record](scenarios/a/raw-base/record.json)
+  - [截图](scenarios/a/raw-base/screenshot.png)
   - session 只在本地 worker，按 `record.session.sessionId` 读取，不在快照中链接
 - 现象：
 - 根因：

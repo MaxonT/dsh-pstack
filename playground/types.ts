@@ -64,12 +64,6 @@ export interface ScenarioSource {
   regression?: string;
 }
 
-export const SCENARIO_GROUPS = ["capabilities"] as const;
-export type ScenarioGroup = (typeof SCENARIO_GROUPS)[number];
-export const SCENARIO_GROUP_PHASES: Record<ScenarioGroup, readonly Phase[]> = {
-  capabilities: ["raw", "adapted"],
-};
-
 export interface BehaviorScenario {
   type: "behavior";
   id: string;
@@ -82,10 +76,10 @@ export interface BehaviorScenario {
   source: ScenarioSource;
   environmentId?: string;
   answers?: Array<{ match: string; selected?: string[]; custom?: string }>;
-  /** Set by the registry from the directory name. */
-  group?: ScenarioGroup;
   /** Environments a plugin scenario runs in; omitted means base only. */
   environments?: string[];
+  /** Capability id this probe covers. */
+  capability?: string;
   /** Skill names the scenario should observe for availability and loading. */
   dependencies?: string[];
 }

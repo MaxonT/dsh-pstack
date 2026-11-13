@@ -113,6 +113,10 @@ export default defineConfig({
         command: "vpx playground/scripts/redact.ts",
         cache: false,
       },
+      "playground:capabilities": {
+        command: "vpx playground/scripts/index-capabilities.ts",
+        cache: false,
+      },
       "playground:run": {
         command: "vpx playground/scripts/run-case.ts",
         cache: false,

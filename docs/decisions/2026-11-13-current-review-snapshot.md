@@ -13,7 +13,7 @@ Review: 2026-11-13
 ## 决策
 
 - 每个 `phase/environment` 只保留一份当前完整快照：`playground/reviews/<phase>-<environment>/`。
-- 快照包含 `manifest.json`、`index.md` 和 `scenarios/<group>/<scenario>/<phase>-<environment>/`；每个场景目录保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
+- 快照包含 `manifest.json`、`index.md` 和 `scenarios/<scenario>/<phase>-<environment>/`；每个场景目录保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
 - `collect` 只更新当前快照，不生成 summary、runtime-review、approval 或 history。
 - `run-batch` 在批次开始时生成 `batchId`、mode 和 scope，并写入 `.workers` 的当前批次元数据；增量批次只替换本次跑到的场景。
 - 全量批次整体更新快照；增量批次只替换选中场景，未覆盖场景保留。

@@ -52,7 +52,7 @@ RunRecord 的身份是 scenarioId、phase、environmentId。记录包含实际 D
 
 `run-case` 在 worker 的 evidence 目录写脱敏后的 `record.json`，并在同目录写本地 `record.source.json`，只用于 `collect` 定位原始截图和 session；`record.source.json` 不进提交。
 
-`collect` 读取 worker 的脱敏 RunRecord，并从 `record.source.json` 复制原始证据到 `reviews/<phase>-<environment>/scenarios/<group>/<scenario>/<phase>-<environment>/`。每个目录保存 `record.json`、`screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
+`collect` 读取 worker 的脱敏 RunRecord，并从 `record.source.json` 复制原始证据到 `reviews/<phase>-<environment>/scenarios/<scenario>/<phase>-<environment>/`。每个目录保存 `record.json`、`screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
 
 `manifest.json` 记录当前快照的来源和覆盖场景；`index.md` 是分析会话填写的问答文件。未出现在当前快照中的场景目录会被删除，分析文件里的对应问答也要清理。
 

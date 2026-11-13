@@ -1,0 +1,396 @@
+{
+  "generatedAt": "2026-11-13 16:28:19",
+  "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+  "capabilities": [
+    {
+      "id": "task",
+      "description": "`subagent` returns an id immediately and notifies on completion; `subagent_fork` inherits the conversation. Put the role in `prompt` and the directory in `cwd`; see Subagent fields for the missing Cursor fields.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/agents/poteto-agent.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/arena/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/how/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/no-comments/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/references/divergent-reviewer.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/references/judgment-reviewer.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/references/tooling-reviewer.md",
+        "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/why/SKILL.md"
+      ],
+      "requiredBy": [
+        "arena",
+        "how",
+        "no-comments",
+        "poteto-mode",
+        "reflect",
+        "setup-pstack",
+        "swarm",
+        "why"
+      ],
+      "status": "discovered"
+    },
+    {
+      "id": "askquestion",
+      "description": "`ask_user_question` takes a batch of questions. Empty `selected` with no `custom` means the user skipped; a timeout is `pending`, not skipped. Ask in plain text when the tool is absent.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/automate-me/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+        "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
+      ],
+      "requiredBy": ["automate-me", "poteto-mode", "setup-pstack"],
+      "status": "discovered"
+    },
+    {
+      "id": "open-a-todolist",
+      "description": "`todo_write` replaces the whole list; statuses are `pending`, `in_progress`, and `completed`. A skipped step stays `pending` with content `skip: <reason>`; there is no `skipped` status.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/architect/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/arena/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/figure-it-out/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["architect", "arena", "figure-it-out", "poteto-mode", "swarm"],
+      "status": "discovered"
+    },
+    {
+      "id": "run-another-pstack-skill-name-or-the-name-skill",
+      "description": "`skill` loads a catalog skill by name. For `disable-model-invocation: true`, `read` `<pstack>/skills/<name>/SKILL.md`. A user `/name` gesture injects the skill directly; do not call `skill` again.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "grep-glob",
+      "description": "`grep` and `glob` are native tools; call them directly. Use `bash` with `rg` only when the session has neither.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "subagent-type-generalpurpose",
+      "description": "No such field; omit it. The role comes from `prompt`, or from `<pstack>/agents/<name>.md` when named.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/how/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["how", "reflect", "swarm"],
+      "status": "discovered"
+    },
+    {
+      "id": "poteto-agent-comment-sicko",
+      "description": "No native equivalents. Read `<pstack>/agents/<name>.md` and pass it as `prompt`, or write the role yourself.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "readonly-true",
+      "description": "No sandbox field. Put \"do not edit files\" in `prompt`, rely on the session permission mode, and check `git status`.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/how/SKILL.md"
+      ],
+      "requiredBy": ["how"],
+      "status": "discovered"
+    },
+    {
+      "id": "readonly-false",
+      "description": "Omit. Writable is the default under the session permission mode.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/why/SKILL.md"
+      ],
+      "requiredBy": ["reflect", "why"],
+      "status": "discovered"
+    },
+    {
+      "id": "environment-cloud",
+      "description": "No cloud agents. Use `create_worktree` when available and pass its checkout as `cwd`; otherwise skip with the line.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["poteto-mode", "swarm"],
+      "status": "discovered"
+    },
+    {
+      "id": "environment-local",
+      "description": "Omit. Local is the default.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["swarm"],
+      "status": "discovered"
+    },
+    {
+      "id": "cloud-base-branch-b",
+      "description": "No such field. Pass `<b>` as `create_worktree.from`; otherwise tell the child to check out `<b>`.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "run-in-background-true",
+      "description": "Omit. `subagent` always returns immediately and notifies on completion.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/arena/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["arena", "poteto-mode", "swarm"],
+      "status": "discovered"
+    },
+    {
+      "id": "resume",
+      "description": "`send_message` to the child's `agent_id` continues it; start a new `subagent` only when the execution stopped permanently.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/README.md",
+        "upstream/cursor-plugins/pstack/agents/poteto-agent.md",
+        "upstream/cursor-plugins/pstack/docs/guide/03-understand.md",
+        "upstream/cursor-plugins/pstack/docs/guide/07-overnight.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/pause-safely.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/session-pickup.md",
+        "upstream/cursor-plugins/pstack/skills/recall/SKILL.md"
+      ],
+      "requiredBy": ["poteto-mode", "recall"],
+      "status": "discovered"
+    },
+    {
+      "id": "file-attachments",
+      "description": "No such field. List the paths in `prompt`; the child reads them.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "claude-family-version-effort-fast-such-as-claude-opus-5-5-xhigh",
+      "description": "Route with `provider`, `model`, and `reasoning_effort`; drop `-fast`. Valid ids come from `list_subagent_models`.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "a-grok-gpt-or-other-non-claude-slug",
+      "description": "Pick the closest advertised route. If none matches, omit `provider` and `model`, let the child fall back, and say so.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "auto-or-inherit-parent",
+      "description": "Omit `provider` and `model`; omitted values use child or parent defaults.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/guide/01-setup.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/arena/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/how/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-help/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/why/SKILL.md"
+      ],
+      "requiredBy": ["arena", "how", "poteto-help", "poteto-mode", "reflect", "swarm", "why"],
+      "status": "discovered"
+    },
+    {
+      "id": "the-pstack-models-mdc-rule-cursor-rules-pstack-models-mdc",
+      "description": "The pstack role file is `$DSH_HOME/pstack-models.json`. Base DSH never reads it; the pstack adapter reads this JSON on every delegation. Read it when it is not in context.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "a-role-value-model-effort-such-as-opus-high",
+      "description": "Write `<provider>/<model> <effort>`; split it into `provider`, `model`, and `reasoning_effort`.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "cursor-skills-cursor-skills",
+      "description": "Project skills live in `.dsh/skills/` or `.agents/skills/`. User skills live in `$DSH_HOME/skills/` or `$DSH_AGENTS_HOME/skills/`; the latter defaults to `~/.agents`.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/references/divergent-reviewer.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/references/judgment-reviewer.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/references/tooling-reviewer.md"
+      ],
+      "requiredBy": ["reflect"],
+      "status": "discovered"
+    },
+    {
+      "id": "cursor-plugins-cursor-plugin-plugin-json",
+      "description": "A profile is `$DSH_HOME/profiles/<name>/`, holding `package.json` and `cordis.patch.yml`; a plugin manifest is the `dsh` section of its `package.json`.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "cursor-rules-mdc-always-applied-rules",
+      "description": "General rules use the `AGENTS.md`-compatible chain; DSH never reads `.mdc`. The pstack role file `$DSH_HOME/pstack-models.json` is the exception, read by the pstack adapter. Project `AGENTS.md`/`AGENTS.local.md` plus user-global `$DSH_HOME/AGENTS.md`.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "https-github-com-cursor-plugins-blob-main-pstack-path",
+      "description": "`<pstack>/<path>` when the file exists. Read the local copy, never fetch it; give the user the URL when needed.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "transcripts-in-cursor-projects-slug-agent-transcripts",
+      "description": "`$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`, one append-only log per session. Optional session-search adds model-facing search tools.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "cursor-automations-routines-update-state-routine-calls-api2-cursor-sh-automations-webhooks-routine-wakes-and-sendtouser-secret-requests",
+      "description": "Skip with the line.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "bugbot",
+      "description": "Treat PR comments as ordinary review threads and use the step's `gh` command; skip starting or waiting for Bugbot when there is no check or comment.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-help/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/babysit.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/references/bugbot-triage.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/references/synthesizer.md"
+      ],
+      "requiredBy": ["poteto-help", "poteto-mode", "reflect"],
+      "status": "discovered"
+    },
+    {
+      "id": "cursor-cloud-agents",
+      "description": "Map `environment: \"cloud\"` to a local worktree; skip steps that need the cloud machine itself.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "status": "discovered"
+    },
+    {
+      "id": "a-built-in-pr-tool",
+      "description": "Use the step's `gh` command through `bash`; that is not a skip, so write no line.",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/opening-a-pr.md"
+      ],
+      "requiredBy": ["poteto-mode"],
+      "status": "discovered"
+    }
+  ]
+}

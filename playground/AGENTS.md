@@ -11,10 +11,10 @@
 
 ## 目录
 
-- `scenarios/<group>/<scenario>.ts`：一个场景一个文件；group 由目录和注册表决定。playbook 场景的 prompt 以 `/poteto-mode ` 开头。
-- `scenarios/registry.ts`：用 `import.meta.glob` 自动发现组目录；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
+- `scenarios/capabilities/<scenario>.ts`：一个能力场景一个文件，场景文件平铺在 capabilities 子目录。
+- `scenarios/registry.ts`：用 `import.meta.glob("./capabilities/*.ts")` 自动发现能力探针；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
 - `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
-- `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<group>/<scenario>/<phase>-<environment>/` 保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
+- `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<scenario>/<phase>-<environment>/` 保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
 - `reviews/.staging/`：批次运行中的临时目录，不提交。
 - 不保留空目录；不恢复 `plugin-ui`、`conflicts`、`run-ui`、`run-conflict` 或 `cases.lock`。
 
@@ -46,9 +46,9 @@
 - prepare 为每个 worker 写入 `$DSH_HOME/AGENTS.md` 的结构化读边界；所有 phase 生效，限制只能读取工作区和系统挂载的只读输入。
 - 任务超过 10 分钟时读取该 worker 的真实 session 文件判断是否仍有效推进；确认无效后执行 `playground:stop-task`，保留当前证据并继续后续任务。
 - worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
-- raw：生成 `playground/raw/pstack`，先用 `run-batch --groups capabilities` 跑能力探针，collect，再在新会话按证据分析规则填写 `reviews/raw-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。
+- raw：生成 `playground/raw/pstack`，先用 `run-batch --full` 跑能力探针，collect，再在新会话按证据分析规则填写 `reviews/raw-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。
 - 适配开发：根据分析结论维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
-- adapted/base：优先 `run-batch --groups capabilities` 验证能力实现，collect，分析 `reviews/adapted-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。不通过回适配开发。
+- adapted/base：优先 `run-batch --full` 验证能力实现，collect，分析 `reviews/adapted-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。不通过回适配开发。
 - 适配后环境组：按环境矩阵跑对应 capability batch，collect，分析 `reviews/adapted-<environment>/index.md`。环境限制按能力类别记录；带显式环境矩阵的元数据可以写包名或 ID。
 - README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
 

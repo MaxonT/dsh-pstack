@@ -9,13 +9,12 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 
-import { SCENARIO_GROUP_PHASES } from "../../types.ts";
 import type { Phase, RunEnvironment, RunRecord } from "../../types.ts";
 import { isRunRecord, latestRecords, recordFileName } from "./evidence.ts";
 import { EVIDENCE_DIRECTORIES, EVIDENCE_FILES } from "./evidence-files.ts";
 import { sanitizeRecord } from "./redaction.ts";
 import { PLAYGROUND_DIRECTORY, workersDirectory } from "./run-metadata.ts";
-import { loadScenario, listScenarioIds } from "./scenarios.ts";
+import { listScenarioIds } from "./scenarios.ts";
 import { workerPaths } from "./worker.ts";
 
 export const REVIEWS_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reviews");
@@ -98,11 +97,6 @@ function readRecords(directory: string): RunRecord[] {
   });
 }
 
-function phaseEligible(id: string, phase: Phase): boolean {
-  const group = loadScenario(id).group;
-  return group !== undefined && SCENARIO_GROUP_PHASES[group].includes(phase);
-}
-
 interface RecordSource {
   recordFile?: string;
   screenshotFile?: string;
@@ -144,12 +138,9 @@ function scenarioDirectory(
   scenarioId: string,
   root = REVIEWS_DIRECTORY,
 ): string {
-  const group = loadScenario(scenarioId).group;
-  if (group === undefined) throw new Error(`scenario ${scenarioId} has no group`);
   return join(
     reviewSnapshotDirectory(phase, environment, root),
     "scenarios",
-    group,
     scenarioId,
     `${phase}-${environment}`,
   );
@@ -180,23 +171,16 @@ export function writeReviewSnapshot(
 ): ReviewSnapshotManifest {
   const latest = latestRecords(allRecords);
   const current = latest.filter(
-    (record) =>
-      record.phase === phase &&
-      record.environment.matrix.id === environment &&
-      phaseEligible(record.scenarioId, phase),
+    (record) => record.phase === phase && record.environment.matrix.id === environment,
   );
   const currentIds = new Set(current.map((record) => record.scenarioId));
   const snapshot = reviewSnapshotDirectory(phase, environment, reviewsDirectory);
   const scenarios = join(snapshot, EVIDENCE_DIRECTORIES.scenarios);
 
   if (existsSync(scenarios)) {
-    for (const group of readdirSync(scenarios, { withFileTypes: true })) {
-      if (!group.isDirectory()) continue;
-      for (const scenario of readdirSync(join(scenarios, group.name), { withFileTypes: true })) {
-        if (!scenario.isDirectory()) continue;
-        if (!currentIds.has(scenario.name)) {
-          rmSync(join(scenarios, group.name, scenario.name), { recursive: true, force: true });
-        }
+    for (const scenario of readdirSync(scenarios, { withFileTypes: true })) {
+      if (scenario.isDirectory() && !currentIds.has(scenario.name)) {
+        rmSync(join(scenarios, scenario.name), { recursive: true, force: true });
       }
     }
   }
@@ -248,6 +232,6 @@ export function collectReviewSnapshot(phase: Phase, environment: string): Review
   );
 }
 
-export function reviewScenarioIds(phase: Phase): string[] {
-  return listScenarioIds().filter((id) => phaseEligible(id, phase));
+export function reviewScenarioIds(_phase: Phase): string[] {
+  return listScenarioIds();
 }
