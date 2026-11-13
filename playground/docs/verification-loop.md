@@ -120,7 +120,7 @@ raw 分析只对照 `playground/raw/dsh.md`，adapted 分析只对照 `port/dsh.
 - `playground/raw/dsh.md` 是 raw 基准答案，`port/dsh.md` 是最终随包答案，两者不能合并。
 - 分析只提出适配说明的修改建议；实际修改由人确认后写入。
 - `dsh.md` 只描述 DSH 能力，不写具体插件、包、外部二进制或服务的安装建议；可选能力用能力类别说明。
-- `dsh.zh.md` 是逐行中文翻译，只供审阅，生成器不读。
+- 本地化版 `dsh.zh.md` 是逐行翻译，只供审阅，生成器不读；其他 locale 按同一规则扩展。
 - `playground/raw/dsh-evidence.md` 保存判定依据。
 
 ## 发版

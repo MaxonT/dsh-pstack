@@ -46,7 +46,7 @@
 Each Cursor feature is mapped to DeepSeek Harness in the [runtime mapping](./port/dsh.md). The port is checked against real DSH Web sessions. The [Port verification](#-port-verification) section explains how.
 
 > [!IMPORTANT]
-> Requires DSH `>=0.2.2-rc.1` and Node.js `>=24.21.1`. See the [script registry (in Chinese)](./port/AGENTS.md#脚本登记) for the extra runtime requirements of bundled workflows.
+> Requires DSH `>=0.2.2-rc.1` and Node.js `>=24.21.1`. See the [script registry (localized)](./port/AGENTS.md#脚本登记) for the extra runtime requirements of bundled workflows.
 
 <a id="quick-start"></a>
 
