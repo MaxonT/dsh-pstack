@@ -444,12 +444,13 @@ function blockedRecord(input: {
   const config = readPlaygroundConfig(input.configFile);
   const matrix = environmentMatrix(input.paths.environmentId);
   const capturedAt = new Date().toISOString();
-  const session = input.sessionFile
+  const sessionFile = input.sessionFile;
+  const session = sessionFile
     ? (() => {
         try {
           return sessionFacts(
-            digestSession(input.sessionFile as string, input.sessionId ?? "", input.paths.index),
-            input.sessionFile as string,
+            digestSession(sessionFile, input.sessionId ?? "", input.paths.index),
+            sessionFile,
             [],
           );
         } catch {

@@ -86,9 +86,11 @@ export interface RunEnvironment {
   configHash: string;
 }
 
+export type ToolCallStatus = "pending" | "ok" | "error";
+
 export interface ToolCallEvidence {
   name: string;
-  status: string;
+  status: ToolCallStatus;
   /**
    * Tool name plus its whitelisted audit arguments, capped at 200 characters. Only
    * listed keys (paths, commands, patterns, targets) are copied, so credentials and
