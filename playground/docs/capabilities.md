@@ -4,11 +4,11 @@
 
 ## 来源
 
-- pstack skills、playbooks、commands、角色说明中的实际依赖。
+- `upstream/cursor-plugins/pstack/` 下的 skills、playbooks、commands、agents 文件。
 - `playground/raw/dsh.md` 的映射行。
 - 从上述来源由 agent 现场整理的能力清单；仓库不提交固定能力清单。
 
-DSH 运行时和 profile 只用于执行 probe 和解释结果，不作为能力需求的来源。`raw/dsh-evidence.md` 只用于证明 `dsh.md` 的替换项，也不作为能力来源。raw 的任务是发现 pstack 依赖的能力在真实 DSH 中是否成立，不是枚举 DSH 已经提供的工具。
+`playground/raw/pstack/` 和根 `pstack/` 是生成物，不是提取来源；上游树缺失或结构不对时直接失败，不使用生成树兜底。DSH 运行时和 profile 只用于执行 probe 和解释结果，不作为能力需求的来源。`raw/dsh-evidence.md` 只用于证明 `dsh.md` 的替换项，也不作为能力来源。raw 的任务是发现 pstack 依赖的能力在真实 DSH 中是否成立，不是枚举 DSH 已经提供的工具。
 
 ## 能力记录
 

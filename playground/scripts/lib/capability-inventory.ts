@@ -26,6 +26,13 @@ export interface CapabilityInventory {
 const RAW_DSH = join(REPOSITORY_ROOT, "playground/raw/dsh.md");
 const RAW_DSH_ZH = join(REPOSITORY_ROOT, "playground/raw/dsh.zh.md");
 const UPSTREAM = join(REPOSITORY_ROOT, "upstream/cursor-plugins/pstack");
+const UPSTREAM_SKILLS = join(UPSTREAM, "skills");
+
+function assertUpstreamSource(): void {
+  if (!existsSync(UPSTREAM) || !existsSync(UPSTREAM_SKILLS)) {
+    throw new Error(`capability source tree is missing: ${UPSTREAM}`);
+  }
+}
 const SCENARIO_ROOT = join(REPOSITORY_ROOT, "playground/scenarios");
 const INVENTORY = join(REPOSITORY_ROOT, "playground/scenarios/capability-inventory.json");
 const EXCLUSIONS = join(REPOSITORY_ROOT, "playground/scenarios/capability-exclusions.json");
@@ -111,6 +118,7 @@ function scenarioProbes(): Map<string, string> {
 }
 
 export function buildCapabilityInventory(): CapabilityInventory {
+  assertUpstreamSource();
   const probes = scenarioProbes();
   const exclusions = readExclusions();
   const current = dshRows().map((row) => {

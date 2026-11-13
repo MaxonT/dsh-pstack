@@ -23,7 +23,7 @@ playground/scenarios/
 ## capabilities 目录
 
 - `capabilities/` 存放 base 环境的通用能力 probe。
-- 能力从 pstack 的实际使用和 `playground/raw/dsh.md` 的映射行提取，归一化为稳定的 capability id。
+- 能力从 `upstream/cursor-plugins/pstack/` 的 skills、playbooks、commands、agents 文件，以及 `playground/raw/dsh.md` 的映射行提取，归一化为稳定的 capability id。
 - 一个 capability 可以拆成多个行为分支 probe；一个文件只放一个独立 probe。
 - 每个场景必须设置 `capability` 字段，并默认导出 `BehaviorScenario`。
 - 能力清单由 `playground:capabilities` 从同一来源生成，不在代码里手写固定能力列表。
@@ -47,15 +47,16 @@ export default scenario;
 
 能力需求只来自：
 
-- pstack skills、playbooks、commands、角色说明中的实际依赖。
+- `upstream/cursor-plugins/pstack/` 下的 skills、playbooks、commands、agents 文件。
 - `playground/raw/dsh.md` 的映射行。
 
 以下内容只作为执行环境或 `dsh.md` 证据，不是能力来源：
 
-- DSH 运行时和 profile
-- `playground/raw/dsh-evidence.md`
+- `playground/raw/pstack/` 和根 `pstack/` 是生成物，不是提取来源。
+- DSH 运行时和 profile。
+- `playground/raw/dsh-evidence.md`。
 
-不要从当前插件实现反推 raw 需要验证什么。
+如果上游树缺失或结构不对，直接报错，不使用生成树或其他目录兜底。不要从当前插件实现反推 raw 需要验证什么。
 
 ## 阶段边界
 
