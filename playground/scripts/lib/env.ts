@@ -133,19 +133,6 @@ function profileDirectory(paths: WorkerPaths): string {
   return join(paths.home, "profiles", PROFILE_NAME);
 }
 
-function persistentInstructions(rawMount: string): string {
-  const skill = join(rawMount, "pstack/skills/poteto-mode/SKILL.md");
-  if (!existsSync(skill))
-    throw new Error("raw mount is missing; run playground:prepare for the raw phase first");
-  const body = readFileSync(skill, "utf8").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "");
-  return [
-    "You are running the raw baseline under the standard agent preset.",
-    `Read ${join(rawMount, "dsh.md")} once before following the skill below.`,
-    `Skill file: ${skill}`,
-    body,
-  ].join("\n\n");
-}
-
 function anonymousProviders(providers: ProviderPlan["providers"]): ProviderPlan["providers"] {
   return Object.fromEntries(
     Object.entries(providers).map(([id, provider]) => [
@@ -160,7 +147,7 @@ function anonymousProviders(providers: ProviderPlan["providers"]): ProviderPlan[
   );
 }
 
-export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, phase: Phase): void {
+export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, _phase: Phase): void {
   mkdirSync(paths.home, { recursive: true });
   const patch = [
     {
@@ -182,15 +169,6 @@ export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, phase: Ph
       name: "@deepseek-ai/dsh-user-approval",
       config: { policy: "never" },
     },
-    ...(phase === "raw"
-      ? [
-          {
-            id: "system-prompt",
-            name: "@deepseek-ai/dsh-system-prompt",
-            config: { personaSuffix: persistentInstructions(paths.rawMount) },
-          },
-        ]
-      : []),
     {
       id: "permission",
       name: "@deepseek-ai/dsh-permission-presets",

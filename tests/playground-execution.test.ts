@@ -564,8 +564,9 @@ describe("read isolation from the repository tree", () => {
 
     writeHomePatch(paths, isolationPlan, "raw");
     const patch = readFileSync(join(paths.home, "cordis.patch.yml"), "utf8");
-    expect(patch).toContain(join(paths.rawMount, "pstack/skills/poteto-mode/SKILL.md"));
-    expect(patch).toContain(join(paths.rawMount, "dsh.md"));
+    expect(patch).not.toContain("system-prompt");
+    expect(patch).not.toContain(join(paths.rawMount, "pstack/skills/poteto-mode/SKILL.md"));
+    expect(patch).not.toContain(join(paths.rawMount, "dsh.md"));
     expect(patch).not.toContain(REPOSITORY_ROOT);
   });
 
