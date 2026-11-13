@@ -545,7 +545,7 @@ async function main(): Promise<void> {
       expectedPreset,
     });
     const session = sessionFacts(outcome.digest, outcome.file, outcome.answers);
-    session.analysis = analyzeSession(scenario, session, phase);
+    session.analysis = analyzeSession(session);
     const failures = mechanicalFailures({
       scenario,
       session,
@@ -567,12 +567,7 @@ async function main(): Promise<void> {
         observed: [
           `skillLoads=${session.skillLoads.join(",") || "none"}`,
           `toolCalls=${session.toolCalls.length}`,
-          `skillVia=${session.analysis.skillInvocation.loadedVia}`,
-          `dependencies=${
-            session.analysis.dependencies
-              .map((entry) => `${entry.name}:${entry.available ? "available" : "missing"}`)
-              .join(",") || "none"
-          }`,
+          `warnings=${session.analysis.warnings.length}`,
         ],
       },
       semanticReview,

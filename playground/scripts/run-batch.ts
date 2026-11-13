@@ -30,7 +30,7 @@ import {
   writeProgress,
   type ProgressState,
 } from "./lib/progress.ts";
-import { listScenarioIds, listScenariosForSkill, loadScenario } from "./lib/scenarios.ts";
+import { listScenarioIds, loadScenario } from "./lib/scenarios.ts";
 import { writeBatchMetadata } from "./lib/review-snapshot.ts";
 import { currentTaskFile, stopRequestFile, workerCount, workerPaths } from "./lib/worker.ts";
 
@@ -77,14 +77,12 @@ function allRecords(): RunRecord[] {
 
 function selectedScenarios(phase: Phase, environmentId: string): string[] {
   const scenarios = argValue("--scenarios");
-  const skills = argValue("--skills");
   const failed = process.argv.includes("--only-failed");
   const full = process.argv.includes("--full");
   if (
-    [scenarios, skills, failed ? "failed" : undefined, full ? "full" : undefined].filter(Boolean)
-      .length > 1
+    [scenarios, failed ? "failed" : undefined, full ? "full" : undefined].filter(Boolean).length > 1
   ) {
-    throw new Error("--full, --scenarios, --skills and --only-failed are mutually exclusive");
+    throw new Error("--full, --scenarios and --only-failed are mutually exclusive");
   }
   if (full) {
     return listScenarioIds().filter((id) => {
@@ -96,10 +94,6 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
     });
   }
   if (scenarios) return parseList(scenarios);
-  if (skills)
-    return parseList(skills).flatMap((skill) =>
-      listScenariosForSkill(skill).map((scenario) => scenario.id),
-    );
   if (failed) {
     return latestRecords(allRecords())
       .filter((record) => record.phase === phase && record.environment.matrix.id === environmentId)
@@ -110,9 +104,7 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
       )
       .map((record) => record.scenarioId);
   }
-  throw new Error(
-    "run-batch requires --full, --scenarios <ids>, --skills <names>, or --only-failed",
-  );
+  throw new Error("run-batch requires --full, --scenarios <ids>, or --only-failed");
 }
 
 interface ChildResult {
@@ -163,11 +155,8 @@ async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) {
     throw new Error(
-      "usage: run-batch.ts --phase raw|adapted --environment ID [--full|--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]",
+      "usage: run-batch.ts --phase raw|adapted --environment ID [--full|--scenarios a,b|--only-failed] [--workers N] [--round N]",
     );
-  }
-  if (process.argv.includes("--all")) {
-    throw new Error("--all is no longer supported; select --full, --scenarios, or --skills");
   }
   const environmentId = argValue("--environment");
   if (environmentId === undefined) throw new Error("--environment is required");

@@ -64,8 +64,10 @@ export function publicConfigHash(
 }
 
 function versionFromPackage(file: string): string {
-  if (!existsSync(file)) return "unavailable";
-  return (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version ?? "unknown";
+  if (!existsSync(file)) throw new Error(`cannot read installed package version: ${file}`);
+  const version = (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version;
+  if (!version) throw new Error(`installed package has no version: ${file}`);
+  return version;
 }
 
 export function dshVersion(): string {

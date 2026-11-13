@@ -14,7 +14,6 @@ import { isRunRecord, latestRecords, recordFileName } from "./evidence.ts";
 import { EVIDENCE_DIRECTORIES, EVIDENCE_FILES } from "./evidence-files.ts";
 import { sanitizeRecord } from "./redaction.ts";
 import { PLAYGROUND_DIRECTORY, workersDirectory } from "./run-metadata.ts";
-import { listScenarioIds } from "./scenarios.ts";
 import { workerPaths } from "./worker.ts";
 
 export const REVIEWS_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reviews");
@@ -230,8 +229,4 @@ export function collectReviewSnapshot(phase: Phase, environment: string): Review
     readBatchMetadata(phase, environment),
     readRecords(workersDirectory()),
   );
-}
-
-export function reviewScenarioIds(_phase: Phase): string[] {
-  return listScenarioIds();
 }

@@ -29,15 +29,6 @@ export type AllowedRoute = TestTarget & {
   apiKey: string;
 };
 
-export interface PreparedEnv {
-  phase: Phase;
-  home: string;
-  browserHome: string;
-  port: number;
-  url: string;
-  workspaceDirs: Record<string, string>;
-}
-
 export type Assertion =
   | { kind: "turn-completed" }
   | { kind: "skill-loaded"; skill: string }
@@ -61,7 +52,6 @@ export interface UiObservation {
 
 export interface BehaviorScenario {
   id: string;
-  skill?: string;
   turns: Array<{ prompt: string }>;
   workspace: WorkspaceFixture;
   assertions: Assertion[];
@@ -73,11 +63,7 @@ export interface BehaviorScenario {
   answers?: Array<{ match: string; selected?: string[]; custom?: string }>;
   /** Capability id this probe covers. */
   capability: string;
-  /** Skill names the scenario should observe for availability and loading. */
-  dependencies?: string[];
 }
-
-export type Scenario = BehaviorScenario;
 
 export type EnvironmentKind = "base" | "capability" | "conflict";
 
@@ -113,22 +99,6 @@ export interface ToolCallEvidence {
 }
 
 export const SKILL_TOOL_NAMES = ["skill", "pstack_skill", "pstack-skill"] as const;
-export type SkillLoadPath = "skill" | "pstack_skill" | "read" | "user-gesture" | "none";
-
-export interface SkillInvocationAnalysis {
-  requested: string;
-  loadedVia: SkillLoadPath;
-  attempts: number;
-  errors: string[];
-}
-
-export interface DependencyAnalysis {
-  name: string;
-  available: boolean;
-  loaded: boolean;
-  fallback: string | null;
-}
-
 export interface ToolAttemptAnalysis {
   name: string;
   attempts: number;
@@ -137,10 +107,7 @@ export interface ToolAttemptAnalysis {
 }
 
 export interface SessionAnalysis {
-  skillInvocation: SkillInvocationAnalysis;
-  dependencies: DependencyAnalysis[];
   tools: ToolAttemptAnalysis[];
-  userGesture: boolean;
   artifacts: string[];
   warnings: string[];
 }

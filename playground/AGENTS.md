@@ -11,8 +11,8 @@
 
 ## 目录
 
-- `scenarios/capabilities/<scenario>.ts`：一个能力场景一个文件，默认导出 `BehaviorScenario`；场景文件平铺在 capabilities 子目录。
-- `scenarios/registry.ts`：用 `import.meta.glob("./capabilities/*.ts")` 自动发现能力探针；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
+- `scenarios/capabilities/<scenario>.ts`：base 环境的能力场景；`scenarios/<environment>/<scenario>.ts`：该环境专属 probe；默认导出 `BehaviorScenario`。
+- `scenarios/registry.ts`：用 `import.meta.glob("./*/*.ts")` 自动发现按环境目录组织的场景；CLI 通过 `runnerImport` 加载。禁止维护手工 import 列表。
 - `scenarios/AGENTS.md`：用例编写规则；新增或修改场景前必读。
 - `reviews/<phase>-<environment>/`：当前完整快照，提交进库。`manifest.json` 是机器清单；`index.md` 是证据分析问答；`scenarios/<scenario>/<phase>-<environment>/` 保存 `record.json` 和 `screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
 - `reviews/.staging/`：批次运行中的临时目录，不提交。
@@ -21,10 +21,10 @@
 ## 场景要求
 
 - 每个场景只观察当前 phase 实际提供的能力；技能加载路径按该 phase 的原生或适配工具集判断，raw 只记录原生能力，adapted 才记录适配工具；同时观察依赖可用性、工具调用与重试、turn 是否结束、最终答复或产物是否存在。
-- `SessionAnalysis` 必须写入 RunRecord，包含 `skillInvocation`、`dependencies`、`tools`、`userGesture` 和 warnings。
+- `SessionAnalysis` 必须写入 RunRecord，包含 `tools`、`artifacts` 和 warnings。
 - 截图保存为完整页面 `screenshot.png`；捕获失败直接抛异常，不写入降级截图。
 - 非文本产物以实际呈现结果为准；源码块、文件存在、路径、文件卡片和 assistant 文本不能单独证明渲染或播放成立。
-- 覆盖单位是 capability。每次从 pstack 使用和 `raw/dsh.md` 提取能力，再由 agent 在 `scenarios/capabilities/` 生成 probe；仓库不预置能力清单。skill/playbook 只登记依赖关系，不要求每个都有真实场景。能力探针覆盖 raw 或 adapted 的实际观察。
+- 覆盖单位是 capability。每次从 pstack 使用和 `raw/dsh.md` 提取能力，再由 agent 在 `scenarios/capabilities/` 或对应环境目录生成 probe；仓库不预置能力清单，场景按能力组织而不是按上游文件数量复制。
 - 带环境矩阵的场景不预设冲突；具体环境只用于运行矩阵，结果由会话文件和界面观察决定。
 - 每个 scenario workspace 由 runner 初始化本地 `git init`，不设置 origin；worker 不携带 Git/GitHub 凭证，避免真实远端副作用。
 
@@ -46,9 +46,9 @@
 - prepare 为每个 worker 写入 `$DSH_HOME/AGENTS.md` 的结构化读边界；所有 phase 生效，限制只能读取工作区和系统挂载的只读输入。
 - 任务超过 10 分钟时读取该 worker 的真实 session 文件判断是否仍有效推进；确认无效后执行 `playground:stop-task`，保留当前证据并继续后续任务。
 - worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
-- raw：生成 `playground/raw/pstack`，先用 `run-batch --full` 跑能力探针，collect，再在新会话按证据分析规则填写 `reviews/raw-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。
+- raw：生成 `playground/raw/pstack`，先用 `run-batch --full` 跑能力探针，collect，再在新会话按证据分析规则填写 `reviews/raw-base/index.md`；需要消费者回归时再显式选择 representative capability probe 场景。
 - 适配开发：根据分析结论维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
-- adapted/base：优先 `run-batch --full` 验证能力实现，collect，分析 `reviews/adapted-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。不通过回适配开发。
+- adapted/base：优先 `run-batch --full` 验证能力实现，collect，分析 `reviews/adapted-base/index.md`；需要消费者回归时再显式选择 representative capability probe 场景。不通过回适配开发。
 - 冲突环境：只有明确要求验证 pstack 与 Agent Teams 冲突时，才运行 `agent-team` 环境的 probe；没有对应 probe 不启动。
 - README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
 

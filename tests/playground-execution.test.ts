@@ -47,7 +47,6 @@ afterAll(() => rmSync(temporary, { recursive: true, force: true }));
 const testScenario: BehaviorScenario = {
   id: "capability-test",
   capability: "capability-test",
-  skill: "poteto-help",
   turns: [{ prompt: "/poteto-help 检查当前工作区。" }],
   workspace: { files: {} },
   assertions: [{ kind: "turn-completed" }, { kind: "skill-loaded", skill: "poteto-help" }],

@@ -42,7 +42,3 @@ export function behaviorScenario(id: string): BehaviorScenario {
   if (!scenario) throw new Error(`unknown scenario: ${id}`);
   return scenario;
 }
-
-export function reviewScenarioIds(): string[] {
-  return behaviorScenarios.map((scenario) => scenario.id);
-}
