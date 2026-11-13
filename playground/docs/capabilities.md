@@ -5,10 +5,10 @@
 ## 来源
 
 - pstack skills、playbooks、commands、角色说明中的实际依赖。
-- `playground/raw/dsh.md` 的映射行和 `playground/raw/dsh-evidence.md` 的判定依据。
+- `playground/raw/dsh.md` 的映射行。
 - 从上述来源由 agent 现场整理的能力清单；仓库不提交固定能力清单。
 
-DSH 运行时和 profile 只用于执行 probe 和解释结果，不作为能力需求的来源。raw 的任务是发现 pstack 依赖的能力在真实 DSH 中是否成立，不是枚举 DSH 已经提供的工具。
+DSH 运行时和 profile 只用于执行 probe 和解释结果，不作为能力需求的来源。`raw/dsh-evidence.md` 只用于证明 `dsh.md` 的替换项，也不作为能力来源。raw 的任务是发现 pstack 依赖的能力在真实 DSH 中是否成立，不是枚举 DSH 已经提供的工具。
 
 ## 能力记录
 
