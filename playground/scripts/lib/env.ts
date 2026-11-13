@@ -147,6 +147,55 @@ function anonymousProviders(providers: ProviderPlan["providers"]): ProviderPlan[
   );
 }
 
+interface WorkerInstructionSection {
+  heading: string;
+  rules: readonly string[];
+}
+
+const WORKER_INSTRUCTION_SECTIONS: readonly WorkerInstructionSection[] = [
+  {
+    heading: "Read boundary",
+    rules: [
+      "You may read files only inside the current workspace.",
+      "Read-only runtime input explicitly mounted for this session is also allowed.",
+      "Never read, list, stat, search, or infer any other path, even when the user supplies an absolute path.",
+    ],
+  },
+  {
+    heading: "External path requests",
+    rules: [
+      "Refuse briefly when a request targets a path outside the allowed roots.",
+      "State that the path is outside the workspace.",
+      "Do not call read, grep, glob, bash, cat, find, ls, or any other tool against it.",
+    ],
+  },
+  {
+    heading: "Reporting",
+    rules: [
+      "Never paste or summarize content from a path outside the allowed roots.",
+      "Continue with work that stays inside the workspace.",
+    ],
+  },
+];
+
+function renderWorkerInstructions(): string {
+  return [
+    "# Playground Worker Instructions",
+    "",
+    ...WORKER_INSTRUCTION_SECTIONS.flatMap((section) => [
+      `## ${section.heading}`,
+      "",
+      ...section.rules.map((rule) => `- ${rule}`),
+      "",
+    ]),
+  ].join("\n");
+}
+
+export function writeWorkerInstructions(paths: WorkerPaths): void {
+  mkdirSync(paths.home, { recursive: true });
+  writeFileSync(join(paths.home, "AGENTS.md"), renderWorkerInstructions());
+}
+
 export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, _phase: Phase): void {
   mkdirSync(paths.home, { recursive: true });
   const patch = [
@@ -181,6 +230,7 @@ export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, _phase: P
     },
   ];
   writeFileSync(homePatchFile(paths), yamlDump(patch, { lineWidth: 120 }));
+  writeWorkerInstructions(paths);
 }
 
 export interface HomePlan extends TestTarget {
