@@ -1,0 +1,83 @@
+{
+  "scenarioId": "capability-subagent-general",
+  "phase": "raw",
+  "environment": {
+    "worker": 5,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-58245600-941d-4cc4-9eda-c930947cd4f4",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 15; ls -la out 2>&1; echo \"---\"; cat out/summary.txt 2>&1"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll delegate this to a subagent.\n完成。\n\n通用辅助执行者（subagent）已按要求创建文件并回报，我这边也独立核验了实际落盘内容：\n\n- 路径：`<TEMP_PATH>\n- 内容：`done`（单行，含结尾换行，5 字节）\n- 我的复核：`cat out/summary.txt` 输出为 `done`，`ls -la` 显示文件确实存在于 `out/` 目录下。\n\n除 `out/summary.txt` 外未改动其他文件。",
+    "userText": "请让一个通用的辅助执行者在工作区里新建 out/summary.txt，内容写 'done'，然后报告它确实写出了这个文件。",
+    "userTexts": [
+      "请让一个通用的辅助执行者在工作区里新建 out/summary.txt，内容写 'done'，然后报告它确实写出了这个文件。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=2", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113184827",
+  "capturedAt": "2026-11-13T10:49:04.485Z"
+}

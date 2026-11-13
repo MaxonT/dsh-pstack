@@ -9,6 +9,7 @@ import {
 } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { isPhase } from "../types.ts";
 import type { BehaviorScenario, Phase, RunRecord, SessionFacts, TestTarget } from "../types.ts";
@@ -19,6 +20,7 @@ import {
   createBrowserSession,
   type BrowserSession,
 } from "./lib/browser.ts";
+import { isBlankImage } from "./lib/png.ts";
 import {
   assertSafeRecord,
   digestSession,
@@ -30,6 +32,7 @@ import {
   sessionMatchesPrompt,
   verdictFor,
   type SessionDigest,
+  type SessionEvent,
 } from "./lib/evidence.ts";
 import { readHomePlan, readPlaygroundConfig, readWebUrl, CONFIG_FILE } from "./lib/env.ts";
 import { EVIDENCE_FILES } from "./lib/evidence-files.ts";
@@ -39,6 +42,7 @@ import {
   POLL_INTERVAL_MS,
   PRESET_LABELS,
   SETTLE_WINDOW_MS,
+  SUBAGENT_TIMEOUT_MS,
   TURN_TIMEOUT_MS,
   UI_LABELS,
 } from "./lib/runtime.ts";
@@ -84,6 +88,63 @@ function waitForSettledSession(file: string): void {
     if (Date.now() - stableSince >= SETTLE_WINDOW_MS) return;
   }
   throw new InfraError("session did not settle after turn/end");
+}
+
+function eventText(event: SessionEvent): string {
+  const content = (event.data as { content?: unknown } | undefined)?.content;
+  if (!Array.isArray(content)) return "";
+  return content
+    .map((part) =>
+      part && typeof part === "object" && (part as { type?: string }).type === "text"
+        ? ((part as { text?: string }).text ?? "")
+        : "",
+    )
+    .join("");
+}
+
+/**
+ * Async subagents finish after the main turn ended and then start a follow-up turn.
+ * Capture must wait until every spawned subagent reports finished, so the record and
+ * screenshot include the completion result instead of stopping at the dispatch notice.
+ */
+function activeSubagents(file: string): number {
+  const events = readSessionEvents(file);
+  const ids = new Set<string>();
+  const finished = new Set<string>();
+  for (const event of events) {
+    if (event.type === "subagent/catalog") {
+      const childId = (event.data as { childId?: unknown } | undefined)?.childId;
+      if (typeof childId === "string") ids.add(childId);
+      continue;
+    }
+    if (event.type !== "user/message") continue;
+    const text = eventText(event);
+    for (const id of ids) {
+      if (text.includes(`Background subagent ${id}`) && /finished|was stopped/.test(text)) {
+        finished.add(id);
+      }
+    }
+  }
+  return ids.size - finished.size;
+}
+
+function waitForSubagentsSettled(file: string): void {
+  const deadline = Date.now() + SUBAGENT_TIMEOUT_MS;
+  let signature = sessionSignature(file);
+  let stableSince = Date.now();
+  for (;;) {
+    if (Date.now() > deadline) throw new InfraError("subagents did not settle before capture");
+    sleep(POLL_INTERVAL_MS);
+    const next = sessionSignature(file);
+    if (next !== signature) {
+      signature = next;
+      stableSince = Date.now();
+      continue;
+    }
+    if (activeSubagents(file) === 0 && Date.now() - stableSince >= SETTLE_WINDOW_MS) {
+      return;
+    }
+  }
 }
 
 interface SessionFile {
@@ -326,6 +387,57 @@ function throwIfStopped(paths: WorkerPaths, session: BrowserSession, screenshotF
   throw new InfraError("external stop requested");
 }
 
+function sessionHealthy(session: BrowserSession): boolean {
+  try {
+    const length = session.eval<number>("document.body ? document.body.innerText.length : 0");
+    return typeof length === "number" && length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/** The conversation always renders the user turn, so it is a stable marker that the
+ * screenshot page still shows this scenario and not a fresh empty session. */
+function pageShowsPrompt(session: BrowserSession, prompt: string): boolean {
+  const needle = prompt.trim().slice(0, 16);
+  if (!needle) return false;
+  try {
+    return session.eval<boolean>(
+      `document.body ? document.body.innerText.includes(${JSON.stringify(needle)}) : false`,
+    );
+  } catch {
+    return false;
+  }
+}
+
+function captureOnce(session: BrowserSession, screenshotFile: string, lastPrompt: string): boolean {
+  if (!sessionHealthy(session) || !pageShowsPrompt(session, lastPrompt)) return false;
+  collapseSidebar(session);
+  try {
+    captureScreenshot(session, screenshotFile);
+  } catch {
+    return false;
+  }
+  return !isBlankImage(screenshotFile) && sessionHealthy(session);
+}
+
+/**
+ * Capture only after the page provably shows this scenario and the frame is not one flat
+ * color. A dead browser, a lost conversation, or a blank frame fails closed: delete the
+ * screenshot and throw, so the record becomes blocked instead of storing an invalid image.
+ */
+export function captureVerified(
+  session: BrowserSession,
+  screenshotFile: string,
+  lastPrompt: string,
+): void {
+  if (captureOnce(session, screenshotFile, lastPrompt)) return;
+  rmSync(screenshotFile, { force: true });
+  throw new InfraError(
+    "screenshot capture failed, was blank, or the page lost the conversation; refusing to record an invalid screenshot",
+  );
+}
+
 function attemptScenario(input: AttemptInput): {
   digest: SessionDigest;
   file: string;
@@ -339,6 +451,11 @@ function attemptScenario(input: AttemptInput): {
   });
   const autoAnswers: Array<{ question: string; answer: string }> = [];
   try {
+    try {
+      session.raw(["close", "--all"]);
+    } catch {
+      // No prior daemon is fine; the open below starts a clean browser either way.
+    }
     session.open(url);
     session.wait(6000);
     dismissPreview(session);
@@ -412,9 +529,10 @@ function attemptScenario(input: AttemptInput): {
     }
     if (!match) throw new InfraError("no session matched the scenario");
     const matched: MatchResult = match;
+    waitForSubagentsSettled(matched.file);
     session.wait(1000);
-    collapseSidebar(session);
-    captureScreenshot(session, screenshotFile);
+    const lastPrompt = scenario.turns.at(-1)?.prompt ?? "";
+    captureVerified(session, screenshotFile, lastPrompt);
     if (!existsSync(matched.file)) throw new InfraError("session log vanished before reading");
     try {
       return {
@@ -624,7 +742,9 @@ async function main(): Promise<void> {
         : 1;
 }
 
-main().catch((error: unknown) => {
-  console.error(`[run-case] ERROR: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error: unknown) => {
+    console.error(`[run-case] ERROR: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  });
+}

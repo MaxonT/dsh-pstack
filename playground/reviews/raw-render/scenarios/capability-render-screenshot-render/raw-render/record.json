@@ -1,0 +1,212 @@
+{
+  "scenarioId": "capability-render-screenshot-render",
+  "phase": "raw",
+  "environment": {
+    "worker": 0,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "render",
+      "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+      "kind": "capability",
+      "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-84843dc3-e12b-46e8-b6a6-9ba29ff02584",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; echo ---; ls -la page"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which chromium chromium-browser google-chrome google-chrome-stable node python3 2>/dev/null; ls ~/.cache/ms-playwright 2>/dev/null; node -e \"console.log(require.resolve('playwright'))\" 2>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls /usr/lib/chromium* /opt/google 2>/dev/null; find / -maxdepth 6 -name \"*chrome*\" -type f -executable 2>/dev/null | head -20; npm ls -g --depth=0 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && (python3 -m http.server 8791 --directory page ><TEMP_PATH> 2>&1 &) ; sleep 1; curl -s -o /dev"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && <HOST_PATH> --headless=new --no-sandbo"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && <HOST_PATH> --headless=new --no-sandbo"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -la; cat <TEMP_PATH>"
+      },
+      {
+        "name": "job_kill",
+        "status": "ok",
+        "argsSummary": "job_kill"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 45 <HOST_PATH> --headless --no"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> 2>/dev/null; ls <HOST_PATH> which agent-browser 2>/dev/null; ls <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 60 <HOST_PATH> --help 2>&1 | "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 60 <HOST_PATH> --help 2>&1 | "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && B=<HOST_PATH> timeout 120 $B open ht"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && B=<HOST_PATH> HOME=/tmp timeout 120 "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && B=<HOST_PATH> timeout 60 $B --help 2"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && B=<HOST_PATH> timeout 90 $B --args \""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=export HOME=/tmp; mkdir -p <TEMP_PATH> nohup <HOST_PATH> --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --user-"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && B=<HOST_PATH> timeout 60 $B connect "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && B=<HOST_PATH> timeout 60 $B set view"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll check the workspace first.\n页面已实际跑起来并截图验证。\n\n做法：用 `python3 -m http.server 8791 --directory page` 起本地静态服务，再通过 Chrome（headless，CDP 9222）以 1280×800 视口真实加载 `http://127.0.0.1:8791/` 并截图。\n\n![页面完整截图](page-full.png)\n\n渲染结果与源文件一致：标题「订单已提交」，正文「编号 A-1024，状态：处理中。」，无样式、无脚本、默认浏览器边距。\n\n截图文件：[page-full.png](page-full.png)（位于工作区根目录）。\n截图已交付：[page-full.png](page-full.png)。",
+    "userText": "工作区里有 page/index.html。请把它实际跑起来，截一张完整页面的截图给我看，我要确认页面真正渲染出来的样子。",
+    "userTexts": [
+      "工作区里有 page/index.html。请把它实际跑起来，截一张完整页面的截图给我看，我要确认页面真正渲染出来的样子。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 18,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_kill",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read_image",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=23", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-render-20261113201242",
+  "capturedAt": "2026-11-13T12:12:42.798Z"
+}

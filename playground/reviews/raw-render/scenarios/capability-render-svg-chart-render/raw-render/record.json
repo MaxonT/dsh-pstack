@@ -1,0 +1,165 @@
+{
+  "scenarioId": "capability-render-svg-chart-render",
+  "phase": "raw",
+  "environment": {
+    "worker": 0,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "render",
+      "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+      "kind": "capability",
+      "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-0ab642ef-23b4-4f29-85ca-d0ad7d268c53",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; cat flow.mmd"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which mmdc npx node 2>&1; ls ~/.npm 2>/dev/null | head; npm ls -g --depth=0 2>&1 | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 300 npx -y @mermaid-js/mermaid-cli@11 -i flow.mmd -o artifacts/flow.svg 2>&1 | tail -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=<TEMP_PATH> && timeout 600 npx -y @mermaid-js/mermaid-cli@11 -i flow."
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p artifacts && export npm_config_cache=<TEMP_PATH> && timeout 300 npx -y @mermaid-js/m"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls /usr/bin | grep -i -E 'chrom|firefox' ; which chromium chromium-browser google-chrome 2>&1; ls /root/.cache/puppeteer 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export PUPPETEER_CACHE_DIR=<TEMP_PATH> && timeout 600 npx -y puppeteer@23 browsers install "
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=<TEMP_PATH> PUPPETEER_CACHE_DIR=<TEMP_PATH> && timeout 600 npx -y"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=<TEMP_PATH> PUPPETEER_CACHE_DIR=<TEMP_PATH> && timeout 300 npx -y"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=<TEMP_PATH> PUPPETEER_CACHE_DIR=<TEMP_PATH> && timeout 300 npx -y"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll look at the workspace and the flow definition first.\n已渲染完成。\n\n![订单状态图](artifacts/flow.png)\n\n- 产物：[artifacts/flow.svg](artifacts/flow.svg)（mermaid-cli 直接生成的矢量图，`viewBox=\"0 0 194 298\"`）\n- 附带预览位图：[artifacts/flow.png](artifacts/flow.png)（仅用于上面展示，SVG 为正式交付物）\n\n图中为订单状态机：初始态 → 待支付，分别经\"付款\"到已支付、经\"取消\"到已取消，两者各自回到终止态。",
+    "userText": "工作区里有一个状态图定义 flow.mmd。请把它渲染成一张 SVG 图片文件放进 artifacts/ 目录，然后把这张图给我看。",
+    "userTexts": [
+      "工作区里有一个状态图定义 flow.mmd。请把它渲染成一张 SVG 图片文件放进 artifacts/ 目录，然后把这张图给我看。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 10,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read_image",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=16", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-render-20261113195144",
+  "capturedAt": "2026-11-13T11:51:44.762Z"
+}

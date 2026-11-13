@@ -1,0 +1,107 @@
+{
+  "phase": "raw",
+  "environment": "render",
+  "updatedAt": "2026-11-13T12:17:25.086Z",
+  "lastBatchId": "raw-render-20261113201242",
+  "lastMode": "incremental",
+  "lastScope": ["capability-render-screenshot-render"],
+  "scenarioIds": [
+    "capability-render-generated-image-render",
+    "capability-render-mermaid-diagram-render",
+    "capability-render-screenshot-render",
+    "capability-render-svg-chart-render",
+    "capability-render-video-render"
+  ],
+  "scenarios": [
+    {
+      "id": "capability-render-generated-image-render",
+      "capturedAt": "2026-11-13T11:36:36.219Z",
+      "batchId": "raw-render-20261113193636",
+      "environment": {
+        "worker": 0,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": null,
+        "matrix": {
+          "id": "render",
+          "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+          "kind": "capability",
+          "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+      }
+    },
+    {
+      "id": "capability-render-screenshot-render",
+      "capturedAt": "2026-11-13T12:12:42.798Z",
+      "batchId": "raw-render-20261113201242",
+      "environment": {
+        "worker": 0,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": null,
+        "matrix": {
+          "id": "render",
+          "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+          "kind": "capability",
+          "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+      }
+    },
+    {
+      "id": "capability-render-svg-chart-render",
+      "capturedAt": "2026-11-13T11:51:44.762Z",
+      "batchId": "raw-render-20261113195144",
+      "environment": {
+        "worker": 0,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": null,
+        "matrix": {
+          "id": "render",
+          "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+          "kind": "capability",
+          "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+      }
+    },
+    {
+      "id": "capability-render-mermaid-diagram-render",
+      "capturedAt": "2026-11-13T11:36:36.226Z",
+      "batchId": "raw-render-20261113193636",
+      "environment": {
+        "worker": 1,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": null,
+        "matrix": {
+          "id": "render",
+          "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+          "kind": "capability",
+          "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+      }
+    },
+    {
+      "id": "capability-render-video-render",
+      "capturedAt": "2026-11-13T11:51:44.763Z",
+      "batchId": "raw-render-20261113195144",
+      "environment": {
+        "worker": 1,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": null,
+        "matrix": {
+          "id": "render",
+          "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+          "kind": "capability",
+          "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+      }
+    }
+  ]
+}

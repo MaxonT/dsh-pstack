@@ -1,0 +1,273 @@
+{
+  "scenarioId": "capability-render-screenshot",
+  "phase": "raw",
+  "environment": {
+    "worker": 9,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-042b60f5-5483-40f8-9730-1264d97604bd",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=page/index.html"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; ls -la page"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which chromium chromium-browser google-chrome google-chrome-stable node npm python3 2>/dev/null; ls ~/.cache/puppeteer 2>/dev/null; ls /root/.cache/ms-playwright 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=npm ls -g --depth=0 2>/dev/null; ls <HOST_PATH> 2>/dev/null | head -50"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> ; find / -maxdepth 6 -name \"*chrome*\" -type f 2>/dev/null | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && (python3 -m http.server 8765 --directory page ><TEMP_PATH> 2>&1 &) ; sleep 1; curl -s localhost:8765"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && CH=<HOST_PATH> && $CH --headless --disable-gpu "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && CH=<HOST_PATH> && $CH --headless=new --disable-"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p <TEMP_PATH> <TEMP_PATH> && CH=<HOST_PATH>"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -la shot.png 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> 2>/dev/null; which agent-browser 2>/dev/null; ls <HOST_PATH> 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=<HOST_PATH> --help 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && <HOST_PATH> open http://127.0.0.1:8765/ 2>&1 |"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && <HOST_PATH> open http://127.0.0.1:8765/ --args"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && CH=<HOST_PATH> && rm -rf <TEMP_PATH> && HOME=/t"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 20; ls -la <TEMP_PATH> 2>&1"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "job_kill",
+        "status": "ok",
+        "argsSummary": "job_kill"
+      },
+      {
+        "name": "job_kill",
+        "status": "ok",
+        "argsSummary": "job_kill"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> | grep -i -E \"puppeteer|playwright\" ; find /tmp -maxdepth 2 -name \"shot.png\" 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=CH=<HOST_PATH> HOME=/tmp timeout 60 $CH --headless=old --no-sandbox --disable-gpu --disable-dev-shm-usage --user-data-dir=<TEMP_PATH>"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=env | grep -i proxy"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && CH=<HOST_PATH> && HOME=/tmp timeout 45 $CH --he"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> | head -50; ls <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 60 node <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && timeout 60 node <HOST_PATH> web --help 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=CH=<HOST_PATH> rm -rf <TEMP_PATH> HOME=/tmp nohup $CH --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --user-da"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 60 node shot.js shot.png; ls -la shot.png"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pkill -f \"remote-debugging-port=9333\"; pkill -f \"http.server 8765\"; sleep 1; echo done"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll look at the page first.\n页面已经真正跑起来并截图了。\n\n做法：用 `python3 -m http.server 8765 --directory page` 起本地服务，然后用系统里的 Chrome（`~/.agent-browser/browsers/chrome-152...`，容器内需 `--no-sandbox`）通过 CDP（`Page.captureScreenshot` + `captureBeyondViewport`）对 1280×900 视口抓取整页。\n\n渲染结果与源码一致：标题「订单已提交」，下方一行「编号 A-1024，状态：处理中。」，其余为空白（页面内容高度即视口高度）。\n\n![页面截图](shot.png)\n\n产出文件：[shot.png](shot.png)；截图脚本保留在 [shot.js](shot.js)。",
+    "userText": "工作区里有 page/index.html。请把它实际跑起来，截一张完整页面的截图给我看，我要确认页面真正渲染出来的样子。",
+    "userTexts": [
+      "工作区里有 page/index.html。请把它实际跑起来，截一张完整页面的截图给我看，我要确认页面真正渲染出来的样子。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 25,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_kill",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read_image",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=34", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113184827",
+  "capturedAt": "2026-11-13T10:48:28.039Z"
+}

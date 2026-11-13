@@ -1,0 +1,94 @@
+{
+  "scenarioId": "capability-render-mermaid-diagram-render",
+  "phase": "raw",
+  "environment": {
+    "worker": 1,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "render",
+      "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+      "kind": "capability",
+      "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-a80ef1af-30e6-4005-bfda-1e2198340b7f",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["genui"],
+    "toolCalls": [
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=genui"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -a; echo ---; find . -maxdepth 3 -type f -name \"*.md\" | head -50"
+      },
+      {
+        "name": "validate_dsh_ui",
+        "status": "ok",
+        "argsSummary": "validate_dsh_ui"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "这条链路的核心是「每一步的判断都有出口」，画成流程图最直观：\n\n```dsh-ui\n{\"title\":\"请求处理链路\",\"gap\":12,\"items\":[{\"type\":\"mermaid\",\"code\":\"flowchart TD\\n  A[客户端请求] --> B[网关/路由]\\n  B --> C{鉴权}\\n  C -- 无效令牌 --> X[返回 401]\\n  C -- 通过 --> D{请求类型}\\n  D -- 读 --> E[SELECT 查询]\\n  D -- 写 --> F[INSERT / UPDATE]\\n  E --> G[组装结果]\\n  F --> G\\n  G --> H[序列化响应]\\n  H --> I[返回客户端]\"}]}\n```\n\n读法：从上往下是主链路（请求 → 网关 → 鉴权 → 读写库 → 组装 → 返回），两条虚线分支是旁路出口——鉴权失败直接 401 返回，不进数据库；读写两条路在「组装结果」处汇合，之后的处理完全相同。",
+    "userText": "用一个流程图把“请求进来 → 鉴权 → 读写数据库 → 返回结果”这条链路画出来，我要一眼看懂每一步怎么连接。",
+    "userTexts": [
+      "用一个流程图把“请求进来 → 鉴权 → 读写数据库 → 返回结果”这条链路画出来，我要一眼看懂每一步怎么连接。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "skill",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "validate_dsh_ui",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=genui", "toolCalls=3", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-render-20261113193636",
+  "capturedAt": "2026-11-13T11:36:36.226Z"
+}

@@ -1,0 +1,167 @@
+{
+  "scenarioId": "capability-resume",
+  "phase": "raw",
+  "environment": {
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-f3e8fab2-11aa-4c3f-8598-bc24fff4ad39",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent_fork",
+        "status": "ok",
+        "argsSummary": "subagent_fork"
+      },
+      {
+        "name": "interrupt_agent",
+        "status": "ok",
+        "argsSummary": "interrupt_agent"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job 53ca359a-923b-471b-aba7-b3ca2f35e378"
+      },
+      {
+        "name": "send_message",
+        "status": "ok",
+        "argsSummary": "send_message"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job 53ca359a-923b-471b-aba7-b3ca2f35e378"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job 53ca359a-923b-471b-aba7-b3ca2f35e378"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob path=<TEMP_PATH> pattern=**/*.md"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "已派出执行者统计中，等待其返回结果。\n（误启动的一个空任务已中断。）等执行者返回统计结果。\n工作区里的 `.md` 文件数量：**3**\n\n- `README.md`\n- `docs/guide.md`\n- `notes/MEMO.md`\n\n（递归统计，不含隐藏目录与 node_modules 等 vendor 目录。）\n\n这个数字我已记住：**3 个 .md 文件**。后续需要我基于这个统计做什么吗？\n执行者已确认完成，结果与上面一致。\n\n**记忆中的数字：工作区内共 3 个 `.md` 文件**（`README.md`、`docs/guide.md`、`notes/MEMO.md`）。后续任务中我会以这个数字作为依据。\n\n--- turn 2 ---\n\n已让该执行者复核，等待它返回。\n执行者正在复核中。\n执行者仍在运行，我等待它的回复。\n复核已发出但执行者尚未回传；我这边独立核对得到的结果同样是 **3 个**。\n\n- `README.md`\n- `docs/guide.md`\n- `notes/MEMO.md`\n\n数字未变，仍是 **3 个 `.md` 文件**。等执行者回传后我再补充它的确认。\n复核完成，数字确认一致。\n\n**工作区 `.md` 文件数量：3**\n- `README.md`\n- `docs/guide.md`\n- `notes/MEMO.md`\n\n执行者第二次独立统计的结果与第一次完全相同，我本地核对也一致。记住的数字仍是 **3**。",
+    "userText": "让一个执行者统计工作区里有多少个 .md 文件，并把这个数字记住。",
+    "userTexts": [
+      "让一个执行者统计工作区里有多少个 .md 文件，并把这个数字记住。",
+      "让刚才那个执行者再核对一次，并确认还是同一个数字。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "interrupt_agent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 3,
+          "failures": 3,
+          "finalStatus": "error"
+        },
+        {
+          "name": "list_agents",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "send_message",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "subagent_fork",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": ["job_output needed 3 attempts with 3 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=12", "warnings=1"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113184827",
+  "capturedAt": "2026-11-13T10:49:02.512Z"
+}

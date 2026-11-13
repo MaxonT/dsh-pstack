@@ -1,0 +1,275 @@
+{
+  "scenarioId": "capability-render-video-render",
+  "phase": "raw",
+  "environment": {
+    "worker": 1,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "render",
+      "description": "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+      "kind": "capability",
+      "enabledPluginPackages": ["@changfenhuang/dsh-genui"]
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "7930c484ab4a0db58aa90b7d8be1e532bb1a3b58ee58fb2fd1902ed76374b416"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-d24dc244-c287-4600-9727-719ec17a1b0d",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["genui"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && git status --short 2>&1 | head -50 && echo \"---LOG---\" && git log --oneline -10 2>&1"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which ffmpeg ffprobe; ffmpeg -version 2>&1 | head -3; echo \"---FONTS---\"; fc-list :lang=zh 2>/dev/null | head -20; ls /usr/share/fonts 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=python3 -V; python3 -c \"import PIL,numpy;print(PIL.__version__,numpy.__version__)\" 2>&1; python3 -c \"import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())\" 2>&1 | tail -2; pip list"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pip install pillow imageio-ffmpeg 2>&1 | tail -5"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 -m venv .venv && .venv/bin/pip install -q pillow imageio-ffmpeg 2>&1 | tail -3; .venv/bin/p"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && .venv/bin/python render_video.py 2>&1 | tail -20 && ls -la out/"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && .venv/bin/python render_video.py 2>&1 | tail -20 && ls -la out/"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && FF=$(.venv/bin/python -c \"import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())\") && $FF -y "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && FF=$(.venv/bin/python -c \"import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())\") && $FF -y "
+      },
+      {
+        "name": "read_image",
+        "status": "error",
+        "argsSummary": "read_image file_path=<TEMP_PATH>",
+        "errorText": "Error: cannot read \"<TEMP_PATH>\": the .mp4 extension does not declare a supported image format; read_image accepts PNG/JPEG/WebP/GIF files, including extension-less files in those formats"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=genui"
+      },
+      {
+        "name": "validate_dsh_ui",
+        "status": "ok",
+        "argsSummary": "validate_dsh_ui"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=curl -s -o /dev/null -w \"%{http_code} %{content_type} %{size_download}\\n\" \"http://127.0.0.1:41561/api/file?path=%2Ftmp%2Fdsh-pstack-playground%2Fraw%2Frender%2Fw1%2Fworkspace%2Fcapability"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=for p in \"/mmx-files/change-summary.mp4\" \"/api/files?path=x\"; do echo -n \"$p -> \"; curl -s -o /dev/null -w \"%{http_code}\\n\" \"http://127.0.0.1:41561$p\"; done; echo \"---\"; curl -s -o /dev/n"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=echo $DSH_HOME; ls ~/.dsh 2>/dev/null | head; find / -maxdepth 6 -type d -name \"mmx-files\" 2>/dev/null | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -R ~/.dsh/attachments 2>/dev/null | head -40; echo ---; ls ~/.dsh/storages; echo ---; ls ~/.dsh/cache | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && ls && grep -rn \"api/file\" --include=*.js --include=*.ts"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && grep -o \"api/file[^\\\"']\\{0,60\\}\" node_modules/@deepseek"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && grep -n \"api/file\" node_modules/@deepseek-ai/dsh-api-se"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Dependencies ready. Now building the video.\n短视频做好了：1280×720 横屏，12 秒，4 段字幕（烧录字幕 + 独立 mov_text 字幕轨），内容取自 [CHANGELOG.md](CHANGELOG.md)。\n\n下面直接播放：\n\n```dsh-ui\n{\"title\":\"本次改动总结 · 12 秒横屏带字幕\",\"gap\":10,\"items\":[{\"type\":\"video\",\"src\":\"/api/file?path=%2Ftmp%2Fdsh-pstack-playground%2Fraw%2Frender%2Fw1%2Fworkspace%2Fcapability-render-video-render%2Fout%2Fchange-summary.mp4\",\"alt\":\"本次改动总结短视频：修复列表空数据报错、调整空状态文案\",\"aspectRatio\":\"16:9\",\"loop\":true},{\"type\":\"list\",\"items\":[{\"title\":\"画面结构\",\"desc\":\"封面 → 修复 → 文案 → 收尾，标题带入场动画，底部进度条标示 1/4–4/4\"},{\"title\":\"字幕\",\"desc\":\"底部圆角字幕条逐句对应，同时附带可开关的字幕轨 change-summary.srt\"},{\"title\":\"产出文件\",\"desc\":\"out/change-summary.mp4 与 out/change-summary.srt，渲染脚本 render_video.py\"}]}]}\n```\n\n字幕文案（4 条）：本次改动：列表与空状态 / 修复了列表在空数据时的报错 / 调整了空状态的文案 / 两处改动已完成。\n\n如果想调整节奏（比如压到 6 秒）、换配色或改成竖屏，直接改 [render_video.py](render_video.py) 里的 `SCENES` 和 `W, H` 重新渲染即可。",
+    "userText": "把这次的改动做一段带字幕的短视频总结，几秒钟、横屏，我要能直接在回复里播放。",
+    "userTexts": ["把这次的改动做一段带字幕的短视频总结，几秒钟、横屏，我要能直接在回复里播放。"],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 16,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "edit",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read_image",
+          "attempts": 4,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "skill",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "validate_dsh_ui",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": ["write file_path=<TEMP_PATH>", "edit file_path=<TEMP_PATH>"],
+      "warnings": ["read_image needed 4 attempts with 1 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=genui", "toolCalls=31", "warnings=1"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-render-20261113195144",
+  "capturedAt": "2026-11-13T11:51:44.763Z"
+}
