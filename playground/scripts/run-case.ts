@@ -520,6 +520,9 @@ async function main(): Promise<void> {
       `scenario ${scenarioId} belongs to ${scenario.environmentId}, not ${matrix.id}`,
     );
   }
+  if (scenario.phases !== undefined && !scenario.phases.includes(phase)) {
+    throw new Error(`scenario ${scenarioId} is not allowed in phase ${phase}`);
+  }
   const configFile = argValue("--config") ?? process.env.PLAYGROUND_CONFIG_FILE ?? CONFIG_FILE;
   const config = readPlaygroundConfig(configFile);
   const expectedTarget = readHomePlan(paths);

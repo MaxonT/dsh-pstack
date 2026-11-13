@@ -67,6 +67,8 @@ export interface BehaviorScenario {
   assertions: Assertion[];
   rubric: SemanticRubric;
   uiObservations: UiObservation[];
+  /** Phases this probe is allowed to run in; omitted means both raw and adapted. */
+  phases?: readonly Phase[];
   environmentId?: string;
   answers?: Array<{ match: string; selected?: string[]; custom?: string }>;
   /** Capability id this probe covers. */

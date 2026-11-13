@@ -59,11 +59,15 @@ export default scenario;
 
 ## 阶段边界
 
-- raw probe 只观察原生 DSH 能力，不预置 port 工具或角色文件。
-- adapted probe 才验证适配实现。
-- raw 不读取或引用 `port/dsh.md`、当前实现和 adapted 证据。
-- adapted 不反推 raw 结论。
-- 分析必须避免引用其他阶段的文档、实现和证据；发现跨阶段引用时停止并重做，不能作为当前阶段结论。
+| 阶段 | 允许输入 | 禁止输入 | probe 目标 |
+| --- | --- | --- | --- |
+| raw | `reviews/raw-*`、`playground/raw/dsh.md`、`playground/raw/dsh-evidence.md`、上游 pstack 源树、场景 fixture、当前 raw session | `port/dsh.md`、`src/**`、已发布的端口实现、插件工具、`reviews/adapted-*`、adapted 证据 | 观察原生 DSH 能力 |
+| adapted | `reviews/adapted-*`、`port/dsh.md`、`src/**`、当前插件实现和角色文件、当前 adapted session | `reviews/raw-*`、raw 分析结论、raw 证据 | 验证适配实现 |
+
+- 场景声明 `phases` 时，只能在该阶段运行；不声明表示 raw/adapted 都允许。
+- 阶段专属环境或能力必须显式声明 `phases`，例如 `phases: ["adapted"]`。
+- 发现需要读取跨阶段文件时，停止该 probe 或分析并重新选择来源，不能把跨阶段内容作为当前阶段依据。
+- raw 不预置 port 工具或角色文件；adapted 不反推 raw 结论。
 
 ## 场景写法
 
