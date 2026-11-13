@@ -12,7 +12,7 @@
 
 ## 准备和运行
 
-先运行 raw 生成器，再准备 raw 环境。raw 不加载适配插件或额外环境包，只使用标准 preset 和 raw 提示。
+先运行 raw 生成器，再准备 raw 环境。`raw/base` 不加载适配插件或额外环境包，只使用标准 preset 和 raw 提示；`raw/<capability-environment>` 按 `environments.ts` 加载该环境的对照包。
 
 完整 prepare、bootstrap、run-batch 和 collect 命令见 [verification-loop.md](./verification-loop.md)。单场景调试时，在准备和 bootstrap 完成后使用：
 

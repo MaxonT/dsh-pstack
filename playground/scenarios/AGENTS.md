@@ -86,8 +86,9 @@ export default scenario;
 ## 其他环境
 
 - `base` 是默认环境，不加载额外插件。
-- 其他环境必须在 `environments.ts` 中登记，并写清 `description`、`kind` 和需要的插件包。
-- `render` 是 `kind: "capability"` 的渲染对照环境，加载 `@changfenhuang/dsh-genui`；用于和 `base` 比较渲染结果。
+- 其他环境必须在 `environments.ts` 中登记 `description`、`kind` 和 `enabledPluginPackages`；文档只引用环境 id、用途和对照方式，不写具体第三方包名。
+- `render` 是 `kind: "capability"` 的渲染对照环境，具体插件配置以 `environments.ts` 为准。
+- 环境文档只描述环境 id、用途和对照方式；具体包名以 `environments.ts` 为准，避免第三方插件替换导致文档漂移。
 - 只有 probe 确实需要该环境时才建立目录；冲突环境只用于用户明确指定的冲突验证。
 - `run-batch --full --environment <id>` 只运行该环境目录下的 probe，不跨环境启动。
 

@@ -25,6 +25,8 @@
 flowchart TD
   rawFull[raw full] --> collectRaw[collect]
   collectRaw --> analyzeRaw[新会话分析 raw 证据]
+  analyzeRaw -->|渲染/输出待确认| renderCompare[能力环境对照]
+  renderCompare --> analyzeRaw
   analyzeRaw -->|raw 结论| portChange[适配开发]
   portChange --> build[generate + build]
   build --> adaptedFull[adapted full]
@@ -77,7 +79,7 @@ vp run playground:collect -- --phase adapted --environment base
 
 ### render 对照 probe
 
-渲染能力用 `base` 与 `render` 两个环境对照；`render` 加载 `@changfenhuang/dsh-genui`：
+渲染能力用 `base` 与 `render` 两个环境对照；`render` 的插件配置以 `environments.ts` 为准：
 
 ```sh
 vp run playground:prepare -- --phase raw --environment render --reset
