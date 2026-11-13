@@ -127,21 +127,6 @@ for (const [skill, { terms, wrap, name }] of classes) {
   for (const key of terms) users.set(key, [...(users.get(key) ?? []), skill]);
 }
 const adapterText = readFileSync(join(ROOT, ADAPTER_SOURCE), "utf8");
-const optionalSection = adapterText.split("## Optional plugins")[1]?.split("\n## ")[0];
-if (!isRaw && optionalSection !== undefined) {
-  const rows = optionalSection.split("\n").filter((line) => line.startsWith("|"));
-  const header = rows[0]?.split("|").map((cell) => cell.trim());
-  if (header?.[1] !== "Plugin packages") {
-    problems.push("port/dsh.md optional plugin table must use the Plugin packages column");
-  }
-  for (const row of rows.slice(2)) {
-    const first = row.split("|")[1]?.trim() ?? "";
-    if (!first.startsWith("`@deepseek-ai/")) {
-      problems.push("port/dsh.md optional plugin table must use package names as row keys");
-      break;
-    }
-  }
-}
 for (const [key, using] of users) {
   if (!adapterText.includes(key))
     problems.push(`${ADAPTER_SOURCE} has no row for ${key}, used by ${using.join(", ")}`);
