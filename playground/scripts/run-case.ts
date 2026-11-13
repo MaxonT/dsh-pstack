@@ -34,7 +34,7 @@ import {
 import { readHomePlan, readPlaygroundConfig, readWebUrl, CONFIG_FILE } from "./lib/env.ts";
 import { createEnvironment, environmentMatrix } from "./lib/run-metadata.ts";
 import { reviewSnapshotDirectory } from "./lib/review-snapshot.ts";
-import { workerPaths, type WorkerPaths } from "./lib/worker.ts";
+import { stopRequestFile, workerPaths, type WorkerPaths } from "./lib/worker.ts";
 
 const COMPOSER_SELECTOR = '[data-composer-input="true"]';
 const NEW_SESSION_LABEL = "新会话";
@@ -306,6 +306,22 @@ interface AttemptInput {
   expectedPreset: string;
 }
 
+function throwIfStopped(
+  paths: WorkerPaths,
+  session: BrowserSession,
+  screenshotFile: string,
+  fullScreenshotFile: string,
+): void {
+  if (!existsSync(stopRequestFile(paths))) return;
+  try {
+    session.screenshot(screenshotFile);
+    captureFullPage(session, fullScreenshotFile);
+  } catch {
+    // The stop happened before the page could be captured; the blocked record still remains.
+  }
+  throw new InfraError("external stop requested");
+}
+
 function attemptScenario(input: AttemptInput): {
   digest: SessionDigest;
   file: string;
@@ -360,6 +376,7 @@ function attemptScenario(input: AttemptInput): {
       }
       for (;;) {
         try {
+          throwIfStopped(paths, session, screenshotFile, fullScreenshotFile);
           answerPendingQuestions(session, scenario, autoAnswers);
           // Only the first turn discovers a fresh session from its opening prompt. Every
           // later turn runs in that same session, whose first user message never changes,
@@ -479,6 +496,7 @@ async function main(): Promise<void> {
   const expectedTarget = readHomePlan(paths);
   const expectedPreset = phase === "raw" ? "standard" : "poteto-mode";
   const workspace = materializeWorkspace(paths, scenario);
+  rmSync(stopRequestFile(paths), { force: true });
   const capturedAt = new Date().toISOString();
   const stamp = capturedAt.replace(/[:.]/g, "-");
   mkdirSync(paths.evidenceDir, { recursive: true });

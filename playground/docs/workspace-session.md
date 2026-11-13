@@ -34,7 +34,17 @@ vp run playground:run -- --worker 0 --environment base --phase adapted --scenari
 vp run playground:collect -- --phase adapted --environment base
 ```
 
-run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮要等到会话真正空闲才采集最终 assistant 消息和截图，不能把某个中间 turn 的输出当成最终答复。截图前会自动折叠左侧栏，隐藏会话列表和账户名，扩大右侧会话区。worker 的模型显示名统一为匿名模型，内部 id 保留用于路由匹配。没有自动停止和隐藏超时。浏览器或会话日志不可读时记录基础设施未决，不自动重试。`run` 是单场景命令，不写 batch progress；多场景进度由 `run-batch` 写入 `playground/.workers/<phase>/<environment>/progress.json`，用 `playground:status` 查看。
+run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮要等到会话真正空闲才采集最终 assistant 消息和截图，不能把某个中间 turn 的输出当成最终答复。截图前会自动折叠左侧栏，隐藏会话列表和账户名，扩大右侧会话区。worker 的模型显示名统一为匿名模型，内部 id 保留用于路由匹配。浏览器或会话日志不可读时记录基础设施未决，不自动重试。`run` 是单场景命令，不写 batch progress；多场景进度由 `run-batch` 写入 `playground/.workers/<phase>/<environment>/progress.json`，用 `playground:status` 查看。
+
+## 外部停止
+
+任务运行超过 10 分钟时，人工应直接读取该 worker 最新的 `session.v4.jsonl.zstd`，判断是否仍在产生有效的 assistant/tool 事件。确认空转、漂移或无效推进后，执行：
+
+```sh
+vp run playground:stop-task -- --phase raw --environment base --worker <N>
+```
+
+`stop-task` 只写停止请求；`run-case` 在下一个轮询点保存当前截图和会话证据，写一条 `blocked` record，然后 `run-batch` 继续派发后续任务。不要用 `playground:status` 的进度摘要代替 session 文件判断。
 
 ## 证据和快照
 

@@ -32,7 +32,7 @@ import {
 } from "./lib/progress.ts";
 import { listScenarioIds, listScenariosForSkill, loadScenario } from "./lib/scenarios.ts";
 import { writeBatchMetadata } from "./lib/review-snapshot.ts";
-import { workerCount } from "./lib/worker.ts";
+import { currentTaskFile, stopRequestFile, workerCount, workerPaths } from "./lib/worker.ts";
 
 const VPX = "vpx";
 const GROUPS = new Set<string>(SCENARIO_GROUPS);
@@ -258,6 +258,13 @@ async function main(): Promise<void> {
             const perWorker = current.perWorker[`w${worker}`];
             if (perWorker) perWorker.total += 1;
           });
+          const workerPathsForTask = workerPaths(worker, matrix.id, phase);
+          const taskFile = currentTaskFile(workerPathsForTask);
+          rmSync(stopRequestFile(workerPathsForTask), { force: true });
+          writeFileSync(
+            taskFile,
+            `${JSON.stringify({ scenarioId, startedAt: new Date().toISOString(), batchId }, null, 2)}\n`,
+          );
           const args = [
             "playground/scripts/run-case.ts",
             "--worker",
@@ -272,6 +279,8 @@ async function main(): Promise<void> {
           const config = argValue("--config");
           if (config) args.push("--config", config);
           const result = await runCase(args, childEnvironment);
+          rmSync(taskFile, { force: true });
+          rmSync(stopRequestFile(workerPathsForTask), { force: true });
           appendFileSync(
             logFile,
             `\n===== ${scenarioId} ${phase} ${matrix.id} exit=${String(result.code)} =====\n${result.output}\n`,

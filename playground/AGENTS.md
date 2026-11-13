@@ -43,6 +43,7 @@
 - 进程生命周期：每次 bash 调用都在独立的 PID namespace/cgroup 里。`prepare` 启动的 DSH Web 即使使用 detached，也会在 job shell 退出时被销毁；不要把 `prepare` 和 `bootstrap` 拆成两次调用。
 - `prepare → bootstrap → run-batch → collect` 必须在同一个长期存活的 background job 中执行，shell 保持到 collect 结束。不要用 `&`、`nohup` 或 `tee`；`vp run` wrapper 被 SIGTERM 时改用 `vpx playground/scripts/*.ts` 直调。
 - prepare 为每个 worker 写入 `$DSH_HOME/AGENTS.md` 的结构化读边界；所有 phase 生效，限制只能读取工作区和系统挂载的只读输入。
+- 任务超过 10 分钟时读取该 worker 的真实 session 文件判断是否仍有效推进；确认无效后执行 `playground:stop-task`，保留当前证据并继续后续任务。
 - worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
 - raw：生成 `playground/raw/pstack`，`run-batch --full` 跑 raw 可用组，collect，在新会话按证据分析规则填写 `reviews/raw-base/index.md`。
 - 适配开发：根据分析结论维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。

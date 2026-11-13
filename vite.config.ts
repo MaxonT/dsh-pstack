@@ -105,6 +105,10 @@ export default defineConfig({
         command: "vpx playground/scripts/status.ts",
         cache: false,
       },
+      "playground:stop-task": {
+        command: "vpx playground/scripts/stop-task.ts",
+        cache: false,
+      },
       "playground:run": {
         command: "vpx playground/scripts/run-case.ts",
         cache: false,
