@@ -313,11 +313,7 @@ interface AttemptInput {
 }
 
 function captureScreenshot(session: BrowserSession, path: string): void {
-  try {
-    captureFullPage(session, path);
-  } catch {
-    session.screenshot(path);
-  }
+  captureFullPage(session, path);
 }
 
 function throwIfStopped(paths: WorkerPaths, session: BrowserSession, screenshotFile: string): void {
