@@ -27,7 +27,7 @@ playground/scenarios/
 - 一个 capability 对应一个 probe；不同行为、环境或冲突分支使用不同的 capability id。
 - 每个场景必须设置 `capability` 字段，并默认导出 `BehaviorScenario`。
 - 能力清单由 `playground:capabilities` 从同一来源生成，不在代码里手写固定能力列表。
-- 新增 probe 后更新 capability inventory 的覆盖状态；确实不需要的能力写入 `capability-exclusions.json` 并保留原因。
+- 新增 probe 后运行 `playground:capabilities` 重新生成 inventory 并检查覆盖状态；确实不需要的能力写入 `capability-exclusions.json` 并保留原因。
 
 ## 文件约定
 
@@ -61,7 +61,7 @@ export default scenario;
 
 | 阶段 | 允许输入 | 禁止输入 | probe 目标 |
 | --- | --- | --- | --- |
-| raw | `reviews/raw-*`、`playground/raw/dsh.md`、`playground/raw/dsh-evidence.md`、上游 pstack 源树、场景 fixture、当前 raw session | `port/dsh.md`、`src/**`、已发布的端口实现、插件工具、`reviews/adapted-*`、adapted 证据 | 观察原生 DSH 能力 |
+| raw | `reviews/raw-*`、`playground/raw/dsh.md`、上游 pstack 源树、场景 fixture、当前 raw session | `port/dsh.md`、`src/**`、已发布的端口实现、插件工具、`reviews/adapted-*`、adapted 证据 | 观察原生 DSH 能力 |
 | adapted | `reviews/adapted-*`、`port/dsh.md`、`src/**`、当前插件实现和角色文件、当前 adapted session | `reviews/raw-*`、raw 分析结论、raw 证据 | 验证适配实现 |
 
 - 场景声明 `phases` 时，只能在该阶段运行；不声明表示 raw/adapted 都允许。
@@ -87,10 +87,10 @@ export default scenario;
 
 ## 能力清单与排除
 
-- `capability-inventory.json` 由 `playground:capabilities` 从 pstack 和 `raw/dsh.md` 生成，不手写固定清单。
+- `capability-inventory.json` 由 `playground:capabilities` 从上游 pstack 和 `raw/dsh.md` 生成，不手写固定清单。
 - `description` 使用中文；`generatedAt` 使用本地时间；`upstreamRevision` 使用实际上游 revision。
 - 确实不需要的能力写入 `capability-exclusions.json`，保留来源并标记 `excluded`，不要静默删除。
-- 新增 probe 后更新对应 capability 记录和覆盖状态。
+- 新增 probe 后重新运行生成器并确认 inventory 与 probe 一致。
 
 ## 验证
 
