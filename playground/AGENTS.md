@@ -48,8 +48,8 @@
 - worker 数：用户没有指定时，`prepare` 用 `capacity.ts` 计算的环境最大值，不写死 `--workers`；`run-batch` 使用已 prepare 的 worker 数。只有明确限流时才传 `--workers N`。
 - raw：生成 `playground/raw/pstack`，先用 `run-batch --groups capabilities` 跑能力探针，collect，再在新会话按证据分析规则填写 `reviews/raw-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。
 - 适配开发：根据分析结论维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
-- adapted/base：`run-batch --full` 跑 adapted 可用组，collect，分析 `reviews/adapted-base/index.md`。不通过回适配开发。
-- 适配后环境组：按环境矩阵跑对应 batch，collect，分析 `reviews/adapted-<environment>/index.md`。环境限制按能力类别记录；带显式环境矩阵的元数据可以写包名或 ID。
+- adapted/base：优先 `run-batch --groups capabilities` 验证能力实现，collect，分析 `reviews/adapted-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。不通过回适配开发。
+- 适配后环境组：按环境矩阵跑对应 capability batch，collect，分析 `reviews/adapted-<environment>/index.md`。环境限制按能力类别记录；带显式环境矩阵的元数据可以写包名或 ID。
 - README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
 
 ## dsh.md
