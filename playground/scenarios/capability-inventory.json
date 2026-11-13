@@ -1,3 +1,345 @@
 {
-  "capabilities": []
+  "capabilities": [
+    {
+      "id": "task",
+      "description": "`subagent` 立即返回 id，并在完成时通知；`subagent_fork` 继承当前对话。把角色写进 `prompt`，把目录写进 `cwd`；缺失的 Cursor 字段见“子代理字段”表。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/agents/poteto-agent.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/SKILL.md"
+      ],
+      "requiredBy": [
+        "arena",
+        "how",
+        "no-comments",
+        "poteto-mode",
+        "reflect",
+        "setup-pstack",
+        "swarm",
+        "why"
+      ],
+      "probe": "capability-task",
+      "status": "covered"
+    },
+    {
+      "id": "askquestion",
+      "description": "`ask_user_question` 接受一批问题。`selected` 为空且没有 `custom` 表示用户跳过；超时是 `pending`，不是跳过。工具不存在时用纯文本提问。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/automate-me/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
+      ],
+      "requiredBy": ["automate-me", "poteto-mode", "setup-pstack"],
+      "probe": "capability-askquestion",
+      "status": "covered"
+    },
+    {
+      "id": "open-a-todolist",
+      "description": "`todo_write` 替换整个列表；状态为 `pending`、`in_progress` 和 `completed`。跳过的步骤保留为 `pending`，内容写 `skip: <reason>`；没有 `skipped` 状态。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/architect/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["architect", "arena", "figure-it-out", "poteto-mode", "swarm"],
+      "probe": "capability-open-a-todolist",
+      "status": "covered"
+    },
+    {
+      "id": "skill-loading",
+      "description": "`skill` 按名称加载目录中的技能。`disable-model-invocation: true` 时，用 `read` 读取 `<pstack>/skills/<name>/SKILL.md`。用户 `/name` 手势会直接注入技能；不要再调用 `skill`。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md"
+      ],
+      "requiredBy": [],
+      "probe": "capability-skill-loading",
+      "status": "covered"
+    },
+    {
+      "id": "grep-glob",
+      "description": "`grep` 和 `glob` 是原生工具，直接调用。只有会话两者都没有时，才用 `bash` 运行 `rg`。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "probe": "capability-grep-glob",
+      "status": "covered"
+    },
+    {
+      "id": "subagent-general",
+      "description": "没有这个字段；省略它。角色来自 `prompt`，命名角色时来自 `<pstack>/agents/<name>.md`。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/how/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["how", "reflect", "swarm"],
+      "probe": "capability-subagent-general",
+      "status": "covered"
+    },
+    {
+      "id": "poteto-agent",
+      "description": "没有原生等价物。读取 `<pstack>/agents/<name>.md` 并作为 `prompt` 传入，或自己写角色说明。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/agents/poteto-agent.md",
+        "upstream/cursor-plugins/pstack/agents/comment-sicko.md"
+      ],
+      "requiredBy": ["poteto-mode"],
+      "probe": "capability-poteto-agent",
+      "status": "covered"
+    },
+    {
+      "id": "readonly-true",
+      "description": "没有沙箱字段。在 `prompt` 写“不要编辑文件”，依赖会话权限模式，并检查 `git status`。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/how/SKILL.md"
+      ],
+      "requiredBy": ["how"],
+      "probe": "capability-readonly-true",
+      "status": "covered"
+    },
+    {
+      "id": "readonly-false",
+      "description": "省略。在会话权限模式下默认可写。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/reflect/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/why/SKILL.md"
+      ],
+      "requiredBy": ["reflect", "why"],
+      "probe": "capability-readonly-false",
+      "status": "covered"
+    },
+    {
+      "id": "environment-cloud",
+      "description": "没有云代理。有 `create_worktree` 时使用它，并把 checkout 作为 `cwd`；否则写跳过行。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["poteto-mode", "swarm"],
+      "probe": "capability-environment-cloud",
+      "status": "covered"
+    },
+    {
+      "id": "environment-local",
+      "description": "省略。默认就是本地。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["swarm"],
+      "probe": "capability-environment-local",
+      "status": "covered"
+    },
+    {
+      "id": "cloud-base-branch",
+      "description": "没有这个字段。把 `<b>` 传给 `create_worktree.from`；否则告诉子代理先 checkout `<b>`。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "probe": "capability-cloud-base-branch",
+      "status": "covered"
+    },
+    {
+      "id": "run-in-background",
+      "description": "省略。`subagent` 总是立即返回，并在完成时通知。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/arena/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
+      ],
+      "requiredBy": ["arena", "poteto-mode", "swarm"],
+      "probe": "capability-run-in-background",
+      "status": "covered"
+    },
+    {
+      "id": "resume",
+      "description": "向子代理的 `agent_id` 发送 `send_message` 可以继续；只有执行永久停止时才新建 `subagent`。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/recall/SKILL.md"
+      ],
+      "requiredBy": ["poteto-mode", "recall"],
+      "probe": "capability-resume",
+      "status": "covered"
+    },
+    {
+      "id": "file-attachments",
+      "description": "没有这个字段。把路径列在 `prompt` 里；子代理会读取它们。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md"
+      ],
+      "requiredBy": [],
+      "probe": "capability-file-attachments",
+      "status": "covered"
+    },
+    {
+      "id": "model-route",
+      "description": "用 `provider`、`model` 和 `reasoning_effort` 组成路由；去掉 `-fast`。有效 id 来自 `list_subagent_models`。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
+      ],
+      "requiredBy": [],
+      "probe": "capability-model-route",
+      "status": "covered"
+    },
+    {
+      "id": "non-claude-route",
+      "description": "选择最接近的已公布路由。没有匹配时省略 `provider` 和 `model`，让子代理回退，并说明这一点。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
+      ],
+      "requiredBy": [],
+      "probe": "capability-non-claude-route",
+      "status": "covered"
+    },
+    {
+      "id": "inherit-parent",
+      "description": "省略 `provider` 和 `model`；省略时使用子代理或父级默认值。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/SKILL.md"
+      ],
+      "requiredBy": ["arena", "how", "poteto-help", "poteto-mode", "reflect", "swarm", "why"],
+      "probe": "capability-inherit-parent",
+      "status": "covered"
+    },
+    {
+      "id": "role-file",
+      "description": "pstack 角色文件是 `$DSH_HOME/pstack-models.json`。base DSH 从不读取它；pstack 适配器在每次委派时读取这个 JSON。文件不在上下文时读取它。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
+      ],
+      "requiredBy": [],
+      "probe": "capability-role-file",
+      "status": "covered"
+    },
+    {
+      "id": "role-value",
+      "description": "写成 `<provider>/<model> <effort>`；拆成 `provider`、`model` 和 `reasoning_effort`。",
+      "source": "playground/raw/dsh.md + upstream/cursor-plugins/pstack",
+      "sources": [
+        "playground/raw/dsh.md",
+        "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
+        "upstream/cursor-plugins/pstack/skills/setup-pstack/SKILL.md"
+      ],
+      "requiredBy": [],
+      "probe": "capability-role-value",
+      "status": "covered"
+    },
+    {
+      "id": "render-screenshot",
+      "description": "用户要求查看界面、组件或页面的实际样子时，必须能拿到真实渲染的截图，而不能只给源码、文件路径或文字描述。",
+      "source": "upstream/cursor-plugins/pstack 渲染/截图使用",
+      "sources": [
+        "upstream/cursor-plugins/pstack/skills/ketchup/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/teach/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/create-verification-skill/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/create-verification-skill/references/feature-map-example/search.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/visual-parity.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/prototype.md"
+      ],
+      "requiredBy": ["create-verification-skill", "ketchup", "poteto-mode", "teach"],
+      "probe": "capability-render-screenshot",
+      "status": "covered"
+    },
+    {
+      "id": "render-generated-image",
+      "description": "用户要求生成一张示意图或白板手绘图时，必须产出真实的图片，而不能用文字、表格或代码代替。",
+      "source": "upstream/cursor-plugins/pstack 生成图片使用",
+      "sources": ["upstream/cursor-plugins/pstack/skills/teach/SKILL.md"],
+      "requiredBy": ["teach"],
+      "probe": "capability-render-generated-image",
+      "status": "covered"
+    },
+    {
+      "id": "render-mermaid-diagram",
+      "description": "用户要求用流程图或结构图讲清关系时，必须看到实际渲染出来的图，而不能只有 Mermaid 源码文本。",
+      "source": "upstream/cursor-plugins/pstack 图表/Mermaid 使用",
+      "sources": [
+        "upstream/cursor-plugins/pstack/skills/teach/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/ketchup/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/how/references/explainer-prompt.md",
+        "upstream/cursor-plugins/pstack/skills/statechart/SKILL.md"
+      ],
+      "requiredBy": ["how", "ketchup", "statechart", "teach"],
+      "probe": "capability-render-mermaid-diagram",
+      "status": "covered"
+    },
+    {
+      "id": "render-svg-chart",
+      "description": "用户要求把状态图导出成 SVG 图片文件时，必须产出可打开、可检查的 SVG 图像，而不能只保留 .mmd 源码。",
+      "source": "upstream/cursor-plugins/pstack 状态图渲染使用",
+      "sources": [
+        "upstream/cursor-plugins/pstack/skills/statechart/references/render.md",
+        "upstream/cursor-plugins/pstack/skills/statechart/SKILL.md"
+      ],
+      "requiredBy": ["statechart"],
+      "probe": "capability-render-svg-chart",
+      "status": "covered"
+    },
+    {
+      "id": "render-video",
+      "description": "用户要求一段带字幕的短视频总结时，必须产出可播放、可检查的视频，而不能只给文字脚本或链接。",
+      "source": "upstream/cursor-plugins/pstack 视频使用",
+      "sources": ["upstream/cursor-plugins/pstack/skills/ketchup-video/SKILL.md"],
+      "requiredBy": ["ketchup-video"],
+      "probe": "capability-render-video",
+      "status": "covered"
+    }
+  ]
 }
