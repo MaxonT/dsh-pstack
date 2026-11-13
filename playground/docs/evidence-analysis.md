@@ -4,7 +4,7 @@
 
 ## 输入
 
-- `reviews/<phase>-<environment>/manifest.json`：本轮覆盖的场景、最后批次、上游 revision 和 port revision。
+- `reviews/<phase>-<environment>/manifest.json`：本轮覆盖的场景、最后批次，以及每个场景记录中的环境元数据（含上游 revision 和 port 版本）。
 - `reviews/<phase>-<environment>/scenarios/**`：每个场景的 `record.json`、`screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
 - `scenarios/**/*.ts`：场景 prompt、assertions、rubric；只作为判据，不把 rubric 当答案抄进结论。
 - `playground/raw/dsh.md`：只在 raw 分析时逐条对照。
@@ -34,7 +34,7 @@
 
 `index.md` 固定包含：
 
-1. 本轮范围：mode（full / incremental）、覆盖场景、未覆盖但沿用当前快照的场景、上游 revision、port revision。
+1. 本轮范围：mode（full / incremental）、覆盖场景、未覆盖但沿用当前快照的场景，以及各场景的环境 revision/port 版本。
 2. 问题问答：按「根因 + 建议动作」去重，一个根因只写一条。
 3. `dsh.md` 适配说明审查：逐章节/逐行判断 `够用 / 缺失 / 误导 / 不适用`。
 4. 待用户判断的问题：所有分类不确定的问题都放这里。

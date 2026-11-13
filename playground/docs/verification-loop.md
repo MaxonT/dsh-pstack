@@ -7,7 +7,7 @@
 ## 模型
 
 - 每个 `phase/environment` 只保留一份当前完整快照：`reviews/<phase>-<environment>/`。
-- `manifest.json` 记录最后批次、mode、覆盖场景、上游 revision 和 port revision。
+- `manifest.json` 记录最后批次、mode、覆盖场景，以及每个场景记录中的环境元数据（含上游 revision 和 port 版本）。
 - `index.md` 是问答文件，也是后续修改 `dsh.md` 和插件开发的决策源。
 - `reviews/<phase>-<environment>/scenarios/**` 保存每个场景的 `record.json`、`screenshot.png`；`session.jsonl.zstd` 只保留本地，不提交。
 - `reviews/.staging/` 是批次运行中的临时目录，不提交。
