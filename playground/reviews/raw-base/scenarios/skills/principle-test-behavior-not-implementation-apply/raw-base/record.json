@@ -1,0 +1,152 @@
+{
+  "scenarioId": "principle-test-behavior-not-implementation-apply",
+  "phase": "raw",
+  "environment": {
+    "worker": 11,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-1f3f86a1-b090-4630-b043-7fa4cb936517",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/cart.test.ts"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=cart.test.ts"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=cart.ts"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=package.json"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=cart.test.ts"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=cart.test.ts"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=cart.test.ts"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=cart.ts"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=npm test 2>&1 | tail -30"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll look at the test file first.\nNow I'll rewrite the test to assert observable outputs only.\nNow removing the test-only counter from the implementation.\n改好了，5 个用例全绿。\n\n**改动：**\n\n- [cart.test.ts](cart.test.ts) — 删掉了 `subtotalRunCount()` 的调用次数断言，改为只断言对外可见的计算结果：单件含税、多商品累加后再计税、四舍五入到整数、零税率、空购物车。\n- [cart.ts](cart.ts) — 顺势移除了只服务于测试的 `subtotalRuns` 计数器和 `subtotalRunCount()` 导出，内部实现不再有观测钩子。\n\n这样以后你把 `subtotal` 内联、拆分、换实现方式（甚至改成一次遍历算完），测试都不用跟着动；只有算出来的数字真的错了才会红。\n\n一点提醒：目前没有测“调用次数”之外的性能意图——如果你的 `subtotal` 昂贵到不能重复调用，那属于实现约束而非行为约束，通常不值得用断言把它锁死。",
+    "userText": "cart.test.ts 里这个测试断言内部 subtotal 被调用的次数，我们内部实现一改它就得跟着改、经常红。帮我把它改稳一点，我关心的是算得对不对。",
+    "userTexts": [
+      "cart.test.ts 里这个测试断言内部 subtotal 被调用的次数，我们内部实现一改它就得跟着改、经常红。帮我把它改稳一点，我关心的是算得对不对。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "principle-test-behavior-not-implementation",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "edit",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "glob",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": [
+        "write file_path=cart.test.ts",
+        "edit file_path=cart.test.ts",
+        "edit file_path=cart.test.ts",
+        "edit file_path=cart.ts"
+      ],
+      "warnings": ["skill principle-test-behavior-not-implementation was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=10", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113124441",
+  "capturedAt": "2026-11-13T04:44:42.575Z"
+}

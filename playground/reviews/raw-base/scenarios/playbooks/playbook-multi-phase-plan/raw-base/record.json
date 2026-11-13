@@ -1,0 +1,250 @@
+{
+  "scenarioId": "playbook-multi-phase-plan",
+  "phase": "raw",
+  "environment": {
+    "worker": 10,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-9da79f93-73eb-4801-ab66-31a0a6205b95",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["poteto-mode#user-gesture"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -la && ls -R . | head -100"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for f in src/commands/*.js; do echo \"=== $f\"; cat \"$f\"; done"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> && ls <TEMP_PATH> 2>/dev/null && ls <TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' import(\"./src/legacy/format.js\").then(async L=>{ const M=await import(\"./src/api/money.js\"); co"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat poteto-mode/playbooks/prototype.md && echo \"=====AUTOPILOT\" && cat poteto-mode/playbooks/autopilot-stack.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git status 2>&1 | head -3; ls -a; command -v gh origin || echo \"no gh/origin\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' import(\"./src/api/money.js\").then(M=>{ for(const opt of [{},{locale:\"en-US\"},{locale:\"de-DE\",cu"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=mkdir -p <TEMP_PATH> && cd <TEMP_PATH> && cat > proto.mjs <<'EOF' // Throwaway: which migration variant keeps command output stable? const legacy = (c) => `$${(c / 100).toFixed("
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && sed -n 1,120p technical-writing/SKILL.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && sed -n 1,140p unslop/SKILL.md; echo ====; ls poteto-mode/playbooks/"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' import(\"./src/api/money.js\").then(M=>{ // CSV hazard probe const rows=[{name:\"a\",cents:12345678"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> 2>/dev/null | head; echo ---; sed -n 1,80p /tm"
+      },
+      {
+        "name": "plugin_manager",
+        "status": "error",
+        "argsSummary": "plugin_manager",
+        "errorText": "Error: the user rejected escalating this plugin management operation to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for s in principle-sequence-verifiable-units principle-prove-it-works principle-build-the-lever principle-subtract-before-y"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node <TEMP_PATH> out/pla"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I have the evidence I need. Writing the plan now.\nPlan written to [out/plan.md](out/plan.md). The check script prints zero problems.\n\n**Your goal.** Move the five callers under `src/commands/` off `src/legacy/format.js` onto the new `format()` in `src/api/money.js`, and delete the old module in the same wave, in phases that each end in a state someone can check.\n\n**Phases and dependencies.** PR-1 adds the money facade plus a guard script that fails when any file still imports the legacy module. PR-2 migrates the four display commands. PR-3 migrates the CSV command. PR-4 deletes `src/legacy/format.js` and the legacy test. PR-1 comes first, PR-2 and PR-3 depend on PR-1 and are independent of each other, PR-4 depends on both. PR-2 and PR-3 are review-gated because they change what the CLI prints. PR-1 and PR-4 are not.\n\n**What the prototype settled.** A throwaway script at `<TEMP_PATH> compared both formatters over representative cent values. They agree below 1000 dollars. They differ in two ways. Grouping commas appear above 1000 dollars, and negative amounts move the sign from after the symbol to before it. A second variant with `useGrouping` off matched the old output exactly for every value tested. A third run timed three loops of 100000 calls. The old formatter took about 21 ms, a per-call `Intl.NumberFormat` about 7700 ms, and a cached formatter about 183 ms. Those are single runs, so the plan treats them as a signal and puts interleaved measurements in the perf blocks.\n\n**What stays unproven.** Whether the CLI should default to a Chinese locale and currency. The Chinese prefixes in `report.js` and `summary.js` hint at it, but no code supplies a locale. The plan keeps `en-US` and `USD` so current output holds, and Appendix A names the one-line override if you want it.\n\n**Two risks the operator should see.** The CSV amount field would contain a comma after a plain swap, so PR-3 calls `format` with grouping off and quotes fields that need it. And the environment has no `control-cli` skill, and the plugin manager denied listing bundles in this session, so the live lanes drive the CLI through `node` and capture the terminal pane as the screenshot. Appendix C records both.\n\nThe workspace is not a git repository and `gh` has no remote, so the PR steps assume a repository with a `main` branch exists before PR-1.\n\nPrinciples that shaped the plan. Migrate callers then delete legacy APIs drove keeping the legacy module until the last PR instead of shipping a shim. Sequence work into verifiable units drove one PR per change with its own evidence. Build the lever produced `scripts/check-no-legacy-format.mjs` as the artifact that proves the migration. Subtract before you add produced keeping the invoice string field and adding a cents field rather than changing the contract in the same wave. Explain the number shaped the perf blocks, which record run counts and medians instead of the single prototype timings.",
+    "userText": "/poteto-mode 我们准备把旧的金额格式化接口换成新的，仓库里好几处调用点还在用旧的。帮我把它拆成几个能独立验证、能分步落地的阶段，写成一份可以直接照着执行的计划放到 out/plan.md，先别动代码。",
+    "userTexts": [
+      "/poteto-mode 我们准备把旧的金额格式化接口换成新的，仓库里好几处调用点还在用旧的。帮我把它拆成几个能独立验证、能分步落地的阶段，写成一份可以直接照着执行的计划放到 out/plan.md，先别动代码。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "poteto-mode",
+        "loadedVia": "user-gesture",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 14,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "list_subagent_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "plugin_manager",
+          "attempts": 1,
+          "failures": 1,
+          "finalStatus": "error"
+        },
+        {
+          "name": "read",
+          "attempts": 8,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": true,
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": [
+      "skillLoads=poteto-mode#user-gesture",
+      "toolCalls=27",
+      "skillVia=user-gesture",
+      "dependencies=none"
+    ]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T03:49:37.415Z"
+}

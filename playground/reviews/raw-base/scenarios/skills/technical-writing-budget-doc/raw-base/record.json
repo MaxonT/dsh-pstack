@@ -1,0 +1,111 @@
+{
+  "scenarioId": "technical-writing-budget-doc",
+  "phase": "raw",
+  "environment": {
+    "worker": 5,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-2894ecce-e9c7-48c9-b21c-d3c25951f8af",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -a && echo --- && ls docs && echo --- && find . -name 'budget*' -not -path './node_modules/*' | head"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll start by reading the document.\nOnly the doc exists in the workspace, so I'll rewrite it based on the source content alone.\n已重写 [docs/proto-budget.md](docs/proto-budget.md)。\n\n结构调整：\n- **Overview** — 说明用途、预算存在 `budget.json`、默认值为 **42**、超限 CI 失败并可在流水线日志中查看\n- **Usage** — 原来裸列的 `--write` / `--check` 两个选项改成表格\n- **Lowering the budget** — 单独强调 `--write` 只用于下调预算\n- **Configuration** — 单独点出配置入口 `budget.json`\n\n技术命名（`budget.json`、`budget.mjs`、`--write`、`--check`、CI）和数字（42）均未改动，也没有新增原文没有的事实。原文两段啰嗦的铺垫句被合并成了简洁的说明句。",
+    "userText": "docs/proto-budget.md 这份文档又乱又长，读起来很累。帮我按好的技术文档标准重写它，技术命名和数字都不要改。",
+    "userTexts": [
+      "docs/proto-budget.md 这份文档又乱又长，读起来很累。帮我按好的技术文档标准重写它，技术命名和数字都不要改。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "technical-writing",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": ["skill technical-writing was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=4", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113124441",
+  "capturedAt": "2026-11-13T05:01:55.981Z"
+}

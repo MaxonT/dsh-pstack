@@ -1,0 +1,244 @@
+{
+  "scenarioId": "maintain-verification-skill-drifted-notes",
+  "phase": "raw",
+  "environment": {
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-3d5213db-5783-40a0-975f-3f7b4db857ba",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -la"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=verify/**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=verify/SKILL.md"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=verify/features/README.md"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=server.mjs"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=package.json"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=verify/features/create-note.md"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=verify/features/list-notes.md"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=verify/features/export.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la verify verify/features; find . -name \"AGENTS.md\" -o -name \"*.md\" | head -50; ls artifacts 2>/dev/null; node --version; npm --version"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && (node server.mjs > <TEMP_PATH> 2>&1 & echo $! > <TEMP_PATH> sleep 1."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p artifacts echo \"--- doctor GET /api/notes\"; curl -s -w \"\\nHTTP %{http_code}\\n\" ht"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> echo \"--- npm run dev\"; npm run dev 2>&1 | tail -5 echo \"--- port 3000 probe\"; curl -s -m 3 -"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> echo \"--- POST empty body\"; curl -s -w \"\\nHTTP %{http_code}\\n\" -X POST http://127.0.0.1:4173/"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> timeout 5 npm start 2>&1 | grep -i -m2 \"EADDRINUSE\\|address\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git status --short 2>&1 | head; git log --oneline -3 2>&1 | head"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=verify/SKILL.md"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=verify/features/README.md"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=verify/features/list-notes.md"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=verify/features/create-note.md"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=verify/features/export.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> kill $(cat <TEMP_PATH> 2>/dev/null; sleep 0.5 rm -rf artifacts && mkdir -p artifac"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> kill $(cat <TEMP_PATH> 2>/dev/null; sleep 0.6 curl -s -m 2 http://127.0.0.1:4173/a"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pkill -f \"node server.mjs\"; sleep 0.8; curl -s -m 2 http://127.0.0.1:4173/api/notes >/dev/null 2>&1 && echo \"STILL RUNNING\" || echo \"server stopped\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 1; curl -s -m 2 http://127.0.0.1:4173/api/notes >/dev/null 2>&1 && echo \"STILL RUNNING\" || echo \"server stopped\""
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll start by exploring the workspace structure and the `verify/` directory.\nSource review shows drift already: `package.json` has no `dev` script, and the server listens on 4173 by default, not 3000. Let me run it for real.\nNow I'll fix the drifted docs. Findings: `npm run dev` doesn't exist, wrong port 3000, wrong endpoint `/api/all`, and export.md missing from the index.\nNow re-verifying the corrected docs against a fresh server instance.\nAll corrected-doc steps pass. Cleaning up.\n审计完成。产品代码未改动，只修正了 `verify/` 下的文档。\n\n## 发现的问题（均已实跑验证）\n\n| # | 位置 | 漂移内容 | 实际情况 |\n|---|---|---|---|\n| 1 | [verify/SKILL.md](verify/SKILL.md) | 启动命令 `npm run dev`，端口 3000 | `package.json` 只有 `start` 脚本（`npm run dev` 直接报错退出）；服务端默认监听 **4173** |\n| 2 | [verify/SKILL.md](verify/SKILL.md) | Doctor 用 `/api/notes` | 路径正确，但端口随第 1 条一起是错的 |\n| 3 | [verify/features/list-notes.md](verify/features/list-notes.md) | 端点写成 `GET /api/all` | 实际是 `GET /api/notes`；`/api/all` 返回 **404** `{\"error\":\"not found\"}` |\n| 4 | [verify/features/README.md](verify/features/README.md) | 功能索引漏了 export | `export.md` 存在但未列出（源文件里有 `/api/notes/export`） |\n\n## 补充的 gotcha（源码核对 + 实跑确认）\n\n- `create-note.md`：`POST {}` 不报错，缺失的 title/body 存为空串，仍返回 201；id 从 2 递增，首条恒为 id 1。\n- `list-notes.md`：集合在内存中，启动时预置一条 \"Welcome\"。\n- `export.md`：CSV 用裸逗号拼接且**无引号转义**——标题含逗号会多出列，body 含换行会拆成多行。实跑 `title:\"a,b\"` + `body:\"line1\\nline2\"` 确认输出为 `4,a,b,line1` / `line2`。\n\n## 本次覆盖情况\n\n真机起了服务（`npm start`，PID 追踪），逐个驱动全部 4 个端点并留证于 `artifacts/`：doctor 列表 200、创建 201、创建后列表 200、导出 200（含表头 `id,title,body`）、首页 200、错误路径 `/api/all` 404、边界用例（空 body、含逗号/换行的字段）。修正文档后**重跑了一遍修正版的每一步，全部通过**。服务端已按 PID 停止并确认端口关闭。\n\n一处遗留说明：`npm start` 在服务已占用 4173 时会以 `EADDRINUSE` 崩溃退出（不是文档缺陷，是真实行为）。另外本次会话的 Web GUI `http://127.0.0.1:44793` 返回 401 需要 `dsh web` 重新打开，与本项目无关，因此全部验证走的是 HTTP API 而非 GUI 界面——如果你要求覆盖浏览器端的 \"New note\" / \"Export\" 按钮点击路径，需要先把 GUI 的鉴权打通。",
+    "userText": "项目根的 `verify/` 目录里是我们维护的验证技能和功能地图，但它可能已经和当前应用脱节了。请按维护流程审计一遍：从源码核对每个功能描述，真正把应用跑起来逐个验证，把确认过的文档或驱动问题修正掉，并把这次覆盖情况和结论告诉我。不要改动产品代码。",
+    "userTexts": [
+      "项目根的 `verify/` 目录里是我们维护的验证技能和功能地图，但它可能已经和当前应用脱节了。请按维护流程审计一遍：从源码核对每个功能描述，真正把应用跑起来逐个验证，把确认过的文档或驱动问题修正掉，并把这次覆盖情况和结论告诉我。不要改动产品代码。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "maintain-verification-skill",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 12,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "edit",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 7,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "todo_write",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": [
+        "write file_path=verify/SKILL.md",
+        "write file_path=verify/features/README.md",
+        "edit file_path=verify/features/list-notes.md",
+        "edit file_path=verify/features/create-note.md",
+        "edit file_path=verify/features/export.md"
+      ],
+      "warnings": ["skill maintain-verification-skill was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=27", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T04:40:01.178Z"
+}

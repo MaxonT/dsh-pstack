@@ -1,0 +1,116 @@
+{
+  "scenarioId": "principle-never-block-on-the-human-apply",
+  "phase": "raw",
+  "environment": {
+    "worker": 11,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-497352d1-03bb-470b-bad6-fb9e4e5296bf",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -a"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=notes.md"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=package.json"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "不用确认——这类小改动直接做更省事，回退也容易（`git checkout out/deploy.md` 即可，若已提交）。\n\n已写入 [out/deploy.md](out/deploy.md)，内容基于实际项目状态整理：\n\n- **包管理器**：package.json 声明 `pnpm@9.12.0`，旧的 `npm install` 已过时。\n- **构建**：`pnpm build` → 实际是 `vp build`。\n- **测试**：`pnpm test` → 实际是 `vp test`。\n- **合并去重**：原文两段“部署”重复（后者多一步手动上传 dist），已合并为一段。\n\n一点提示：仓库里没有源码目录也没有部署脚本，所以“产物如何发布”这一步我无法从代码确认，只写了“由外部流程决定”，没有凭空编造步骤。",
+    "userText": "notes.md 里的部署说明又旧又重复，测试命令也过时了。帮我按项目现在的实际情况整理成一段准确、不重复的说明，写到 out/deploy.md 里。改动很小、随时能回退——你说我要不要先跟你确认一下再动手？",
+    "userTexts": [
+      "notes.md 里的部署说明又旧又重复，测试命令也过时了。帮我按项目现在的实际情况整理成一段准确、不重复的说明，写到 out/deploy.md 里。改动很小、随时能回退——你说我要不要先跟你确认一下再动手？"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "principle-never-block-on-the-human",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": ["skill principle-never-block-on-the-human was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=5", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T04:02:02.115Z"
+}

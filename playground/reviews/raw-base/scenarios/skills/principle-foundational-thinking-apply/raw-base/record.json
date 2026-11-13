@@ -1,0 +1,94 @@
+{
+  "scenarioId": "principle-foundational-thinking-apply",
+  "phase": "raw",
+  "environment": {
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-1145cd47-c0ad-4ab7-8264-3ed79becbed3",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; pwd"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat README.md; ls -la src"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "看完了 `src/inbox.js`（19 行）。现在的问题不是“字段多”，而是**每加一个会话级属性就要在顶层加一对字段**，而且 id 是硬编码在函数里的 `if/else`：\n\n```js\nstate = { conversations: [], unreadA1, isPinnedA1, unreadB2, isPinnedB2, drafts: [], muted: [] }\n```\n\n`conversations` 数组其实没被用上，A1/B2 的属性全靠平行字段。往后再加“免打扰”“草稿”，就是继续加 `isMutedA1`、`draftA1`…，而且新增会话不是“填个对象”就完事，是“加一组字段 + 改一处 if/else 链”。\n\n## 一、先把属性分类（决定该放在哪）\n\n把候选属性按性质分开，归属完全不同：\n\n| 属性 | 性质 | 归属 |\n|---|---|---|\n| 未读数 | 会话的**状态**（服务端权威、会变化） | 会话记录内 |\n| 置顶 | 会话的**状态**（用户偏好） | 会话记录内 |\n| 免打扰 | 会话的**状态**（用户偏好） | 会话记录内 |\n| 草稿 | 会话的**附属内容**（一段文本，可能很大、可能本地独有） | 会话记录内，但单独一层 |\n| 标题/头像/时间 | 会话的身份 | 会话记录内 |\n\n结论：**这四个都属于「会话」，没有一个属于「列表」**。`drafts: []`、`muted: []` 这种顶层数组是同一个错误——它们其实是 per-conversation，只是被摊平到了顶层。\n\n## 二、核心结构：一个会话一个记录，内部再分层\n\n```js\n{\n  id: \"A1\",\n  title: \"…\",\n  // 身份（不可变，创建时确定）\n  // ....\n\n  // 状态：所有\"这个会话现在怎么样\"的标量/计数\n  meta: {\n    unread: 0,\n    pinned: false,\n    muted: false,\n  },\n\n  // 附属内容：可能很大、可能只在本地\n  draft: null,          // 字符串，或 {text, updatedAt}\n}\n```\n\n要点：\n\n1. **`meta` 是一层命名空间**。以后再加\"折叠\"\"归档\"\"已读标记\"，只往 `meta` 里加 key，不动顶层 state，state 结构永不变。这样 `addConversation` 就只有一处，不需要同步多处。\n2. **`draft` 单独一层而不是塞进 meta**。因为 draft 是文本（体积/同步语义都不同），meta 是小标量。免打扰要是有人担心字段膨胀，也可以理解成同层的一个 flag——但它确实是标量，放 meta。\n3. **默认值靠 merge 补齐，不靠调用方记得传**。新建会话时只给必填项，其余由一个 `defaults` 常量兜底，这样\"新会话\"永远不会是半初始化状态（`unread: undefined` 那种坑）。\n4. **顶层 state 收敛成**：\n\n```js\n{\n  conversations: [ /* Conversation[] */ ],\n}\n```\n\n草稿如果只在本机、且会话可能大到不适合整体进内存，可以把 `draft` 抽出去做成 `draftsById: { [id]: draft }`，但**键必须还是 id**——不要变成平行数组，否则又要按 id 做 O(n) 查找。\n\n## 三、状态与派生状态要分开（这是第二个坑）\n\n- **存储**：`pinned`（布尔）存储；**排序后的展示顺序**是**派生**的，不入库。\n  列表渲染时按 `pinned desc` 再按 `updatedAt desc` 排一次即可。现在如果把\"置顶项的顺序\"也存起来，就会出现 pin 状态和顺序不一致的双写问题。\n- **`unread`** 是计数，但 UI 通常还要一个 `hasUnread`（未读>0）。**不要存两个**，用 `unread > 0` 派生。\n- **\"总未读数\"**（标签页角标）是所有会话 `meta.unread` 求和，派生。\n\n原则：**原始事实存一处，其余全是计算**。\n\n## 四、id 不该出现在数据结构里，但不该出现在代码分支里\n\n现在的 `if (id === \"A1\")` 意味着每加一个会话就改一次函数体。改成：\n\n```js\nfunction updateConversation(id, patch) { /* 找到记录，merge patch */ }\n```\n\n之后 `togglePin` = `updateConversation(id, { meta: { pinned: !cur.meta.pinned } })`，不再随会话数增长而变化。新增会话 = `conversations.push(makeConversation({id, title}))`，一处。\n\n## 五、几个你还没问但一定会撞上的问题\n\n1. **草稿不是布尔，是有内容的对象**。要带 `updatedAt`（用于\"草稿 3 分钟前\"），还要能区分\"没有草稿\"和\"草稿是空字符串\"（`null` vs `\"\"`）。存 `null` 表示无草稿，别用空串。\n\n2. **免打扰和未读的关系是个业务规则，不是数据结构问题**：免打扰的会话收到消息，通常是**不增加未读数**（或增加但不提醒）。这条规则应该写在 `bumpUnread` 的**一个地方**，而不是散在各个入口。这也是把 `bumpUnread` 收进模块内部（不导出裸 state）的原因。\n\n3. **未读数的权威在服务端**。如果未读是服务端给的，那本地只做乐观更新，并且要能被服务端推送覆盖。别让它变成两处可写状态。\n\n4. **不可变 vs 可变**。如果用 reducer/immer 风格，合并 patch 时注意 `meta` 是**浅合并**——`{...a, meta: {...a.meta, ...patch.meta}}`，别用 `{...a, ...patch}`（会整块替换 meta，丢掉未读）。嵌套对象合并是最容易埋 bug 的地方。\n\n## 六、要不要再往前走一步\n\n如果会话数量会多（比如上千）且要支持\"按置顶/未读筛选\"，可以在 `conversations` 之外加**索引**：一个 `Map<id, Conversation>` 作为唯一真相源，列表顺序用一个 `order: string[]`（id 数组）表示。但**这一步现在不必做**——它引入了两处必须同步维护的结构。除非已经有性能证据，否则先保持\"一个数组 + 派生排序\"。\n\n---\n\n**一句话总结**：把 4 个会话级属性从顶层平行字段，收进**会话记录内部的命名空间**（`meta` + `draft`），顶层 state 只留 `conversations` 一个数组；所有显示用属性（是否置顶的顺序、有未读、总未读）改为派生；所有按 id 的操作走统一的 `updateConversation(id, patch)`，消除硬编码分支；嵌套合并要浅合并到 `meta` 层面。\n\n需要我接着按这个结构给出具体的数据结构定义 + 迁移代码（把现有 `unreadA1`/`isPinnedA1`/`drafts`/`muted` 迁过去）吗？",
+    "userText": "消息列表现在要给会话加“未读数”和“置顶”，以后还想加“免打扰”和“草稿”。现在代码是一个会话一个对象、外加一堆零散 boolean 和几个数组拼出来的。先别写实现，帮我理一下核心数据结构和状态该怎么组织。",
+    "userTexts": [
+      "消息列表现在要给会话加“未读数”和“置顶”，以后还想加“免打扰”和“草稿”。现在代码是一个会话一个对象、外加一堆零散 boolean 和几个数组拼出来的。先别写实现，帮我理一下核心数据结构和状态该怎么组织。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "principle-foundational-thinking",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": [],
+      "warnings": ["skill principle-foundational-thinking was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=3", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T04:41:50.206Z"
+}

@@ -1,0 +1,115 @@
+{
+  "scenarioId": "principle-guard-the-context-window-apply",
+  "phase": "raw",
+  "environment": {
+    "worker": 5,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-be865654-4656-4789-94d3-36bb61ab5d62",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la logs/ | head -50; echo \"---\"; du -sh logs/; echo \"---\"; ls logs/ | wc -l"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=logs/**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=logs/mon.log"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=logs/tue.log"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=logs/wed.log"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd logs && python3 - <<'EOF' import glob, math, collections d=collections.defaultdict(list); st=collections.defaultdict(collections.Counter) for f in sorted(glob.glob(\"*.log\")): for line "
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll start by looking at the log files.\n统计完成。先说一个与预期不符的地方：**logs/ 下实际只有 3 个文件、共 9 行记录**（mon.log 4 行、tue.log 3 行、wed.log 2 行），并不是\"整周、量很大\"的数据。所以下表的样本量极小，p95 实际等同于该接口的最大值，统计意义有限。\n\n汇总表（p95 用 nearest-rank 方法）：\n\n| 接口 | 方法 | 请求数 | p95 延迟(ms) | 平均(ms) | 最小(ms) | 最大(ms) | 状态码分布 |\n|---|---|---|---|---|---|---|---|\n| /api/orders | GET | 4 | 900 | 251.3 | 30 | 900 | 200×3, 500×1 |\n| /api/users | GET | 3 | 25 | 19.7 | 12 | 25 | 200×2, 404×1 |\n| /api/login | POST | 1 | 120 | 120.0 | 120 | 120 | 200×1 |\n| /api/orders | POST | 1 | 88 | 88.0 | 88 | 88 | 201×1 |\n| **合计** | | **9** | | | | | |\n\n两点值得注意：\n- `GET /api/orders` 的 p95(900ms) 完全由唯一一条 500 错误请求拉高——4 个样本里 p95 = 第 4 小值即最大值。\n- 日志只覆盖周一至周三（2026-01-05 ~ 01-07），周四到周日缺失。\n\n如果这些只是样例，真实日志在别处，告诉我路径或压缩包位置我重跑；脚本逻辑可直接复用到全量数据。",
+    "userText": "logs/ 下是上周整周的访问日志，量很大。帮我统计每个接口的请求数和 p95 延迟，最后给我一张汇总表就行。",
+    "userTexts": [
+      "logs/ 下是上周整周的访问日志，量很大。帮我统计每个接口的请求数和 p95 延迟，最后给我一张汇总表就行。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "principle-guard-the-context-window",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": [],
+      "warnings": ["skill principle-guard-the-context-window was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=6", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T04:26:12.412Z"
+}

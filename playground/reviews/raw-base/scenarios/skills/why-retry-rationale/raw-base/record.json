@@ -1,0 +1,163 @@
+{
+  "scenarioId": "why-retry-rationale",
+  "phase": "raw",
+  "environment": {
+    "worker": 10,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-2315c305-2769-438d-8c42-8d47bf25f411",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -la && ls -la src/ 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --oneline -20 2>&1 | head -40"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && find docs -type f | head -50"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -laR . && find . -name '.*' -maxdepth 2"
+      },
+      {
+        "name": "grep",
+        "status": "ok",
+        "argsSummary": "grep path=<TEMP_PATH> pattern=retry|429|backoff|attempt"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && npm test 2>&1 | tail -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' const real=setTimeout; global.setTimeout=(fn,ms)=>{console.log(\"delay\",ms); return real(fn,0)}; impor"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' const real=setTimeout; global.setTimeout=(fn,ms)=>{console.log(\"sleep\",ms); return real(fn,0)}; impor"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for d in . .. ../..; do echo \"== $d\"; ls -a \"$d\" | head -20; done 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' const real=setTimeout; global.setTimeout=(fn,ms)=>{console.log(\"sleep\",ms); return real(fn,0)}; impor"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && find . -name '.git*' -o -name '*.lock' -o -name '*.md' | sort && echo \"--- file stats ---\" && stat -c '%n %y %s"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll investigate the retry logic and its history.\n查完了。先说结论：**能查到的书面理由只有一份 ADR + 代码注释，二者一致；但 ADR 描述的退避数值和代码实际行为对不上**。下面分三块：能引到的证据、代码实测结果、以及确实查不到的证据源。\n\n## 1. 能引到的证据（就这些）\n\n**`docs/adr/0007-nightly-import-retry.md`**（全文 11 行，是唯一的决策记录）：\n\n- 第 3–4 行：`The nightly import used to fail whenever the upstream provider throttled us during the bulk pull. The provider returns HTTP 429 once a burst exceeds its per-minute budget.` —— 触发条件：上游 provider 在批量拉取突发时返回 429，按「每分钟预算」限流。\n- 第 6–8 行：`We settled on three attempts with exponential backoff (200ms, 400ms, 800ms). This keeps the import under the provider's rate limit instead of hammering it. A longer retry budget was rejected because it pushed the nightly job past its window.` —— **「3 次」的明确理由**：延长重试预算会把夜间任务推出它的执行时间窗口（job window）。**「指数退避」的理由**：让整体速率落在 provider 的限流预算内，而不是硬打（hammering）。\n- 第 10–11 行：`We did not add circuit breaking: the job runs once a day, so a single failed run is cheaper than the complexity.` —— 为什么没有熔断：一天只跑一次，失败一次的代价低于引入复杂度。\n\n**`src/fetch.mjs:4-5` 的注释**与 ADR 同源：429 由 burst 引起；三次 + 指数退避让夜间导入保持在 provider 限流之下。\n\n**`src/fetch.test.mjs:5`** 名称 `retries a 429 and succeeds on the third attempt` —— 确认「三次」中的第三次成功是被显式保障的行为契约。\n\n**运行证据**：`npm test` 通过（1 pass，1203ms），且「前两次 429、第三次成功」这条路径确实走到了 3 次请求。\n\n## 2. ADR 说的数值和代码实际行为不一致 ⚠️\n\nADR 写 `200ms, 400ms, 800ms`，但实测代码的 sleep 是 **400ms、800ms、1600ms**：\n\n```\n$ node -e '...instrument setTimeout...'\nsleep 400\nsleep 800\nsleep 1600\nthrew: gave up after 3 attempts\nHTTP requests made: 3\n```\n\n原因在 `src/fetch.mjs:13-14`：`attempt += 1` 在 `sleep` **之前**，所以第一次退避算的是 `200 * 2**1 = 400` 而不是 200。ADR 里写的序列要么是基于 `2**(attempt-1)` 推导的意图，要么是抄写时算错了。\n\n同时暴露第二个问题：失败路径上 **第三次请求失败后还会额外 sleep 1600ms 才抛错**，这 1.6s 是纯浪费（反正要抛了）。总无谓等待 = 400+800+1600 = 2800ms，ADR 描述的总退避是 1400ms。\n\n> 顺带一个观察：代码里没有 jitter、没有读 `Retry-After` 头、非 429 错误一律不重试。ADR 也没提这些是「有意省略」还是「根本没考虑」——属于下面查不到的那一类。\n\n## 3. 查不到的证据源（不要在这些上编故事）\n\n- **Git 历史 / commit message / blame**：工作区不是 git 仓库（`fatal: not a git repository`），向上到文件系统边界都没有 `.git`。所以「当初是哪个 PR、谁提的、review 里吵过什么」全部不可查。\n- **ADR 0001–0006**：目录里只有 0007，前 6 号 ADR 不在工作区。虽然编号暗示存在上游项目，但这些文件不在可读范围内，检索不到。\n- **Issue / PR / Slack / 工单**：工作区外，且本会话的读取边界限定在当前工作区内，无法访问。\n- **Provider侧的真实限流参数**：「per-minute budget」到底是多少、429 比例多少、要求多长的退避——ADR 只给了定性描述，没有任何实测数据或 provider 文档链接。\n- **夜间任务的执行窗口具体多长**：ADR 说「更长预算会推出窗口」，但没写窗口是 5 分钟还是 50 分钟，所以无法验证「3 次」是不是当前约束下的最优解（还是只是随手取的一个整数）。\n- **代码最初是如何演化的**：注释和 ADR 措辞高度一致，很可能是同一作者同期写的，但没有历史记录来证实这一点。\n\n## 一句话回答\n\n「3 次 + 指数退避」的理由是写在 ADR 0007 里的：3 次是因为再往上加会让夜间导入超出它的时间窗口；指数退避是为了把请求速率压在 provider 的每分钟预算之下；而不加熔断是因为任务一天只跑一次。**但 ADR 引用的退避序列（200/400/800）与代码实际行为（400/800/1600）不一致，且失败时最后还会多睡 1.6 秒**——这是可以顺手修的 bug，不需要猜当初意图：要么把代码改成 `2 ** (attempt - 1)` 并只在还有下一次尝试时才睡，要么更新 ADR 让它描述现状。\n\n需要我改哪一边（修代码 vs 修文档）你定，我可以顺手补上 jitter / `Retry-After` 支持并给出取舍说明。",
+    "userText": "src/fetch.mjs 里这段重试为什么要重试三次、还加了指数退避？我想搞清楚当初是出于什么考虑这么写的。别猜，能引证据就引证据，也告诉我哪些证据源其实查不到。",
+    "userTexts": [
+      "src/fetch.mjs 里这段重试为什么要重试三次、还加了指数退避？我想搞清楚当初是出于什么考虑这么写的。别猜，能引证据就引证据，也告诉我哪些证据源其实查不到。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "why",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 10,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "grep",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": [],
+      "warnings": ["skill why was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=15", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [
+    "process evidence: why was not loaded",
+    "assistant reply lacks \"fetchWithRetry\""
+  ],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T04:18:50.039Z"
+}

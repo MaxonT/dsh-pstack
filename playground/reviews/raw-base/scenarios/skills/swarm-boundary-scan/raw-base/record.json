@@ -1,0 +1,136 @@
+{
+  "scenarioId": "swarm-boundary-scan",
+  "phase": "raw",
+  "environment": {
+    "worker": 3,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-ac9039e0-7e7c-4558-b046-6d2cc8c5711c",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -R src 2>/dev/null | head -50"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=src/safeDivide.mjs"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=src/parseConfig.mjs"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=src/clamp.mjs"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=src/slugify.mjs"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll look at the workspace first.\nFour tiny files — I'll fan out one reviewer per file in parallel.\nFour reviewers are running in parallel; I'll assemble the table once they report back.",
+    "userText": "src 下这几个工具函数我想统一过一遍健壮性。请分头并行地把 safeDivide、parseConfig、clamp、slugify 都查一下有没有没处理的边界或会直接抛异常的情况，最后合并成一张表，列出每个文件的问题和是否确认。",
+    "userTexts": [
+      "src 下这几个工具函数我想统一过一遍健壮性。请分头并行地把 safeDivide、parseConfig、clamp、slugify 都查一下有没有没处理的边界或会直接抛异常的情况，最后合并成一张表，列出每个文件的问题和是否确认。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "swarm",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "subagent",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": [],
+      "warnings": ["skill swarm was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=9", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [
+    "process evidence: swarm was not loaded",
+    "assistant reply lacks \"safeDivide\"",
+    "assistant reply lacks \"parseConfig\"",
+    "assistant reply lacks \"clamp\"",
+    "assistant reply lacks \"slugify\""
+  ],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113124441",
+  "capturedAt": "2026-11-13T04:46:26.662Z"
+}

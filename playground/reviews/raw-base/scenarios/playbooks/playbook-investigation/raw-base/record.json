@@ -1,0 +1,129 @@
+{
+  "scenarioId": "playbook-investigation",
+  "phase": "raw",
+  "environment": {
+    "worker": 9,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-6656bcab-a1d2-44a4-955f-01755856dfac",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["poteto-mode#user-gesture"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; find . -type f -not -path './.git/*' | head -100"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e \"import('./src/config.js').then(m=>console.log(m.loadConfig()))\" && node src/main.js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e \"JSON.parse(require('fs').readFileSync('./config/app.json','utf8'))\" 2>&1 | head -3; node -e \"console"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "## 目标\n\n你要弄清 config-render 服务启动后的运行路径：入口在哪、数据怎么流动、哪一步失败会被悄悄吞掉。下面是只读调查结论，附文件位置。全部结论来自本次会话实际读文件和跑命令。\n\n## 入口\n\n`src/main.js:1` 是唯一入口。它不监听端口，也不导出任何东西，纯粹是一个脚本：定义两个待办项，然后调用 `renderItems` 并打印。\n\n整个包没有 `bin`、`scripts` 或任何依赖（`package.json:1` 只有 name/version/type）。启动方式就是 `node src/main.js`，工作目录必须是仓库根目录。\n\n## 数据流\n\n三步，调用链是 main → render → config。\n\n1. `src/main.js:3` 造出两条硬编码数据 `写周报`（done: false）和 `跑测试`（done: true）。列表不来自任何文件或接口。\n2. `src/main.js:8` 调用 `renderItems(items)`。\n3. `src/render.js:4` 在渲染函数内部调用 `loadConfig()` 读配置，然后 `src/render.js:5` 用 `showDone` 决定是否过滤掉 done 项，`src/render.js:6` 用 `pageSize` 截断。\n4. `src/config.js:5` 用 `readFileSync(\"./config/app.json\", \"utf8\")` 再 `JSON.parse`。路径是相对当前工作目录，不是相对模块目录。\n\n配置读取发生在渲染期而不是启动期，这是这个服务最关键的形状：一次启动里只有一次渲染，所以看不出区别；一旦有人在别的调用点复用 `renderItems`，配置会被重新读一次。\n\n## 被吞掉的失败\n\n`src/config.js:6` 的 `catch` 是裸 catch，没有绑定变量，没有日志，没有区分「文件不存在」和「JSON 非法」。任何失败都退回 `{ showDone: false, pageSize: 20 }` 并且完全无声。`src/config.js:7` 的注释还把这个行为写成设计意图。\n\n当前仓库里这个 catch 正在生效。`config/app.json:4` 有一个尾随逗号：\n\n```\n{\n  \"showDone\": true,\n  \"pageSize\": 20,\n}\n```\n\n这不是合法 JSON。我实际跑了两条命令验证：\n\n```\nnode -e \"import('./src/config.js').then(m=>console.log(m.loadConfig()))\"\n# => { showDone: false, pageSize: 20 }\n```\n\n真实配置里 `showDone` 是 `true`，实际拿到的是默认的 `false`。解析错误被 catch 吞掉，配置文件里的值一个都没生效。\n\n后果在渲染层立刻可见：\n\n```\nnode src/main.js\n# => rendered: [ { text: '写周报', done: false } ]\n```\n\n`跑测试` 这条 done 项消失了。原因是 `src/render.js:5` 用默认的 `showDone: false` 把它过滤掉了。一个纯语法错误在这里表现为「数据少了一条」，没有任何报错。\n\n第二类失败同样无声：`./config/app.json` 的解析基于进程工作目录。从别的目录启动就会走到 catch，拿到同一份默认配置。README（`README.md:4`）说明了这个约定，但代码里没有把这个约束表达出来。\n\n第三类失败在 `src/render.js:6`。`pageSize` 从配置或默认值来，如果它是 `0`、负数或 `null`，`slice` 会返回空数组或抛 TypeError。目前默认值20 且配置里也是 20，所以触发不到。这条属于潜在风险，我没有实际触发验证。\n\n## 静默失败的完整清单\n\n| 位置 | 触发条件 | 表现 |\n|---|---|---|\n| `src/config.js:6` | 文件不存在、权限错误、JSON 语法错误 | 静默用默认配置，零输出 |\n| `src/config.js:6` | 从非仓库根目录启动 | 同上 |\n| `src/render.js:6` | `pageSize` 为0 或负数 | 静默返回空列表 |\n| `src/render.js:6` | `pageSize` 为 null 或非数字 | 抛 TypeError，向下传播到 `src/main.js:8` 崩溃 |\n\n## 给维护者的两点\n\n配置文件目前是无效的 JSON，却看不出任何异常。第一处修正应该是给 `config/app.json` 去掉尾随逗号。第二处是让 `src/config.js:6` 的 catch 至少能区分「读不到」和「解析失败」，或者至少往 stderr 写一行，这样配置静默失效时不会表现成「数据少了一条」。\n\n## 用到的原则\n\nMinimize Reader Load 让我把调用链压成 main → render → config 三步，而不是逐行复述。Explain the Number 让我区分了实测（JSON 确实解析失败、待办确实少一条）和推断（pageSize 异常分支未实际触发）。Fix Root Causes 让我把「少一条待办」追回到 `config/app.json:4` 的尾随逗号和 `src/config.js:6` 的裸 catch，而不是停在渲染层。",
+    "userText": "/poteto-mode 这个服务启动后先读配置、再渲染待办列表，我想弄清楚它现在到底怎么跑起来的：入口在哪，数据怎么一步步流动，哪一步失败会被悄悄吞掉。只读调查，别改代码，给我带文件位置的说明。",
+    "userTexts": [
+      "/poteto-mode 这个服务启动后先读配置、再渲染待办列表，我想弄清楚它现在到底怎么跑起来的：入口在哪，数据怎么一步步流动，哪一步失败会被悄悄吞掉。只读调查，别改代码，给我带文件位置的说明。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "poteto-mode",
+        "loadedVia": "user-gesture",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 6,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": true,
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": [
+      "skillLoads=poteto-mode#user-gesture",
+      "toolCalls=9",
+      "skillVia=user-gesture",
+      "dependencies=none"
+    ]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T03:49:37.440Z"
+}

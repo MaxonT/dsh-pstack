@@ -1,0 +1,710 @@
+{
+  "scenarioId": "playbook-autonomous-run",
+  "phase": "raw",
+  "environment": {
+    "worker": 1,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-7958dd27-83b8-4273-a1ee-964cab5b5fea",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["poteto-mode#user-gesture"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; git -C . log --oneline -15 2>/dev/null; git status 2>/dev/null | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la <TEMP_PATH> 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> for f in MIGRATION.md README.md package.json config/* src/* test/*; do echo \"===== $f\"; cat \"$f\"; done"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=B=<TEMP_PATH> ls $B; ls $B/docs/harness 2>/dev/null; echo ---; cat $B/docs/harness/dsh.md 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=B=<TEMP_PATH> ls $B; echo ---; cd <TEMP_PATH> git rev-parse --is-inside-work-tr"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=B=<TEMP_PATH> cat $B/refactoring.md; echo \"=========SEQ\"; cat <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=B=<TEMP_PATH> cat $B/principle-migrate-callers-then-delete-legacy-apis/SKILL.md; echo \"========SHOW\"; cat $B/show-me-your-work/SKILL.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> ls -laR | head -50; echo ---; grep -rn \"readConfig\" . ; echo ---; cat $DSH_HOME/pstack-models.json 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat <TEMP_PATH>"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=B=<TEMP_PATH> for s in principle-prove-it-works principle-laziness-protocol principle-model-the-domain principle-boundary-discipline principl"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=B=<TEMP_PATH> cat $B/figure-it-out/SKILL.md; echo \"=====HOW\"; cat $B/how/SKILL.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which gh git; gh auth status 2>&1 | head -5; git config --global user.name; git config --global user.email; ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> ls -la; find . -maxdepth 3 -name \".git\" -type d | head; ls -la .. | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat <TEMP_PATH> echo ====; cat <TEMP_PATH>"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: LLM provider \"anthropic\" is not allowed for this Session"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat <TEMP_PATH> 2>/dev/null; ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -R <TEMP_PATH> <TEMP_PATH> cat <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -20"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -12"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -12"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=gh repo list l246804 --limit 50 2>&1 | head -20; echo \"---\"; gh api user --jq .login 2>&1"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -14"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> for d in how-request-flow figure-it-out-var-migration-playbook show-me-your-work-multi-phase-migration; do echo \"== $d\"; ls -a $d; don"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat <TEMP_PATH> echo ====; cat <TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> node scripts/check-no-callbacks.mjs; echo \"exit=$?\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> cp src/files.js <TEMP_PATH> printf 'export function readConfig(path, callback) {\\n callback(null, path)"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -8; npm run check:migration 2>&1 | tail -3"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> L=<TEMP_PATH> bash $L decisions"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=gh repo view l246804/file-service 2>&1 | head -5; echo \"---\"; gh search repos file-service --owner l246804 2>&1 | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git init -q -b main; git config user.name leihaohao; git config user.email leihaohao@neucloud.cn; git add src/"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git reset -q --soft $(git rev-list --max-parents=0 HEAD) 2>/dev/null; git reset -q; git status --short"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> mkdir -p <TEMP_PATH> && cat > <TEMP_PATH> <<'EOF' import { readFile } from \"node:fs\"; export function rea"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git add config/app.json git commit -q -m \"chore: add demo config used by the config reader\" cp <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git log --oneline --graph --all; git show --stat HEAD"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> rm -rf .git; git init -q -b main; git config user.name leihaohao; git config user.email leihaohao@neucloud.cn "
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | grep -E \"^. (pass|fail)\"; git add src/files.js; git commit -q -m \"feat(files): implement readC"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | grep -E \"^. (pass|fail)\"; git add test/files.test.js; git commit -q -m \"test(files): cover rej"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> grep -rn \"readConfig\\b\" src test config README.md MIGRATION.md; echo \"grep_exit=$?\"; npm test 2>&1 | grep -E \""
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> node scripts/check-no-callbacks.mjs; echo \"clean_exit=$?\" cp src/files.js <TEMP_PATH> printf '\\nexport f"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | grep -E \"^. (pass|fail)\"; npm run check:migration >/dev/null 2>&1; echo \"guard_exit=$?\"; git a"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git show --stat HEAD | tail -10; git log --oneline --all -- decisions.tsv"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git rm -q --cached decisions.tsv; git commit -q --amend --no-edit; git show --stat HEAD | tail -8; git status "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git show --stat 1e95f70 | tail -10"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git rebase --onto 1e95f70 1e95f70 2>/dev/null git reset -q --soft 1e95f70 git reset -q 1e95f70 -- decisions.tsv"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> rm -rf .git; rm -rf <TEMP_PATH> mkdir -p <TEMP_PATH> git init -q -b main; git config user.name leihaohao; git co"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> set -e put() { cp \"$1\" \"$2\"; } # commit 1: baseline put <TEMP_PATH> src/files.js put <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> for c in $(git rev-list --reverse HEAD); do git checkout -q $c msg=$(git log -1 --format=%s $c) if [ \"$c\" = \"$("
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git checkout -q main; npm test 2>&1 | grep -E \"^. (pass|fail)\"; npm run check:migration 2>&1 | tail -1; git st"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git show --stat HEAD | tail -8; echo ---; cat decisions.tsv"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> L=<TEMP_PATH> bash $L decisions.t"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> cat > .gitignore <<'EOF' node_modules/ EOF git add .gitignore; git commit -q -m \"chore: ignore node_modules\"; "
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git show 102011f --stat; echo \"=== full diff of feature commit\"; git show 102011f"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -8; echo \"=== guard\"; npm run check:migration 2>&1 | tail -1; echo \"=== files\"; ls -R . |"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 60; echo waited"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 90; echo waited"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -20"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | head -8; echo \"=== now prove the default gate bites\"; cp src/files.js <TEMP_PATH> printf '\\n"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> cp src/files.js <TEMP_PATH> printf '\\nexport const load = (path, cb) => cb(null);\\n' >> src/files.js; npm te"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -14"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git add -A; git status --short; git commit -q -m \"fix(files): harden the migration guard and name the file in "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git reset -q --soft HEAD~1 git reset -q # stage 1: guard hardening + its tests + pretest wiring git add scripts"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> for c in $(git rev-list --reverse HEAD); do git checkout -q $c msg=$(git log -1 --format=%s $c) if [ \"$c\" = \"$("
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> L=<TEMP_PATH> bash $L decisions.t"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> git add decisions.tsv; git commit -q -m \"docs: record the trail corrections from the cross-model review\" -m \"T"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> wc -c <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> L=<TEMP_PATH> bash $L decisions.t"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> npm test 2>&1 | tail -16; echo \"=== status\"; git status --short; echo \"=== log\"; git log --oneline"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Baseline established. The baseline test fails exactly where the migration left off.\nUnit 1 is green. Now the error-behavior tests.\nUnit 3: delete the legacy callback API. No callers exist, so the delete is clean.\nThe guard must actually fail when a callback export exists. Testing the gate before trusting it.\nNow the docs, and a decision trail to hand back.\nNo git repo and no remote for this service exist. I'll make the work durable with ordered local commits and leave the push as the operator's call.\nI reset too eagerly and lost that commit. Rebuilding the history in order from the known baseline content.\nThe history is out of order from my reset. Rebuilding it cleanly from the baseline.\nUnit 1 committed and green. Now unit 2, the error-behavior tests.\nUnit 3: delete the legacy callback API now that no caller remains.\nUnit 4: the guard script and docs.\nThe trail file got swept into the baseline commit. Rewriting history so it lands as its own final commit.\nI collapsed the history with a bad reset. Rebuilding it deterministically with an explicit script instead of ad-hoc git commands.\nClean ordered history now. Verifying each commit in isolation, since each must stand on its own.\nEvery commit is green on its own, and the baseline commit is the only red one, as intended.\nNow the cross-model review of the trail, as the show-me-your-work skill requires.\nThe migration is done and committed. Waiting on the cross-model trail review before the final report.\nThe cross-model review found real gaps in my guard and trail. Fixing the substantive ones now.\nNow a real test for the guard itself, instead of trusting it.\nAll six shapes are now caught, including the arrow-function forms the reviewer found slipping through. Next, make the guard actually run by default.\nThe gate now aborts `npm test` with exit 1 before any test runs. Now the version bump and the doc overstatement the reviewer flagged.\nThe reviewer also flagged that a JSON error doesn't say which file failed, so the test can't catch a wrong-file failure. Fixing that.\nEvery commit is green on its own. Now updating the trail with the corrections, superseding the rows the reviewer showed were inaccurate.\nThe migration is finished and the repo is in a merge-ready state.\n\n**Your goal.** Finish the callback-to-Promise refactor of the file-service so it is safe to merge, running unattended, and make reasonable defaults on the calls that need a decision instead of stopping to ask.\n\n**Exit condition.** `npm test` passes, every commit is green on its own, and no callback-style export remains. That predicate is met.\n\n**What landed.** `readConfigAsync` in [src/files.js](src/files.js:3) now reads the file through `node:fs/promises` and parses it. The old `readConfig(path, callback)` export is gone, with no caller left in the repo. The test file covers the happy path, a missing file, and invalid JSON. A guard script, [scripts/check-no-callbacks.mjs](scripts/check-no-callbacks.mjs), fails the build when a callback export reappears, and `npm test` runs it first through a `pretest` hook. The guard has its own six-case test file.\n\n**Verification.** I checked out each of the eleven commits in isolation and ran the suite. The baseline commit is the only red one, failing with `not migrated` as expected. Every other commit passes. I also planted a callback export and confirmed `npm test` exits 1 before any test runs.\n\n**What the review changed.** A cross-model review of the trail found five real problems, and I fixed all of them. The guard had only matched named function exports, so arrow-function exports and `cb`-named parameters slipped through. It now matches every export form. The guard was opt-in, so nothing enforced the rule by default. It now gates `npm test` and has its own tests. Deleting a public export is breaking, so the version moved from 0.2.0 to 1.0.0 and both docs say so. The JSON error now names the offending file, because the old test asserted only the error type and would have passed on the wrong file.\n\n**Decisions I made for you.** I created a git repo, since the workspace had none, and rebuilt the history as ordered commits so each one lands alone. I did not open a PR or create a remote repository, because no `file-service` repo exists on the forge and creating a public one is an irreversible external action. That is yours to do. If external packages import `readConfig`, the version bump signals the break, but I could only check inside this repo.\n\n**Two things to know.** The baseline commit reconstructs the original files from what I read before changing anything, so it is byte-accurate but is itself a reconstruction rather than a pristine pre-existing history. And the run took about fifteen minutes rather than a night. The trail in [decisions.tsv](decisions.tsv) records each decision with an evidence pointer, including the rows that a later review showed were inaccurate. Those rows stay in place with superseding rows beneath them.\n\n**Attention**\nreviewed by magpie\n\n- Row 5's grep evidence does not reproduce as written, because `readConfig` is a prefix of `readConfigAsync`. A superseding row records the word-boundary form.\n- The original guard-verified row claimed more than it proved. The guard covered one parameter name and one export shape. It now has six test cases covering the shapes a future developer would write.\n- The guard was opt-in, so the MIGRATION.md claim that it prevents regressions was stronger than the wiring supported. It now runs before the suite.\n- Deleting `readConfig` is a breaking change and the version stayed at 0.2.0. Now bumped to 1.0.0 with the break documented.\n- The `readConfigAsync` rejection carried a bare `SyntaxError` that did not name the file, and the test asserted only the type. Both are fixed.\n- The trail rows carry near-identical timestamps and the two trail commits were unrecorded. The later rows now cover the audit and the no-remote decision.",
+    "userText": "/poteto-mode 这块从回调迁到 Promise 的重构还没做完，我今晚要离开，你自动把它推进到迁移完成、可以放心合入为止。中途遇到要我拍板的先按最稳妥的默认处理并记下来。",
+    "userTexts": [
+      "/poteto-mode 这块从回调迁到 Promise 的重构还没做完，我今晚要离开，你自动把它推进到迁移完成、可以放心合入为止。中途遇到要我拍板的先按最稳妥的默认处理并记下来。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "poteto-mode",
+        "loadedVia": "user-gesture",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 68,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "edit",
+          "attempts": 7,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_list",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "list_agents",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "list_subagent_models",
+          "attempts": 3,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "todo_write",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 18,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": true,
+      "artifacts": [
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>"
+      ],
+      "warnings": ["list_subagent_models needed 3 attempts with 1 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": [
+      "skillLoads=poteto-mode#user-gesture",
+      "toolCalls=110",
+      "skillVia=user-gesture",
+      "dependencies=none"
+    ]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T03:49:37.360Z"
+}

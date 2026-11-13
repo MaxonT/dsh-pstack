@@ -1,0 +1,544 @@
+{
+  "scenarioId": "playbook-runtime-forensics",
+  "phase": "raw",
+  "environment": {
+    "worker": 5,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-ebf00a08-0e7d-4f66-82df-87f83d5deff5",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["poteto-mode#user-gesture"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; echo ---; ls -R | head -100"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "error",
+        "argsSummary": "read file_path=<TEMP_PATH>",
+        "errorText": "Error: cannot read \"<TEMP_PATH>\": not found"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> ls <TEMP_PATH> 2>/dev/null | head -50; cat <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=find <TEMP_PATH> -name '*runtime*' -o -name 'playbooks' -type d | head; echo ---; ls <TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=node -v; which node; ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p artifacts && node --cpu-prof --cpu-prof-dir=artifacts --cpu-prof-interval=1000 src/server.js & s"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf artifacts && mkdir -p artifacts && node --cpu-prof --cpu-prof-dir=artifacts --cpu-prof-interval=10"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p artifacts && nohup node --inspect=127.0.0.1:9229 src/server.js > artifacts/server.log 2>&1 & sle"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ps aux | grep -v grep | grep 'src/server.js'; echo ---; top -b -n 1 | head -15"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=kill -9 27096 30727 2>/dev/null; sleep 1; cd <TEMP_PATH> && nohup node --inspect=127.0.0.1:9229 src/server.js > artifacts/s"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node artifacts/capture.mjs artifacts/cpu.cpuprofile && ls -la artifacts"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node artifacts/reduce.mjs artifacts/cpu.cpuprofile"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && pkill -f 'inspect=127.0.0.1:9229'; sleep 1 node src/server.js & P=$!; sleep 2 read_cpu(){ awk '{print $14"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=bash <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node src/server.js & sleep 2; P=$(pgrep -f 'node src/server.js' | head -1); echo P=$P; cat /proc/$P/stat;"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && sed -i 's/\"$S\" \"$E\"/\"${S[*]}\" \"${E[*]}\"/' artifacts/measure.sh && bash artifacts/measure.sh"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node src/server.js & sleep 1; P=$(pgrep -f 'node src/server.js'|head -1); top -b -n 3 -d 1 -p $P | tail -"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which strace ltrace perf; echo ---; cd <TEMP_PATH> && node src/server.js & sleep 1; P=$(pgrep -f 'node src/server.js'|head "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 6 strace -f -c -p $(pgrep -f 'node src/server.js'|head -1) 2>&1 | tail -30"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && nohup node --inspect=127.0.0.1:9229 src/server.js > artifacts/server.log 2>&1 & sleep 2 && node artifacts"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node artifacts/count.mjs"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 6 strace -f -e trace=openat,read,close -c node src/server.js 2>&1 | tail -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 12 node -r ./artifacts/probe.cjs src/server.js 2>&1 | tail -5"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 11 strace -f -e trace=openat,read,close,newfstatat -o artifacts/strace.log node src/server.js >/d"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 14 node -r ./artifacts/probe.cjs src/server.js 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/threadcpu.cjs <<'EOF' const fs=require('node:fs'); const orig=fs.readFileSync; let n=0; f"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -r ./artifacts/measure.cjs src/server.js"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -r ./artifacts/no10.cjs -r ./artifacts/measure.cjs src/server.js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/expC.cjs <<'EOF' // 10ms timer that only JSON.parses a cached string. No file IO. const r"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && nproc; cat /sys/fs/cgroup/cpu.max 2>/dev/null; echo ---; python3 - <<'EOF' import json,os # simulate a bi"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=df -T <TEMP_PATH> | tail -1; mount | grep -E ' /tmp | / ' | head; echo ---; cat /sys/fs/cgroup/cpu.stat 2>/dev/null | head "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/expF.cjs <<'EOF' const {readFileSync}=require('node:fs'); const F='<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && pkill -f 'inspect=127.0.0.1:9229'; sleep 1; nohup node --inspect=127.0.0.1:9229 src/server.js > artifacts"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && (nohup node --inspect=127.0.0.1:9229 src/server.js > artifacts/server.log 2>&1 &) ; sleep 3; curl -s http"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node artifacts/hotfix.mjs 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/expG.cjs <<'EOF' const {readFileSync}=require('node:fs'); const F='/etc/hostname'; setInt"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && (node src/server.js &) ; sleep 3; P=$(pgrep -f 'node src/server.js'|head -1); top -b -n 3 -d 2 -p $P | gr"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 66 node -r ./artifacts/trend.cjs src/server.js 2>&1 | tail -14"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/split.cjs <<'EOF' const fs=require('node:fs'); const orig=fs.readFileSync; const s=orig.c"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && (node --inspect=127.0.0.1:9229 src/server.js > artifacts/server.log 2>&1 &) ; sleep 3; node artifacts/liv"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/timers.mjs <<'EOF' const list = await (await fetch(\"http://127.0.0.1:9229/json/list\")).js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'EOF' import json base={\"ttl\":60,\"region\":\"cn-east\"} for n,name in [(1000,'cfg1k.json'),(1000"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/expI.cjs <<'EOF' const fs=require('node:fs'); const F=process.env.CFG; const raw=fs.readF"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/expJ.cjs <<'EOF' const {readFileSync}=require('node:fs'); const F=process.env.CFG; const "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 10 strace -f -e trace=openat,read,close,newfstatat,fcntl -o artifacts/strace10.log node src/serve"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > artifacts/expK.cjs <<'EOF' setInterval(()=>{},1000); EOF node -r ./artifacts/measure.cjs artifacts/"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && pkill -f 'inspect=127.0.0.1:9229'; sleep 1; (node --inspect=127.0.0.1:9229 src/server.js > artifacts/serv"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for p in $(pgrep -f '9229 src/server.js' | grep -v $$); do kill $p; done; sleep 1; (node --inspect=127.0."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node artifacts/liveproof.mjs 2>&1 | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which gcc cc; gcc --version 2>/dev/null | head -1"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node artifacts/liveedit.mjs 2>&1 | head -20"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node artifacts/liveedit.mjs 2>&1 | head -25"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cp config.json artifacts/config.json.bak && cat > artifacts/perturb.mjs <<'EOF' // Live perturbation on t"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat config.json; git status --short 2>/dev/null | head; ls artifacts"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && diff <(cat artifacts/config.json.bak) config.json && echo \"config identical\"; pgrep -af 'node .*server.js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && kill 138020; sleep 1; pgrep -af 'src/server.js'; echo done"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "诊断完成。进程已停止，`config.json` 已还原为原内容（与备份逐字节一致）。\n\n**结论。** 空闲 CPU 的来源是 `src/server.js` 里一个 10 毫秒的轮询定时器，它每次都重新读盘并重新解析 `config.json`，而解析结果根本没有任何人使用。它是纯浪费。请求量与这个开销无关，所以空闲时 CPU 依然常驻。\n\n**证据链。**\n\n一，CPU profile（[cpu.cpuprofile](playbook-runtime-forensics/artifacts/cpu.cpuprofile)，通过 CDP `Profiler` 采样，间隔 100 微秒，10 秒窗口，47594 个采样）。非 idle 帧排序第一是 `readFileUtf8` 0.49%，第二是 `tick`（`src/server.js:3`）0.20%，第三是 `JSON.parse` 的 `parse` 0.04%。idle 占 98.76%。\n\n二，系统调用计数（[strace10.log](playbook-runtime-forensics/artifacts/strace10.log)，`strace -f` 跟踪 10 秒）。`openat` 958 次，`read` 1906 次，`close` 957 次。其中指向 `config.json` 的 `openat` 有 936 次，即约每秒 94 次打开同一个文件。\n\n三，代码路径。定时器注册在 [src/server.js:10](playbook-runtime-forensics/src/server.js#L10) 的 `setInterval(tick, 10)`。回调体在 [src/server.js:5](playbook-runtime-forensics/src/server.js#L5) 调 `readFileSync`，在 [src/server.js:6](playbook-runtime-forensics/src/server.js#L6) 调 `JSON.parse`。`tick()` 的返回值被丢弃，`config.ttl` 的校验结果也没有进入任何状态或缓存。也就是说这个轮询读出来的东西被立刻丢掉。\n\n四，机制验证。用预加载探针在进程内统计（[probe.cjs](playbook-runtime-forensics/artifacts/probe.cjs)）。10 秒内 `readFileSync` 被调用 963 次，约每秒 96 次。每次读的平均墙钟耗时0.108 毫秒。用户态 CPU 2.90%，内核态 0.65%。因为是同步读，定时器被自己的 IO 延迟拖住，所以实际频率是每秒约 96 次而不是 100 次。\n\n五，隔离实验（[measure.cjs](playbook-runtime-forensics/artifacts/measure.cjs) 统一以 `/proc/self/stat` 的 utime 加 stime 计时）。\n\n| 实验 | 单核 CPU 百分比 | 每秒读次数 |\n| --- | --- | --- |\n| 原样启动 | 3.0 | 96.3 |\n| 屏蔽10ms 定时器（[no10.cjs](playbook-runtime-forensics/artifacts/no10.cjs)） | 0.2 | 0.1 |\n| 同样工作放到 100ms 间隔 | 0.2 | 10.0 |\n| 只留每秒的空定时器 | 0.0 | 0.1 |\n\n屏蔽掉那一个定时器，CPU 从 3.0 降到 0.2。其余一切不变。\n\n六，对运行中进程的实时扰动（[perturb.mjs](playbook-runtime-forensics/artifacts/perturb.mjs)）。不重启，不改代码，只换 `config.json` 的内容。原配置 39 字节时 2.83%，把配置膨胀到约 128KB 时 9.00%，换回原文件后 2.67%。成本随被读文件的大小走。\n\n七，文件大小与成本的标定。\n\n| 配置文件大小 | 读加解析 | 仅解析 |\n| --- | --- | --- |\n| 39 字节 | 2.8% | 1.4% |\n| 68KB | 6.6% | 3.7% |\n| 680KB | 25.3% | 19.2% |\n| 6.8MB | 104.5%（约一整个核） | 98.7% |\n\n**关于 40% 这个数字的解释。** 这台机器上复现出来的同一份39 字节配置只占单核 3.0%，不是 40%。所以 40% 不是代码里写死的数字，而是这个100Hz 轮询的成本乘上他们环境的配置大小与磁盘延迟。按上表推算，一个约 1MB 左右的配置文件就能让单核占用落在 40% 到 60% 区间。他们的部署环境如果在真实磁盘上跑，或者配置里带了大的价格表，命中这个区间完全一致。上面第六步的实时扰动已经证明成本随文件大小线性变化。我在本地无法直接复现 40%，因为手上没有现场的配置文件和磁盘，这是这次诊断唯一的缺口。\n\n**排除的其他嫌疑。** [src/server.js:11](playbook-runtime-forensics/src/server.js#L11) 的 `setInterval(() => {}, 1000)` 是空转，单独测下来 0.0%，不是原因。60 秒趋势观察（[trend.cjs](playbook-runtime-forensics/artifacts/trend.cjs)）显示单核占用稳定在 3.2% 到 3.4%，堆内存稳定在 5MB 左右，没有泄漏也没有随时间爬升。所以本地没有出现\"重启后降一会又升上去\"的形态，那个上升可能来自他们环境里配置文件本身在增长或系统页缓存被换出。\n\n**没有做的改动。** 这是只读诊断，我没有改任何产品代码。最小改动方向是删掉这个轮询，或者把它降到合理频率并且真的用上读到的配置，但那属于修复范畴，等你发话。\n\nthroughput checkpoint: n/a, read-only forensics\n\n产物在 [artifacts](playbook-runtime-forensics/artifacts) 目录。核心是 [cpu.cpuprofile](playbook-runtime-forensics/artifacts/cpu.cpuprofile)、[profile-before.cpuprofile](playbook-runtime-forensics/artifacts/profile-before.cpuprofile)、[strace10.log](playbook-runtime-forensics/artifacts/strace10.log)、[probe.cjs](playbook-runtime-forensics/artifacts/probe.cjs)、[measure.cjs](playbook-runtime-forensics/artifacts/measure.cjs)、[perturb.mjs](playbook-runtime-forensics/artifacts/perturb.mjs)。",
+    "userText": "/poteto-mode 这个服务在几乎没有请求进来的时候 CPU 也一直 40% 以上，帮我查清楚到底是什么在占用 CPU，给一个有据可查的诊断。",
+    "userTexts": [
+      "/poteto-mode 这个服务在几乎没有请求进来的时候 CPU 也一直 40% 以上，帮我查清楚到底是什么在占用 CPU，给一个有据可查的诊断。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "poteto-mode",
+        "loadedVia": "user-gesture",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 56,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "edit",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 6,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "todo_write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 17,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": true,
+      "artifacts": [
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>"
+      ],
+      "warnings": ["read needed 6 attempts with 1 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": [
+      "skillLoads=poteto-mode#user-gesture",
+      "toolCalls=83",
+      "skillVia=user-gesture",
+      "dependencies=none"
+    ]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T03:50:35.517Z"
+}

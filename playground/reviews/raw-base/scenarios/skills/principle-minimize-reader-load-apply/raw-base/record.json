@@ -1,0 +1,100 @@
+{
+  "scenarioId": "principle-minimize-reader-load-apply",
+  "phase": "raw",
+  "environment": {
+    "worker": 9,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-b1c2070e-c190-4733-9dc1-2f7a4aff74ea",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/load.ts"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=load.ts"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll look at the file first.\n整理完成，`load.ts` 从 25 行变为 27 行，代码量基本没变。改动：\n\n**去掉三层无意义的转发** — 原来 `getData → loadData → fetchBody → requestRaw` 四层函数里只有最底层真正干活，中间三层只是把参数原样传下去。新同事最容易被这种链条带偏，得逐层点进去才知道数据从哪来。现在直接合成一个 `getData`，`raw:${url}` 这一行就是数据来源。\n\n**明确标注状态的可变范围** — 文件头注释说明：唯一可变状态是模块级 `cache`，按 URL 缓存 body，永不失效。`cache` 类型是 `Record<string, string> | null`，`null` 表示还没缓存过任何东西。\n\n**缓存命中判断修正** — 原来是 `if (cache && cache[url])`，依赖值本身为真才能命中，空字符串 body 会被当成未命中而重复请求。改成 `url in cache`，只看 key 是否存在。\n\n**导出面保持不变** — `readUser` 签名和行为一致，仍是对外唯一入口。\n\n[load.ts](load.ts)",
+    "userText": "load.ts 这一段读起来挺费劲，新同事接手时常常要花很久才搞清数据从哪来、什么会改变它。帮我整理一下，让这块代码更容易读懂，注意别把它改大。",
+    "userTexts": [
+      "load.ts 这一段读起来挺费劲，新同事接手时常常要花很久才搞清数据从哪来、什么会改变它。帮我整理一下，让这块代码更容易读懂，注意别把它改大。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "principle-minimize-reader-load",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": ["skill principle-minimize-reader-load was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=3", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T04:01:19.501Z"
+}

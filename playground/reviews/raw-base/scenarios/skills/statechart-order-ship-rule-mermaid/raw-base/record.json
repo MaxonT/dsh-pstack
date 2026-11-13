@@ -1,0 +1,116 @@
+{
+  "scenarioId": "statechart-order-ship-rule-mermaid",
+  "phase": "raw",
+  "environment": {
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-3adc8831-5ddc-452f-9f21-30dcf8b67942",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll look at the workspace first.\n报告已生成：[REPORT.md](REPORT.md)\n\n**建模**：状态 = 空闲/待付款/已付款/已发货/已退款，事件 = 提交订单/付款/发货/直接发货/退款，6 条迁移。规则即不变式：进入 `已发货` 的所有路径都必须先激活 `已付款`。\n\n**违规点**：只有一条边违规 —— `待付款 --直接发货--> 已发货`（[flow.ts:15](flow.ts#L15)）。\n\n**最短违规路径**（从初态起算，2 条迁移）：\n`空闲 --提交订单--> 待付款 --直接发货--> 已发货`\n\n用状态说法：订单在 `待付款` 状态触发 `直接发货`，在 `已付款` 状态从未激活的情况下直接到达 `已发货`——即未付款却已发货。\n\n**修复**：删掉该边即可使 `已发货` 的唯一前驱回到 `已付款`；另建议把非法事件显式建模为拒绝态而非静默忽略。\n\n完整报告（含 Mermaid `stateDiagram-v2` 源码、违规边标注）见 REPORT.md。",
+    "userText": "这是我们的订单状态流转，业务规则是『只有已付款的订单才能发货』。请把这个流转当成状态模型来检查，把违反这条规则的最短路径用状态的说法讲清楚，并用 Mermaid 的状态图语法把状态图发给我，报告一起给我。",
+    "userTexts": [
+      "这是我们的订单状态流转，业务规则是『只有已付款的订单才能发货』。请把这个流转当成状态模型来检查，把违反这条规则的最短路径用状态的说法讲清楚，并用 Mermaid 的状态图语法把状态图发给我，报告一起给我。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "statechart",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": ["skill statechart was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=5", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T04:14:45.390Z"
+}

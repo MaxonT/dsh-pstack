@@ -1,0 +1,1075 @@
+{
+  "scenarioId": "playbook-eval",
+  "phase": "raw",
+  "environment": {
+    "worker": 6,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-5ced0a76-3280-4728-bc4d-6b6b032afdaa",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["poteto-mode#user-gesture"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -la && find . -type f -not -path './.git/*' | head -100"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la <TEMP_PATH> <TEMP_PATH> 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls docs/harness/ 2>&1; ls raw/pstack/skills/poteto-mode/scripts raw/pstack/skills/poteto-mode/references"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls skills/ && ls docs/harness/ 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat README.md prompts/v1.md prompts/v2.md project/README.md project/package.json project/src/todo.js project/test/todo"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/pstack-models.json 2>&1; echo ---; node --version; ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> 2>&1; ls $DSH_HOME/sessions 2>&1 | head"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ | head"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -R . | head -40; cat .git/config 2>&1 | head"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for f in principle-model-the-domain principle-prove-it-works principle-explain-the-number principle-separate-before-serializ"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: LLM provider \"anthropic\" is not allowed for this Session"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=mkdir -p <TEMP_PATH> && echo ok && rmdir <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/AGENTS.md 2>&1 | head -40; echo ===; env | grep -i -E 'dsh|model|provider' | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la \"$DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/session-5ced0a76-3280-4728-bc4d-6b6b032afdaa/\" 2>&1 | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p eval/trials eval/results && cp -r project eval/.seed && ls eval/.seed"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls $DSH_HOME/sessions/ --tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/; ls $DSH_HOME/sessions/ | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf .seed && mkdir -p trials results seeds && ls"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which dsh; dsh --help 2>&1 | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && dsh headless --help 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf eval && mkdir -p eval && for i in 1 2 3 4 5 6; do mkdir -p eval/w$i && cp -r project/. eval/w$i/; done && ls ev"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cp -r eval/w1 eval/.baseline && ls eval"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/check.mjs eval/.baseline"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/check.mjs eval/.baseline && echo \"=== reference solution\" && mkdir -p <TEMP_PATH> && cp -r project/. <TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/check.mjs eval/.baseline 2>&1 | head -40; echo \"=== refsol\"; rm -rf <TEMP_PATH> && mkdir -p <TEMP_PATH> "
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/check.mjs eval/.baseline 2>&1 | head -50; echo \"=== refsol\"; node eval/check.mjs <TEMP_PATH> 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"$TMPDIR\" && mkdir -p probe && echo hi > probe/x && cat probe/x && rm -rf probe && echo WRITABLE"
+      },
+      {
+        "name": "edit",
+        "status": "error",
+        "argsSummary": "edit file_path=<TEMP_PATH>",
+        "errorText": "Error: old_string matched 2 times in \"<TEMP_PATH>\"; provide a more specific old_string or set replace_all to true"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'EOF' import re p='eval/check.mjs' s=open(p).read() start=s.index(' writeFileSync(\\n join(tmp, \"probe.mjs\""
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 120 dsh --profile playground headless \"say hi\" 2>&1 | tail -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for d in eval/w1 eval/w2 eval/w3 eval/w4 eval/w5 eval/w6; do echo \"== $d\"; cat $d/src/todo.js 2>/dev/null | tail -6; d"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la $DSH_HOME/profiles/ 2>&1; ls -la $DSH_HOME/profiles/playground 2>&1 | head; touch $DSH_HOME/testwrite 2>&1 && echo HOME_WRITABLE && rm $DSH_HOME/testwrite"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=curl -s -m 5 http://127.0.0.1:37329/ -o <TEMP_PATH> -w '%{http_code}\\n'; head -c 600 <TEMP_PATH> echo; curl -s -m 5 http://127.0.0.1:37329/api 2>&1 | head -c 400"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for d in w1 w2; do echo \"== $d\"; cat eval/$d/src/todo.js; echo \"-- test\"; cat eval/$d/test/todo.test.js; done"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45; cd <TEMP_PATH> && for d in w1 w2; do echo \"== $d\"; grep -c . eval/$d/src/todo.js; tail -3 eval/$d/src/todo.js; done"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && chmod +x eval/run.sh && for t in w1 w2 w3 w4 w5 w6; do node eval/check.mjs eval/$t > eval/results/$t.json; done; node "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p eval/results && for t in w1 w2 w3 w4 w5 w6; do node eval/check.mjs eval/$t > eval/results/$t.json; done; node"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/check.mjs' s=open(p).read() old_start=s.index('// Line-level added-line count via a simple LC"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/check.mjs' s=open(p).read() s=s.replace('''const srcDiff = addedLines(baseSrc, src); const te"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for t in w1 w2 w3 w4 w5 w6; do node eval/check.mjs eval/$t > eval/results/$t.json; done && node -e \" for (const t of ["
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for t in w4 w5 w6; do echo \"== $t\"; cat eval/$t/src/todo.js; echo \"-- test\"; cat eval/$t/test/todo.test.js; done"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/check.mjs eval/w4 2>&1 | python3 -c \"import json,sys;d=json.load(sys.stdin);print(d['mutation'], d['score'])"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for t in .baseline w1 w2 w3 w4 w5 w6; do node eval/check.mjs eval/$t > eval/results/$(basename $t).json 2>/dev/null; p"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/make-blind.mjs && ls eval/blind && echo \"--- alpha\" && head -30 eval/blind/alpha.patch"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/make-blind.mjs' s=open(p).read() s=s.replace('import { readFileSync, existsSync, writeFileSyn"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > <TEMP_PATH> <<'EOF' set -e cd <TEMP_PATH> rm -rf /tmp"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/make-blind.mjs' s=open(p).read() s=s.replace(''' const before = join(blindDir, \".stage\", `bas"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"===== w1 src\"; cat eval/w1/src/todo.js; echo; echo \"===== w1 README diff\"; diff project/README.md eval/w1/README"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"===== w2 src\"; cat eval/w2/src/todo.js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"===== w3 src\"; cat eval/w3/src/todo.js; echo \"===== w3 test\"; cat eval/w3/test/todo.test.js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls $DSH_HOME/sessions/ ; for d in $DSH_HOME/sessions/*/; do echo \"$d\"; ls $d; done 2>&1 | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ && for d in 92d77cba-c7f5-4c22-ab9e-30e8b84b2a18 18f63cb7-8f31-498e-9d54-c275ef52407e; do echo \"=="
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ && which zstd; python3 -c \"import zstandard\" 2>&1 | head -2"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ && for d in 92d77cba-c7f5-4c22-ab9e-30e8b84b2a18 95b2117f-1fa4-47f4-ad08-876ca55c515e 18f63cb7-8f3"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ && zstd -dc 92d77cba-c7f5-4c22-ab9e-30e8b84b2a18/session.v4.jsonl.zstd | head -3 | cut -c1-1500"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ && zstd -dc 92d77cba-c7f5-4c22-ab9e-30e8b84b2a18/session.v4.jsonl.zstd | python3 -c \" import sys,j"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && chmod +x eval/trace.sh && eval/trace.sh 2>&1 | head -120"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/trace.sh' s=open(p).read() i=s.index(' zstd -dc \"$f\" | python3 - \"$REPO\" <<\\'PY\\'') j=s.index"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ && zstd -dc 92d77cba-c7f5-4c22-ab9e-30e8b84b2a18/session.v4.jsonl.zstd | python3 -c \" import sys,j"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ && zstd -dc 92d77cba-c7f5-4c22-ab9e-30e8b84b2a18/session.v4.jsonl.zstd | python3 -c \" import sys,j"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/ && zstd -dc 92d77cba-c7f5-4c22-ab9e-30e8b84b2a18/session.v4.jsonl.zstd | python3 -c \" import sys,j"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && eval/trace.sh 2>&1"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 120; cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" im"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e \" const rows=['w1','w2','w3','w4','w5','w6'].map(t=>require('./eval/results/'+t+'.json')); for(const d of rows"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/check.mjs' s=open(p).read() s=s.replace('''const dir = process.argv[2];''','''const dir = pro"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/summarize.mjs' s=open(p).read() s=s.replace(''' totalAddedLines: d.metrics.totalAddedLines,''"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 90; cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" imp"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 150; cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/b0d2072f-86f1-4f3c-8f11-c0b9bd5b914d && zstd -dc session.v4.jsonl.zstd | python3 -c \" im"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > <TEMP_PATH> <<'EOF' // Order-reversal mutant: does each candidate's test suite catch a filter that // return"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for t in .baseline w1 w2 w3 w4 w5 w6; do node eval/check.mjs eval/$t > eval/results/$(basename $t).json; done; node ev"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/join-verdict.mjs"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/report.mjs > /dev/null && head -60 REPORT.md"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > eval/judge-run.sh <<'EOF' #!/usr/bin/env bash # Extracts a judge's final JSON verdict from its session transcrip"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/53ff8aae-b32d-403b-a4cd-b11a59c2248d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 240; cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/53ff8aae-b32d-403b-a4cd-b11a59c2248d && zstd -dc session.v4.jsonl.zstd | python3 -c \" im"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cp -r eval/results <TEMP_PATH> && eval/run.sh score 2>&1 | tail -20"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && chmod +x eval/run.sh && bash -n eval/run.sh && echo \"syntax ok\" && ls eval/results/"
+      },
+      {
+        "name": "job_output",
+        "status": "ok",
+        "argsSummary": "job_output"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && eval/judge-run.sh 53ff8aae-b32d-403b-a4cd-b11a59c2248d judge-verdict-2.json && node -e \" const v=require('./eval/resul"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/53ff8aae-b32d-403b-a4cd-b11a59c2248d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && chmod +x eval/judge-run.sh && eval/judge-run.sh 53ff8aae-b32d-403b-a4cd-b11a59c2248d judge-verdict-2.json && eval/judg"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/53ff8aae-b32d-403b-a4cd-b11a59c2248d && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > eval/judge-run.sh <<'EOF' #!/usr/bin/env bash # Extracts a judge's final JSON verdict from its session transcrip"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node eval/report.mjs 2>&1 | sed -n '40,120p'"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"=== judge ranking agreement\" && node -e \" const a=require('./eval/results/judge-verdict.json'), b=require('./eva"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> && eval/run.sh score 2"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/report.mjs' s=open(p).read() s=s.replace('''P(\"| Judge pass | v1 mean | v2 mean | Gap |\"); P("
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && find . -type f -not -path './eval/w*/*' -not -path './eval/blind/*' -not -path './eval/results/*' | sort && echo \"---\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -f eval/run-subagents.sh && python3 - <<'PY' p='eval/README.md' s=open(p).read() s=s.replace('''`eval/run.sh` spawn"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && eval/run.sh 2>&1 | tail -12 && echo \"=== plan\" && node -e \"const p=require('./eval/spawn-plan.json'); console.log(p.ma"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls eval/w1 eval/w4 && cat eval/w1/src/todo.js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && grep -E '^(diff|---|\\+\\+\\+|new file|deleted)' eval/blind/foxtrot.patch"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/92d77cba-c7f5-4c22-ab9e-30e8b84b2a18 && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > <TEMP_PATH> <<'EOF' 92d77cba-c7f5-4c22-ab9e-30e8b84b2a18 w1 95b2117f-1fa4-47f4-ad08-876ca55c515e w2 18f63cb7-8f"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/0e08857a-1a3e-420a-991e-3ea1b1d583c6 && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && while read id t; do python3 eval/replay.py \"$id\" \"eval/$t\" \"project\"; done < <TEMP_PATH> && echo \"=== score\" && eval/"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-workspace-playbook-eval--/0e08857a-1a3e-420a-991e-3ea1b1d583c6 && zstd -dc session.v4.jsonl.zstd | python3 -c \" import sys,js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/replay.py' s=open(p).read() s=s.replace('''sid, target, project = sys.argv[1], sys.argv[2], s"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat eval/w4/src/todo.js && echo \"=== raw args\" && cd $DSH_HOME/sessions/--tmp-dsh-pstack-playground-raw-base-w6-worksp"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/replay.py' s=open(p).read() s=s.replace(''' rel = os.path.relpath(path, os.path.dirname(targe"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && eval/run.sh score 2>&1 | tail -14"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && chmod +x eval/replay.sh && eval/replay.sh && eval/run.sh score 2>&1 | grep -E \"^(v1|v2):\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"=== test guard: remove sessions.txt\" && mv eval/sessions.txt <TEMP_PATH> && eval/run.sh 2>&1 | head -5; echo \""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && eval/replay.sh && eval/run.sh score 2>&1 | grep -E \"^(v1|v2):\" && node eval/join-verdict.mjs 2>&1 | head -3 && node ev"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/README.md' s=open(p).read() s=s.replace('''```bash eval/run.sh # reset trial dirs, run candid"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'PY' p='eval/report.mjs' s=open(p).read() s=s.replace('''P(\"```bash\"); P(\"eval/run.sh # reset, run candida"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -f <TEMP_PATH> && ls eval/ && echo \"=== final check: everything runs\" && eval/run.sh score > /dev/null 2>&1 && ech"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Setup is clear. Let me check transcript access, then build the harness.\nSetup mapped. One provider/model family is available, so I'll design the eval around objective, re-runnable scoring with a blinded LLM judge on top, and disclose the single-family limit.\nSetup is mapped. Now I'll build the harness:2 prompt variants × 3 trials, isolated work dirs, a deterministic objective checker, and a blinded judge.\nSetup mapped. Building the harness: 2 prompt variants × 3 trials, isolated dirs, same agent context, deterministic checker plus blinded judge.\nSetup mapped. Now building the harness files.\nChecker validated against a reference solution and the untouched baseline. Now spawning the candidates.\nWhile those run, let me write the runner script that makes the whole thing reproducible.\nAll six candidates are done. Now scoring them.\nBoth variants score 7/7 on correctness. The real differentiator is scope. Let me fix the diff metric, which is counting base-only lines as added.\nBoth variants max the correctness score. To separate them I need a metric that can actually discriminate: mutation testing on the test suites.\nMutation testing ties as well. The discriminators are scope and maintainability, so I need a blinded judge for those.\nThe patch paths leak the trial ID. Fixing that so the blind packet carries no variant signal.\nBlind packet is clean. Now spawning the blinded judge.\nWhile the judge runs, let me read every candidate output myself, per the eval playbook's step 7.\nChain verified from transcripts. Now let me check the judge.\nThe judge is running the candidate test suites to verify. Let me wait for it while I finish the runner wiring.\nThe judge is verifying behavior by running each candidate's test suite. Let me wait for it.\nThe judge is doing its own mutation testing independently. Let me prepare the report scaffolding while it finishes.\nThe judge is doing thorough verification. While it finishes, let me independently measure what distinguishes the variants more precisely.\nWhile waiting, let me verify the mutation survivor the judge flagged and confirm my own harness agrees.\nOrder preservation is a real discriminator the judge found independently. Let me add it to the harness.\nThe judge is done. Let me save its verdict and join it to the variants.\nThe judge and my deterministic metrics agree. Let me run a second independent judge pass to check the verdict is stable, not a one-sample artifact.\nWhile the second judge runs, let me write the report generator so the conclusion regenerates from the data.\nReport generates cleanly. Let me check the second judge.\nWhile that runs, let me verify the harness end-to-end reproduces from a clean state, since reproducibility is the user's core ask.\nDeterministic scoring reproduces exactly. Let me make `run.sh` honest about the agent-spawning boundary.\nSecond judge independently produced the identical ranking. Let me extract and join it.\nThe heredoc was overriding stdin, so the pipe never reached the script. Let me fix it with a separate file.\nBoth judges independently produced the identical ranking and identical variant means. Let me do a final verification of the whole harness.\nThe checker correctly rejects a broken implementation. Let me do a final end-to-end validation and clean up.\nRun mode reset the trial dirs, which wiped the candidate outputs. Let me restore them from the transcripts' recorded state.\nRun mode reset the trial dirs, wiping candidate outputs. Let me reconstruct them from the blind patches and fix that footgun.\nRun mode destroyed the trial outputs. Let me restore them by replaying the candidates' recorded tool calls, which also makes the harness recoverable without a model.\nThe transcripts record every edit with full arguments. Let me build a replayer that reconstructs a trial's files without any model.\nThe arguments are double-encoded JSON strings. Let me fix the parser.\nThe target path was relative while the recorded paths are absolute. Fixing that.\nFound it. The relative path was computed against the wrong base, so edits landed in a nested directory.\nReplay now works cleanly with no warnings. Let me verify it reproduces the original scores exactly.\nReplay reproduces the original scores exactly. Now let me fix the run-mode footgun that destroyed the data.\nNow let me verify the run-mode guard works and the full cycle is safe.\nEverything reproduces. Let me update the README to document the replay path and finish.\nYour goal was to compare two prompt versions on the same coding task, make the comparison re-runnable, and get a conclusion with evidence behind it. Here is where it landed.\n\n**The setup.** Six isolated trials, three per prompt, at three reasoning efforts each. The candidate prompt is the raw prompt file with no meta framing. Every candidate worked in its own copy of the project.\n\n**The first finding was that correctness could not decide this.** Both prompts ask for the same feature, and all six trials implemented it correctly. Every trial scored 7/7 and passed the project's own test suite. Any \"v2 writes better code\" claim would have been false.\n\n**What did separate them** was scope and contract fidelity. v2 produced 25 changed lines on average against v1's 117. v2 added zero unrequested exports, v1 added four across its trials. Two v1 trials replaced the boolean contract with a string-mode `FILTERS` API and `Boolean()` coercion, which is a different contract than the one requested.\n\n**The judge was blind** to variant, model, and trial id. Two independent passes produced the identical ranking and identical per-variant means, 17.33/25 for v1 against 23.00/25 for v2. Both named v2's top three candidates and both named the same v1 candidates as over-scoped.\n\n**Recommendation: promote v2**, on scope discipline and contract fidelity.\n\nThree caveats worth your attention. Correctness did not separate the variants, so this is not a claim about code quality. v2's tests are thinner, and one v2 trial left an order-reversal mutant alive. And every trial ran on one model family, since this session exposes only one provider, so the result holds for this model and a different one might weigh scope differently.\n\n**On reproducibility**, one thing worth flagging. The DSH headless CLI needs a writable profile directory this sandbox does not grant, so `eval/run.sh` writes a spawn plan and the session drives the spawns. Separately, `eval/run.sh` in run mode resets the trial dirs, which destroyed my first set of candidate outputs mid-task. I rebuilt them from the session transcripts, which record every file mutation, and that replay now reproduces the original scores byte for byte with no model in the loop. The reset path now refuses to wipe a trial whose transcript is missing.\n\nIf you want to test this against a second model, or extend the task to one where correctness has room to vary, the harness takes both without restructuring.",
+    "userText": "/poteto-mode 我这里有两个版本的提示词，想比较它们在同一个编码任务上哪个效果更好。帮我把这个对比做得能复跑，最后给我一个有依据的结论和推荐。",
+    "userTexts": [
+      "/poteto-mode 我这里有两个版本的提示词，想比较它们在同一个编码任务上哪个效果更好。帮我把这个对比做得能复跑，最后给我一个有依据的结论和推荐。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "poteto-mode",
+        "loadedVia": "user-gesture",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 111,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "edit",
+          "attempts": 14,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 5,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "list_agents",
+          "attempts": 7,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "list_subagent_models",
+          "attempts": 4,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 11,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "subagent",
+          "attempts": 8,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "todo_write",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 20,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": true,
+      "artifacts": [
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>"
+      ],
+      "warnings": [
+        "edit needed 14 attempts with 1 failures",
+        "job_output needed 5 attempts with 1 failures",
+        "list_subagent_models needed 4 attempts with 1 failures"
+      ]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": [
+      "skillLoads=poteto-mode#user-gesture",
+      "toolCalls=183",
+      "skillVia=user-gesture",
+      "dependencies=none"
+    ]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T03:49:37.413Z"
+}

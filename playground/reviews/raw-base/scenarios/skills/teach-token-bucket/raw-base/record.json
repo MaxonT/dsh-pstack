@@ -1,0 +1,109 @@
+{
+  "scenarioId": "teach-token-bucket",
+  "phase": "raw",
+  "environment": {
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-85bd0442-5139-4696-a285-f6ae38ce9839",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=find . -type f -not -path \"*/node_modules/*\" -not -path \"*/.git/*\" | head -100 && echo \"---\" && ls -la"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat > <TEMP_PATH> <<'EOF' import { TokenBucket } from \"<TEMP_PATH>\"; import { createRateLimiter } from \"<TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll start by exploring the workspace to understand what this module is.\n代码很小，我全读了（两个源文件 + README）。先跑个小实验把行为坐实，再给你讲。\n实验和代码行为一致。下面从头讲。\n\n## 一、它解决什么问题\n\n这是**令牌桶（token bucket）限流器**——保护后端资源（数据库、第三方 API、CPU）不被单个调用方打爆。\n\n核心心智模型：桶里装令牌，桶以固定速度自动补水，但总量有上限。\n\n- `capacity` = 桶的最大容量 = **允许的突发上限**。桶满时，即使你从没请求过，也能一口气拿走 capacity 个。\n- `refillPerSecond` = **长期平均速率**。每秒补多少令牌。\n\n所以它同时管住两件事：长期平均速度，和瞬时突发量。这是它比固定窗口计数器好的地方——固定窗口在窗口边界会放行 2 倍流量，令牌桶不会。\n\n## 二、一个请求进来后的完整运转\n\n入口是 `createRateLimiter()` 返回的 `allow(key)`（[src/middleware.mjs](src/middleware.mjs)）：\n\n1. **定位桶**：用 `key`（通常是用户 ID / IP / API Key）在 `buckets` 这个 `Map` 里查。查不到就新建一个满桶（`tokens = capacity`）并存进去。\n2. **尝试取令牌**：`bucket.tryTake()`。\n3. `tryTake` 先调 `refill()`（[src/TokenBucket.mjs:10-15](src/TokenBucket.mjs)）：\n   - 读当前时间 `now()`，减去上次补水时间 `lastRefill`，得到**流逝的秒数**；\n   - `tokens = min(capacity, tokens + 秒数 × refillPerSecond)`；\n   - 更新 `lastRefill`。\n   -关键点：`min(capacity, ...)` 保证长时间没请求的话，桶**不会溢出**，最多攒到 capacity。突发额度是\"省下来的\"而不是\"额外送的\"。\n4. **判断**：`tokens >= count`（默认 1）就扣掉并返回 `true`；否则返回 `false`，一个令牌都不扣。\n\n返回值就是限流器的全部结论：`true` 放行，`false` 拒绝（HTTP 层通常回 429 + `Retry-After`）。\n\n注意第 3 步用的是**流逝时间**而不是\"每次调用固定加 N 个令牌\"。这是令牌桶和滑动窗口/固定计数的分水岭：调用再频繁，速率也被 `refillPerSecond` 卡死；调用再稀疏，桶里的令牌也只按真实时间累积。\n\n## 三、为什么是这个设计\n\n**为什么用 `Map` 而不是共享一个桶？** 因为限流的语义是\"每个调用方各自一份配额\"。上面实验里 A 用光了自己的桶，B 完全不受影响。如果全局一个桶，一个 noisy neighbor 就能饿死所有人。\n\n**为什么把 `now` 做成可注入的依赖？** (`constructor({ capacity, refillPerSecond, now = Date.now })`) 这是整个模块最值得学的一点。时间是这个算法唯一的外部依赖，把它参数化后：\n- 测试可以注入假时钟，**确定性地**推进时间，不用 sleep、不用 mock定时器；\n- 我的实验就是靠它把 12 秒的流逝压缩成两行 `t += 2000`。\n默认 `Date.now` 保证生产环境零配置。\n\n**为什么 `refill()` 和 `tryTake()` 分开？** 职责分离。`refill` 只管\"按时间算该有多少令牌\"，`tryTake` 只管\"够不够、扣不扣\"。副作用集中在一个方法里，`tryTake` 读起来就是一句业务规则。\n\n**为什么 `tryTake(count = 1)` 带参数？** 默认按 1 个令牌计，但同一个桶也能做\"一次要消耗 10 个配额\"的加权请求（比如大查询算10 次）。\n\n**为什么 `lastRefill` 要更新？** 它是\"上次算账的时间点\"。每次都基于同一个基准点累加，等价于一次算清；不更新就会重复计算同一段时间，令牌会凭空暴增。\n\n## 四、接手后你会立刻发现的几个坑\n\n1. **`Map` 永不清理**。`buckets` 只增不减，每个新 key 都会常驻内存。上线前应该加 LRU 或按时间过期淘汰，否则撞 key 的攻击能把内存打满。\n2. **令牌是小数，边界可能反直觉**。`tokens >= count` 严格比较，浮点误差在极端情况下可能出现\"差一点点\"就拒绝。生产里通常先 `Math.floor` 令牌数。\n3. **拒绝时不知道要等多久**。`tryTake` 只返回 boolean。真实 HTTP 限流通常要返回 `Retry-After`，也就是还差多少秒能凑够一个令牌——现在的实现算不出来。\n4. **没有并发保护**。Node 单线程下 `tryTake` 是同步的所以安全，但如果哪天搬去多 worker进程，`Map` 是进程内的，各 worker 互相看不见，配额会被放大 N 倍。需要 Redis 之类的共享存储。\n5. **`count` 参数没有上限校验**。传0 或负数会让 `tokens >= count` 恒真，是纯粹的额度泄漏。\n\n建议上手第一步就是给它补一个 `retryAfterSeconds()` 方法和 `timeUntilAvailable`逻辑——这也是面试里最能体现你理解到位的地方。\n\n需要我帮你补上淘汰机制和 `Retry-After` 支持吗？或者写一组基于假时钟的测试？",
+    "userText": "我接手了这个限流器模块，但还没完全看懂。你能从头给我讲讲它是干嘛的、一个请求进来后它怎么一步步运转、以及为什么用现在这种设计吗？我想真的理解它，而不是背代码。",
+    "userTexts": [
+      "我接手了这个限流器模块，但还没完全看懂。你能从头给我讲讲它是干嘛的、一个请求进来后它怎么一步步运转、以及为什么用现在这种设计吗？我想真的理解它，而不是背代码。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "teach",
+        "loadedVia": "none",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": false,
+      "artifacts": [],
+      "warnings": ["skill teach was not loaded"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=6", "skillVia=none", "dependencies=none"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113124441",
+  "capturedAt": "2026-11-13T04:45:44.712Z"
+}

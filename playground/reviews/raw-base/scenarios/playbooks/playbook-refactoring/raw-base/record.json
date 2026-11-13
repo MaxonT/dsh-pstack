@@ -1,0 +1,781 @@
+{
+  "scenarioId": "playbook-refactoring",
+  "phase": "raw",
+  "environment": {
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "d278ed6c44eb3d75bdb2e89fcd0c57937f1a60d6678461e155c2afda9662bcc1"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-ea396471-8b84-4fbd-b810-70626183418a",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["poteto-mode#user-gesture"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; find . -type f -not -path './.git/*' | head -100"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node --test 2>&1 | tail -20 && git status 2>&1 | head -5"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> && ls <TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> 2>&1"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat \"$DSH_HOME/pstack-models.json\" 2>&1; echo \"---\"; ls \"$DSH_HOME\" 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p tools && cp src/billing.js tools/billing.baseline.js && cat > tools/orders.json <<'EOF' [ { \"label\": \""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > tools/orders.json <<'EOF' [ { \"label\": \"plain\", \"order\": { \"items\": [{ \"price\": 10, \"qty\": 2 }] } }, { \"l"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node tools/capture.js ./billing.baseline.js > tools/baseline.txt && cat tools/baseline.txt"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p .sketch/candidate-a .sketch/candidate-b && ls -a"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=command -v gh; command -v origin; command -v git; git --version"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git init -q 2>&1 && git add -A && git -c user.email=dev@local -c user.name=dev commit -q -m \"chore: pin current"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && printf '.sketch/\\n' > .gitignore && git rm -r --cached .sketch -q && git add -A && git -c user.email=dev@local "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && printf '.sketch/\\n' > .gitignore && git add -A && git -c user.email=dev@local -c user.name=dev commit -q -m \"ch"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm tools/baseline.json && node --test 2>&1 | tail -12"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 60; ls -la <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la <TEMP_PATH> <TEMP_PATH> "
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git -c user.email=dev@local -c user.name=dev commit -q -am \"chore: drop stale baseline json\" && git log --oneli"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 120; ls -la <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node tools/compare.js ./billing.baseline.js ./billing.baseline.js 2>&1 | tail -8"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 180; ls -la <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=find <TEMP_PATH> -type f | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 240; ls <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 280; ls <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && find . -type f -newermt '-20 minutes' | head -30; echo \"=== A prototype ===\"; for f in candidate-a/prot"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"=== B prototype ===\"; cat candidate-b/scratch/PROTOTYPE-billing.js; echo; echo \"=== B differentia"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 240; ls <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 300; ls <TEMP_PATH> <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e \"console.log(JSON.parse(require('fs').readFileSync('tools/orders.json')).length)\""
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 270; ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls && wc -l *.js && sed -n '40,400p' differential.js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat cases.mjs && echo \"=== quirks.js ===\" && cat quirks.js && echo \"=== evaluate-sh"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat PROTOTYPE-v4.js && echo \"=== v2 ===\" && cat PROTOTYPE-v2.js"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node evaluate-shapes.js 2>&1 | grep -E \"^(PASS|FAIL)\" && echo \"=== quirks ===\" && n"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' const orig = await import(\"./tools/billing.baseline.js\"); // 1. read counts observable via getters fu"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' import {buildCases,describe,same} from \"./cases.mjs\"; const orig = await "
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node --test 2>&1 | tail -12 && echo \"=== compare ===\" && node tools/compare.js ./billing.baseline.js ../src/bil"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cp .sketch/candidate-b/scratch/cases.mjs tools/cases.mjs && node tools/check-equivalence.js 2>&1 | tail -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' import {buildCases} from \"./tools/cases.mjs\"; const c = buildCases(); console.log(\"total\", c.length);"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node tools/check-equivalence.js 2>&1 | tail -20"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls test/ && node --test 2>&1 | tail -15"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -la test/ && find <TEMP_PATH> -name \"billing.equivalence.test.js\""
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && npm test 2>&1 | tail -14 && echo \"=== equivalence ===\" && npm run check:equivalence 2>&1 | tail -4"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cp src/billing.js <TEMP_PATH> echo \"--- mutation 1: collapse discount to 0.15 ---\" sed -i 's/if (order.vip) di"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && for m in 1 2 3 4; do cp <TEMP_PATH> src/billing.js case $m in 1) sed -i 's/if (order.vip) discount += subtotal"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node tools/capture.js ./billing.baseline.js | diff - tools/baseline.txt && echo \"BYTE-IDENTICAL to snapshot\" ; "
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node tools/capture.js ./billing.baseline.js | diff - tools/baseline.txt && echo \"baseline BYTE-IDENTICAL\" ; nod"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm tools/compare.js && node tools/check-equivalence.js 2>&1 | tail -8"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && npm test 2>&1 | tail -12"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && npm test 2>&1 | tail -12"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cp src/billing.js <TEMP_PATH> for m in 1 2 3 4 5; do cp <TEMP_PATH> src/billing.js case $m in 1) sed -i 's/if"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node -e ' const o = await import(\"./tools/billing.baseline.js\"); const n = await import(\"./src/billing.js\"); co"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "error",
+        "argsSummary": "edit file_path=<TEMP_PATH>",
+        "errorText": "Error: old_string was not found in \"<TEMP_PATH>\""
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && node --check src/billing.js && echo \"parses ok\" && npm test 2>&1 | tail -10 && git diff --stat"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git status --short && git add tools/billing.baseline.js tools/orders.json tools/baseline.txt tools/capture.js t"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > <TEMP_PATH> <<'MSGEOF' test(billing): pin current behavior with a differential guard Freeze a copy of th"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git -c user.email=dev@local -c user.name=dev commit -q --amend -F .git/COMMIT_EDITMSG_GUARD && git log -1 --for"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git add src/billing.js README.md && git -c user.email=dev@local -c user.name=dev commit -q -F .git/COMMIT_EDITM"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log -1 --format=%s && git log -1 --format=%B | head -3 && ls .git/hooks/ | grep -v sample"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git add README.md && git -c user.email=dev@local -c user.name=dev commit -q -F .git/COMMIT_EDITMSG_DOCS && rm ."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --format='%H%n%s%n---' | cat -A | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log -2 --format='%B' | cat -A | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git status --short && echo \"--- tracked files ---\" && git ls-files && echo \"--- remote? ---\" && git remote -v &"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && rm -rf verify-clone && git clone -q <TEMP_PATH> verify-clone && cd verify-clone && npm test 2>&1 | tail -10 && echo \"="
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"=== reader load: original (git show 026f3be) ===\" && git show 026f3be:src/billing.js | grep -c \"\" && echo"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"=== non-comment, non-blank code lines ===\" && echo -n \"before: \" && git show 026f3be:src/billing.js | gre"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"=== 'where does tax come from?' ===\" && echo -n \"before, files to open: \" && git show 026f3be:src/billing"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo -n \"before imports: \" && (git show 026f3be:src/billing.js | grep -c \"^import\" || true) && echo -n \"after i"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf .sketch <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> && git status --short && echo \""
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && npm test 2>&1 | tail -10 && echo && git log --oneline && echo && git status --short && echo \"(clean)\""
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll restate the goal first: you want the billing module's single `processOrder` function split into clear responsibilities, with **zero behavior change**, proven by the existing tests. The smallest change I expect is a set of named pure functions (validate, subtotal, discount, tax, total) behind the same `processOrder` entry point, plus a snapshot-equivalence harness to prove old and new agree on every edge case I can construct.\n\nNow grounding and parallel design exploration.\nWaiting on the three parallel agents. Meanwhile let me check the remaining reference materials.\nWaiting for the three agents to finish.\nGrounding is in. The two design candidates are still running.\nWhile they run, I'll build the equivalence checker the proof depends on.\nCandidate A is prototyping. Waiting for both to finish.\nBoth designs are in. Let me read candidate B's harness and the rest of its design.\nBoth designs are in and they disagree structurally. Let me pick the base and verify my own reasoning before implementing.\nBoth designs are in and independently confirmed each other's key findings. Let me verify the decisive facts myself before picking.\nBoth candidates are in and I've independently verified their key findings. Let me record the decision and implement.\nBoth candidates are in. Here is my base decision and the implementation.\n\n**Base: candidate B's single-module shape, minus its speculative rules table.** I verified both candidates independently at 4080 differential cases, and both score 0 mismatches. I am picking B's shape over A's 4-file split because A spreads a 60-line calculation across 3 directories, which raises layers-to-trace without hiding more complexity. I am grafting out B's declarative `DISCOUNT_RULES` table with its `combine: \"replace\" | \"add\"` field, because that machinery for two rules is speculative, and I am keeping the original's assign-then-accumulate form which is equally behavior-preserving.\nTests pass and the snapshot matches. Now the full differential at 4080 cases, plus the read-order and quirk checks.\nNow I'll add the guard to the test suite and the npm script, so the proof runs on every `npm test`.\nThe file landed correctly. Now the npm script and README.\nNow let me prove the guard actually catches regressions rather than just passing.\nThe guard catches all four realistic regressions. Let me confirm the snapshot alone would not have caught them, which is why the differential earns its place.\nMutations 2 and 4 pass the snapshot check but fail the differential. That is the proof that the differential guard earns its place. Now let me consolidate the tools, since three overlapping scripts is reader load of its own.\nPath resolution regressed. Let me fix the module specifier resolution to be relative to the tools directory.\nNow let me consolidate the three overlapping tools into one, per the minimize-reader-load principle.\nThe test asserts against the old output format. Let me update it to the consolidated one.\nNow let me re-run the mutation test against the consolidated guard, and verify it still catches everything.\nLet me verify the discount sign-of-zero claim I made in a comment, since the candidate B report contradicted itself on it.\nI introduced typos in that edit. Let me fix the block properly.\nThe file is correct. The typos were only in my edit attempt, which didn't apply. Let me verify the whole file parses and passes.\nNow let me commit in ordered units per the sequence-verifiable-units principle.\nThe commit message got mangled by shell escaping. Let me amend it with a file-based message.\nThe shell mangled the message. Let me write it with the file tool instead.\nNow the reshape commit.\nThe README still references `tools/compare.js`, which I consolidated away. Let me fix that.\nCommits are correct. Now the final verification from a clean checkout, and the reader-load measurement.\nLet me do a final honest reader-load check and clean up the sketch artifacts.\nThe refactor is done and proven. Here is the final report.\n\n**What shipped.** [src/billing.js](src/billing.js) is now one file with one public export. `processOrder` sequences six private functions, each owning one decision: `assertOrderIsPriceable` and `assertQuantityIsPositive` guard the input, `subtotalOf` sums the lines, `discountOf` applies the coupon and VIP terms, `taxOf` and `totalOf` settle the money, and `round2` is the only rounding primitive. The public API is unchanged, so [test/billing.test.js](test/billing.test.js) passes with no edit at all.\n\n**The pin I held it against.** A frozen copy of the original at [tools/billing.baseline.js](tools/billing.baseline.js), plus a 21-case behavior snapshot. The guard at [tools/check-equivalence.js](tools/check-equivalence.js) compares the two implementations over 4080 inputs and checks returned key order, every value via `Object.is` (which separates `-0` from `0` and `NaN` from `NaN`), the class and message of thrown errors, and the order and count of property reads, since getters observe those too.\n\n**The equivalence proof.** All 4080 differential cases are identical, the read sequences are identical, and the snapshot diff is byte for byte. I mutation-tested the guard with five realistic refactoring slips. Collapsing the stacked discount to a flat 15 percent, rounding the subtotal, and relaxing the coupon comparison are all caught. Two mutations are the interesting ones. Computing the total from the raw tax instead of the rounded tax, and splitting validation into a separate pass, both reproduce the 21-case snapshot exactly while still changing behavior. The snapshot alone is not a sufficient proof, which is why the differential earns its place. The guard is wired into `npm test` via [test/billing.equivalence.test.js](test/billing.equivalence.test.js).\n\n**Reader-load delta.** Layers to trace did not change. Zero imports before, zero after. One public export before, one after. What changed is the naming of the parts: eight named functions now exist where two did, so \"where does the discount come from\" resolves to one function instead of two lines in a 25-line body. Code grew from 20 to 43 non-comment lines, and that growth is almost entirely JSDoc stating which invariants are load-bearing.\n\n**What I rejected.** I ran two structurally distinct designs in parallel. One split into four files across a directory tree. One kept a single file with a declarative discount rules table. I took the single-file shape and dropped the rules table, because a table with a `combine: \"replace\" | \"add\"` field encodes two rules in machinery meant for many, and the original's assign-then-accumulate form is equally behavior-preserving. That choice also keeps the sign of zero in the discount, which I verified directly.\n\n**Two open decisions for you.** The loose comparisons are preserved deliberately. `qty: \"2\"` is accepted and `vip: \"yes\"` earns the 5 percent discount. Tightening either is a behavior change, so it wants its own task. And the error strings `\"empty order\"` and `\"bad qty\"` are now documented as the contract, since callers match on `err.message`.\n\n**One step I could not run.** There is no git remote and no authenticated `gh` in this sandbox, so I committed in ordered units but could not open a PR. The three commits sit on `master` in the workspace. If you point this at a repository, `git push` and `gh pr create` will pick up the sequence as is.",
+    "userText": "/poteto-mode 这个计费模块把校验、算账、折扣、税费全塞在一个函数里，帮我把它拆成职责更清楚的结构，行为一点都不能变，改完用现在的测试证明结果和以前一样。",
+    "userTexts": [
+      "/poteto-mode 这个计费模块把校验、算账、折扣、税费全塞在一个函数里，帮我把它拆成职责更清楚的结构，行为一点都不能变，改完用现在的测试证明结果和以前一样。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "skillInvocation": {
+        "requested": "poteto-mode",
+        "loadedVia": "user-gesture",
+        "attempts": 0,
+        "errors": []
+      },
+      "dependencies": [],
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 69,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "edit",
+          "attempts": 7,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "list_agents",
+          "attempts": 5,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "list_subagent_models",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 26,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "subagent",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "todo_write",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 12,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "userGesture": true,
+      "artifacts": [
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "edit file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>"
+      ],
+      "warnings": ["edit needed 7 attempts with 1 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": [
+      "skillLoads=poteto-mode#user-gesture",
+      "toolCalls=128",
+      "skillVia=user-gesture",
+      "dependencies=none"
+    ]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261113114936",
+  "capturedAt": "2026-11-13T03:57:45.076Z"
+}
