@@ -135,12 +135,6 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
   );
 }
 
-function distribute(ids: string[], workers: number): string[][] {
-  const queues = Array.from({ length: workers }, () => [] as string[]);
-  ids.forEach((id, index) => queues[index % workers]?.push(id));
-  return queues;
-}
-
 interface ChildResult {
   code: number | null;
   output: string;
@@ -210,7 +204,7 @@ async function main(): Promise<void> {
   const requested = argValue("--workers") === undefined ? undefined : Number(argValue("--workers"));
   const prepared = workerCount(matrix.id, phase);
   const workers = Math.min(computeWorkers(requested).workers, prepared || requested || 1);
-  const queues = distribute(ids, workers);
+  const pending = [...ids];
   const roundFlag = argValue("--round");
   const file = progressFilePath(matrix.id, phase);
   const round = roundFlag ? Number(roundFlag) : (readProgress(file)?.round ?? 0) + 1;
@@ -226,7 +220,7 @@ async function main(): Promise<void> {
     startedAt: formatTimestamp(),
     updatedAt: formatTimestamp(),
     perWorker: Object.fromEntries(
-      queues.map((queue, index) => [`w${index}`, { done: 0, total: queue.length }]),
+      Array.from({ length: workers }, (_, index) => [`w${index}`, { done: 0, total: 0 }]),
     ),
     failures: [],
     workers,
@@ -255,10 +249,14 @@ async function main(): Promise<void> {
   };
   try {
     await Promise.all(
-      queues.map(async (queue, worker) => {
-        for (const scenarioId of queue) {
+      Array.from({ length: workers }, async (_, worker) => {
+        while (true) {
+          const scenarioId = pending.shift();
+          if (scenarioId === undefined) return;
           updateProgress(file, (current) => {
             current.running.push({ worker, scenarioId });
+            const perWorker = current.perWorker[`w${worker}`];
+            if (perWorker) perWorker.total += 1;
           });
           const args = [
             "playground/scripts/run-case.ts",
