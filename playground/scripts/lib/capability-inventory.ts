@@ -26,7 +26,7 @@ export interface CapabilityInventory {
 const RAW_DSH = join(REPOSITORY_ROOT, "playground/raw/dsh.md");
 const RAW_DSH_ZH = join(REPOSITORY_ROOT, "playground/raw/dsh.zh.md");
 const UPSTREAM = join(REPOSITORY_ROOT, "upstream/cursor-plugins/pstack");
-const SCENARIO_ROOT = join(REPOSITORY_ROOT, "playground/scenarios/capabilities");
+const SCENARIO_ROOT = join(REPOSITORY_ROOT, "playground/scenarios");
 const INVENTORY = join(REPOSITORY_ROOT, "playground/scenarios/capability-inventory.json");
 const EXCLUSIONS = join(REPOSITORY_ROOT, "playground/scenarios/capability-exclusions.json");
 

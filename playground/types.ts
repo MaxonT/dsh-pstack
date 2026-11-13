@@ -76,8 +76,6 @@ export interface BehaviorScenario {
   source: ScenarioSource;
   environmentId?: string;
   answers?: Array<{ match: string; selected?: string[]; custom?: string }>;
-  /** Environments a plugin scenario runs in; omitted means base only. */
-  environments?: string[];
   /** Capability id this probe covers. */
   capability?: string;
   /** Skill names the scenario should observe for availability and loading. */
@@ -86,17 +84,15 @@ export interface BehaviorScenario {
 
 export type Scenario = BehaviorScenario;
 
+export type EnvironmentKind = "base" | "capability" | "conflict";
+
 export interface EnvironmentMatrix {
   id: string;
+  /** Why this environment exists. Written in Chinese. */
+  description: string;
+  kind: EnvironmentKind;
   enabledPluginPackages: string[];
-  /**
-   * Plugin packages force-loaded despite a peer/runtime version mismatch. Two fixtures need
-   * this: `session-search`, whose experimental plugin pins session-query packages the runtime
-   * does not satisfy, and `agent-team`, whose experimental Agent Teams plugins declare
-   * a peer range the pinned dsh runtime does not satisfy. The loader disables those rows unless
-   * the exact package@version is exempted for this runtime. `prepare` reads the installed
-   * version and the actual runtime version to grant each exemption.
-   */
+  /** Package names force-loaded despite a peer/runtime version mismatch. */
   versionExemptions?: string[];
 }
 

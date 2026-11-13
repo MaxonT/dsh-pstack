@@ -63,7 +63,12 @@ function record(phase: "raw" | "adapted", environmentId: string): RunRecord {
     testModel: target,
     providers: { "provider-a": { apiKey: "secret-value", models: { "model-a": ["low"] } } },
   };
-  const matrix = { id: environmentId, enabledPluginPackages: [] };
+  const matrix = {
+    id: environmentId,
+    description: "测试环境",
+    kind: "base" as const,
+    enabledPluginPackages: [],
+  };
   return {
     scenarioId: scenario.id,
     phase,

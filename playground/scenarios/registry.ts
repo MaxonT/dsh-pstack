@@ -1,6 +1,7 @@
 import type { BehaviorScenario } from "../types.ts";
+import { environments } from "./environments.ts";
 
-const modules = import.meta.glob("./capabilities/*.ts", {
+const modules = import.meta.glob("./*/*.ts", {
   eager: true,
 }) as Record<string, Record<string, unknown>>;
 
@@ -14,9 +15,32 @@ function isBehaviorScenario(value: unknown): value is BehaviorScenario {
   );
 }
 
-const collected = Object.values(modules)
-  .flatMap((module) => Object.values(module))
-  .filter(isBehaviorScenario);
+const environmentIds = new Set([
+  "capabilities",
+  ...environments.map((environment) => environment.id),
+]);
+
+function environmentOf(path: string): string {
+  const directory = path.split("/")[1] ?? "";
+  if (!environmentIds.has(directory)) {
+    throw new Error(`scenario file is in unknown environment directory: ${path}`);
+  }
+  return directory === "capabilities" ? "base" : directory;
+}
+
+const collected = Object.entries(modules).flatMap(([path, module]) => {
+  const environmentId = environmentOf(path);
+  return Object.values(module)
+    .filter(isBehaviorScenario)
+    .map((scenario) => {
+      if (scenario.environmentId !== undefined && scenario.environmentId !== environmentId) {
+        throw new Error(
+          `scenario ${scenario.id} declares ${scenario.environmentId}, but lives in ${environmentId}`,
+        );
+      }
+      return { ...scenario, environmentId };
+    });
+});
 
 const duplicates = collected
   .map((scenario) => scenario.id)

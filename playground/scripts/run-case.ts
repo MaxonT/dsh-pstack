@@ -515,6 +515,11 @@ async function main(): Promise<void> {
         return found;
       })()
     : (await import("./lib/scenarios.ts")).loadScenario(scenarioId);
+  if (scenario.environmentId !== undefined && scenario.environmentId !== matrix.id) {
+    throw new Error(
+      `scenario ${scenarioId} belongs to ${scenario.environmentId}, not ${matrix.id}`,
+    );
+  }
   const configFile = argValue("--config") ?? process.env.PLAYGROUND_CONFIG_FILE ?? CONFIG_FILE;
   const config = readPlaygroundConfig(configFile);
   const expectedTarget = readHomePlan(paths);

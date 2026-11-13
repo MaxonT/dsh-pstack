@@ -11,7 +11,7 @@ function record(): RunRecord {
       worker: 0,
       dshVersion: "test",
       adaptedVersion: null,
-      matrix: { id: "base", enabledPluginPackages: [] },
+      matrix: { id: "base", description: "测试环境", kind: "base", enabledPluginPackages: [] },
       upstreamRevision: "upstream",
       configHash: "config",
     },

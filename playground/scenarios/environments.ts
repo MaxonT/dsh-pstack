@@ -1,33 +1,17 @@
 import type { EnvironmentMatrix } from "../types.ts";
 
-/**
- * Environment matrix for capability probes. `prepare` adds the port package to every
- * adapted profile; this list only holds additional packages layered on top of the base bundle.
- *
- * `versionExemptions` force-loads packages whose peer range does not match the pinned
- * runtime. It is configuration for the probe environment, not a capability declaration.
- */
+/** Capability probes run in base unless a probe explicitly requires a special environment. */
 export const environments: readonly EnvironmentMatrix[] = [
-  { id: "base", enabledPluginPackages: [] },
   {
-    id: "session-search",
-    enabledPluginPackages: ["@deepseek-ai/dsh-experimental-session-search"],
-    versionExemptions: [
-      "@deepseek-ai/dsh-session-query-sqlite",
-      "@deepseek-ai/dsh-tool-session-query",
-    ],
-  },
-  { id: "browser-use", enabledPluginPackages: ["@deepseek-ai/dsh-browser-use"] },
-  {
-    id: "terminal",
-    enabledPluginPackages: ["@deepseek-ai/dsh-experimental-terminal-bundle"],
-  },
-  {
-    id: "forge",
-    enabledPluginPackages: ["@deepseek-ai/dsh-experimental-forge-bundle"],
+    id: "base",
+    description: "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+    kind: "base",
+    enabledPluginPackages: [],
   },
   {
     id: "agent-team",
+    description: "用于验证 pstack 与 Agent Teams 插件是否冲突；只有明确指定的冲突 probe 使用。",
+    kind: "conflict",
     enabledPluginPackages: ["@deepseek-ai/dsh-experimental-agent-team-profile"],
     versionExemptions: [
       "@deepseek-ai/dsh-experimental-agent-team",

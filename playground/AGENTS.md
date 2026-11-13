@@ -49,7 +49,7 @@
 - raw：生成 `playground/raw/pstack`，先用 `run-batch --full` 跑能力探针，collect，再在新会话按证据分析规则填写 `reviews/raw-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。
 - 适配开发：根据分析结论维护 `playground/raw/dsh.md`/`dsh.zh.md` 和 `port/dsh.md`/`dsh.zh.md`，改 `src/` 与 `cordis.patch.yml`，生成两棵树并 build。
 - adapted/base：优先 `run-batch --full` 验证能力实现，collect，分析 `reviews/adapted-base/index.md`；需要消费者回归时再显式选择 representative skill/playbook 场景。不通过回适配开发。
-- 适配后环境组：按环境矩阵跑对应 capability batch，collect，分析 `reviews/adapted-<environment>/index.md`。环境限制按能力类别记录；带显式环境矩阵的元数据可以写包名或 ID。
+- 冲突环境：只有明确要求验证 pstack 与 Agent Teams 冲突时，才运行 `agent-team` 环境的 probe；没有对应 probe 不启动。
 - README/兼容表更新后，agent 停在 release-ready；`vp run release` 由用户手动执行。
 
 ## dsh.md

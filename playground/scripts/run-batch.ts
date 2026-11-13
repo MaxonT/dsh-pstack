@@ -89,7 +89,7 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
   if (full) {
     return listScenarioIds().filter((id) => {
       const scenario = loadScenario(id);
-      return scenario.environments === undefined || scenario.environments.includes(environmentId);
+      return scenario.environmentId === undefined || scenario.environmentId === environmentId;
     });
   }
   if (scenarios) return parseList(scenarios);

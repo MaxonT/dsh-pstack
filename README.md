@@ -193,7 +193,7 @@ The port is checked against real DeepSeek Harness Web sessions, not by comparing
 - **Capability-driven runs.** Capability probes are generated from pstack usage and `raw/dsh.md` at authoring time; the repository does not predefine a capability list. Skill and playbook files are consumers, not per-file test requirements.
 - **Semantic review.** A skill load only proves the skill was reachable. Each scenario records a separate verdict (`supported`, `gap`, or `inconclusive`) with a reviewer and a reason, and the adapted run records `verified`, `not-verified`, or `inconclusive`.
 - **Adapted re-check.** Review findings drive [port/dsh.md](./port/dsh.md). The adapted package is rebuilt with `vp run build`, then the same scenarios rerun to confirm the mapped behavior.
-- **Plugin matrix.** The matrix defines the official plugin environments `base`, `session-search`, `browser-use`, `terminal`, `forge`, and `agent-team`. The same scenario id runs in `raw/base`, `adapted/base`, and `adapted/<plugin>`; the comparison report shows the port effect and the plugin effect. `agent-team` is a neutral probe, not a pre-declared conflict.
+- **Environment matrix.** Capability probes run in `base` by default. `agent-team` is a separate conflict environment used only by an explicitly requested pstack conflict probe.
 
 ## ⚠️ Remaining gaps
 

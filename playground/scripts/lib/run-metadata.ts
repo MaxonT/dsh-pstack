@@ -39,6 +39,8 @@ export function environmentMatrix(id: string): RunEnvironment["matrix"] {
   if (!matrix) throw new Error(`unknown playground environment: ${id}`);
   return {
     id: matrix.id,
+    description: matrix.description,
+    kind: matrix.kind,
     enabledPluginPackages: [...matrix.enabledPluginPackages],
     ...(matrix.versionExemptions === undefined
       ? {}
