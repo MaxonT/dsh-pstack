@@ -25,6 +25,7 @@ playground/scenarios/
 
 - `capabilities/` 存放 base 环境的通用能力 probe。
 - 能力从 `upstream/cursor-plugins/pstack/` 源树中的上游文档，以及 `playground/raw/dsh.md` 的映射行提取，归一化为稳定的 capability id；提取不依赖固定子目录名。
+- 输出形态属于能力提取范围：上游文档要求截图、图片、图表、Mermaid/画布、实际 UI 渲染、视频或音频播放时，必须提取对应的 `render-*` 能力，并建立独立 probe；不能只依赖一条“非文本产物要检查”的通用场景写法。
 - `dsh.md` 的 `Paths`（路径布局）和 `Cursor-only features`（Cursor 专属能力）不纳入能力提取；它们是适配事实或跳过规则，不是可验证的会话能力。
 - 一个 capability 对应一个 probe；不同行为、环境或冲突分支使用不同的 capability id。
 - 每个场景必须设置 `capability` 字段，并默认导出 `BehaviorScenario`。

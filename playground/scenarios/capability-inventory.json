@@ -300,6 +300,31 @@
       "requiredBy": [],
       "probe": "capability-role-value",
       "status": "covered"
+    },
+    {
+      "id": "render-visual-output",
+      "description": "用户要求截图、图片、图表、Mermaid 图或实际 UI 渲染时，必须能看到真实呈现，不能只给文本、路径或文件卡片。",
+      "source": "upstream/cursor-plugins/pstack 渲染/视觉使用",
+      "sources": [
+        "upstream/cursor-plugins/pstack/skills/teach/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/ketchup/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/make-bot-ui/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/visual-parity.md",
+        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/prototype.md"
+      ],
+      "requiredBy": ["ketchup", "make-bot-ui", "poteto-mode", "teach"],
+      "status": "discovered"
+    },
+    {
+      "id": "render-media-playback",
+      "description": "用户要求视频或音频播放时，必须有可播放或可检查的媒体产物，不能只给生成代码或链接。",
+      "source": "upstream/cursor-plugins/pstack 媒体/播放使用",
+      "sources": [
+        "upstream/cursor-plugins/pstack/skills/ketchup/SKILL.md",
+        "upstream/cursor-plugins/pstack/skills/teach/SKILL.md"
+      ],
+      "requiredBy": ["ketchup", "teach"],
+      "status": "discovered"
     }
   ]
 }
