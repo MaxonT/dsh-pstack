@@ -207,11 +207,8 @@ async function main(): Promise<void> {
   }
   const requested = argValue("--workers") === undefined ? undefined : Number(argValue("--workers"));
   const prepared = workerCount(matrix.id, phase);
-  const workers = Math.min(
-    computeWorkers(requested).workers,
-    prepared || requested || 1,
-    ids.length,
-  );
+  if (prepared === 0) throw new Error("no prepared workers; run playground:prepare first");
+  const workers = Math.min(computeWorkers(requested).workers, prepared, ids.length);
   const pending = [...ids];
   const roundFlag = argValue("--round");
   const file = progressFilePath(matrix.id, phase);

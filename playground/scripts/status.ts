@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
+import { environmentMatrix } from "./lib/run-metadata.ts";
 import { progressFilePath, readProgress } from "./lib/progress.ts";
 import { currentTaskFile, workerPaths } from "./lib/worker.ts";
 
@@ -14,6 +15,7 @@ const phase = argValue("--phase") as Phase | undefined;
 if (!isPhase(phase)) throw new Error("status requires --phase raw|adapted");
 const environment = argValue("--environment");
 if (environment === undefined) throw new Error("status requires --environment");
+environmentMatrix(environment);
 const file = progressFilePath(environment, phase);
 const state = readProgress(file);
 if (!state) {

@@ -19,6 +19,7 @@ import { join } from "node:path";
 
 import { createBrowserSession } from "./lib/browser.ts";
 import { readWebUrl } from "./lib/env.ts";
+import { environmentMatrix } from "./lib/run-metadata.ts";
 import { workerPaths } from "./lib/worker.ts";
 import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
@@ -29,6 +30,7 @@ function main(): void {
   const environmentPos = argv.indexOf("--environment");
   const environmentId = environmentPos >= 0 ? (argv[environmentPos + 1] as string) : undefined;
   if (environmentId === undefined) throw new Error("--environment is required");
+  environmentMatrix(environmentId);
   if (environmentPos >= 0) argv.splice(environmentPos, 2);
   const phasePos = argv.indexOf("--phase");
   const phase = (phasePos >= 0 ? argv[phasePos + 1] : undefined) as Phase | undefined;

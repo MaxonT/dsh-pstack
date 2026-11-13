@@ -54,8 +54,9 @@ export function readBatchMetadata(phase: Phase, environment: string): BatchMetad
       parsed.environment !== environment ||
       (parsed.mode !== "full" && parsed.mode !== "incremental") ||
       !Array.isArray(parsed.scope)
-    )
-      return null;
+    ) {
+      throw new Error("current batch metadata has an invalid shape");
+    }
     return {
       batchId: parsed.batchId,
       phase: parsed.phase,
@@ -67,8 +68,10 @@ export function readBatchMetadata(phase: Phase, environment: string): BatchMetad
         ? { upstreamRevision: parsed.upstreamRevision }
         : {}),
     };
-  } catch {
-    return null;
+  } catch (error) {
+    throw new Error(
+      `invalid batch metadata ${file}: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
