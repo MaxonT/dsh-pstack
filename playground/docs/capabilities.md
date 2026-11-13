@@ -6,20 +6,21 @@
 
 - pstack skills、playbooks、commands、角色说明中的实际依赖。
 - `playground/raw/dsh.md` 的映射行和 `playground/raw/dsh-evidence.md` 的判定依据。
-- `playground/capabilities.ts` 中登记的能力清单。
+- 从上述来源由 agent 现场整理的能力清单；仓库不提交固定能力清单。
 
 DSH 运行时和 profile 只用于执行 probe 和解释结果，不作为能力需求的来源。raw 的任务是发现 pstack 依赖的能力在真实 DSH 中是否成立，不是枚举 DSH 已经提供的工具。
 
 ## 能力记录
 
-每项能力记录：
+每次编写前由 agent 从来源提取，至少说明：
 
-- `id`：稳定的能力标识
-- `description`：用户可观察的行为
-- `source`：来自哪些 pstack 使用和 raw 映射
-- `requiredBy`：消费这项能力的 skill/playbook
-- `phases`：适用阶段
-- `probe`：验证该能力的场景 id
+- 能力标识和用户可观察行为
+- 来自哪些 pstack 使用和 raw 映射
+- 哪些 skill/playbook 消费它
+- 适用阶段
+- 对应 probe 场景文件
+
+能力不是仓库预设常量；raw 不允许预置能力集合。
 
 ## Probe
 
@@ -31,4 +32,4 @@ DSH 运行时和 profile 只用于执行 probe 和解释结果，不作为能力
 
 ## 覆盖守卫
 
-`tests/playground-contracts.test.ts` 检查每项 capability 都有 probe；删除或漏写能力探针会直接失败。skill/playbook 不要求各自拥有完整 worker 场景，只作为能力消费者登记。
+场景文件是能力提取的产物。新会话按本文件的提取流程生成 `scenarios/capabilities/` 下的 probe；不要在仓库里预置能力表或固定能力清单。skill/playbook 不要求各自拥有完整 worker 场景，只作为能力消费者登记。

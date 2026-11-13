@@ -6,7 +6,7 @@
 
 - pstack skills、playbooks、commands、角色说明中的实际依赖。
 - `playground/raw/dsh.md` 的映射行和 `playground/raw/dsh-evidence.md`。
-- `playground/capabilities.ts` 的能力清单。
+- 从上述来源现场提取的能力集合；仓库不预先维护固定能力清单。
 
 DSH 运行时和 profile 只用于执行 probe 和解释结果，不能作为 raw 能力来源。raw 要发现 pstack 依赖的能力在真实 DSH 中是否成立，不是枚举 DSH 已经提供的工具。
 
@@ -18,9 +18,9 @@ DSH 运行时和 profile 只用于执行 probe 和解释结果，不能作为 ra
 - `assertions` 只做机械事实；能力是否成立由 `rubric`、实际 tool call、截图和产物共同判断。
 - 非文本产物必须检查实际呈现，源码、文件路径、文件卡片和 assistant 文本不能替代渲染或播放结果。
 - 场景不要求某个工具名、某个插件或某个具体实现；能力缺失、部分支持、环境限制和未知按证据记录。
-- 新能力必须先登记到 `playground/capabilities.ts`，再写 probe；删除或漏写 probe 会让覆盖测试失败。
+- 新能力由 pstack 使用和 `raw/dsh.md` 现场提取后直接写成 probe；仓库不维护固定能力清单。
 
 ## 完成条件
 
-- 同步更新 `playground/capabilities.ts` 的 capability 记录和 `tests/playground-contracts.test.ts`。
+- 同步检查 `tests/playground-contracts.test.ts` 的场景结构约束。
 - 运行 `vp check --fix` 和 `vp test`，没有格式、类型或测试失败才算完成。

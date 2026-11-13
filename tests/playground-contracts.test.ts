@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { CAPABILITIES } from "../playground/capabilities.ts";
 import { parseConfig } from "../playground/scripts/lib/config.ts";
-import { behaviorScenario, environments } from "../playground/scenarios/index.ts";
+import { environments } from "../playground/scenarios/index.ts";
 
 function config(provider = "provider-a", model = "model-a", effort = "low") {
   return {
@@ -60,27 +59,6 @@ describe("playground environments", () => {
       expect(new Set(environment.enabledPluginPackages).size).toBe(
         environment.enabledPluginPackages.length,
       );
-    }
-  });
-});
-
-describe("capability catalog", () => {
-  it("records a source and required consumers for every capability", () => {
-    for (const capability of CAPABILITIES) {
-      expect(capability.id).not.toBe("");
-      expect(capability.source).not.toBe("");
-      expect(capability.requiredBy.length).toBeGreaterThan(0);
-      expect(capability.phases.length).toBeGreaterThan(0);
-      expect(["pending", "covered"]).toContain(capability.status);
-    }
-  });
-
-  it("requires a real probe whenever a capability is marked covered", () => {
-    for (const capability of CAPABILITIES) {
-      if (capability.status !== "covered") continue;
-      if (capability.probe === undefined) throw new Error(`${capability.id} has no probe`);
-      const scenario = behaviorScenario(capability.probe);
-      expect(scenario.turns.length).toBeGreaterThan(0);
     }
   });
 });

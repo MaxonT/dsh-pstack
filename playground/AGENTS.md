@@ -24,7 +24,7 @@
 - `SessionAnalysis` 必须写入 RunRecord，包含 `skillInvocation`、`dependencies`、`tools`、`userGesture` 和 warnings。
 - 截图保存为完整页面 `screenshot.png`；捕获失败直接抛异常，不写入降级截图。
 - 非文本产物以实际呈现结果为准；源码块、文件存在、路径、文件卡片和 assistant 文本不能单独证明渲染或播放成立。
-- 覆盖单位是 [playground/capabilities.ts](./capabilities.ts) 的 capability（说明见 [docs/capabilities.md](./docs/capabilities.md)）；skill/playbook 只登记依赖的 capability，不要求每个都有真实场景。能力探针覆盖 raw 或 adapted 的实际观察，排除只给明确依赖 Cursor 云服务的条目。
+- 覆盖单位是 capability。每次从 pstack 使用和 `raw/dsh.md` 提取能力，再由 agent 在 `scenarios/capabilities/` 生成 probe；仓库不预置能力清单。skill/playbook 只登记依赖关系，不要求每个都有真实场景。能力探针覆盖 raw 或 adapted 的实际观察。
 - 带环境矩阵的场景不预设冲突；具体环境只用于运行矩阵，结果由会话文件和界面观察决定。
 - 每个 scenario workspace 由 runner 初始化本地 `git init`，不设置 origin；worker 不携带 Git/GitHub 凭证，避免真实远端副作用。
 
