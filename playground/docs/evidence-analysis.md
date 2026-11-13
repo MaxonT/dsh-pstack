@@ -18,6 +18,15 @@
 - adapted 分析只读 adapted 快照、`port/dsh.md` 和当前适配实现；不得用 raw 的缺失直接替代 adapted 的验证。
 - 违反阶段隔离得出的结论视为无效，必须丢弃并重新分析。
 
+## 非文本输出审查
+
+- 先识别用户要求的是文本还是非文本产物。
+- 非文本产物必须看完整页面截图和实际 UI 呈现，不能只看 assistant 文本、源码块、文件路径、文件卡片或 artifact 断言。
+- 源码出现、文件存在或路径可访问，不等于实际渲染、播放或可读。
+- 用户明确要求源码或格式时，源码可以作为该格式的结果，但仍需确认内容完整并实际出现在回复或产物中。
+- 渲染、播放或查看能力缺失时，记录为环境限制或待用户判断，不得判通过。
+- 没有实际呈现证据的非文本产物，按 gap 或待用户判断处理。
+
 ## 输出
 
 只写 `reviews/<phase>-<environment>/index.md`。分析完成后按 [evidence-redaction.md](./evidence-redaction.md) 生成 `record.safe.json` 并通过 `playground:redact --apply`。

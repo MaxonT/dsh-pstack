@@ -23,6 +23,7 @@
 - 每个场景只观察当前 phase 实际提供的能力；技能加载路径按该 phase 的原生或适配工具集判断，raw 只记录原生能力，adapted 才记录适配工具；同时观察依赖可用性、工具调用与重试、turn 是否结束、最终答复或产物是否存在。
 - `SessionAnalysis` 必须写入 RunRecord，包含 `skillInvocation`、`dependencies`、`tools`、`userGesture` 和 warnings。
 - 截图保存为完整页面 `screenshot.png`；捕获失败直接抛异常，不写入降级截图。
+- 非文本产物以实际呈现结果为准；源码块、文件存在、路径、文件卡片和 assistant 文本不能单独证明渲染或播放成立。
 - 每个上游技能和 playbook 必须有场景或明确排除。排除只给上游明确依赖 Cursor 云服务的条目，理由和证据写进 `exclusions.ts`。
 - 带环境矩阵的场景不预设冲突；具体环境只用于运行矩阵，结果由会话文件和界面观察决定。
 - 每个 scenario workspace 由 runner 初始化本地 `git init`，不设置 origin；worker 不携带 Git/GitHub 凭证，避免真实远端副作用。
