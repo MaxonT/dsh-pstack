@@ -15,7 +15,7 @@
 
 ## 批次
 
-- `run-batch --full`：覆盖该 phase/environment 的全部适用场景，成功后整份当前快照更新。它不是跨 phase 全跑：raw full = `skills` + `playbooks`；adapted full = `skills` + `playbooks` + `official-plugins` + `runtime-tools`，并按场景声明的 `environments` 过滤当前环境。
+- `run-batch --full`：覆盖当前 phase/environment 的全部适用场景，成功后整份当前快照更新。适用集合由场景注册表和 phase/environment 规则决定，本文档不枚举具体组名。
 - `run-batch --scenarios/--skills/--groups`：增量批次，只替换本次跑到的场景；未跑到的场景保留当前快照。
 - 批次在启动时生成 `batchId`，不按记录时间推导。`batchId` 只写进 `.workers` 的 `current-batch.json` 和 `manifest.json`，不决定快照目录。
 - 同一 phase/environment 只允许一个批次写入；批次失败时 `.staging` 丢弃，当前快照不动。
@@ -26,7 +26,7 @@
 flowchart TD
   rawFull[raw full] --> collectRaw[collect]
   collectRaw --> analyzeRaw[新会话分析 raw 证据]
-  analyzeRaw -->|dsh-md / plugin| portChange[修改 port/dsh.md 或适配代码]
+  analyzeRaw -->|raw 结论| portChange[适配开发]
   portChange --> build[generate + build]
   build --> adaptedFull[adapted full]
   adaptedFull --> collectAdapted[collect]
@@ -46,9 +46,9 @@ flowchart TD
 | --- | --- | --- | --- |
 | 1. raw 基线 | 无当前 raw 快照 | `reviews/raw-base/manifest.json`、`reviews/raw-base/scenarios/**` | 新会话分析 `reviews/raw-base/index.md` |
 | 2. raw 分析 | raw 快照完整 | `reviews/raw-base/index.md` 的问答和 dsh.md 审查 | `dsh-md` 回适配开发；`upstream` / `ignore-environment` / `待你判断` 分别分流 |
-| 3. 适配开发 | 分析给出 `dsh-md` 或 `plugin` | 更新 `port/dsh.md`、适配代码、生成树和 build | adapted/base |
+| 3. 适配开发 | 分析给出当前阶段的 `dsh-md` 或 `plugin` | 更新当前阶段对应的 dsh.md、适配代码、生成树和 build | adapted/base |
 | 4. adapted/base | 新 build 完成 | `reviews/adapted-base/` 当前快照 | 新会话分析 `reviews/adapted-base/index.md` |
-| 5. adapted 分析 | adapted 快照完整 | `reviews/adapted-base/index.md` 与 raw 对照 | 通过后进适配后环境组；否则回第 3 阶段 |
+| 5. adapted 分析 | adapted 快照完整 | `reviews/adapted-base/index.md` 和当前阶段 dsh.md 审查 | 通过后进适配后环境组；否则回第 3 阶段 |
 | 6. 适配后环境组 | adapted/base 通过 | `reviews/adapted-<environment>/` 当前快照 | 环境分析 |
 | 7. 适配后环境分析 | 各环境快照完整 | `reviews/adapted-<environment>/index.md` | 通过后进 README/release-ready |
 | 8. README + release-ready | 前面分析通过 | README/兼容表、`vp run ci` 通过 | 用户手动 `vp run release` |
@@ -106,7 +106,7 @@ vp run playground:collect -- --phase adapted --environment base
 
 每个问题只能落到以下一种结论：
 
-- `dsh-md`：改 `port/dsh.md`，必要时同步 `dsh.zh.md`，然后重跑 adapted。
+- `dsh-md`：改当前阶段对应的 dsh.md；raw 改 `playground/raw/dsh.md`，adapted 改 `port/dsh.md`，必要时同步 `dsh.zh.md`。
 - `plugin`：改插件、工具或预设，build 后跑受影响场景。
 - `upstream`：记录为上游技能问题，不在本仓修。
 - `ignore-environment`：记录环境权限、凭据、网络或无头限制。

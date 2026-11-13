@@ -34,12 +34,12 @@ vp run playground:collect -- --phase adapted --environment base
 
 run-case 在同一会话中顺序发送 Scenario 的所有自然语言 turns。每轮要等到会话真正空闲才采集最终 assistant 消息和截图，不能把某个中间 turn 的输出当成最终答复。没有自动停止和隐藏超时。浏览器或会话日志不可读时记录基础设施未决，不自动重试。`run` 是单场景命令，不写 batch progress；多场景进度由 `run-batch` 写入 `playground/.workers/<phase>/<environment>/progress.json`，用 `playground:status` 查看。
 
-## 证据和报告
+## 证据和快照
 
 RunRecord 的身份是 scenarioId、phase、environmentId。记录包含实际 DSH 版本、安装版本、实际模型路由、上游 revision、配置 hash、会话事实、产物和裁决。密钥只用于进程环境，不能进入记录。
 
-可观察断言检查完成状态、产物和过程事实。语义审核另存状态、理由与审核者。运行时审查另存 `runtimeReview`，与语义审核分开；无法归类的 finding 必须标为 `needs-review` 等用户审查。pending 在 raw 是 unobserved，在 adapted 是 inconclusive。
+`collect` 读取全部 worker 的 RunRecord，把当前 phase/environment 的最新证据复制到 `reviews/<phase>-<environment>/scenarios/<group>/<scenario>/<phase>-<environment>/`。每个目录保存 `record.json`、`screenshot.png`、`full.png` 和 `session.jsonl.zstd`。
 
-collect 读取全部 worker 的 RunRecord。报告列出已运行、未运行和排除的场景。adapted 必须与 raw 对照自然语言、实际模型、上游 revision 和配置 hash。归档避免重复复制已归档文件。
+`manifest.json` 记录当前快照的来源和覆盖场景；`index.md` 是分析会话填写的问答文件。未出现在当前快照中的场景目录会被删除，分析文件里的对应问答也要清理。
 
 `--only-failed` 在 raw 只选择 gap，在 adapted 只选择 not-verified。blocked、unobserved 和 inconclusive 需要显式选择或人工处理，不自动重试到变绿。

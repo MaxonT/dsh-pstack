@@ -13,7 +13,7 @@
 
 ## 输出
 
-只写 `reviews/<phase>-<environment>/index.md`。不生成 summary、runtime-review 或 approval。
+只写 `reviews/<phase>-<environment>/index.md`，不生成额外的汇总或审批文件。
 
 `index.md` 固定包含：
 
