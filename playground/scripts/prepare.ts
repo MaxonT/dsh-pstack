@@ -77,6 +77,7 @@ async function main(): Promise<void> {
   const environmentId = argValue("--environment");
   if (environmentId === undefined) throw new Error("--environment is required");
   const matrix = environmentMatrix(environmentId);
+  clearBootstrapReady(matrix.id, phase);
   if (phase === "raw" && matrix.enabledPluginPackages.length > 0 && matrix.kind !== "capability") {
     throw new Error("raw only accepts additional packages in an explicit capability environment");
   }
@@ -101,7 +102,6 @@ async function main(): Promise<void> {
     // The reused profile points at the worker's raw mount outside the repo; refresh it so a
     // cleared temp root does not restart raw workers with missing skills.
     for (const worker of workers) {
-      clearBootstrapReady(worker);
       if (readPhase(worker) === "raw") mountRawTree(worker);
       writeWorkerInstructions(worker);
       if (readPhase(worker) === "adapted") writeRoleFile(worker, config);
@@ -122,7 +122,6 @@ async function main(): Promise<void> {
   mkdirSync(workersDirectory(), { recursive: true });
   let installed: WorkerPaths | null = null;
   for (const worker of workers) {
-    clearBootstrapReady(worker);
     if (reset) resetHome(worker);
     else mkdirSync(worker.home, { recursive: true });
     if (phase === "raw") mountRawTree(worker);

@@ -53,16 +53,16 @@ export function stopRequestFile(paths: WorkerPaths): string {
   return join(paths.root, "stop-request");
 }
 
-export function bootstrapReadyFile(paths: WorkerPaths): string {
-  return join(paths.root, "bootstrap-ready.json");
+export function bootstrapReadyFile(environmentId: string, phase: Phase): string {
+  return join(phaseWorkersDirectory(environmentId, phase), "bootstrap-ready.json");
 }
 
-export function hasBootstrapReady(paths: WorkerPaths): boolean {
-  return existsSync(bootstrapReadyFile(paths));
+export function hasBootstrapReady(environmentId: string, phase: Phase): boolean {
+  return existsSync(bootstrapReadyFile(environmentId, phase));
 }
 
-export function clearBootstrapReady(paths: WorkerPaths): void {
-  rmSync(bootstrapReadyFile(paths), { force: true });
+export function clearBootstrapReady(environmentId: string, phase: Phase): void {
+  rmSync(bootstrapReadyFile(environmentId, phase), { force: true });
 }
 
 export function currentTaskFile(paths: WorkerPaths): string {

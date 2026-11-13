@@ -19,7 +19,7 @@ for (const paths of listWorkers({
   ...(phase === undefined ? {} : { phase }),
 })) {
   const result = stopWeb(paths);
-  clearBootstrapReady(paths);
+  clearBootstrapReady(paths.environmentId, paths.phase);
   console.log(
     `[stop] ${paths.phase}/${paths.environmentId}/w${paths.index} stopped=${result.stopped}`,
   );

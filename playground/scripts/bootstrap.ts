@@ -149,23 +149,28 @@ function validateWorker(paths: WorkerPaths): string[] {
 
 async function main(): Promise<void> {
   const workers = selectWorkers();
+  const environment = argValue("--environment");
+  if (environment === undefined) throw new Error("--environment is required");
+  const phase = argValue("--phase") as Phase;
+  if (hasBootstrapReady(environment, phase)) {
+    console.log(`[bootstrap] environment ${environment}/${phase} already ready`);
+    return;
+  }
   let failed = 0;
   for (const paths of workers) {
-    if (hasBootstrapReady(paths)) {
-      console.log(`[bootstrap] worker ${paths.index} already ready`);
-      continue;
-    }
     const failures = validateWorker(paths);
-    if (failures.length > 0) {
-      failed += 1;
-    } else {
-      writeFileSync(
-        bootstrapReadyFile(paths),
-        `${JSON.stringify({ checkedAt: new Date().toISOString() }, null, 2)}\n`,
-      );
-    }
+    if (failures.length > 0) failed += 1;
   }
-  if (failed > 0) process.exitCode = 1;
+  if (failed > 0) {
+    process.exitCode = 1;
+    return;
+  }
+  if (process.argv.includes("--all")) {
+    writeFileSync(
+      bootstrapReadyFile(environment, phase),
+      `${JSON.stringify({ checkedAt: new Date().toISOString(), workers: workers.map((worker) => worker.index) }, null, 2)}\n`,
+    );
+  }
 }
 
 main().catch((error: unknown) => {
