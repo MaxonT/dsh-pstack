@@ -17,7 +17,7 @@
 
 - `run-batch --full`：覆盖当前 phase/environment 的全部适用场景，成功后整份当前快照更新。适用集合由场景注册表和 phase/environment 规则决定，本文档不枚举具体组名。
 - `run-batch --scenarios/--skills/--groups`：增量批次，只替换本次跑到的场景；未跑到的场景保留当前快照。
-- 批次在启动时生成 `batchId`，不按记录时间推导。`batchId` 只写进 `.workers` 的 `current-batch.json` 和 `manifest.json`，不决定快照目录。
+- 批次在启动时生成 `batchId`，不按记录时间推导。`batchId` 只写进 `playground/.workers/<phase>/<environment>/current-batch.json` 和 `manifest.json`，不决定快照目录。
 - 同一 phase/environment 只允许一个批次写入；批次失败时 `.staging` 丢弃，当前快照不动。
 
 ## 闭环总览
