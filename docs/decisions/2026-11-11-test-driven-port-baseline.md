@@ -35,3 +35,5 @@ Review: 2026-11-11
 - `reports/` 镜像 `scenarios/` 的三组目录。每个 case 的 `record.json`、截图和 session 日志不提交；`index.md`、`summary-*.md`、`comparison.md`、`approval-*.md` 提交。
 - 上游 pstack 或 DSH 升级时按 `playground/raw/AGENTS.md` 重新判定适配文档，按场景注册表重跑 raw 与 adapted，不需要旧 lock 或审批轮次。
 - 本记录替代 [2026-11-08-release-compatibility-metadata.md](./2026-11-08-release-compatibility-metadata.md)。实现正在 `refactor/test-driven-pstack-port` 分支按批次提交；合入默认分支后补实现锚点。
+
+> 更新：`reports/`、`reviews/scenarios`、`reviews/runtime-review` 和 history 的旧结构已被 [2026-11-13-current-review-snapshot.md](./2026-11-13-current-review-snapshot.md) 取代；本记录其余场景注册表和 `playground/baseline.json` 决策仍然有效。
