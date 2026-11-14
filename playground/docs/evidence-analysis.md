@@ -19,6 +19,21 @@
 - adapted 分析只读 adapted 快照、`port/dsh.md` 和当前适配实现；不得用 raw 的缺失直接替代 adapted 的验证。
 - 违反阶段隔离得出的结论视为无效，必须丢弃并重新分析。
 
+## 按能力类别分析
+
+分析不能只写一段总体结论；每个 finding 必须落到对应能力类别，并按类别的观察维度判断。
+
+| 能力类别 | 必看证据 | 判定重点 |
+| --- | --- | --- |
+| tool | `SessionAnalysis.tools` 的 `firstAttemptStatus`、`attempts`、`failures`、`recovered`、`finalStatus`；实际 tool call 和错误文本 | 一次通过、失败后重试通过、仍然失败要分开写；不要把重试成功写成一次通过 |
+| delegation | 子代理是否真正启动、角色和路由、完成通知、父会话是否转述结果 | 是否实际委派，还是主会话自己完成 |
+| routing | 实际 `target` 路由、可用模型、effort、继承或回退 | 实际路由是否与声明和可用路由一致，不能凭回复文字猜 |
+| environment | 环境配置、插件前提、跳过/blocked 行为 | 区分能力不支持、环境未启用和降级替代 |
+| output-render | 完整页面截图、实际图像、渲染后的图表、可播放媒体 | 源码、路径或文件卡片不能当作实际呈现 |
+| skill-dependency | 被依赖技能的加载/不可用状态、本地替代、vendored skill、fallback | 依赖缺失时整个任务是否仍按降级完成 |
+
+`tool` 的 `recovered` 为 true 表示失败后最终成功；`firstAttemptStatus === "ok"` 且 `failures === 0` 才是一次通过。
+
 ## 非文本输出审查
 
 - 先检查 inventory 是否为上游要求的渲染、截图、图表、Mermaid、UI、视频或音频输出建立了 `render-*` capability 和 probe；缺失本身就是覆盖缺口，不能因为当前快照没有产物就判通过。
@@ -47,6 +62,8 @@
 ### Q1 标题
 
 - 类型：dsh-md | plugin | upstream | ignore-environment | 待你判断
+- 能力类别：tool | delegation | routing | environment | output-render | skill-dependency
+- 通过方式（仅 tool）：first-pass | recovered-after-failure | failed
 - 影响场景：`a`、`b`
 - 证据：
   - [record](scenarios/a/raw-base/record.json)

@@ -59,6 +59,7 @@ RunRecord 的身份是 `scenarioId + phase + environmentId`。记录包含：
 - 上游 revision
 - 配置 hash
 - 会话事实
+- 工具调用统计（含首次是否成功、重试/失败/恢复）
 - 产物和裁决
 
 密钥只用于进程环境，不进入记录。

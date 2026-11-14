@@ -105,7 +105,10 @@ export interface ToolAttemptAnalysis {
   name: string;
   attempts: number;
   failures: number;
+  firstAttemptStatus: "ok" | "error" | "pending";
   finalStatus: "ok" | "error" | "pending";
+  /** True when at least one attempt failed and the final attempt succeeded. */
+  recovered: boolean;
 }
 
 export interface SessionAnalysis {

@@ -7,11 +7,14 @@ function toolAnalysis(session: SessionFacts): ToolAttemptAnalysis[] {
       name: call.name,
       attempts: 0,
       failures: 0,
+      firstAttemptStatus: call.status,
       finalStatus: "pending" as const,
+      recovered: false,
     };
     current.attempts += 1;
     if (call.status === "error") current.failures += 1;
     current.finalStatus = call.status === "error" ? "error" : "ok";
+    current.recovered = current.failures > 0 && current.finalStatus === "ok";
     grouped.set(call.name, current);
   }
   return [...grouped.values()].sort((left, right) => left.name.localeCompare(right.name));
