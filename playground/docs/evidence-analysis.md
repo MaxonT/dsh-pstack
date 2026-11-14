@@ -83,7 +83,7 @@ raw 分析只审查 `playground/raw/dsh.md`，adapted 分析只审查 `port/dsh.
 7. 环境权限、凭据、网络或无头限制进入 `ignore-environment`。
 8. 证据不足或分类会影响方案时，一律标 `待你判断`，不得默认忽略。
 
-批次模式和快照范围的完整规则见 [verification-loop.md](./verification-loop.md)。分析会话只需处理当前快照；删除场景时，同步删除只指向该场景的问答条目。
+批次模式和快照范围的完整规则见 [workflow.md](./workflow.md)。分析会话只需处理当前快照；删除场景时，同步删除只指向该场景的问答条目。
 
 ## 链接与提交
 
