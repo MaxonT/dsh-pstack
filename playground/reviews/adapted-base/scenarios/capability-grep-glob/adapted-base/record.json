@@ -2,7 +2,7 @@
   "scenarioId": "capability-grep-glob",
   "phase": "adapted",
   "environment": {
-    "worker": 5,
+    "worker": 8,
     "dshVersion": "0.2.2-rc.1",
     "adaptedVersion": "0.3.1",
     "matrix": {
@@ -20,7 +20,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-f990393d-78c2-4f27-bd54-f2c37df09195",
+    "sessionId": "session-464118c5-eb81-4769-894e-53fe9f974c67",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "poteto-mode",
@@ -29,21 +29,41 @@
       {
         "name": "grep",
         "status": "ok",
-        "argsSummary": "grep path=<TEMP_PATH> pattern=buildReport"
+        "argsSummary": "grep path=<TEMP_PATH> pattern=deploy"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -R . | head -50"
+      },
+      {
+        "name": "grep",
+        "status": "ok",
+        "argsSummary": "grep path=<TEMP_PATH> pattern=部署|publish|release|ship"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "`buildReport` 出现在 3 个文件，共 4 处：\n\n| 文件 | 行号 | 内容 |\n|---|---|---|\n| `src/a.ts` | 1 | `export function buildReport() {`（定义） |\n| `src/b.ts` | 1 | `import { buildReport } from './a';`（导入） |\n| `src/b.ts` | 2 | 注释中的引用 |\n| `docs/notes.md` | 1 | 仅文字提及 |\n\n真正的代码引用只有 `src/a.ts:1`（定义）和 `src/b.ts:1`（导入）。",
-    "userText": "在这个工作区里找出所有出现函数名 buildReport 的位置，把文件和行号列出来。",
-    "userTexts": ["在这个工作区里找出所有出现函数名 buildReport 的位置，把文件和行号列出来。"],
+    "assistantText": "仓库里只有一处提到部署命令的文件。\n\n**命中文件与行号**\n\n- `docs/deploy.md:3` — 部署命令本身 `deploy now`。第 1 行是标题「# 部署」，只是章节名不算命令。\n\n**未命中但相关的**\n\n- `docs/other.md:3` — 提到「与部署无关」，是否定句，不含命令。\n\n**其余文件**\n\n- `README.md`、`src/config.ts` — 没有匹配 `deploy`、部署、publish、release、ship 等模式。\n\n如果你的部署命令关键词不止 `deploy`，告诉我具体命令或模式，我再按那个重跑一遍。",
+    "userText": "在这个仓库里找出所有提到部署命令的文件，并把命中的文件和行号给我。",
+    "userTexts": ["在这个仓库里找出所有提到部署命令的文件，并把命中的文件和行号给我。"],
     "autoAnswers": [],
     "analysis": {
       "tools": [
         {
-          "name": "grep",
+          "name": "bash",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "grep",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
       "artifacts": [],
@@ -53,7 +73,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=1", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=3", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -65,6 +85,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114002555",
-  "capturedAt": "2026-11-13T16:25:55.989Z"
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:19:42.684Z"
 }

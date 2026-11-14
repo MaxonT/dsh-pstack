@@ -2,7 +2,7 @@
   "scenarioId": "capability-readonly-true",
   "phase": "adapted",
   "environment": {
-    "worker": 4,
+    "worker": 10,
     "dshVersion": "0.2.2-rc.1",
     "adaptedVersion": "0.3.1",
     "matrix": {
@@ -20,21 +20,36 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-1cf16893-85ab-456e-bb5e-5a46ed66e6dc",
+    "sessionId": "session-2190a996-c6c2-4677-ab55-4ca458571fed",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "poteto-mode",
     "skillLoads": [],
     "toolCalls": [
       {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; find src -type f | head -50"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
         "name": "pstack_subagent",
         "status": "ok",
         "argsSummary": "pstack_subagent"
       },
       {
-        "name": "list_agents",
+        "name": "read",
         "status": "ok",
-        "argsSummary": "list_agents"
+        "argsSummary": "read file_path=<TEMP_PATH>"
       },
       {
         "name": "read",
@@ -43,31 +58,45 @@
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "The read-only executor confirmed it and did not modify anything.\n\n**First line of `config.txt`.**\n\n```\nmode=strict\n```\n\nIt reports 11 characters, excluding the line terminator, and confirms the file was left unmodified. My own read of the same file agrees.\n\nFile: [config.txt](<<TEMP_PATH>",
-    "userText": "让一个只读的执行者检查工作区里的 config.txt，报告它第一行是什么。明确告诉它不要修改任何文件。",
+    "assistantText": "I've handed the survey to a read-only探查者. Waiting for its report.\n\n--- turn 2 ---\n\n探查者（read-only 子代理）已读完 `src` 目录，我另行核对了两处文件内容。没有任何文件被修改。\n\n**结果。** `src` 目录只有两个占位模块。\n\n- [src/a.ts](src/a.ts) 导出常量 `a`，值为 `1`。\n- [src/b.ts](src/b.ts) 导出常量 `b`，值为 `2`。\n\n工作区其余内容只有 [README.md](README.md) 和 `.git` 目录。\n\n**原理。** 本次只做读取，未触及「守边界」（Boundary Discipline）与「按原则建模领域」，因为没有代码与领域逻辑；「证明有效」仅体现为我自己复核了两个文件，与探查者报告一致。",
+    "userText": "让一个只读的探查者读一遍 src 目录，告诉我每个文件负责什么。它只负责读，不要修改任何文件。",
     "userTexts": [
-      "让一个只读的执行者检查工作区里的 config.txt，报告它第一行是什么。明确告诉它不要修改任何文件。"
+      "让一个只读的探查者读一遍 src 目录，告诉我每个文件负责什么。它只负责读，不要修改任何文件。"
     ],
     "autoAnswers": [],
     "analysis": {
       "tools": [
         {
-          "name": "list_agents",
+          "name": "bash",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         },
         {
           "name": "pstack_subagent",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         },
         {
           "name": "read",
-          "attempts": 1,
+          "attempts": 3,
           "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
       "artifacts": [],
@@ -77,7 +106,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=3", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=6", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -89,6 +118,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114002555",
-  "capturedAt": "2026-11-13T16:26:36.767Z"
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:21:42.995Z"
 }

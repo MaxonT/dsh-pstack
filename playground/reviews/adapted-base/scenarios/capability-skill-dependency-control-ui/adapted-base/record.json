@@ -1,0 +1,355 @@
+{
+  "scenarioId": "capability-skill-dependency-control-ui",
+  "phase": "adapted",
+  "environment": {
+    "worker": 1,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-eea28b1b-cc34-4905-ae73-897c7f25ad21",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": ["control-ui"],
+    "toolCalls": [
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=control-ui"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat README.md; ls .git; git log --oneline | head -5; which node npx chromium google-chrome chromium-browser 2>/dev/null; ls /root/.cache/ms-playwright 2>/dev/null; ls ~/.cache/ms-playwrig"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git branch -a; git ls-tree -r --name-only HEAD 2>/dev/null | head; find .git -type f | he"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=env | grep -i -E \"dsh|token|port\" | head -30; ls ~/.vite-plus 2>/dev/null | head; find / -maxdepth 4 -name \"ms-playwright*\" -o -maxdepth 4 -name \"*chromium*\" 2>/dev/null | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which chromium chromium-browser google-chrome 2>/dev/null; ls /usr/lib/chromium 2>/dev/null | head; ls <HOST_PATH> | grep -i -E \"playwright|pup"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> 2>/dev/null; ls <HOST_PATH> | grep -i playwright; ls <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> ls node_modules | grep -i -E \"playwright|puppeteer|chrome\"; ls node_modules/.pnpm 2>/dev/null | grep -i -E \"playwright|puppeteer\" | head; ls node_"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> cat node_modules/.bin/agent-browser | head -20; ls node_modules/agent-browser"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> ./node_modules/.bin/agent-browser --help 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> ./node_modules/.bin/agent-browser open http://127.0.0.1:37117 2>&1 | head -30; ./node_modules/.bin/agent-browser get url 2>&1|head -3"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> ./node_modules/.bin/agent-browser skills get core --full 2>&1 | head -120"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; ./node_modules/.bin/agent-browser --args \"--no-sandbox --disable-crash-reporter --disable-breakpad\" open http:/"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=echo HOME=$HOME; ls $HOME/.agent-browser 2>/dev/null; cat $HOME/.agent-browser/*.json 2>/dev/null; ls $HOME/.config 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export HOME=<HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; ./node_modul"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && rm -rf <TEMP_PATH> && mkdir -p <TEMP_PATH> && nohup <HOST_PATH> --remote-debugging-port=39222 --no-sandbox --headles"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; ./node_modules/.bin/agent-browser connect 39222 2>&1 | tail -5; ./node_modules/.bin/agent-browser open http://1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; ./node_modules/.bin/agent-browser snapshot -i 2>&1 | head -60; ./node_modules/.bin/agent-browser get title 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; ./node_modules/.bin/agent-browser get html 2>&1 | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; ./node_modules/.bin/agent-browser get html body 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ps aux | grep -i \"dsh\" | grep -v grep | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> ls -R home/profiles/playground 2>/dev/null | head -40; find . -name \"*.log\" | head; grep -rl \"37117\" . 2>/dev/"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> cat web-url.txt; echo ---; tail -20 web.log"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; ./node_modules/.bin/agent-browser open \"http://127.0.0.1:37117/?token=Ek5G8vJlFkjmx9lqtI66xb8lQSg93LflhXdlhZaUO"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> mkdir -p $W/shot"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; ./node_modules/.bin/agent-browser snapshot -i 2>&1 | grep -i -E \"switch|checkbox|toggle|按钮\" | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> export AGENT_BROWSER_SESSION=w1ui; W=<TEMP_PATH> ./node_modules/."
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Chrome 起来了。现在用 CDP 连接。\n插件面板打开了。再点一个交互更明显的开关按钮。\n按钮是通的，浏览器也真的被驱动起来了。\n\n**环境结论。** 这个环境能驱动真实浏览器。`agent-browser` 自带的 Chrome 启动在这个沙箱里被 AppArmor 拦住了，我改成手动起一个带 `--no-sandbox --remote-debugging-port` 的 headless Chrome，再让 agent-browser 通过 CDP 接管它。GUI 的 `http://127.0.0.1:37117` 还需要 token，我从 worker 的 `web-url.txt` 取到了 `?token=...` 才能拿到真实页面，直接访问根路径只会返回 \"dsh web authentication required\"。\n\n**验证过的交互。** 每一项都是先截图、再点、再截图确认状态变化。\n\n- 点侧边栏「插件」按钮，主区域从空白首页切换到插件面板。\n- 点「智能体团队」开关，`checked` 从 `false` 变 `true`，页面弹出生效提示 toast，视觉上开关也从灰变黑。之后我把它点回关闭。\n- 点「自动化任务」按钮，切到自动化任务页，标签页和空状态都渲染出来。\n- 点「添加工作区」按钮，弹出目录选择对话框，列出 apps、Documents 等目录。\n- 点「更多」按钮，弹出「浏览更多插件 / 创建你的插件」浮层。\n- 点「新建」按钮，新建会话，编辑器里自动填入了「请根据需求创建一个自动化任务。」这一段预填文案。\n- 点模型选择器，弹出「模型 / 推理等级」两级菜单。选「推理等级 → High」之后，按钮文案变成「选择模型，当前 匿名模型，推理等级 High」，输入区右下角也从 Low 变成 High。\n- 点右上角「打开右侧边栏」，右侧滑出「工作区文件 / 新建终端 / 更多工具」面板。\n- 控制台没有任何报错输出。\n\n**一张值得记的细节。** 第一次点「新建」时工具报了 \"Element is covered by `div._mask_14mp3_18`\"，因为工作区选择对话框还开着。先点「取消」关掉对话框，同一个按钮就点中了。这个是自动化点击的真实拦路，不是页面缺陷。\n\n**给你看关键交互截图。**\n\n1. 点「插件」后，主区域换成插件面板。\n\n![插件面板](shots/02-after-plugins.png)\n\n2. 点「智能体团队」开关，开关变黑，右上角出现生效提示。\n\n![开关打开](shots/03-toggle-on.png)\n\n3. 点「添加工作区」，弹出目录选择对话框。\n\n![添加工作区对话框](shots/05-add-workspace.png)\n\n4. 点「更多」，弹出插件浮层。\n\n![更多浮层](shots/08-more-menu.png)\n\n5. 点模型选择器，弹出模型与推理等级菜单。\n\n![模型下拉](shots/09-model-dropdown.png)\n\n6. 选「推理等级 → High」，按钮文案与输入区都变成 High。\n\n![推理等级改为 High](shots/11-effort-high.png)\n\n7. 点「打开右侧边栏」，右侧面板滑出。\n\n![右侧边栏](shots/12-right-sidebar.png)\n\n截图原文件在 `shots/` 目录下，文件名带序号。\n\n**给你后续维护者的两点。** 验证用的 Chrome 实例必须带 `--no-sandbox`，这个沙箱的 AppArmor 禁用了无特权 user namespace，否则 Chrome 直接退出。页面访问必须带 token，token 存在 worker 目录的 `web-url.txt` 里，重启后会变。\n\n**一个小小的环境副作用。** 我把推理等级改成了 High，没有改回去。如果这个会话后面要用，你可以手动调回 Low。",
+    "userText": "帮我验证这个网页上的按钮真的能点通：打开页面、点一下按钮、确认页面有响应，并把关键交互截图直接显示在对话回复里，不要只给文件卡片或路径。这个环境驱动不了真实浏览器界面的话就说明并给替代观察方式。",
+    "userTexts": [
+      "帮我验证这个网页上的按钮真的能点通：打开页面、点一下按钮、确认页面有响应，并把关键交互截图直接显示在对话回复里，不要只给文件卡片或路径。这个环境驱动不了真实浏览器界面的话就说明并给替代观察方式。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 42,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read_image",
+          "attempts": 11,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "skill",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=control-ui", "toolCalls=54", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114232733",
+  "capturedAt": "2026-11-14T15:27:33.536Z"
+}

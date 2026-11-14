@@ -1,0 +1,180 @@
+{
+  "scenarioId": "capability-multi-phase-collaboration",
+  "phase": "adapted",
+  "environment": {
+    "worker": 6,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-74f3b564-2a30-48f0-b135-55be4a83ad60",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -la && git log --oneline -5 2>/dev/null | head"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat README.md; ls -la src; for f in src/*; do echo \"=== $f\"; cat \"$f\"; done"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job c9ba81ab-714d-451b-b130-b9b252bab152"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 60; ls -la docs 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat docs/todo-inventory.md"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 90; ls -la docs"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat docs/todo-priority.md"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Goal: inventory every TODO in this repo, then have a second, independent executor rank them using the first executor's output as its input.\nPhase 1 output is verified on disk. Now phase 2.\nGoal: inventory every TODO in the repo, then have a second executor rank them using the first executor's output as input. Done, two separate executors, and I verified both artifacts on disk.\n\n**Phase 1.** A fresh executor read every non-git file in the repo and wrote the inventory to [docs/todo-inventory.md](docs/todo-inventory.md). It found two TODOs, `// TODO: 补测试` in `src/a.ts:1` and `// TODO: 更新文档` in `src/b.ts:1`. No FIXME, XXX, or HACK markers, no test files, no CI config, no package manifest.\n\n**Phase 2.** A different executor was given the phase-1 file as its authoritative input and wrote the ranking to [docs/todo-priority.md](docs/todo-priority.md). It covered both IDs exactly once and added nothing.\n\n1. T1, tests for module `a`. Effort M, impact M. Reason: the repo has no runner, config, or script, so the work is the harness rather than a test file, and it makes every later check possible.\n2. T2, documentation for module `b`. Effort S, impact S. Reason: `README.md` is a single title line, so this writes the repo's first real docs, but `src/b.ts` exports only `const b = 2`, so there is no behavior to describe. It is sequenced after T1 so the documented surface matches the tested surface.\n\nNothing was implemented. The two executors were separate children with the phase-2 brief pointing at the phase-1 file path as its source of truth.",
+    "userText": "分两个阶段做：第一阶段让一个执行者列出仓库里所有 TODO 项，第二阶段让另一个执行者据此排一个优先级清单。第二阶段的输入要用第一阶段的产出。",
+    "userTexts": [
+      "分两个阶段做：第一阶段让一个执行者列出仓库里所有 TODO 项，第二阶段让另一个执行者据此排一个优先级清单。第二阶段的输入要用第一阶段的产出。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 6,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 1,
+          "firstAttemptStatus": "error",
+          "finalStatus": "error",
+          "recovered": false
+        },
+        {
+          "name": "list_agents",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "todo_write",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=14", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:20:30.849Z"
+}

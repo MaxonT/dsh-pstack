@@ -2,7 +2,7 @@
   "scenarioId": "capability-environment-local",
   "phase": "adapted",
   "environment": {
-    "worker": 3,
+    "worker": 7,
     "dshVersion": "0.2.2-rc.1",
     "adaptedVersion": "0.3.1",
     "matrix": {
@@ -20,46 +20,48 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-1c78ca35-e21a-44a8-952b-2840df30da36",
+    "sessionId": "session-5e59a882-8191-4573-bf2c-5d966b934d21",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "poteto-mode",
     "skillLoads": [],
     "toolCalls": [
       {
-        "name": "write",
+        "name": "glob",
         "status": "ok",
-        "argsSummary": "write file_path=<TEMP_PATH>"
+        "argsSummary": "glob pattern=README*"
       },
       {
         "name": "read",
         "status": "ok",
-        "argsSummary": "read file_path=<TEMP_PATH>"
+        "argsSummary": "read file_path=README.md"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "目标很简单：在当前工作区新建一个 `local.txt`，内容是 `local`，然后确认它确实落在当前目录里。\n完成。\n\n**做了什么。** 在工作区根目录新建了 [local.txt](local.txt)，内容为 `local`（单行，末尾带换行）。\n\n**验证。** 重新读取该文件确认落盘内容为 `local`，路径为当前工作目录下的 `local.txt`，非临时目录或他处。\n\n**给维护者的影响。** 无代码改动，只新增一个纯文本文件，不会影响现有构建或测试。",
-    "userText": "就在当前工作区里完成一个小改动：新建 local.txt，内容写 'local'，然后确认它在当前目录里。",
-    "userTexts": [
-      "就在当前工作区里完成一个小改动：新建 local.txt，内容写 'local'，然后确认它在当前目录里。"
-    ],
+    "assistantText": "标题是「本地执行探测」。文件为 [README.md](README.md)。",
+    "userText": "在当前这个工作区里直接读一下 README，把标题告诉我。",
+    "userTexts": ["在当前这个工作区里直接读一下 README，把标题告诉我。"],
     "autoAnswers": [],
     "analysis": {
       "tools": [
         {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
           "name": "read",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
-          "name": "write",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
-      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "artifacts": [],
       "warnings": []
     }
   },
@@ -78,6 +80,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114002555",
-  "capturedAt": "2026-11-13T16:25:55.990Z"
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:18:51.217Z"
 }

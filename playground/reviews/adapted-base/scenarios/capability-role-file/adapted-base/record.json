@@ -2,7 +2,7 @@
   "scenarioId": "capability-role-file",
   "phase": "adapted",
   "environment": {
-    "worker": 1,
+    "worker": 8,
     "dshVersion": "0.2.2-rc.1",
     "adaptedVersion": "0.3.1",
     "matrix": {
@@ -20,36 +20,26 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-d0b0d980-0770-4814-9d92-5fa54ca4d5d3",
+    "sessionId": "session-3bf2d3e8-ab4b-437b-ab5a-1373eaeb9279",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "poteto-mode",
-    "skillLoads": ["setup-pstack"],
+    "skillLoads": [],
     "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; echo ---; cat $DSH_HOME/pstack-models.json 2>/dev/null"
+      },
       {
         "name": "pstack_roles",
         "status": "ok",
         "argsSummary": "pstack_roles"
       },
       {
-        "name": "pstack_models",
+        "name": "bash",
         "status": "ok",
-        "argsSummary": "pstack_models"
-      },
-      {
-        "name": "pstack_skill",
-        "status": "ok",
-        "argsSummary": "pstack_skill name=setup-pstack"
-      },
-      {
-        "name": "glob",
-        "status": "ok",
-        "argsSummary": "glob path=<TEMP_PATH> pattern=**/*"
-      },
-      {
-        "name": "read",
-        "status": "ok",
-        "argsSummary": "read file_path=<TEMP_PATH>"
+        "argsSummary": "bash command=cat README.md; echo ---; git log --oneline -20; echo ---; git status"
       },
       {
         "name": "read",
@@ -57,14 +47,26 @@
         "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
-        "name": "bash",
+        "name": "pstack_models",
         "status": "ok",
-        "argsSummary": "bash command=echo \"DSH_HOME=${DSH_HOME:-unset}\"; ls -la \"${DSH_HOME:-$HOME/.dsh}\" 2>/dev/null | head -30"
+        "argsSummary": "pstack_models"
       },
       {
-        "name": "bash",
+        "name": "todo_write",
         "status": "ok",
-        "argsSummary": "bash command=cat \"${DSH_HOME}/pstack-models.mdc\""
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: route magpie/deepseek-v4.1-flash [low] failed route preflight: pi-ai provider \"magpie\" has no configured model \"deepseek-v4.1-flash\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: route magpie/minimax-m3.1-flash [high] failed route preflight: pi-ai provider \"magpie\" has no configured model \"minimax-m3.1-flash\""
       },
       {
         "name": "pstack_subagent",
@@ -72,82 +74,92 @@
         "argsSummary": "pstack_subagent"
       },
       {
-        "name": "list_agents",
+        "name": "pstack_subagent",
         "status": "ok",
-        "argsSummary": "list_agents"
+        "argsSummary": "pstack_subagent"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=sleep 45; echo done"
+        "argsSummary": "bash command=sleep 20; ls -la; echo ---; for f in probe-*.md; do echo \"== $f\"; cat \"$f\"; done 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; echo ---; cat probe-judgment.md; echo ---; git status --short"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "Goal: read the pstack role model config file, list its role routes, and dispatch one executor under a configured role.\n\n**The config file exists.** It lives at `$DSH_HOME/pstack-models.mdc` (`$DSH_HOME` is `<HOST_PATH> This is the one file `pstack_subagent` re-reads on every delegation, and base DSH never loads it as a rule.\n\n**Roles it defines.** Two of the manifest's 18 roles carry a route. Every other role inherits the parent route.\n\n- `bug-fix` → `magpie/workbuddy/deepseek-v4.1-flash` with effort `low`\n- `judgment and prose` → `magpie/workbuddy/minimax-m3.1-flash` with effort `high`\n\nThe manifest itself lists these shapes. Single roles take `roleIndex: null`. `arena runners`, `architect runners`, and `interrogate reviewers` are automatic panels that fan out one child per list entry. `arena cross-judge pool` and `swarm workers` take a `roleIndex` to select one entry.\n\n**The executor I dispatched.** I picked `bug-fix`, a role the file explicitly configures. The child resolved to route `magpie/workbuddy/deepseek-v4.1-flash` at effort `low`, matching the file line exactly. It read the config and reported the same two roles. I confirmed its output myself against the file.\n\n**One note.** The workspace README.md does not contain the role routes. It only names the probe and describes the task, so it is a task description rather than a copy of the config. If you wanted the README to be the config source, that file is still to be written.\n\n**What the next engineer inherits.** The role file is the single point of truth for delegation routes. Editing it affects the next child, never a running one, so changes are safe to make mid-session.",
-    "userText": "先确认当前的 pstack 角色模型配置文件是否存在、里面有哪些角色路由，然后按其中一个已配置的角色派一个执行者，说明它用的路由。",
+    "assistantText": "Workspace is an empty probe repo. The task is to verify that role-based model routing works from `$DSH_HOME/pstack-models.json`. I confirmed the file exists and `pstack_roles` reflects it exactly, so the config is being read. Now running one child per role route.\nTwo children started on their configured role routes. Waiting for completion notices.\nGoal: confirm the project's role model config at `$DSH_HOME/pstack-models.json` is what drives role routing, and that each role actually runs on the model that file names.\n\n**Config read.** The file exists and `pstack_roles` reports every role with exactly the routes written in it. Feature and refactoring map to `magpie/workbuddy/deepseek-v4.1-flash [low]`. Judgment and prose map to `magpie/workbuddy/minimax-m3.1-flash [high]`. No role is missing.\n\n**Live routes.** `pstack_models` shows the magpie provider serves `workbuddy/deepseek-v4.1-flash` and `workbuddy/minimax-m3.1-flash`, each with efforts off, low, high, and max. The `workbuddy` prefix is the model segment under the magpie provider.\n\n**One friction point.** Passing `model: \"deepseek-v4.1-flash\"` with `provider: \"magpie\"` was rejected by preflight, because the model id needs its `workbuddy/` prefix. Passing `model: \"workbuddy/deepseek-v4.1-flash\"` was accepted. The role file already stores the prefixed form, so a role-to-route mapping copies it verbatim.\n\n**Verification.** Two children ran, one per role, each on its configured route with the configured effort. Each wrote its probe file into the workspace and confirmed it on disk.\n\n- `probe-feature.md` holds `role: feature, refactoring` and the deepseek low route.\n- `probe-judgment.md` holds `role: judgment and prose` and the minimax high route.\n\nBoth files are untracked, and nothing was committed.\n\n**What this means for you.** The role file is authoritative and is being read before spawning, so you can change a role's model there and the next spawn follows it. The one thing to remember when routing by hand is the `workbuddy/` model prefix.",
+    "userText": "按项目里配置的角色模型设置来跑这次工作：每个角色用什么模型以那份角色配置为准，跑之前先确认它读到了这份配置。",
     "userTexts": [
-      "先确认当前的 pstack 角色模型配置文件是否存在、里面有哪些角色路由，然后按其中一个已配置的角色派一个执行者，说明它用的路由。"
+      "按项目里配置的角色模型设置来跑这次工作：每个角色用什么模型以那份角色配置为准，跑之前先确认它读到了这份配置。"
     ],
     "autoAnswers": [],
     "analysis": {
       "tools": [
         {
           "name": "bash",
-          "attempts": 3,
+          "attempts": 4,
           "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
-          "name": "glob",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
-          "name": "list_agents",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         },
         {
           "name": "pstack_models",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         },
         {
           "name": "pstack_roles",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
-          "name": "pstack_skill",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         },
         {
           "name": "pstack_subagent",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
+          "attempts": 4,
+          "failures": 2,
+          "firstAttemptStatus": "error",
+          "finalStatus": "ok",
+          "recovered": true
         },
         {
           "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "todo_write",
           "attempts": 2,
           "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
       "artifacts": [],
-      "warnings": []
+      "warnings": ["pstack_subagent needed 4 attempts with 2 failures"]
     }
   },
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=setup-pstack", "toolCalls=11", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=13", "warnings=1"]
   },
   "semanticReview": {
     "status": "pending",
@@ -159,6 +171,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114002555",
-  "capturedAt": "2026-11-13T16:27:34.136Z"
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:22:01.313Z"
 }
