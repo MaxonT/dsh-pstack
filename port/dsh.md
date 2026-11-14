@@ -8,10 +8,10 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent`. One call starts one subagent; fan out by calling it once per child in one message. Pass `provider`, `model`, and an optional `reasoningEffort` to override the route, or omit all three to inherit the parent route. |
+| `Task` | `pstack_subagent`. One call starts one subagent; fan out by calling it once per child in one message. Pass `provider`, `model`, and an optional `reasoningEffort` to override the route, or omit all three to inherit the parent route. A route string splits at its first `/`: the first segment is `provider`, the rest is `model`, which may itself contain `/` (for example `magpie/workbuddy/minimax-m3.1-flash [high]` gives provider `magpie`, model `workbuddy/minimax-m3.1-flash`, effort `high`). Pass `model` verbatim; dropping its internal prefix fails route preflight. |
 | `AskQuestion` | `ask_user_question` takes a batch of questions with options and free input. Only a live root agent has a human answerer; a delegated child keeps its questions in its result. Ask in plain text when the tool is absent. |
 | Open a todolist | `todo_write` replaces the whole list and has no `skipped` status. Keep a skipped step visible as `skip: <reason> - <step>` in `content` and mark it `completed`. |
-| Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads a packaged pstack skill by exact kebab-case `name`. Pass `resource` to read a file beside its `SKILL.md`; a user `/name` loads the skill directly. |
+| Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads a packaged pstack skill by exact kebab-case `name`. Pass `resource` to read a file beside its `SKILL.md`; a user `/name` loads the skill directly. The built-in help skill is `poteto-help`; read a playbook with `name: "poteto-mode"` and `resource: "playbooks/<name>.md"`. |
 | `Grep`, `Glob` | `grep` and `glob` are native tools; call them directly. Use `bash` with `rg` only when the session has neither. |
 
 ## Subagent fields
@@ -37,7 +37,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route, or omit `provider` and `model` so the child inherits the parent route, and say so. |
 | `auto` or `inherit-parent` | Omit `provider` and `model`; the child inherits the parent route. |
 | The pstack role file | `$DSH_HOME/pstack-models.json`. The calling agent reads it to map a role to its route; `pstack_subagent` does not parse it. A missing file leaves no configured route, so the child inherits the parent route. |
-| A role value such as `<model> <effort>` | Write `provider/model [effort]`; a role holds an array of these route strings. |
+| A role value such as `<model> <effort>` | Write `provider/model [effort]`; a role holds an array of these route strings. Split at the first `/`: `provider` is the first segment and the rest, which may contain `/`, is `model`. |
 
 ## setup-pstack
 
@@ -75,7 +75,7 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | Start one subagent with an optional `agent` preset (default `general`), optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. |
+| `pstack_subagent` | Start one subagent with an optional `agent` preset (default `general`), optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. A subagent is not a background job: never pass its id to `job_output`; wait for the completion notice, or use `list_agents`/`send_message`. |
 | `pstack_skill` | Load a packaged pstack skill by exact kebab-case name; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
 | `pstack_roles` | Report each pstack role and its configured routes as structured provider, model, and effort values. |

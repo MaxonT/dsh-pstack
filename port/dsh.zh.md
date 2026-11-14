@@ -8,10 +8,10 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent`。一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它。传 `provider`、`model` 和可选 `reasoningEffort` 覆盖路由，或全部省略以继承父路由。 |
+| `Task` | `pstack_subagent`。一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它。传 `provider`、`model` 和可选 `reasoningEffort` 覆盖路由，或全部省略以继承父路由。路由字符串按第一个 `/` 拆分：第一段是 `provider`，其余是 `model`，`model` 自身可含 `/`（例如 `magpie/workbuddy/minimax-m3.1-flash [high]` 拆成 provider `magpie`、model `workbuddy/minimax-m3.1-flash`、effort `high`）。`model` 原样传递；丢掉其内部前缀会导致路由预检失败。 |
 | `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体有人工回答者；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
-| Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case 名称加载随包 pstack 技能。用 `resource` 读取 `SKILL.md` 旁的文件；用户 `/name` 直接加载技能。 |
+| Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case 名称加载随包 pstack 技能。用 `resource` 读取 `SKILL.md` 旁的文件；用户 `/name` 直接加载技能。内置帮助技能是 `poteto-help`；读 playbook 用 `name: "poteto-mode"` 加 `resource: "playbooks/<name>.md"`。 |
 | `Grep`, `Glob` | `grep` 和 `glob` 是原生工具，直接调用。只有会话两者都没有时才用 `bash` 的 `rg`。 |
 
 ## Subagent fields
@@ -37,7 +37,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | A `grok-*`、`gpt-*` 或其他非 Claude slug | 选最接近的已公布路由，或省略 `provider` 和 `model` 让子智能体继承父路由，并说明这一点。 |
 | `auto` 或 `inherit-parent` | 省略 `provider` 和 `model`；子智能体继承父路由。 |
 | pstack 角色文件 | `$DSH_HOME/pstack-models.json`。由调用方读取，用来把角色映射到路由；`pstack_subagent` 不解析它。文件缺失时没有已配置路由，子智能体继承父路由。 |
-| 形如 `<model> <effort>` 的角色值 | 写成 `provider/model [effort]`；一个角色保存这些路由字符串的数组。 |
+| 形如 `<model> <effort>` 的角色值 | 写成 `provider/model [effort]`；一个角色保存这些路由字符串的数组。按第一个 `/` 拆分：第一段是 `provider`，其余可含 `/` 的部分是 `model`。 |
 
 ## setup-pstack
 
@@ -75,7 +75,7 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | 用可选 `agent` preset（默认 `general`）启动一个子智能体，可用 `provider`、`model`、`reasoningEffort` 覆盖路由；完成时发通知。 |
+| `pstack_subagent` | 用可选 `agent` preset（默认 `general`）启动一个子智能体，可用 `provider`、`model`、`reasoningEffort` 覆盖路由；完成时发通知。子智能体不是后台 job：不要把它 id 传给 `job_output`；等完成通知，或用 `list_agents`/`send_message`。 |
 | `pstack_skill` | 按精确 kebab-case 名称加载随包 pstack 技能；`resource` 读取参考或 playbook。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
 | `pstack_roles` | 报告每个 pstack 角色及其已配置路由，路由以结构化的 provider、model 和 effort 给出。 |
