@@ -3,7 +3,7 @@
  *
  * `dsh-tool-skill` applies the model-invocation policy at the catalog boundary.
  * `ctx.skills.get()` is invocation-neutral, which is the seam this tool uses to
- * load a skill that `disable-model-invocation: true` hides from the model.
+ * load a skill the model skill catalog does not list.
  */
 
 import { readFile } from "node:fs/promises";
@@ -160,9 +160,9 @@ const OUTPUT_SCHEMA: JsonSchemaNode = {
 };
 
 const TOOL_DESCRIPTION = [
-  "Load the full instructions of any pstack skill by name, including skills hidden from the model catalog.",
+  "Load the full instructions of a packaged pstack skill by exact name.",
   "",
-  "Use this when a pstack skill tells you to route through another pstack skill and the `skill` tool cannot see it because the skill disables model invocation.",
+  "Use this when a pstack skill tells you to route through another packaged pstack skill that the `skill` tool does not load.",
   "",
   "Pass `resource` with a path relative to the skill directory to read one reference or playbook beside its `SKILL.md`. The path cannot leave the skill directory.",
 ].join("\n");

@@ -20,7 +20,7 @@
 | file-read-write | 通过 | 读 `docs/notes.md` 后写入 `outputs/summary.md`，内容覆盖三条要点。 |
 | grep-glob | 通过 | 直接调用原生 `grep`，命中 `docs/deploy.md:3`，并说明 `docs/other.md` 非部署命令。 |
 | open-a-todolist | 通过 | 多次 `todo_write` 整表更新，三步完成后任务面板显示 5 项完成。 |
-| skill-loading | 通过（机械断言误报，见 Q2） | `skill` 工具只加载了 `setup-pstack`；`poteto-help` 带 `disable-model-invocation: true`，模型按 `dsh.md` 第 14 行改用 `read` 打开其 SKILL.md 并据其作答。机械断言 `poteto-help was not loaded` 与隐藏技能规则冲突。 |
+| skill-loading | 通过（机械断言误报，见 Q2） | `skill` 工具只加载了 `setup-pstack`；`poteto-help` 不在模型技能目录里，模型按 `dsh.md` 第 14 行改用 `read` 打开其 SKILL.md 并据其作答。机械断言 `poteto-help was not loaded` 与该加载路径冲突。 |
 | task | 通过 | 主会话先声明已交给独立下属，随后带回下属完成的 README 摘要。 |
 | tool-absent-fallback | 通过 | 说明拿不到未保存的聊天记录并给出替代，未假造内容。 |
 
@@ -112,18 +112,18 @@
 - 建议动作：在适配插件（port 阶段）提供一个“完整模型发现”工具，返回该部署实际服务的全部 provider/model/effort 路由，不受父会话路由限制；委派时据此选择，若会话策略仍不允许则回退父路由并说明。
 - 你的决定：已定。由插件内提供工具，用于发现完整模型列表，而不是只有当前父会话模型。
 
-### Q2 隐藏技能应由适配插件提供工具按名加载
+### Q2 随包技能应由适配插件提供工具按名加载
 
 - 类型：plugin
 - 能力类别：tool（skill-loading）
 - 影响场景：`capability-skill-loading`
 - 证据：
   - [record](scenarios/capability-skill-loading/raw-base/record.json) / [截图](scenarios/capability-skill-loading/raw-base/screenshot.png)
-- 现象：`mechanicalFailures=["process evidence: poteto-help was not loaded"]`，但 `poteto-help/SKILL.md` 带 `disable-model-invocation: true`，`skill` 工具本就不能按名加载；模型按 `dsh.md` 第 14 行改用 `read` 打开并据其作答，答复质量完整。
-- 根因：场景的 `skill-loaded: poteto-help` 断言未考虑 `disable-model-invocation`，把一个合法加载路径判成缺口。
-- 与当前阶段 dsh.md 的关系：`dsh.md` Tools 行已正确描述“隐藏技能用 read”这一原生回退，保留即可；要让隐藏技能也能按名加载，需要适配插件提供对应工具。
-- 建议动作：在适配插件内提供一个技能加载工具，能加载随包内被 `skill` 工具按 `disable-model-invocation` 视为隐藏的技能；原生 `read` 路径继续作为无插件时的回退。
-- 你的决定：已定。由插件内提供工具，用于加载随包内被 skills 工具视为隐藏的技能。
+- 现象：`mechanicalFailures=["process evidence: poteto-help was not loaded"]`，但 `poteto-help` 不在模型的技能目录里，`skill` 按名加载不到；模型改用 `read` 打开其 `SKILL.md` 并据其作答，答复质量完整。
+- 根因：场景的 `skill-loaded: poteto-help` 断言假定该技能能按名加载，实际它不在模型技能目录里，属断言问题。
+- 与当前阶段 dsh.md 的关系：`dsh.md` Tools 行已描述“按名加载不到时用 read”的回退，保留即可；要按名加载随包技能，由适配插件提供工具。
+- 建议动作：在适配插件内提供一个技能加载工具，按名加载随包技能；原生 `read` 路径作为无插件时的回退。
+- 你的决定：已定。由插件内提供工具，用于加载随包技能。
 
 ### Q3 base 无内联音频/视频播放器，产出真实媒体但只呈现文件卡片
 
@@ -187,7 +187,7 @@
 | Tools · `Task` | `subagent` 立即返回 id，`subagent_fork` 继承上下文 | task、subagent-general、inherit-parent、run-in-background、resume | 够用 | 保持 |
 | Tools · `AskQuestion` | `questions` 数组 + options + 空选/超时语义 | askquestion | 够用 | 保持（Q5 是模型/probe 问题） |
 | Tools · Open a todolist | `todo_write` 整表替换，无 skipped | open-a-todolist | 够用 | 保持 |
-| Tools · Run another pstack skill | 隐藏技能用 `read`，`/name` 直接注入 | skill-loading | 够用 | 保持（Q2 是断言问题） |
+| Tools · Run another pstack skill | 按名加载不到时用 `read`，`/name` 直接注入 | skill-loading | 够用 | 保持（Q2 是断言问题） |
 | Tools · `Grep`,`Glob` | 原生工具，grep 用 ripgrep | grep-glob | 够用 | 保持 |
 | Subagent fields · generalPurpose / poteto-agent / readonly / cloud / local / base-branch / background / resume / attachments | 各字段映射 | cloud-base-branch、readonly-true/false、environment-cloud/local、file-attachments、run-in-background、resume、poteto-agent | 够用 | 保持 |
 | Models · `claude-...` 与 `list_subagent_models` | 发现 id 后拆分 provider/model/effort 选择 | model-discovery、model-route、model-unavailable-fallback、non-claude-route、role-file、role-value | 够用 | 原生只放行父路由是事实；完整模型发现由适配插件工具补齐（Q1） |
@@ -204,7 +204,7 @@
 
 ## 6. 后续动作
 
-- `plugin`：Q1（适配插件提供“完整模型发现”工具）、Q2（适配插件提供“隐藏技能加载”工具），在 port/适配阶段实现。
+- `plugin`：Q1（适配插件提供“完整模型发现”工具）、Q2（适配插件提供“随包技能加载”工具），在 port/适配阶段实现。
 - `dsh-md`：无。raw `dsh.md` 继续只描述原生行为，Q1/Q2 由插件补齐，不在 raw 说明里承诺。
 - `ignore-environment`：Q3 音频（预期降级，不处理）、Q4（worker 读边界，暂时保留）。
 - `probe`：Q5、Q6 已调整并增量重跑通过（askquestion 记录选择；stop-subagent 观测到 `interrupt_agent` 叫停）。
