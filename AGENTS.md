@@ -50,7 +50,6 @@ release. Add a tool name to select part of the graph. For example, run
 | `skills/` | [skills/AGENTS.md](./skills/AGENTS.md) |
 
 - 目录文档只写本目录规则，其他目录只放指针，不重复内容。
-- 跨目录的架构、术语和决策放在 `docs/`。
 - 目录职责变化时同步更新对应目录的 `AGENTS.md` 和根指针。
 - `pstack/` 是生成树，不手工编辑；`scripts/` 不维护独立目录说明。
 
