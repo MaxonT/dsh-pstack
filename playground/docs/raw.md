@@ -23,7 +23,7 @@
 
 `playground/raw/dsh.md` 和 `playground/raw/dsh.zh.md` 的结构、单元格、逐行同构和证据要求，以根目录 [docs/dsh-adapter.md](../../docs/dsh-adapter.md) 为准。
 
-本文件只说明 raw 目录的职责和生成边界，不重复根目录的编写规则。
+本文件说明 raw 目录的职责和生成边界。
 
 ## 修改流程
 
