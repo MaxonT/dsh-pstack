@@ -8,7 +8,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent` 按选中的角色路由各启动一个子智能体，并返回所有子智能体 id 及其解析后的路由。只有 `prompt` 必填；`description`、`agent`、`role`、`roleRoute`、`reasoningEffort`、`cwd` 和 `maxDepth` 都可选。它会在启动前校验路由和强度；后续失败返回部分结果。 |
+| `Task` | `pstack_subagent` 按选中的角色路由各启动一个子智能体，并返回所有子智能体 id 及其解析后的路由。只有 `prompt` 必填；`description`、`agent`、`role`、`roleRoute`、`reasoningEffort`、`cwd` 和 `maxDepth` 都可选。多路由列表角色必须传 `pstack_roles` 返回的 `roleRoute` id，省略会失败而不是选第一条。它会在启动前校验路由和强度；后续失败返回部分结果。 |
 | `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体能收到回答；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
 | Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case `name` 加载 pstack 技能，包括原生 `skill` 工具隐藏的技能。用相对 `resource` 读取 `SKILL.md` 旁的参考或 playbook；用户 `/name` 手势直接加载技能。 |
@@ -37,7 +37,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | A `grok-*` 或其他非 Claude slug | 传 `role: null` 或 `roleRoute: null`，让子智能体继承父路由，并说明这一点。 |
 | `auto` 或 `inherit-parent` | 传 `role: null`，或把角色路由配置为 `inherit-parent` 或 `auto`。 |
 | The `pstack-models.mdc` rule | `$DSH_HOME/pstack-models.json`，`$DSH_HOME` 默认 `~/.dsh`。base DSH 不加载它；`pstack_subagent` 每次委派都读取。文件缺失时所有角色继承父路由。 |
-| 形如 `<model> <effort>` 的角色值 | 写成 `provider/model [effort]`；一个角色保存这些路由字符串的数组。列表角色用 `roleRoute` 选择路由；自动面板为每条路由启动一个子智能体。 |
+| 形如 `<model> <effort>` 的角色值 | 写成 `provider/model [effort]`；一个角色保存这些路由字符串的数组。多路由列表角色必须使用 `pstack_roles` 返回的 `roleRoute` id；自动面板为每条路由启动一个子智能体。 |
 
 ## setup-pstack
 
@@ -78,7 +78,7 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | `pstack_subagent` | 按选中的角色路由启动子智能体，返回所有 id 和解析后的路由；完成时发通知。 |
 | `pstack_skill` | 按精确 kebab-case 名称加载 pstack 技能，包括隐藏技能；`resource` 读取参考或 playbook。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
-| `pstack_roles` | 列出 pstack 角色及每个角色的 shape，便于选择列表角色的 `roleRoute`。 |
+| `pstack_roles` | 列出 pstack 角色、每个角色的 shape，以及可传给 `roleRoute` 的已配置 route id。 |
 
 ## Local replacements
 

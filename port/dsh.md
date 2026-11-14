@@ -8,7 +8,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent` starts one child per selected role route and returns every child id with its resolved route. Only `prompt` is required; `description`, `agent`, `role`, `roleRoute`, `reasoningEffort`, `cwd`, and `maxDepth` are optional. It validates routes and effort before starting; a later failure returns a partial result. |
+| `Task` | `pstack_subagent` starts one child per selected role route and returns every child id with its resolved route. Only `prompt` is required; `description`, `agent`, `role`, `roleRoute`, `reasoningEffort`, `cwd`, and `maxDepth` are optional. For a multi-route list role, pass a `roleRoute` id from `pstack_roles`; omission fails instead of selecting the first route. It validates routes and effort before starting; a later failure returns a partial result. |
 | `AskQuestion` | `ask_user_question` takes a batch of questions with options and free input. Only a live root agent can receive an answer; a delegated child keeps its questions in its result. Ask in plain text when the tool is absent. |
 | Open a todolist | `todo_write` replaces the whole list and has no `skipped` status. Keep a skipped step visible as `skip: <reason> - <step>` in `content` and mark it `completed`. |
 | Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads a pstack skill by exact kebab-case `name`, including skills hidden from the native `skill` tool. Pass a relative `resource` for a reference or playbook beside `SKILL.md`; a user `/name` gesture loads the skill directly. |
@@ -37,7 +37,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | A `grok-*` or other non-Claude slug | Pass `role: null` or `roleRoute: null` so the child inherits the parent route, and say so. |
 | `auto` or `inherit-parent` | Pass `role: null`, or configure the role route as `inherit-parent` or `auto`. |
 | The `pstack-models.mdc` rule | `$DSH_HOME/pstack-models.json`, where `$DSH_HOME` defaults to `~/.dsh`. Base DSH does not load it; `pstack_subagent` reads it on every delegation. A missing file makes every role inherit the parent route. |
-| A role value such as `<model> <effort>` | Write `provider/model [effort]`; one role holds an array of these route strings. List roles use `roleRoute` to choose a route; automatic panels start one child per route. |
+| A role value such as `<model> <effort>` | Write `provider/model [effort]`; one role holds an array of these route strings. Multi-route list roles require a `roleRoute` id from `pstack_roles`; automatic panels start one child per route. |
 
 ## setup-pstack
 
@@ -78,7 +78,7 @@ The package registers four model-facing tools beyond the native DSH tools above.
 | `pstack_subagent` | Start one child per selected role route and return every child id with its resolved route; completion arrives as a notice. |
 | `pstack_skill` | Load any pstack skill by exact kebab-case name, including hidden skills; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment actually serves. |
-| `pstack_roles` | List pstack roles and each role's shape so a list role's `roleRoute` can be chosen. |
+| `pstack_roles` | List pstack roles, each role's shape, and configured route ids for `roleRoute`. |
 
 ## Local replacements
 
