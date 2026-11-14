@@ -1,29 +1,101 @@
 # DSH 适配文档编写规则
 
-适用于 `playground/raw/dsh.md` 与 `port/dsh.md`。
+适用于 `playground/raw/dsh.md`、`playground/raw/dsh.zh.md`、`port/dsh.md` 和 `port/dsh.zh.md`。本文件定义模板、块职责和写法约束。
 
-## 结构
+## 模板
 
-- 两个文件都以上游 `upstream/cursor-plugins/pstack/docs/harness/claude-code.md` 的 section 和 Cursor 术语为骨架；每个 Cursor 术语必须有对应行。
-- section 顺序、Cursor 单元格和核心行数必须与上游一致。`port/dsh.md` 可以在核心 section 之后追加插件特有的 section，也可以在核心 section 内追加目标 runtime 独有的 Cursor 术语行。
-- `dsh.md` 和对应 `dsh.zh.md` 必须逐行同构：section 数、表格行数、Cursor 单元格和代码标识符保持一致。
+```markdown
+# pstack in DSH
 
-## 单元格
+pstack skills use Cursor names. In DSH, read this file once per session, then map each Cursor name from the skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/`.
 
-- `dsh.md` 是运行时适配卡，不是 schema 手册。
-- 每个 DSH 单元格先写替代名，再写缺字段时的动作和工具不存在时的回退。
-- 只写会改变技能执行方式的差异。完整字段、状态枚举、schema 拒绝行为、包路径和证据放在对应证据文件中。
-- 一个单元格只回答一个工具或字段。默认控制在三句以内；超出时先确认该细节是否真的影响执行。
-- 上游 `claude-code.md` 只作为结构和克制程度的参考，不照搬具体答案。
+Use only tools visible in the current session. If a mapped tool or optional capability is unavailable, follow the fallback in that row. Do not assume optional plugins are enabled because a name appears here.
 
-## 证据
+## Tools
 
-- raw 的逐行证据放在 `playground/raw/dsh-evidence.md`；每一条 `dsh.md` 表格行必须有一行证据，列出 Cursor 侧语义、DSH 判定、差异与写法、证据来源。
-- DSH 不支持的能力必须写替代写法或跳过规则，具体差异写进对应证据行。
-- 不能用一段话合并多个工具。
+## Subagent fields
 
-## 生成与检查
+## Models
 
-- `scripts/generate-pstack.mjs --target port|raw` 负责把对应源文件复制进生成树；目标源路径由 `ADAPTER_SOURCE` 选择。
-- 生成器运行前调用 shared adapter checker，结构或行数不一致时失败。
-- 修改任一 `dsh.md` 后同步对应的 `dsh.zh.md`，并运行 `vp run generate:dsh-check`。
+## setup-pstack
+
+## Paths
+
+## Cursor-only features
+```
+
+`port/dsh.md` 在核心块之后追加：
+
+```markdown
+## Plugin tools
+
+## Local replacements
+```
+
+`raw/dsh.md` 不写 `Plugin tools`、`Local replacements` 或 `Optional plugins`。`port/dsh.md` 也不写 `Optional plugins`；具体可选项和安装方式放在 `port/AGENTS.md` 或 README。
+
+## 模板块规则
+
+### 开头说明
+
+- 说明本文件是运行时适配卡，不是 schema 手册或插件目录。
+- 只写一句通用可用性规则：使用当前 session 实际可见的工具；缺失时按对应行 fallback；不假设可选插件已启用。
+- 不写具体插件包名、开关名称、安装步骤或“当前一定有什么工具”。
+- 不列官方插件能力清单。
+
+### Tools
+
+- 每个 Cursor 工具或操作一个单元格。
+- 先写 DSH 替代名称，再写缺字段、工具不存在或不可用时的动作。
+- 不展开完整 schema、参数清单、状态枚举或实现细节；这些放在证据或插件工具说明中。
+- 默认三句以内；工具名变化不应要求改写本块之外的规则。
+
+### Subagent fields
+
+- 一个 Cursor 字段一个单元格。
+- 写清：字段不存在时是否省略、由 prompt 承载还是由 agent 文件承载。
+- 写清运行条件缺失时的默认值或 fallback。
+- 不重复 Tools 块已经写过的完整工具说明。
+
+### Models
+
+- 写清 provider、model、reasoning effort 的映射。
+- 模型发现能力不可用时，写默认或继承规则。
+- 不写具体模型清单；模型列表应由当前运行时提供。
+
+### setup-pstack
+
+- 说明 DSH 的配置文件位置、持久化和覆盖规则。
+- 说明检测失败或模型不可用时的 fallback。
+- 不复制上游完整步骤，只写与 DSH 不同的部分。
+
+### Paths
+
+- 一个路径差异一个单元格。
+- 说明 DSH 路径、读取限制和生成物边界。
+- 不写安装路径或包布局细节。
+
+### Cursor-only features
+
+- 每个 Cursor 专属能力一行。
+- 写清实际处理：跳过、替代、阻止或报告。
+- 不使用“应该”“可以尝试”等不确定语气；明确默认动作。
+
+### Plugin tools（仅 port）
+
+- 只写本插件实际提供的工具名称、用途和边界。
+- 一个工具一行；不写完整参数 schema。
+- 没有该工具时不写占位行，也不假设插件未安装。
+
+### Local replacements（仅 port）
+
+- 只写 Cursor 内置技能或外部技能在 port 中的替代方式。
+- 一个依赖技能一行；写清替代技能或 fallback。
+- 具体包名、安装方法和可选插件清单不写在这里。
+
+## 证据和检查
+
+- raw 的逐行证据放在 `playground/raw/dsh-evidence.md`；每条核心表格行必须有对应证据。
+- 修改任一 `dsh.md` 后同步对应的 `dsh.zh.md`，保持 section 数、行数、Cursor 单元格和代码标识符一致。
+- `scripts/generate-pstack.mjs --target port|raw` 负责生成树；修改后运行 `vp run generate:dsh-check`。
+- 结构只允许模板中的核心块；`port` 只追加 `Plugin tools` 和 `Local replacements`。
