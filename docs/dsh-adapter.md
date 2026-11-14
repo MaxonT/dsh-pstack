@@ -40,8 +40,9 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 - 说明本文件是运行时适配卡，不是 schema 手册或插件目录。
 - 只写一句通用可用性规则：使用当前 session 实际可见的工具；缺失时按对应行 fallback；不假设可选插件已启用。
+- 只描述 DSH 原生能力和本包 port 交付；第三方插件提供的能力不进入 Tools、Models 或核心映射。
 - 不写具体插件包名、开关名称、安装步骤或“当前一定有什么工具”。
-- 不列官方插件能力清单。
+- 不列官方插件能力清单，也不列第三方插件能力清单。
 
 ### Tools
 
