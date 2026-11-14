@@ -32,17 +32,44 @@ release. Add a tool name to select part of the graph. For example, run
 
 # AGENTS.md
 
-## Project docs
+## 总体流程
 
-- 修改模块前阅读 `docs/architecture.md`；模块边界或入口变化时同步更新。
-- 为概念命名时阅读 `docs/glossary.md`；引入新概念时补充术语。
-- 开始任何仓库任务前，阅读 `docs/decisions/AGENTS.md`，按其中的查找规则阅读与任务相关的记录。
+`playground` → `port` + `src` → 根 `README` → 发布。
+
+- `playground` 运行真实会话验证，产出能力缺口和证据分析。
+- `port` 维护最终 dsh 适配文档、发布兼容元数据和交付边界。
+- `src` 根据 playground 结论和适配需求实现 Host/Client 代码。
+- 根 `README` 记录使用方式、能力边界和发布兼容表。
+- 发布由用户手动执行；agent 停在 release-ready。
+
+不能绕过 playground 直接改 `port` 或 `src` 的验证结论；raw 和 adapted 的阶段隔离按 playground 规则执行。
+
+## 目录文档
+
+每个目录的文档只负责本目录的实际职责、约定和边界：
+
+| 目录 | 入口文档 |
+| --- | --- |
+| `playground/` | [playground/AGENTS.md](./playground/AGENTS.md) |
+| `port/` | [port/AGENTS.md](./port/AGENTS.md) |
+| `src/` | [src/AGENTS.md](./src/AGENTS.md) |
+
+- 目录文档只写本目录规则，其他目录只放指针，不重复内容。
+- 跨目录的架构、术语和决策放在 `docs/`。
+- 目录职责变化时同步更新对应目录的 `AGENTS.md` 和根指针。
+- `pstack/` 是生成树，不手工编辑；`scripts/` 不维护独立目录说明。
+
+## 跨目录文档
+
+- [docs/architecture.md](./docs/architecture.md)：模块边界、依赖方向和入口。
+- [docs/glossary.md](./docs/glossary.md)：项目术语。
+- [docs/decisions/AGENTS.md](./docs/decisions/AGENTS.md)：工程决策记录的查找和写入规则。
+- [docs/dsh-adapter.md](./docs/dsh-adapter.md)：`dsh.md` 的模板和分块编写规则。
 
 ## Bundle assembly
 
 - 根 `cordis.patch.yml` 是 Host/Client 装配清单，不是生成物；修改前读 `docs/architecture.md`。
 - 新增、删除或改变模块、工具、服务或 preset 时，同步 `src/` 实现、导出和测试；生成树 `pstack/` 不手工编辑。
-- `src/` 的长期实现规范见 [src/AGENTS.md](./src/AGENTS.md)。
 
 ## Commits
 
