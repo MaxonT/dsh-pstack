@@ -158,6 +158,7 @@ const WORKER_INSTRUCTION_SECTIONS: readonly WorkerInstructionSection[] = [
     rules: [
       "You may read files only inside the current workspace.",
       "Read-only runtime input explicitly mounted for this session is also allowed.",
+      "The worker role files $DSH_HOME/pstack-models.json and $DSH_HOME/pstack-models.mdc are allowed read-only runtime input.",
       "Never read, list, stat, search, or infer any other path, even when the user supplies an absolute path.",
     ],
   },
@@ -206,11 +207,18 @@ export function writeWorkerInstructions(paths: WorkerPaths): void {
 }
 
 export function writeRoleFile(paths: WorkerPaths, config: PlaygroundConfig): void {
-  if (config.roleModels === undefined || Object.keys(config.roleModels).length === 0) return;
-  const lines = ["# pstack role routes"];
-  for (const [role, route] of Object.entries(config.roleModels)) {
-    lines.push(`${role}: ${route.provider}/${route.model} [${route.effort}]`);
+  mkdirSync(paths.home, { recursive: true });
+  const roles: Record<string, string[]> = {};
+  for (const [role, route] of Object.entries(config.roleModels ?? {})) {
+    roles[role] = [`${route.provider}/${route.model} [${route.effort}]`];
   }
+  writeFileSync(
+    join(paths.home, "pstack-models.json"),
+    `${JSON.stringify({ version: 1, roles }, null, 2)}\n`,
+  );
+  if (Object.keys(roles).length === 0) return;
+  const lines = ["# pstack role routes"];
+  for (const [role, routes] of Object.entries(roles)) lines.push(`${role}: ${routes[0]}`);
   writeFileSync(join(paths.home, "pstack-models.mdc"), `${lines.join("\n")}\n`);
 }
 

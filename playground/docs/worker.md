@@ -18,6 +18,7 @@
 `isolatedRoot` 默认使用系统临时目录，可用 `PLAYGROUND_WORKSPACE_ROOT` 覆盖。沙箱只限制写，不限制读，因此工作区和挂载路径都不能暴露仓库根。
 
 - prepare 为每个 worker 写结构化 `$DSH_HOME/AGENTS.md` 读取边界。
+- prepare 为每个 worker 写入 `$DSH_HOME/pstack-models.json`；配置了角色路由时同时写 `pstack-models.mdc`。角色文件是唯一允许读取的 worker home 运行时输入。
 - scenario workspace 初始化本地 `git init`，不设置 origin。
 - worker 不携带 Git/GitHub 凭证。
 

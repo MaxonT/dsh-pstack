@@ -104,7 +104,7 @@ async function main(): Promise<void> {
     for (const worker of workers) {
       if (readPhase(worker) === "raw") mountRawTree(worker);
       writeWorkerInstructions(worker);
-      if (readPhase(worker) === "adapted") writeRoleFile(worker, config);
+      writeRoleFile(worker, config);
     }
     await startWorkers(workers, plan);
     return;
@@ -129,7 +129,7 @@ async function main(): Promise<void> {
     writeFileSync(worker.phaseFile, `${phase}\n`);
     copyCredentials(worker, config.credentialsFile);
     writeHomePatch(worker, plan, phase);
-    if (phase === "adapted") writeRoleFile(worker, config);
+    writeRoleFile(worker, config);
     registerWorkspaces(worker, listScenarioIds());
     if (enabledPackages.length > 0) {
       if (installed === null) {
