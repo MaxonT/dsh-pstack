@@ -30,7 +30,7 @@
 vp run playground:open
 ```
 
-该命令固定启动独立的 `adapted/preview` 环境 w0，worker 目录为 `.workers/adapted/preview/w0`，不会影响 `adapted/base`。它只启动 Web 服务并输出 URL，不打开浏览器、不处理 preview notice、不截图、不写 readiness。关闭该 worker 使用：
+该命令固定启动独立的 `adapted/preview` 环境 w0，worker 目录为 `.workers/adapted/preview/w0`。它只启动 Web 服务并输出 URL，不打开浏览器、不处理 preview notice、不截图、不写 readiness。关闭该 worker 使用：
 
 ```sh
 vp run playground:close
