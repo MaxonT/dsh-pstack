@@ -1,6 +1,6 @@
-# pstack in DSH
+# pstack in DeepSeek Harness
 
-pstack skills use Cursor names. In DSH, read this file once per session, then map each Cursor name from the skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/`.
+pstack skills use Cursor names. In DeepSeek Harness, read this file once per session, then map each Cursor name in a skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/` in the installed `dsh-pstack` package.
 
 Use only tools visible in the current session. If a mapped tool or optional capability is unavailable, follow the fallback in that row. Do not assume optional plugins are enabled because a name appears here.
 
@@ -8,17 +8,17 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent` starts one child per selected role route and returns every child id with its resolved route. Only `prompt` is required; `description`, `agent`, `role`, `roleRoute`, `reasoningEffort`, `cwd`, and `maxDepth` are optional. A multi-route list role requires a route id from `pstack_roles`; an omitted or invalid route fails instead of silently using the first route. |
+| `Task` | `pstack_subagent`. One call starts one subagent; fan out by calling it once per child in one message. Pass `provider`, `model`, and an optional `reasoningEffort` to override the route, or omit all three to inherit the parent route. |
 | `AskQuestion` | `ask_user_question` takes a batch of questions with options and free input. Only a live root agent has a human answerer; a delegated child keeps its questions in its result. Ask in plain text when the tool is absent. |
 | Open a todolist | `todo_write` replaces the whole list and has no `skipped` status. Keep a skipped step visible as `skip: <reason> - <step>` in `content` and mark it `completed`. |
-| Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads a pstack skill by exact kebab-case `name`, including a skill hidden from the native `skill` tool by `disable-model-invocation`. Pass a relative `resource` to read one reference or playbook beside `SKILL.md`; a user `/name` gesture loads the skill directly. |
+| Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads this plugin's packaged pstack skills by exact kebab-case `name`, including skills not visible in the model skill catalog. Pass a relative `resource` to read a reference or playbook beside `SKILL.md`; a user `/name` gesture loads the skill directly. |
 | `Grep`, `Glob` | `grep` and `glob` are native tools; call them directly. Use `bash` with `rg` only when the session has neither. |
 
 ## Subagent fields
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `subagent_type: generalPurpose` | `agent: "general"` joins the parent preset and inherits its tools. Only `prompt` is required; omit unused `description`, `role`, `roleRoute`, `reasoningEffort`, or `cwd`. |
+| `subagent_type: generalPurpose` | `agent: "general"` (the default) joins the parent preset and inherits its tools. |
 | `poteto-agent`, `comment-sicko` | `agent: "poteto-agent"` or `agent: "comment-sicko"`. These are agent presets, not `subagent_type` values. |
 | `readonly: true` | `agent: "readonly"` gives the child a read-only sandbox. Use `general` when the child must write. |
 | `readonly: false` | `agent: "general"`. |
@@ -33,19 +33,19 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `claude-<family>-<version>-<effort>[-fast]` | Do not pass a Cursor slug. Pass `role: "<role key>"`; `pstack_subagent` reads `$DSH_HOME/pstack-models.json` and supplies the configured route. Drop `-fast`; DSH has no speed parameter. |
-| A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route, or omit `role` and `roleRoute` so the child inherits the parent route, and say so. |
-| `auto` or `inherit-parent` | Omit `role` and `roleRoute`; the child inherits the parent route. |
-| The pstack role file | `$DSH_HOME/pstack-models.json`, where `$DSH_HOME` defaults to `~/.dsh`. Base DSH does not load it; `pstack_subagent` reads it on every delegation. A missing file makes every role inherit the parent route. |
-| A role value such as `<model> <effort>` | Write `provider/model [effort]`; one role holds an array of these route strings. A multi-route list role requires its `roleRoute` id from `pstack_roles`; automatic panels start one child per route. |
+| `claude-<family>-<version>-<effort>[-fast]` | Do not pass a Cursor slug. Call `pstack_models` (or `pstack_roles`) for the real `provider`, `model`, and advertised efforts, then pass those to `pstack_subagent`. Drop `-fast`; DSH has no speed parameter. |
+| A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route, or omit `provider` and `model` so the child inherits the parent route, and say so. |
+| `auto` or `inherit-parent` | Omit `provider` and `model`; the child inherits the parent route. |
+| The pstack role file | `$DSH_HOME/pstack-models.json`. The calling agent reads it to map a role to its route; `pstack_subagent` does not parse it. A missing file leaves no configured route, so the child inherits the parent route. |
+| A role value such as `<model> <effort>` | Write `provider/model [effort]`; a role holds an array of these route strings. |
 
 ## setup-pstack
 
-`setup-pstack` writes `$DSH_HOME/pstack-models.json`, the role file the adapter reads on every delegation. Use `pstack_models` to discover the full set of provider, model, and effort routes this deployment serves, not just the parent session route.
+`setup-pstack` writes the role file the calling agent reads to choose a route. Use `pstack_models` to discover the live provider, model, and effort routes; do not infer them from Cursor slugs.
 
 - Detect: write each real route as `provider/model [effort]`. If nothing is detectable, ask the user to paste the routes.
 - Defaults: map each found route; use `inherit-parent` or `auto` for an unserved route. Apply the selected budget to the closest advertised effort and say what was chosen.
-- Write: write `version: 1`, an optional `budget`, and a `roles` object of route arrays. Overwrite the whole file so a rerun is idempotent; a missing role inherits the parent route.
+- Write: write a `roles` object of route arrays and an optional `budget`. Overwrite the whole file so a rerun is idempotent; a missing role inherits the parent route.
 
 ## Paths
 
@@ -53,7 +53,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | --- | --- |
 | `.cursor/skills/`, `~/.cursor/skills/` | Project skills live in `.dsh/skills/` or `.agents/skills/`; user skills live in `$DSH_HOME/skills/` or `~/.agents/skills/`. Packaged pstack skills load through `pstack_skill`. |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | Resolve package resources beside their `SKILL.md`; a plugin manifest is the `dsh` section of its `package.json`. |
-| `.cursor/rules/*.mdc`, always-applied rules | The `AGENTS.md`-compatible chain. Base DSH never reads `.mdc`; the pstack role file is read only by `pstack_subagent`. |
+| `.cursor/rules/*.mdc`, always-applied rules | The `AGENTS.md`-compatible chain. DSH never reads `.mdc`; the calling agent reads the pstack role file, and `pstack_subagent` does not parse it. |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | `<pstack>/<path>` when the package ships it. Read the local copy and give the user the public URL when needed. |
 | Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | `$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`. Optional session search adds model-facing search tools. |
 
@@ -71,14 +71,14 @@ DeepSeek Harness has no Cursor Automations, Bugbot, Cursor cloud agents, or buil
 
 ## Plugin tools
 
-The package registers four model-facing tools beyond the native DSH tools above.
+The package registers its own model-facing tools beyond the native DSH tools above.
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | Start one child per selected role route and return every child id with its resolved route; completion arrives as a notice. It accepts optional description, agent, role, roleRoute, reasoningEffort, cwd, and maxDepth. |
-| `pstack_skill` | Load any pstack skill by exact kebab-case name, including hidden skills; `resource` reads a reference or playbook. |
-| `pstack_models` | List the full provider, model, and reasoning-effort routes this deployment serves, not only the parent route. |
-| `pstack_roles` | List pstack roles, shapes, and configured route ids for `roleRoute`. |
+| `pstack_subagent` | Start one subagent, optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. |
+| `pstack_skill` | Load this plugin's packaged pstack skills by exact kebab-case name, including hidden ones; `resource` reads a reference or playbook. |
+| `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
+| `pstack_roles` | Report each pstack role and its configured routes as structured provider, model, and effort values. |
 
 ## Local replacements
 
@@ -89,7 +89,4 @@ The package registers four model-facing tools beyond the native DSH tools above.
 | `/loop` | Use `create_goal` for automatic continuation, `schedule_create` for a timed heartbeat, or a background `bash` watcher for observable events. |
 | `/automate` | Use `writing-for-agents` to turn verified work patterns into a personal skill; fall back to available session evidence when history search is unavailable. |
 | Custom Mode | Select the shipped `poteto-mode` or `poteto-mode-creator` root preset at session creation. |
-| `/visualize` | Return Mermaid text for diagrams; DSH has no built-in chart renderer, so do not claim an image. |
-| `statechart` | Return Mermaid text for the chart; DSH has no built-in SVG renderer, so do not claim an image. |
-| `ketchup-video` | Run a skill-owned renderer when it produces a verifiable artifact; otherwise return the text summary and say so. |
 | `control-ui`, `control-cli`, `cursor-team-kit` | Use the vendored instruction skills; their browser or PTY requirements are stated in their own `SKILL.md`. |

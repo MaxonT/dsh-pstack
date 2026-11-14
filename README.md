@@ -41,7 +41,7 @@
 
 ---
 
-`dsh-pstack` ports [pstack](https://github.com/cursor/plugins/tree/main/pstack) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). It includes the upstream skills, playbooks, and references, and adds skill routing, role-based model configuration, and role-routed subagents.
+`dsh-pstack` ports [pstack](https://github.com/cursor/plugins/tree/main/pstack) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). It includes the upstream skills, playbooks, and references, and adds skill routing, role-based model configuration, and subagents that accept an explicit model route.
 
 Each Cursor feature is mapped to DeepSeek Harness in the [runtime mapping](./port/dsh.md). The port is checked against real DSH Web sessions. The [Port verification](#-port-verification) section explains how.
 
@@ -98,7 +98,7 @@ Use the plugin UI when you want to configure related plugins and role routes.
 
 Use pstack skills when you want to start workflows directly from a Session.
 
-1. **Initialize role routes.** Run `/setup-pstack` once. It writes the detected routes to `$DSH_HOME/pstack-models.mdc`. Without this file, roles inherit the parent model.
+1. **Initialize role routes.** Run `/setup-pstack` once. It writes the detected routes to `$DSH_HOME/pstack-models.json`. Without this file, roles inherit the parent model. If an older `$DSH_HOME/pstack-models.mdc` exists, the plugin migrates it to JSON on first read and removes the old file.
 2. **Start through skills.** Type `/poteto-mode` directly. A preset switch is not required first.
 3. **Use targeted commands.** Pick a command from [Common commands](#️-common-commands).
 
@@ -122,8 +122,8 @@ Use pstack skills when you want to start workflows directly from a Session.
 |---|---|
 | `pstack_skill` | Loads hidden pstack skills by name, including resources at paths relative to the skill directory. |
 | `pstack_models` | Lists available providers, models, and reasoning efforts. |
-| `pstack_roles` | Shows each role's type and whether it is an automatic panel, so delegation uses the correct parameters. |
-| `pstack_subagent` | Applies role routing and agent presets. Supports parallel subagents. |
+| `pstack_roles` | Reports each role's configured routes as provider, model, and effort values. |
+| `pstack_subagent` | Starts one subagent with an agent preset, optionally overriding its route with provider, model, and reasoningEffort. |
 
 ### 🎭 Agent presets
 

@@ -14,7 +14,7 @@
 | 编号 | 问题与触发条件 | 根因 | 预防或验证 | 状态 |
 | --- | --- | --- | --- | --- |
 | RG-001 | DSH 升级后根 preset 工具集漂移 | 根 preset 手工复制标准与创造模式的工具行 | `tests/preset-parity.test.ts` 对 `tests/fixtures/dsh-<version>/` 的基线做完整插件行对比；升级基线时刷新 fixture | 已覆盖 |
-| RG-002 | 多路由角色漏传、错传 `roleRoute`，或传入旧的完整 route 字符串，导致实际只运行第一条模型路由 | `roleRoute` 曾允许精确字符串且缺省时静默取第一条；模型很容易省略、拼错或沿用旧写法，造成多模型场景退化为单模型 | 使用 `pstack_roles` 返回的稳定 route id；非自动面板的多路由角色缺省或无效 `roleRoute` 直接报错并列出可用 id；`tests/role-config.test.ts` 和 `tests/subagent.test.ts` 覆盖 | 已覆盖 |
+| RG-003 | 把上游 skill 的散文式委派选择（派几个、挑哪条）固化成 `role`、`roleRoute`、`roleIndex`、autoPanel 等专用参数，模型频繁漏传或错传，工具还要替调用方解析角色文件 | 适配偏离上游调用形态：上游是调用方直接给模型、按需多次调用做 fan-out，固化成专用选择参数后，参数面和校验围绕补偿概念膨胀，且和角色文件里的配置反复漂移 | `pstack_subagent` 只收 `provider`、`model`、`reasoningEffort`，省略则继承父路由；角色到路由的映射由调用方读取角色文件决定；`tests/subagent.test.ts` 覆盖薄包装语义 | 已覆盖 |
 
 ## 新增流程
 
