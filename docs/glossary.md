@@ -38,3 +38,23 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 由 `scripts/generate-pstack.mjs --target port` 从固定上游和 `port/dsh.md` 整体生成的根 `pstack/` 目录，构建时复制到 `dist/pstack/`。
 
 手工变更应落在生成来源、插件源码、测试或技能工作区。发布兼容键由 `port/baseline.json` 提供；场景注册表与审核侧车分别位于 `playground/scenarios/` 和 `playground/reviews/`，都不属于本仓工程决策记录目录。
+
+## Playground（验证场）
+
+`playground/` 的真实 DSH Web 会话验证环境。它运行 raw/adapted 能力 probe，收集 RunRecord、SessionEvidence 和评审快照，为 port 和 src 提供缺口与结论。
+
+## Raw 与 Adapted
+
+`raw` 是原生 DSH 基线阶段，只能观察 DSH 原生能力；`adapted` 是适配实现验证阶段，只使用当前适配实现和 `port/dsh.md`。两个阶段证据和结论隔离，不能互相替代。
+
+## Capability probe（能力探针）
+
+围绕一个能力行为编写的可观察场景。它用自然语言任务、workspace fixture、机械断言、语义 rubric 和 UI 观察点验证能力是否被触发，而不是验证某个实现细节。
+
+## Capability environment（能力对照环境）
+
+在 `environments.ts` 中登记的可选环境，用于比较某个可选依赖是否改变行为。它只作为对照，不代表原生 DSH 能力，也不进入 base 通过条件。
+
+## Baseline（发布基线）
+
+`port/baseline.json` 中的发布兼容元数据，包含 `compatibilityKey`、DSH 范围和被审核的 pstack commit。它不是 playground 的测试基线；发布脚本读取它维护根 README 兼容表。

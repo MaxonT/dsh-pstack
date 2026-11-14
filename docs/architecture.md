@@ -2,6 +2,28 @@
 
 本文描述 `dsh-pstack` 当前的模块边界、依赖方向和扩展入口。用户使用方式见根 README；移植、上游升级、生成树及其构建边界按 `port/AGENTS.md` 执行。
 
+## 端到端流程
+
+```text
+playground 真实会话验证
+  → 能力缺口和证据分析
+  → port/dsh.md + baseline.json
+  → src/ 实现和 cordis.patch.yml 装配
+  → 生成 pstack/ 和 build
+  → 根 README 状态/兼容表
+  → release-ready
+```
+
+- `playground` 负责运行 raw/adapted probe、收集证据和分析问题。
+- `port` 负责最终 dsh 适配文案和发布兼容元数据。
+- `src` 负责 Host/Client 实现；`cordis.patch.yml` 负责装配。
+- 根 README 同步已有兼容表、技能与能力状态、能力限制和最终适配结果。
+- 发布由用户手动执行；agent 停在 release-ready。
+
+## Bundle assembly
+
+根 `cordis.patch.yml` 是 Host/Client 装配清单，不是生成物。它选择模块、注册技能和组合 preset；新增、删除或改变模块、工具、服务或 preset 时，同步 `src/` 实现、导出和测试，生成树 `pstack/` 不手工编辑。
+
 ## 系统边界
 
 本仓提供一个 DSH Cordis bundle：

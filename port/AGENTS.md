@@ -39,4 +39,4 @@
 - 通用本地能力可以独立适配，但不宣称等价于云服务。
 - 非常用能力不默认提供插件补偿；环境不满足时明确报告不可用，不把跳过算作适配成功。
 - `port/` 只写最终交付和发布规则；实现细节见 `src/AGENTS.md`，验证流程见 `playground/AGENTS.md`。
-- 适配实现变化如果需要新增、删除或改变工具、服务、skill 目录或 preset，还要同步根 `cordis.patch.yml`；装配规则见根 [AGENTS.md](../AGENTS.md#bundle-assembly)。
+- 适配实现变化如果需要新增、删除或改变工具、服务、skill 目录或 preset，还要同步根 `cordis.patch.yml`；装配规则见 [../docs/architecture.md](../docs/architecture.md#bundle-assembly)。
