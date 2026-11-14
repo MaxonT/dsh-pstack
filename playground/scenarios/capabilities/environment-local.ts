@@ -5,27 +5,26 @@ const scenario: BehaviorScenario = {
   capability: "environment-local",
   turns: [
     {
-      prompt:
-        "就在当前工作区里完成一个小改动：新建 local.txt，内容写 'local'，然后确认它在当前目录里。",
+      prompt: "在当前这个工作区里直接读一下 README，把标题告诉我。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 本地执行探测\n\n验证默认就在当前工作区执行。\n",
+      "README.md": "# 本地执行探测\n\n标题在这里。\n",
     },
   },
   assertions: [
-    { kind: "turn-completed" },
-    { kind: "artifact-contains", path: "local.txt", text: "local" },
+    {
+      kind: "turn-completed",
+    },
   ],
   rubric: {
-    prompt:
-      "用户能看到改动在当前工作区的 local.txt 里落地。产物出现在别处、或声称需要额外远程环境才能执行，记为缺口。",
+    prompt: "用户能看到从当前工作区读到并回报的标题。跑到别的地方读、或读不到，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到 local.txt 已在当前工作区创建。",
+      id: "local-read",
+      description: "浏览器中能看到当前工作区 README 的标题。",
     },
   ],
 };

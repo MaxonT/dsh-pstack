@@ -3,30 +3,30 @@ import type { BehaviorScenario } from "../../types.ts";
 const scenario: BehaviorScenario = {
   id: "capability-poteto-agent",
   capability: "poteto-agent",
-  phases: ["adapted"],
   turns: [
     {
       prompt:
-        "用一个 pstack 的实现型子代理完成一项改动：在工作区新建 notes.md，写一行标题 '# 记录'，然后让它报告完成。",
+        "接下来按 poteto 风格推进：把你准备做的实现压缩成最小改动，并交给一个遵循 poteto 风格的执行者来完成一处小改动。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 实现型子代理探测\n\n让实现型子代理写一个记录文件。\n",
+      "README.md": "# poteto-agent\n\n能力探测。\n",
     },
   },
   assertions: [
-    { kind: "turn-completed" },
-    { kind: "artifact-contains", path: "notes.md", text: "# 记录" },
+    {
+      kind: "turn-completed",
+    },
   ],
   rubric: {
     prompt:
-      "用户能看到 pstack 的实现型子代理被实际启动并完成写入 notes.md。没有用到该人格代理、或写入缺失，记为缺口。",
+      "用户能看到一个遵循 poteto 风格（先读风格说明、最小改动、交付后回读）的执行者产出。沿用通用执行者且完全不带该风格说明，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到实现型子代理完成后的报告。",
+      id: "style-delegate",
+      description: "浏览器中能看到交付说明与风格化执行结果。",
     },
   ],
 };

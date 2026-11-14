@@ -5,25 +5,30 @@ const scenario: BehaviorScenario = {
   capability: "grep-glob",
   turns: [
     {
-      prompt: "在这个工作区里找出所有出现函数名 buildReport 的位置，把文件和行号列出来。",
+      prompt: "在这个仓库里找出所有提到部署命令的文件，并把命中的文件和行号给我。",
     },
   ],
   workspace: {
     files: {
-      "src/a.ts": "export function buildReport() {\n  return 1;\n}\n",
-      "src/b.ts": "import { buildReport } from './a';\n// 这里引用了 buildReport\n",
-      "docs/notes.md": "这里只是提到 buildReport 这个词，与实现无关。\n",
+      "README.md": "# 演示仓库\n\n本仓库介绍工具的用法。\n",
+      "docs/deploy.md": "# 部署\n\n运行 `deploy now` 发布。\n",
+      "src/config.ts": "export const mode = 'dev';\n",
+      "docs/other.md": "# 其他\n\n与部署无关。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }, { kind: "assistant-contains", text: "src/a.ts" }],
+  assertions: [
+    {
+      kind: "turn-completed",
+    },
+  ],
   rubric: {
     prompt:
-      "用户能看到结果准确列出包含 buildReport 的文件与位置（至少包含 src/a.ts）。漏掉真实出现位置、或凭空编造行号，记为缺口。",
+      "用户能看到真实存在的命中文件和行号（deploy.md 中提到部署命令的行）。答非所问、凭印象编造行号、或完全没找到，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到按文件与行号组织的搜索结果。",
+      id: "hits-visible",
+      description: "浏览器中列出命中的文件名和行号。",
     },
   ],
 };

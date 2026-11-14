@@ -3,27 +3,30 @@ import type { BehaviorScenario } from "../../types.ts";
 const scenario: BehaviorScenario = {
   id: "capability-cloud-base-branch",
   capability: "cloud-base-branch",
-  phases: ["adapted"],
   turns: [
     {
       prompt:
-        "这次隔离执行需要以 main 分支为基线来做：请在隔离检出里基于 main 开始，做不到就说明原因。",
+        "从 feature-base 这个分支起，在一个独立检出里看一下它和主干差了什么。如果环境支持以指定分支为起点就明说，不支持就说明并给出替代做法。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 基线分支探测\n\n验证隔离执行是否以指定分支为基线。\n",
+      "README.md": "# cloud-base-branch\n\n能力探测。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }],
+  assertions: [
+    {
+      kind: "turn-completed",
+    },
+  ],
   rubric: {
     prompt:
-      "用户能看到会话说明了如何以 main 为基线（例如创建隔离检出时指定该分支），或明确说明当前环境做不到并给出原因。完全忽略分支要求、当作没提过，记为缺口。",
+      "用户能看到以 feature-base 为起点得到的差异，或明确说明无法以该分支为起点并给了替代办法。既没以该分支为起点、也没说明，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到对以 main 为基线的处理说明。",
+      id: "base-branch-visible",
+      description: "浏览器中能看到起点分支或替代路径的说明。",
     },
   ],
 };

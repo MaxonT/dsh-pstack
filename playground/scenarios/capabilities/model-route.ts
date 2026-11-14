@@ -3,27 +3,29 @@ import type { BehaviorScenario } from "../../types.ts";
 const scenario: BehaviorScenario = {
   id: "capability-model-route",
   capability: "model-route",
-  phases: ["adapted"],
   turns: [
     {
-      prompt:
-        "先查一下当前有哪些可用的模型和推理档位，再用其中一个可用模型派一个执行者做一件小事，并告诉我它实际用的模型和档位。",
+      prompt: "这个子任务要用最强的判断模型、最高推理强度来跑，把这条路由显式定下来再交给执行者。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 模型路由探测\n\n先列可用模型，再据此派发执行者。\n",
+      "README.md": "# model-route\n\n能力探测。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }],
+  assertions: [
+    {
+      kind: "turn-completed",
+    },
+  ],
   rubric: {
     prompt:
-      "用户能看到会话先列出可用模型与档位，再据此派出子执行者，并回报实际使用的提供方、模型与档位。无法列出模型、或凭空编造一个档位，记为缺口。",
+      "用户能看到一条显式的提供方/模型/推理强度路由，并被实际用于执行。只说用强模型却没有落实路由，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到可用模型列表和对实际所用路由的说明。",
+      id: "route-shown",
+      description: "浏览器中能看到显式路由说明。",
     },
   ],
 };

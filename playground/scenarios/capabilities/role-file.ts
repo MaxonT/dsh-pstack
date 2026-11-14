@@ -3,27 +3,30 @@ import type { BehaviorScenario } from "../../types.ts";
 const scenario: BehaviorScenario = {
   id: "capability-role-file",
   capability: "role-file",
-  phases: ["adapted"],
   turns: [
     {
       prompt:
-        "先确认当前的 pstack 角色模型配置文件是否存在、里面有哪些角色路由，然后按其中一个已配置的角色派一个执行者，说明它用的路由。",
+        "按项目里配置的角色模型设置来跑这次工作：每个角色用什么模型以那份角色配置为准，跑之前先确认它读到了这份配置。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 角色文件探测\n\n读取角色模型配置并据此派发。\n",
+      "README.md": "# role-file\n\n能力探测。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }],
+  assertions: [
+    {
+      kind: "turn-completed",
+    },
+  ],
   rubric: {
     prompt:
-      "用户能看到会话读取了 pstack 角色模型配置文件，并据此派发执行者、说明所用路由。读取失败或忽略配置直接编造路由，记为缺口。",
+      "用户能看到执行时参考了角色配置文件，并说明每个角色实际用了什么模型。完全忽略角色配置、或声称读过却没对上内容，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到角色配置内容和对派发路由的说明。",
+      id: "rolefile-shown",
+      description: "浏览器中能看到角色配置被读取与应用的说明。",
     },
   ],
 };

@@ -6,23 +6,27 @@ const scenario: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "把一个独立的小任务交给执行者去做：读取工作区里的 README.md，用一句话概括这个仓库的用途，然后把执行者的结论转述给我。不要自己直接概括。",
+        "帮我把仓库里 README 的目录结构说明整理成一段简短摘要。这个整理工作交给一个独立的下属去做，你要马上告诉我它已经接手，等它做完再把结果带回来给我。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 临时工作区\n\n这是一个用来验证任务委派的小仓库，里面只有这一份说明。\n",
+      "README.md": "# task\n\n能力探测。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }],
+  assertions: [
+    {
+      kind: "turn-completed",
+    },
+  ],
   rubric: {
     prompt:
-      "用户能看到独立执行者实际被启动、完成读取并返回结论，主会话把该结论转述出来。只由主会话自己直接概括、没有真正把任务交给独立执行者时记为缺口；不因缺少某个具体工具名判通过。",
+      "用户可观察到的合格结果：主会话在开始时就表明已把整理工作交给一个独立下属，并随后带回该下属完成的摘要。主会话自己直接做完、没有交给独立下属，或交出去后没有任何完成回报，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到对 README 用途的转述，而不是空回复。",
+      id: "delegation-notice",
+      description: "浏览器中能看到交接说明以及后续结果回报。",
     },
   ],
 };

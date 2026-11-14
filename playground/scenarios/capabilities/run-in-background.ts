@@ -6,23 +6,27 @@ const scenario: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "把一个需要一点时间的独立任务交给执行者，交出去之后不要干等，先告诉我已经派出去了，等它完成再把结果补给我。",
+        "同时启动四项独立的检查任务，让它们各自在后台跑，先别让我等，全部完成后再把四份结果一起汇总给我。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 异步派发探测\n\n验证委派不阻塞主会话。\n",
+      "README.md": "# run-in-background\n\n能力探测。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }],
+  assertions: [
+    {
+      kind: "turn-completed",
+    },
+  ],
   rubric: {
     prompt:
-      "用户能看到会话先把任务交出去并立即回报“已派出、继续处理”，随后在看到完成通知后再补上结果。一直阻塞到任务结束才回复、或根本没有真正派出执行者，记为缺口。",
+      "用户能在四项任务都还没结束时先拿到已接手的反馈，随后收到四份结果汇总。串行等待、或没有汇总，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到“已派出”的即时回报，随后能看到完成结果。",
+      id: "background-report",
+      description: "浏览器中能看到先接手、后汇总的过程。",
     },
   ],
 };

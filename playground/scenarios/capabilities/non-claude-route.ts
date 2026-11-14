@@ -3,27 +3,30 @@ import type { BehaviorScenario } from "../../types.ts";
 const scenario: BehaviorScenario = {
   id: "capability-non-claude-route",
   capability: "non-claude-route",
-  phases: ["adapted"],
   turns: [
     {
       prompt:
-        "用一个非 Claude 系的模型路由派一个执行者做一件小事，并告诉我它最终用的是哪个提供方、模型和档位。",
+        "这个子任务想用一个别的厂商的模型来跑。请挑一个最接近的可用路由；如果确实没有匹配，就退回默认并明确告诉我你退回了。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 非 Claude 路由探测\n\n验证非 Claude 系的模型选择与回退。\n",
+      "README.md": "# non-claude-route\n\n能力探测。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }],
+  assertions: [
+    {
+      kind: "turn-completed",
+    },
+  ],
   rubric: {
     prompt:
-      "用户能看到会话选择了一个已公布的非 Claude 系路由，或说明就近回退到某条可用路由，并回报实际使用的提供方、模型和档位。编造一条不存在的路由，记为缺口。",
+      "用户能看到两种合格结果之一：选到最接近的可用路由，或明确说明没有匹配、已退回默认。悄悄换模型却不说明，记为缺口。",
   },
   uiObservations: [
     {
-      id: "reply-visible",
-      description: "浏览器中能看到所选非 Claude 系路由及实际所用档位。",
+      id: "route-fallback",
+      description: "浏览器中能看到路由选择或退回默认的说明。",
     },
   ],
 };

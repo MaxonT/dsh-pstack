@@ -6,23 +6,33 @@ const scenario: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "我想给这个项目加一个自动化脚本，但不确定你更需要哪种用途。请先用一道带选项的问题确认方向，再按我的选择继续。",
+        "开始干活前，先问我一个确认问题：这次只做功能，还是连测试一起做？我选好后你就按我的选择继续。",
     },
   ],
   workspace: {
     files: {
-      "README.md": "# 自动化需求\n\n项目还没有脚本。\n",
+      "README.md": "# askquestion\n\n能力探测。\n",
     },
   },
-  assertions: [{ kind: "turn-completed" }],
+  assertions: [
+    {
+      kind: "turn-completed",
+    },
+  ],
   rubric: {
     prompt:
-      "用户能看到会话在动手前抛出一道结构化选择题（有可点选选项，而不是纯文本泛问），并在得到选择后继续推进。没有任何征询就直接开工，或只做一段纯文本自由提问，记为缺口。",
+      "用户能看到一个可选择的确认问题，并且会话在拿到选择后继续。合格：问题以选择卡片呈现且选择被采纳；不合格：不提问就直接猜，或只问却不用答案。",
   },
   uiObservations: [
     {
-      id: "question-card-visible",
-      description: "浏览器中能看到一道可点选的问题卡片，而不是只有一段文字。",
+      id: "question-card",
+      description: "浏览器中出现可选择的问题卡片，选择后问题关闭。",
+    },
+  ],
+  answers: [
+    {
+      match: "测试",
+      selected: ["连测试一起做"],
     },
   ],
 };
