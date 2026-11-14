@@ -93,6 +93,10 @@ export default defineConfig({
         command: "vpx playground/scripts/prepare.ts --phase adapted --environment base --workers 1",
         cache: false,
       },
+      "playground:close": {
+        command: "vpx playground/scripts/stop.ts --phase adapted --environment base",
+        cache: false,
+      },
       "playground:bootstrap": {
         command: "vpx playground/scripts/bootstrap.ts",
         cache: false,

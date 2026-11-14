@@ -30,7 +30,13 @@
 vp run playground:open
 ```
 
-该命令固定启动 `adapted/base` 的 w0，只启动 Web 服务并输出 URL，不打开浏览器、不处理 preview notice、不截图、不写 readiness。需要重建干净环境时，仍使用带参数的 `prepare`。
+该命令固定启动 `adapted/base` 的 w0，只启动 Web 服务并输出 URL，不打开浏览器、不处理 preview notice、不截图、不写 readiness。关闭该 worker 使用：
+
+```sh
+vp run playground:close
+```
+
+`playground:open` 不会执行 reset；`--reset` 只用于删除 worker home/profile/隔离工作区后从零重建，配置或插件变化、环境损坏时才需要。
 
 ## 准备和运行
 
