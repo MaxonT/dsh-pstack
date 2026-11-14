@@ -3,6 +3,7 @@ import type { BehaviorScenario } from "../../types.ts";
 const scenario: BehaviorScenario = {
   id: "capability-render-audio",
   capability: "render-audio",
+  phases: ["raw"],
   turns: [
     {
       prompt:

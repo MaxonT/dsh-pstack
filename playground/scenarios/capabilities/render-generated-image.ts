@@ -3,6 +3,7 @@ import type { BehaviorScenario } from "../../types.ts";
 const scenario: BehaviorScenario = {
   id: "capability-render-generated-image",
   capability: "render-generated-image",
+  phases: ["raw"],
   turns: [
     {
       prompt:
