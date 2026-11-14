@@ -21,28 +21,103 @@
 
 ## 按能力类别分析
 
-分析不能只写一段总体结论；每个 finding 必须落到对应能力类别，并按类别的观察维度判断。
+分析不能只写一段总体结论。每个 finding 必须先落到一个能力类别，再按该类别的证据维度判断。类别定义见 [raw-probes.md](./raw-probes.md)。
 
-| 能力类别 | 必看证据 | 判定重点 |
-| --- | --- | --- |
-| tool | `SessionAnalysis.tools` 的 `firstAttemptStatus`、`attempts`、`failures`、`recovered`、`finalStatus`；实际 tool call 和错误文本 | 一次通过、失败后重试通过、仍然失败要分开写；不要把重试成功写成一次通过 |
-| delegation | 子代理是否真正启动、角色和路由、完成通知、父会话是否转述结果 | 是否实际委派，还是主会话自己完成 |
-| routing | 实际 `target` 路由、可用模型、effort、继承或回退 | 实际路由是否与声明和可用路由一致，不能凭回复文字猜 |
-| environment | 环境配置、插件前提、跳过/blocked 行为 | 区分能力不支持、环境未启用和降级替代 |
-| output-render | 完整页面截图、实际图像、渲染后的图表、可播放媒体 | 源码、路径或文件卡片不能当作实际呈现 |
-| skill-dependency | 被依赖技能的加载/不可用状态、本地替代、vendored skill、fallback | 依赖缺失时整个任务是否仍按降级完成 |
+### tool
 
-`tool` 的 `recovered` 为 true 表示失败后最终成功；`firstAttemptStatus === "ok"` 且 `failures === 0` 才是一次通过。
+必看：
 
-## 非文本输出审查
+- `SessionAnalysis.tools` 的 `firstAttemptStatus`
+- `attempts`
+- `failures`
+- `recovered`
+- `finalStatus`
+- 实际 tool call 的参数、错误文本和最终结果
 
-- 先检查 inventory 是否为上游要求的渲染、截图、图表、Mermaid、UI、视频或音频输出建立了 `render-*` capability 和 probe；缺失本身就是覆盖缺口，不能因为当前快照没有产物就判通过。
-- 先识别用户要求的是文本还是非文本产物。
-- 非文本产物必须看完整页面截图和实际 UI 呈现，不能只看 assistant 文本、源码块、文件路径、文件卡片或 artifact 断言。
-- 源码出现、文件存在或路径可访问，不等于实际渲染、播放或可读。
-- 用户明确要求源码或格式时，源码可以作为该格式的结果，但仍需确认内容完整并实际出现在回复或产物中。
-- 渲染、播放或查看能力缺失时，记录为环境限制或待用户判断，不得判通过。
-- 没有实际呈现证据的非文本产物，按 gap 或待用户判断处理。
+判定：
+
+- `firstAttemptStatus === "ok"` 且 `failures === 0`：一次通过。
+- `recovered === true`：失败后重试成功。
+- `finalStatus === "error"`：最终失败。
+- 工具调用成功但结果内容错误，仍按对应能力缺陷记录，不能因为 tool status 为 ok 就判通过。
+- 没有实际 tool call 或没有可观察结果时，不能推断工具可用。
+
+### delegation
+
+必看：
+
+- 子代理是否真正启动
+- role、model、reasoning effort、cwd 是否正确传递
+- 子代理是否完成并发出完成通知
+- 父会话是否转述子代理结果
+
+判定：
+
+- 主会话自己做完了任务，不算 delegation 通过。
+- 子代理启动但中途失败、没有完成通知或没有产出，记录为失败分支。
+- 多个子代理时，要分别记录每个分支，不把并行结果合并成一个“成功”。
+
+### routing
+
+必看：
+
+- 实际 `target` 路由
+- provider、model、effort
+- 可用模型列表
+- 继承、默认和 fallback 路径
+
+判定：
+
+- 实际路由必须和可用路由、声明路由一致。
+- 不能凭 assistant 文本声称的模型名判断，要看记录中的实际路由。
+- 模型不存在、effort 不允许或只能回退时，记录为路由缺口或环境限制。
+
+### environment
+
+必看：
+
+- `environments.ts` 的环境配置
+- 前置能力是否启用
+- 跳过、blocked、环境限制或替代工具的实际行为
+
+判定：
+
+- 区分“能力本身不支持”和“当前环境未启用”。
+- 环境未启用时按 `ignore-environment` 记录，不判为 native gap。
+- 有替代工具且实际完成任务时，说明替代路径；没有实际完成时记录 gap 或待判断。
+
+### output-render
+
+必看：
+
+- 完整页面截图
+- 实际图像、图表或 Mermaid 渲染结果
+- UI 实际呈现
+- 视频或音频是否可播放
+
+判定：
+
+- 源码、路径、文件卡片和 assistant 文本不能替代实际呈现。
+- inventory 没有对应 `render-*` capability 或 probe，本身就是覆盖缺口。
+- 用户明确要求源码或格式时，源码可以作为该格式结果，但仍要确认内容完整并实际出现。
+- 渲染、播放或查看能力缺失时，记录为环境限制或待判断，不判通过。
+- 没有实际呈现证据时按 gap 处理。
+
+### skill-dependency
+
+必看：
+
+- 上游文档要求依赖的技能或内置能力
+- 被依赖技能是否存在、可加载
+- 是否有本地替代、vendored skill 或 fallback
+- 依赖缺失时整个任务是否仍能完成
+
+判定：
+
+- `skill-dependency` 不是 `tool` 的普通调用，也不是单纯 `skill-loading`；它验证的是依赖链是否完整。
+- 被依赖技能不存在且没有替代时，记录为能力缺口。
+- 有替代且任务实际完成时，写清替代路径和证据。
+- 不能因为当前 pstack 没自带该技能，就把它当成不需要分析。
 
 ## 输出
 
@@ -51,10 +126,11 @@
 `index.md` 固定包含：
 
 1. 本轮范围：mode（full / incremental）、覆盖场景、未覆盖但沿用当前快照的场景，以及各场景的环境 revision/port 版本。
-2. 问题问答：按「根因 + 建议动作」去重，一个根因只写一条。
-3. `dsh.md` 适配说明审查：逐章节/逐行判断 `够用 / 缺失 / 误导 / 不适用`。
-4. 待用户判断的问题：所有分类不确定的问题都放这里。
-5. 后续动作：只列明确落到 `dsh-md`、`plugin`、`upstream`、`ignore-environment` 的结论。
+2. 按能力类别汇总：每一类覆盖了哪些场景，哪些通过、哪些失败、哪些未观察到。
+3. 问题问答：按「根因 + 建议动作」去重，每个问题带能力类别和证据。
+4. `dsh.md` 适配说明审查：逐章节/逐行判断 `够用 / 缺失 / 误导 / 不适用`。
+5. 待用户判断的问题：所有分类不确定的问题都放这里。
+6. 后续动作：只列明确落到 `dsh-md`、`plugin`、`upstream`、`ignore-environment` 的结论。
 
 ## 问题条目格式
 
@@ -91,12 +167,12 @@ raw 分析只审查 `playground/raw/dsh.md`，adapted 分析只审查 `port/dsh.
 
 ## 判定顺序
 
-1. 先判问题是否真实：看 record 的 assistant 文本和工具调用、完整页面截图；需要完整事件时再按 sessionId 读取本地 worker session。
-2. 再判根因：场景 prompt 是否触发技能；技能是否加载；适配说明是否覆盖；环境是否限制；上游技能自身是否缺陷。
+1. 先判问题是否真实：看 `record.json` 的 assistant 文本、工具调用、完整页面截图；需要完整事件时再按 sessionId 读取本地 worker session。
+2. 再判能力类别和根因：场景 prompt、技能或依赖、环境前提、适配说明、上游文档是否覆盖。
 3. raw 分析只判断 `playground/raw/dsh.md` 是否缺失或误导；adapted 分析只判断 `port/dsh.md` 是否缺失或误导。
 4. 当前阶段的 `dsh-md` 结论只改当前阶段对应的 dsh.md；raw 阶段不改 `port/dsh.md`。
 5. 当前阶段的 `plugin` 结论才进入插件、工具或预设开发。
-6. 上游技能自身问题进入 `upstream`，不在本仓修。
+6. 上游自身问题进入 `upstream`，不在本仓修。
 7. 环境权限、凭据、网络或无头限制进入 `ignore-environment`。
 8. 证据不足或分类会影响方案时，一律标 `待你判断`，不得默认忽略。
 
