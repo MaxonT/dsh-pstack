@@ -8,10 +8,10 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent` 按选中的角色路由各启动一个子智能体，并返回所有子智能体 id 及其解析后的路由。只有 `prompt` 必填；`description`、`agent`、`role`、`roleRoute`、`reasoningEffort`、`cwd` 和 `maxDepth` 都可选。多路由列表角色必须传 `pstack_roles` 返回的 `roleRoute` id，省略会失败而不是选第一条。它会在启动前校验路由和强度；后续失败返回部分结果。 |
-| `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体能收到回答；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
+| `Task` | `pstack_subagent` 按选中的角色路由各启动一个子智能体，并返回所有子智能体 id 及其解析后的路由。只有 `prompt` 必填；`description`、`agent`、`role`、`roleRoute`、`reasoningEffort`、`cwd` 和 `maxDepth` 都可选。多路由列表角色必须使用 `pstack_roles` 返回的 route id；省略或无效会失败，不会静默使用第一条。 |
+| `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体有人工回答者；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
-| Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case `name` 加载 pstack 技能，包括原生 `skill` 工具隐藏的技能。用相对 `resource` 读取 `SKILL.md` 旁的参考或 playbook；用户 `/name` 手势直接加载技能。 |
+| Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case `name` 加载 pstack 技能，包括被 `disable-model-invocation` 从原生 `skill` 工具隐藏的技能。用相对 `resource` 读取 `SKILL.md` 旁的参考或 playbook；用户 `/name` 手势直接加载技能。 |
 | `Grep`, `Glob` | `grep` 和 `glob` 是原生工具，直接调用。只有会话两者都没有时才用 `bash` 的 `rg`。 |
 
 ## Subagent fields
@@ -20,10 +20,10 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | --- | --- |
 | `subagent_type: generalPurpose` | `agent: "general"` 加入父 preset 并继承其工具。只有 `prompt` 必填；未用的 `description`、`role`、`roleRoute`、`reasoningEffort` 或 `cwd` 可省略。 |
 | `poteto-agent`, `comment-sicko` | `agent: "poteto-agent"` 或 `agent: "comment-sicko"`。它们是 agent preset，不是 `subagent_type` 值。 |
-| `readonly: true` | `agent: "readonly"`：子智能体使用只读沙箱。需要写入时用 `general`。 |
+| `readonly: true` | `agent: "readonly"` 给子智能体只读沙箱。需要写入时用 `general`。 |
 | `readonly: false` | `agent: "general"`。 |
 | `environment: "cloud"` | 没有云代理。可用时用 `create_worktree`，把 checkout 作为 `cwd`；否则按规则跳过。 |
-| `environment: "local"` | `cwd: null`；子智能体继承会话目录。 |
+| `environment: "local"` | 省略 `cwd`；子智能体继承会话目录。 |
 | `cloud_base_branch: <b>` | 作为 `create_worktree.from` 传入；否则让子智能体先 checkout `<b>`。 |
 | `run_in_background: true` | 省略。`pstack_subagent` 由托管执行并通过完成通知返回。 |
 | `resume` | 用 `send_message` 发给已有子智能体 id 继续；只有永久停止时才新建 `pstack_subagent`。 |
@@ -34,14 +34,14 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | Cursor | DeepSeek Harness |
 | --- | --- |
 | `claude-<family>-<version>-<effort>[-fast]` | 不要传 Cursor slug。传 `role: "<role key>"`；`pstack_subagent` 读取 `$DSH_HOME/pstack-models.json` 并提供配置的路由。去掉 `-fast`；DSH 没有速度参数。 |
-| A `grok-*` 或其他非 Claude slug | 传 `role: null` 或 `roleRoute: null`，让子智能体继承父路由，并说明这一点。 |
-| `auto` 或 `inherit-parent` | 传 `role: null`，或把角色路由配置为 `inherit-parent` 或 `auto`。 |
+| A `grok-*`、`gpt-*` 或其他非 Claude slug | 选最接近的已公布路由，或省略 `role` 和 `roleRoute` 让子智能体继承父路由，并说明这一点。 |
+| `auto` 或 `inherit-parent` | 省略 `role` 和 `roleRoute`；子智能体继承父路由。 |
 | pstack 角色文件 | `$DSH_HOME/pstack-models.json`，`$DSH_HOME` 默认 `~/.dsh`。base DSH 不加载它；`pstack_subagent` 每次委派都读取。文件缺失时所有角色继承父路由。 |
 | 形如 `<model> <effort>` 的角色值 | 写成 `provider/model [effort]`；一个角色保存这些路由字符串的数组。多路由列表角色必须使用 `pstack_roles` 返回的 `roleRoute` id；自动面板为每条路由启动一个子智能体。 |
 
 ## setup-pstack
 
-`setup-pstack` 写 `$DSH_HOME/pstack-models.json`，即适配器每次委派读取的角色文件。先用 `pstack_models` 发现真实的 provider、model 和 effort 路由；不要根据 Cursor slug 猜测。
+`setup-pstack` 写 `$DSH_HOME/pstack-models.json`，即适配器每次委派读取的角色文件。先用 `pstack_models` 发现本部署提供的完整 provider、model 和 effort 路由，而不是只有父会话路由。
 
 - Detect：把每条真实路由写成 `provider/model [effort]`。检测不到时请用户粘贴路由。
 - Defaults：映射找到的路由；不可用路由用 `inherit-parent` 或 `auto`。把选定预算映射到最接近的可用 effort，并说明选择。
@@ -53,7 +53,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | --- | --- |
 | `.cursor/skills/`, `~/.cursor/skills/` | 项目技能位于 `.dsh/skills/` 或 `.agents/skills/`；用户技能位于 `$DSH_HOME/skills/` 或 `~/.agents/skills/`。随包 pstack 技能通过 `pstack_skill` 加载。 |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | 在 `SKILL.md` 旁解析包资源；插件 manifest 是 `package.json` 的 `dsh` 段。 |
-| `.cursor/rules/*.mdc`, always-applied rules | `AGENTS.md` 兼容链。base DSH 不读取 `.mdc`；pstack 角色文件只由适配器读取。 |
+| `.cursor/rules/*.mdc`, always-applied rules | `AGENTS.md` 兼容链。base DSH 不读取 `.mdc`；pstack 角色文件只由 `pstack_subagent` 读取。 |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | 包内存在该文件时使用 `<pstack>/<path>`。读取本地副本，需要链接时给用户公开 URL。 |
 | Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | `$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`。可选 session search 增加面向模型的搜索工具。 |
 
@@ -75,10 +75,10 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | 按选中的角色路由启动子智能体，返回所有 id 和解析后的路由；完成时发通知。 |
+| `pstack_subagent` | 按选中的角色路由启动子智能体，返回所有 id 和解析后的路由；完成时发通知。它接受可选的 description、agent、role、roleRoute、reasoningEffort、cwd 和 maxDepth。 |
 | `pstack_skill` | 按精确 kebab-case 名称加载 pstack 技能，包括隐藏技能；`resource` 读取参考或 playbook。 |
-| `pstack_models` | 列出本部署实际提供的完整 provider、model 和 reasoning-effort 路由，而不是只有父会话路由。 |
-| `pstack_roles` | 列出 pstack 角色、每个角色的 shape，以及可传给 `roleRoute` 的已配置 route id。 |
+| `pstack_models` | 列出本部署实际提供的完整 provider、model 和 reasoning-effort 路由，而不是只有父路由。 |
+| `pstack_roles` | 列出 pstack 角色、shape，以及可传给 `roleRoute` 的已配置 route id。 |
 
 ## Local replacements
 
