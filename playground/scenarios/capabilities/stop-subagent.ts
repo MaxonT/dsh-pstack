@@ -16,7 +16,8 @@ const scenario: BehaviorScenario = {
   capability: "stop-subagent",
   turns: [
     {
-      prompt: "让一个执行者去遍历整个仓库并逐行总结，把这件事交给它，先不要自己动手。",
+      prompt:
+        "让一个执行者持续遍历整个仓库并逐行总结，反复多轮、不要自己停下来，一直跑到我另行叫停为止。先不要自己动手。",
     },
     {
       prompt:
