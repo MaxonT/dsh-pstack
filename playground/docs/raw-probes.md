@@ -42,7 +42,6 @@ export default scenario;
 - DSH 运行时和 profile。
 - `playground/raw/dsh-evidence.md`。
 - 当前插件实现。
-- 第三方插件提供的能力；它们只能作为已登记环境的能力对照，不能转成 base capability 或 raw DSH 能力。
 
 如果上游树缺失或结构不符合预期，直接失败，不使用生成树或其他目录兜底。
 
@@ -88,7 +87,7 @@ export default scenario;
 - terminal 或持久 shell 能力
 - 外部 forge、PR 或 CI 能力
 
-对每个前提都要写清：启用时能做什么；未启用时是跳过、报环境限制，还是使用替代工具。第三方插件带来的能力只在对应环境对照中观察，不写成 base capability，也不得因此判断 DSH 原生能力。
+对每个前提都要写清：启用时能做什么；未启用时是跳过、报环境限制，还是使用替代工具。
 
 ### 5. output-render
 
