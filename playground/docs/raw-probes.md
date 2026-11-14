@@ -1,6 +1,6 @@
 # raw 能力用例提取规则
 
-本文件定义 `playground/scenarios/` 中的能力用例如何从上游和 raw 资料提取、如何写成 probe，以及 inventory 与排除项如何维护。
+本文件定义 `playground/scenarios/` 中的能力用例如何从上游和 raw 资料提取、如何写成 probe，以及 inventory 与排除项如何维护。目标是让新会话可以按这些规则生成完整的能力用例集合，而不是只补当前看到的几个点。
 
 ## 目录与文件
 
@@ -33,7 +33,7 @@ export default scenario;
 
 能力需求只来自：
 
-- `upstream/cursor-plugins/pstack` 源树中的上游文档。
+- `upstream/cursor-plugins/pstack` 源树中的技能、playbook、命令和 agent 文档。
 - `playground/raw/dsh.md` 的映射行。
 
 以下内容不是能力来源：
@@ -45,26 +45,96 @@ export default scenario;
 
 如果上游树缺失或结构不符合预期，直接失败，不使用生成树或其他目录兜底。
 
+## 能力分类
+
+必须按下面的类别扫描上游和 raw 资料，不要只读取 `dsh.md` 的表格行，也不要因为当前实现没有某个能力就跳过该类。每个类别都可能产生多个 capability probe。
+
+### 1. tool
+
+工具调用、交互方式和用户可见操作：
+
+- 任务委派工具及其输入输出
+- 提问、确认、跳过和取消
+- todo、搜索、文件读取、文件修改
+- 工具不存在、超时、参数缺失时的降级
+
+### 2. delegation
+
+子代理和委托行为：
+
+- 单代理和并行代理
+- role、model、reasoning effort、cwd 的传递
+- 只读、可写、继承父级
+- 后台执行、恢复、停止和多阶段协作
+
+### 3. routing
+
+模型和角色路由：
+
+- 可用模型发现
+- provider、model、effort 的显式路由
+- 未知模型、非 Claude slug、继承路由
+- 角色文件和默认路由
+- 模型不可用时的降级
+
+### 4. environment
+
+可选运行时能力的前提和降级：
+
+- worktree 能力
+- session history/search 能力
+- browser、screenshot、desktop 能力
+- terminal 或持久 shell 能力
+- 外部 forge、PR 或 CI 能力
+
+对每个前提都要写清：启用时能做什么；未启用时是跳过、报环境限制，还是使用替代工具。
+
+### 5. output-render
+
+输出形态是一类独立能力，不是场景写法里的一句通用检查。以下输出都必须提取对应能力并建立 probe：
+
+- 截图或实际页面
+- 生成的图片
+- 图表、Mermaid 图或画布
+- 实际 UI 呈现
+- 视频或音频播放
+
+没有对应 `render-*` capability 和 probe 就是覆盖缺口。非文本产物的 probe 必须要求观察真实呈现，不能用源码、路径、文件卡片或 assistant 文本代替。
+
+### 6. skill-dependency
+
+上游技能依赖其他技能时，依赖关系本身是一类能力：
+
+- Cursor 内置技能，例如 `create-skill`、`/loop`、`/visualize`
+- `cursor-team-kit` 或其他外部技能，例如 `deslop`、`control-ui`、`control-cli`
+- pstack 本地技能，例如 `unslop`、`technical-writing`、`no-comments`
+- 技能被直接调用、作为步骤交接、或者要求某个技能必须存在
+
+处理方式：
+
+- 为每个被依赖的技能建立 `skill-dependency.<name>` capability，并在 `sources` 中记录引用它的上游文档。
+- raw probe 要观察该技能不存在、不可加载或只能降级时会发生什么。
+- adapted probe 要观察本地替代、vendored skill 或 pstack 提供的能力是否成立。
+- 不能因为该技能不是 pstack 当前自带，就把它排除出能力提取。
+- 技能依赖与 skill-loading 不同：skill-loading 验证“能否按名加载技能”，skill-dependency 验证“某个技能需要另一个技能时，整个任务是否仍然完整”。
+
 ## 提取流程
 
-1. 扫描上游 pstack 的技能、playbook、命令和 agent 文档，找出用户可观察的行为和依赖。
+1. 扫描上游 pstack 的技能、playbook、命令和 agent 文档，按上面的六个类别逐类记录候选。
 2. 对照 `playground/raw/dsh.md` 的映射行，确认该行为在 raw DSH 中应如何观察。
 3. 将同一行为归并为稳定的 capability id；一个 capability 只对应一个 base probe。
 4. 为每个 capability 设计自然语言 prompt、workspace fixture、机械 assertions、语义 rubric 和 UI 观察点。
 5. 在 `capability-inventory.json` 中记录能力、来源、`probes`、状态和用户批准过的排除原因。
 6. 新增或删除 probe 后同步 inventory，确保 `probes.base` 指向实际场景。
 
-## 输出形态
+## 完整生成检查
 
-输出形态属于能力提取范围。上游文档要求以下内容时，必须提取对应的 `render-*` 能力并建立独立 probe：
-
-- 截图或实际页面
-- 图片或生成图像
-- 图表或 Mermaid 图
-- 画布或实际 UI 渲染
-- 视频或音频播放
-
-不能只在场景写法里写一句“非文本产物要检查实际呈现”来代替能力提取。缺少对应 `render-*` capability 和 probe 本身就是覆盖缺口。
+- 六个类别都扫描过，不因当前没有 probe 就漏掉整类。
+- 上游文档中的工具、模型、环境、输出和技能依赖都有对应 capability，或者有明确记录的原因。
+- 所有 base probe 默认允许 raw；不得在 `capabilities/` 中静默写 `phases: ["adapted"]`。
+- 每个 capability 有 `probes.base`；需要环境对照时追加对应环境键。
+- 每个 `render-*` 和 `skill-dependency.*` 都有 probe，不能只写文档说明。
+- 新增 probe 后重新运行 `vp check --fix` 和 `vp test`。
 
 ## 阶段边界
 
