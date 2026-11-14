@@ -29,7 +29,7 @@
 ## 生成与发布
 
 1. 按 `docs/dsh-adapter.md` 维护 `dsh.md` 和 `dsh.zh.md`。
-2. 运行 `vp run generate:dsh-check` 不再存在；生成后运行 `vp run generate:check` 检查生成树。
+2. 生成后运行 `vp run generate:check` 检查生成树。
 3. 用 `vpx scripts/generate-pstack.mjs --target port` 生成根 `pstack/`；加 `--check` 检查漂移。
 4. 破坏性适配同时更新 `package.json` 的 DSH 范围、`baseline.json` 的兼容键和各本地化 README 的兼容表。
 
