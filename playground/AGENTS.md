@@ -20,7 +20,6 @@
 | [docs/worker.md](./docs/worker.md) | worker 隔离、prepare/bootstrap/run/stop 和就绪缓存 |
 | [docs/evidence-analysis.md](./docs/evidence-analysis.md) | 证据分析输入、输出、阶段隔离和 index 格式 |
 | [docs/evidence-redaction.md](./docs/evidence-redaction.md) | 证据脱敏和提交门 |
-| [docs/baseline.md](./docs/baseline.md) | baseline.json 字段和发布兼容键规则 |
 
 ## 流程概览
 

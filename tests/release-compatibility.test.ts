@@ -50,10 +50,10 @@ Keep this English tail.
 }
 
 function prepare(): void {
-  mkdirSync(join(ROOT, "playground"), { recursive: true });
+  mkdirSync(join(ROOT, "port"), { recursive: true });
   mkdirSync(join(ROOT, "upstream", "cursor-plugins", "pstack"), { recursive: true });
   writeJson("package.json", { version: "0.3.0-beta.1", engines: { dsh: RANGE } });
-  writeJson("playground/baseline.json", {
+  writeJson("port/baseline.json", {
     compatibilityKey: KEY,
     dshVersion: RANGE,
     pstackCommit: "ae5650febf4320793844c12c4adaa937f417f8da",

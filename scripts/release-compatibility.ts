@@ -51,7 +51,7 @@ function readJson(path: string, root = ROOT): unknown {
 
 export function releaseMetadata(read = readJson): ReleaseMetadata {
   const manifest = read("package.json") as Manifest;
-  const baseline = read("playground/baseline.json") as Baseline;
+  const baseline = read("port/baseline.json") as Baseline;
   const upstream = read("upstream/cursor-plugins/pstack/plugin.json") as UpstreamManifest;
   const version = manifest.version;
   const dshRange = manifest.engines?.dsh;
