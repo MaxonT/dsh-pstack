@@ -36,7 +36,13 @@ vp run playground:open
 vp run playground:close
 ```
 
-`playground:open` 不会执行 reset；`--reset` 只用于删除 worker home/profile/隔离工作区后从零重建，配置或插件变化、环境损坏时才需要。
+`playground:open` 不会执行 reset。需要从零重建预览 worker 时使用：
+
+```sh
+vp run playground:reset
+```
+
+该命令会停止并重建 `adapted/preview` worker，不需要先执行 `playground:close`。
 
 ## 准备和运行
 
