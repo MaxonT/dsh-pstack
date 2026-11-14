@@ -36,7 +36,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | `claude-<family>-<version>-<effort>[-fast]` | Do not pass a Cursor slug. Pass `role: "<role key>"`; `pstack_subagent` reads `$DSH_HOME/pstack-models.json` and supplies the configured route. Drop `-fast`; DSH has no speed parameter. |
 | A `grok-*` or other non-Claude slug | Pass `role: null` or `roleRoute: null` so the child inherits the parent route, and say so. |
 | `auto` or `inherit-parent` | Pass `role: null`, or configure the role route as `inherit-parent` or `auto`. |
-| The `pstack-models.mdc` rule | `$DSH_HOME/pstack-models.json`, where `$DSH_HOME` defaults to `~/.dsh`. Base DSH does not load it; `pstack_subagent` reads it on every delegation. A missing file makes every role inherit the parent route. |
+| The pstack role file | `$DSH_HOME/pstack-models.json`, where `$DSH_HOME` defaults to `~/.dsh`. Base DSH does not load it; `pstack_subagent` reads it on every delegation. A missing file makes every role inherit the parent route. |
 | A role value such as `<model> <effort>` | Write `provider/model [effort]`; one role holds an array of these route strings. Multi-route list roles require a `roleRoute` id from `pstack_roles`; automatic panels start one child per route. |
 
 ## setup-pstack
@@ -77,7 +77,7 @@ The package registers four model-facing tools beyond the native DSH tools above.
 | --- | --- |
 | `pstack_subagent` | Start one child per selected role route and return every child id with its resolved route; completion arrives as a notice. |
 | `pstack_skill` | Load any pstack skill by exact kebab-case name, including hidden skills; `resource` reads a reference or playbook. |
-| `pstack_models` | List the provider, model, and reasoning-effort routes this deployment actually serves. |
+| `pstack_models` | List the full provider, model, and reasoning-effort routes this deployment serves, not only the parent session route. |
 | `pstack_roles` | List pstack roles, each role's shape, and configured route ids for `roleRoute`. |
 
 ## Local replacements

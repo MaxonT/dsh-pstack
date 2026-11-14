@@ -36,7 +36,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | `claude-<family>-<version>-<effort>[-fast]` | 不要传 Cursor slug。传 `role: "<role key>"`；`pstack_subagent` 读取 `$DSH_HOME/pstack-models.json` 并提供配置的路由。去掉 `-fast`；DSH 没有速度参数。 |
 | A `grok-*` 或其他非 Claude slug | 传 `role: null` 或 `roleRoute: null`，让子智能体继承父路由，并说明这一点。 |
 | `auto` 或 `inherit-parent` | 传 `role: null`，或把角色路由配置为 `inherit-parent` 或 `auto`。 |
-| The `pstack-models.mdc` rule | `$DSH_HOME/pstack-models.json`，`$DSH_HOME` 默认 `~/.dsh`。base DSH 不加载它；`pstack_subagent` 每次委派都读取。文件缺失时所有角色继承父路由。 |
+| pstack 角色文件 | `$DSH_HOME/pstack-models.json`，`$DSH_HOME` 默认 `~/.dsh`。base DSH 不加载它；`pstack_subagent` 每次委派都读取。文件缺失时所有角色继承父路由。 |
 | 形如 `<model> <effort>` 的角色值 | 写成 `provider/model [effort]`；一个角色保存这些路由字符串的数组。多路由列表角色必须使用 `pstack_roles` 返回的 `roleRoute` id；自动面板为每条路由启动一个子智能体。 |
 
 ## setup-pstack
@@ -77,7 +77,7 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | --- | --- |
 | `pstack_subagent` | 按选中的角色路由启动子智能体，返回所有 id 和解析后的路由；完成时发通知。 |
 | `pstack_skill` | 按精确 kebab-case 名称加载 pstack 技能，包括隐藏技能；`resource` 读取参考或 playbook。 |
-| `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
+| `pstack_models` | 列出本部署实际提供的完整 provider、model 和 reasoning-effort 路由，而不是只有父会话路由。 |
 | `pstack_roles` | 列出 pstack 角色、每个角色的 shape，以及可传给 `roleRoute` 的已配置 route id。 |
 
 ## Local replacements
