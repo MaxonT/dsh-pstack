@@ -12,6 +12,18 @@
 
 具体模块和依赖图以 `docs/architecture.md` 为准，不在本文件重复。
 
+## Root bundle assembly
+
+根 `cordis.patch.yml` 是 Host/Client 的装配清单，不是 `src/` 的内部实现，也不由生成器维护。修改适配或实现后，如果新增、删除或改变模块、工具、服务、skill 目录或 preset，必须同步更新这个文件。
+
+规则：
+
+- 每一行都必须对应真实存在的 `src/` 模块、工具或 preset；不要放业务实现。
+- 新增或删除工具、服务时，同步更新 `src/` 入口、`package.json` exports 和对应测试。
+- preset 行变化同步 `src/preset.ts`、`src/preset-copy.ts` 和 `src/client/` 的展示/配置代码。
+- 生成树 `pstack/` 不手工编辑；适配文案变化走 `port/dsh.md`，生成用 `scripts/generate-pstack.mjs`。
+- 修改后至少运行 `vp check`、`vp test`、`vp run generate:check`；涉及打包时再跑 `vp run build`。
+
 ## 修改规则
 
 - 只在 `src/` 内实现 Host/Client 逻辑，不把业务逻辑塞进 `cordis.patch.yml`、生成器或 `port/`。

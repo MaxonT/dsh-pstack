@@ -40,8 +40,9 @@ release. Add a tool name to select part of the graph. For example, run
 
 ## Bundle assembly
 
-- 根 `cordis.patch.yml` 负责选择 Host/Client 模块、注册技能和组合 preset，不是生成物；修改前先读 `docs/architecture.md`。
-- `src/` 模块实现遵循 `src/AGENTS.md`；生成树 `pstack/` 由 `scripts/generate-pstack.mjs` 维护，不手工编辑。
+- 根 `cordis.patch.yml` 的装配规则见 [src/AGENTS.md](./src/AGENTS.md#root-bundle-assembly)；它不是生成物。
+- 修改前同时读 `docs/architecture.md`；`src/` 模块实现遵循 `src/AGENTS.md`。
+- 生成树 `pstack/` 由 `scripts/generate-pstack.mjs` 维护，不手工编辑。
 
 ## Commits
 
