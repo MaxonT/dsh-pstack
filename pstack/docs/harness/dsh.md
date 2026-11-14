@@ -11,7 +11,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | `Task` | `pstack_subagent`. One call starts one subagent; fan out by calling it once per child in one message. Pass `provider`, `model`, and an optional `reasoningEffort` to override the route, or omit all three to inherit the parent route. |
 | `AskQuestion` | `ask_user_question` takes a batch of questions with options and free input. Only a live root agent has a human answerer; a delegated child keeps its questions in its result. Ask in plain text when the tool is absent. |
 | Open a todolist | `todo_write` replaces the whole list and has no `skipped` status. Keep a skipped step visible as `skip: <reason> - <step>` in `content` and mark it `completed`. |
-| Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads this plugin's packaged pstack skills by exact kebab-case `name`, including skills not visible in the model skill catalog. Pass a relative `resource` to read a reference or playbook beside `SKILL.md`; a user `/name` gesture loads the skill directly. |
+| Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads a packaged pstack skill by exact kebab-case `name`, including hidden ones. Pass `resource` to read a file beside its `SKILL.md`; a user `/name` loads the skill directly. |
 | `Grep`, `Glob` | `grep` and `glob` are native tools; call them directly. Use `bash` with `rg` only when the session has neither. |
 
 ## Subagent fields
@@ -75,7 +75,7 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | Start one subagent, optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. |
+| `pstack_subagent` | Start one subagent with an optional `agent` preset (default `general`), optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. |
 | `pstack_skill` | Load this plugin's packaged pstack skills by exact kebab-case name, including hidden ones; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
 | `pstack_roles` | Report each pstack role and its configured routes as structured provider, model, and effort values. |

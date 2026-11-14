@@ -11,7 +11,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | `Task` | `pstack_subagent`。一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它。传 `provider`、`model` 和可选 `reasoningEffort` 覆盖路由，或全部省略以继承父路由。 |
 | `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体有人工回答者；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
-| Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case `name` 加载本插件随包的 pstack 技能，包括模型技能目录中不可见的技能。用相对 `resource` 读取 `SKILL.md` 旁的参考或 playbook；用户 `/name` 手势直接加载技能。 |
+| Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case 名称加载随包 pstack 技能（含隐藏技能）。用 `resource` 读取 `SKILL.md` 旁的文件；用户 `/name` 直接加载技能。 |
 | `Grep`, `Glob` | `grep` 和 `glob` 是原生工具，直接调用。只有会话两者都没有时才用 `bash` 的 `rg`。 |
 
 ## Subagent fields
@@ -75,8 +75,8 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | 启动一个子智能体，可用 `provider`、`model` 和 `reasoningEffort` 覆盖路由；完成时发通知。 |
-| `pstack_skill` | 按精确 kebab-case 名称加载本插件随包的 pstack 技能，包括隐藏技能；`resource` 读取参考或 playbook。 |
+| `pstack_subagent` | 用可选 `agent` preset（默认 `general`）启动一个子智能体，可用 `provider`、`model`、`reasoningEffort` 覆盖路由；完成时发通知。 |
+| `pstack_skill` | 按精确 kebab-case 名称加载随包 pstack 技能（含隐藏技能）；`resource` 读取 `SKILL.md` 旁的文件。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
 | `pstack_roles` | 报告每个 pstack 角色及其已配置路由，路由以结构化的 provider、model 和 effort 给出。 |
 
