@@ -1,6 +1,6 @@
-# pstack in DeepSeek Harness
+# pstack in DSH
 
-pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取一次本文件，然后用下面的表格映射技能里的每个 Cursor 名称。`<pstack>` 指已安装的 `dsh-pstack` 包中存放 `skills/` 和 `docs/` 的目录。
+pstack 技能使用 Cursor 名称。在 DSH 中，每会话读取一次本文件，然后用下面的表格映射技能里的每个 Cursor 名称。`<pstack>` 指存放 `skills/` 和 `docs/` 的目录。
 
 只使用当前会话实际可见的工具。映射的工具或可选能力不可用时，按该行的 fallback 处理。不要因为文件提到某个名称就假设可选插件已启用。
 

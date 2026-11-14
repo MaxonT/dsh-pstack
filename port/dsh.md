@@ -1,6 +1,6 @@
-# pstack in DeepSeek Harness
+# pstack in DSH
 
-pstack skills use Cursor names. In DeepSeek Harness, read this file once per session, then map each Cursor name in a skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/` in the installed `dsh-pstack` package.
+pstack skills use Cursor names. In DSH, read this file once per session, then map each Cursor name from the skill with the tables below. `<pstack>` means the folder that holds `skills/` and `docs/`.
 
 Use only tools visible in the current session. If a mapped tool or optional capability is unavailable, follow the fallback in that row. Do not assume optional plugins are enabled because a name appears here.
 
