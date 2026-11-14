@@ -5,7 +5,8 @@ const scenario: BehaviorScenario = {
   capability: "file-read-write",
   turns: [
     {
-      prompt: "读一下 docs/notes.md，把里面列出的三个要点压缩成两行，写到 outputs/summary.md 里。",
+      prompt:
+        "读一下 docs/notes.md，把里面列出的要点整理成一段简短摘要，写到 outputs/summary.md 里。",
     },
   ],
   workspace: {
@@ -25,7 +26,7 @@ const scenario: BehaviorScenario = {
   ],
   rubric: {
     prompt:
-      "用户能在工作区里看到 outputs/summary.md，且内容确实概括了原文件的要点。没有产出文件、或文件内容与源文件无关，记为缺口。",
+      "用户能在工作区里看到 outputs/summary.md，且内容覆盖原文件的主要要点。没有产出文件、或文件内容与源文件无关，记为缺口；摘要长度和行数不作硬性要求。",
   },
   uiObservations: [
     {

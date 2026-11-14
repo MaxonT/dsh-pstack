@@ -6,7 +6,7 @@ const scenario: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "给这个仓库写一个 README 的『快速开始』小节，要有清晰的分层和可执行的步骤。按技术写作的标准来写。",
+        "给这个仓库写一个 README 的『快速开始』小节，至少包含可直接照着操作的步骤。措辞简单即可，不要求复杂结构。",
     },
   ],
   workspace: {
@@ -20,7 +20,8 @@ const scenario: BehaviorScenario = {
     },
   ],
   rubric: {
-    prompt: "用户能看到一份结构清晰、步骤可执行的文档小节。没有结构、泛泛而谈，记为缺口。",
+    prompt:
+      "用户能看到一份包含快速开始步骤、可直接照着操作的文档小节。允许措辞简单；完全没有步骤或内容与快速开始无关，记为缺口。",
   },
   uiObservations: [
     {
