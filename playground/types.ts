@@ -16,10 +16,12 @@ export interface ProviderAllowance {
   models: Record<string, string[]>;
 }
 
+export type RoleModels = Record<string, TestTarget | TestTarget[]>;
+
 export interface PlaygroundConfig {
   testModel: TestTarget;
   providers: Record<string, ProviderAllowance>;
-  roleModels?: Record<string, TestTarget>;
+  roleModels?: RoleModels;
   hostPatchFile?: string;
   credentialsFile?: string;
 }

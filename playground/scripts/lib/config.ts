@@ -87,15 +87,20 @@ export function parseConfig(
   const roleModels: PlaygroundConfig["roleModels"] = {};
   if (input.roleModels !== undefined) {
     for (const [role, value] of Object.entries(object(input.roleModels, "roleModels"))) {
-      const route = target(value, `roleModels.${role}`);
-      const allowed = providers[route.provider]?.models[route.model];
-      if (allowed === undefined) {
-        throw new Error(`roleModels.${role} names an unknown provider or model`);
+      const values = Array.isArray(value) ? value : [value];
+      const routes = values.map((entry, index) =>
+        target(entry, `roleModels.${role}${Array.isArray(value) ? `[${index}]` : ""}`),
+      );
+      for (const route of routes) {
+        const allowed = providers[route.provider]?.models[route.model];
+        if (allowed === undefined) {
+          throw new Error(`roleModels.${role} names an unknown provider or model`);
+        }
+        if (!allowed.includes(route.effort)) {
+          throw new Error(`roleModels.${role} effort is not allowed`);
+        }
       }
-      if (!allowed.includes(route.effort)) {
-        throw new Error(`roleModels.${role} effort is not allowed`);
-      }
-      roleModels[role] = route;
+      roleModels[role] = Array.isArray(value) ? routes : routes[0]!;
     }
   }
   return {
