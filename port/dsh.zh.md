@@ -8,7 +8,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent` 按选中的角色路由各启动一个子智能体，并返回所有子智能体 id 及其解析后的路由。传入 `description`、`prompt`、`agent`、`role`、`roleRoute`、`reasoningEffort` 和 `cwd`；`maxDepth` 可选。它会在启动前校验路由和强度；后续失败返回部分结果。 |
+| `Task` | `pstack_subagent` 按选中的角色路由各启动一个子智能体，并返回所有子智能体 id 及其解析后的路由。只有 `prompt` 必填；`description`、`agent`、`role`、`roleRoute`、`reasoningEffort`、`cwd` 和 `maxDepth` 都可选。它会在启动前校验路由和强度；后续失败返回部分结果。 |
 | `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体能收到回答；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
 | Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case `name` 加载 pstack 技能，包括原生 `skill` 工具隐藏的技能。用相对 `resource` 读取 `SKILL.md` 旁的参考或 playbook；用户 `/name` 手势直接加载技能。 |
@@ -18,7 +18,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `subagent_type: generalPurpose` | `agent: "general"` 加入父 preset 并继承其工具。每次 `pstack_subagent` 调用还要传 `description`、`prompt`、`role`、`roleRoute`、`reasoningEffort` 和 `cwd`；未用的值传 `null`。 |
+| `subagent_type: generalPurpose` | `agent: "general"` 加入父 preset 并继承其工具。只有 `prompt` 必填；未用的 `description`、`role`、`roleRoute`、`reasoningEffort` 或 `cwd` 可省略。 |
 | `poteto-agent`, `comment-sicko` | `agent: "poteto-agent"` 或 `agent: "comment-sicko"`。它们是 agent preset，不是 `subagent_type` 值。 |
 | `readonly: true` | `agent: "readonly"`：子智能体使用只读沙箱。需要写入时用 `general`。 |
 | `readonly: false` | `agent: "general"`。 |

@@ -21,17 +21,10 @@ import type {
 } from "@deepseek-ai/dsh-subagent";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
-import { POTETO_MODE_SKILL_PATH } from "./paths.ts";
-import {
-  modelsFilePath,
-  readRoleConfiguration,
-  requireRole,
-  resolveDshHome,
-  selectRoutes,
-  type Route,
-  type RouteSelection,
-} from "./role-config.ts";
-import { isRoute } from "./route.ts";
+import { POTETO_MODE_SKILL_PATH } from "./lib/paths.ts";
+import { requireRole, selectRoutes, type RouteSelection } from "./roles/role-config.ts";
+import { modelsFilePath, readRoleConfiguration, resolveDshHome } from "./roles/role-store.ts";
+import { isRoute, type Route } from "./roles/route.ts";
 
 export const name = "pstack-subagent";
 
@@ -67,7 +60,7 @@ export interface DelegationArgs {
   readonly prompt: string;
   readonly agent: AgentKind;
   readonly role: string | null;
-  readonly roleIndex: number | null;
+  readonly roleRoute: string | null;
   readonly reasoningEffort: string | null;
   readonly cwd: string | null;
   readonly maxDepth: number | null;
@@ -172,7 +165,7 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
     "prompt",
     "agent",
     "role",
-    "roleIndex",
+    "roleRoute",
     "reasoningEffort",
     "cwd",
     "maxDepth",
@@ -180,43 +173,39 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
   for (const key of Object.keys(record)) {
     if (!known.has(key)) throw new Error(`unknown pstack_subagent argument "${key}"`);
   }
-  for (const key of [
-    "description",
-    "prompt",
-    "agent",
-    "role",
-    "roleIndex",
-    "reasoningEffort",
-    "cwd",
-  ]) {
-    if (!Object.hasOwn(record, key)) throw new Error(`missing required argument "${key}"`);
-  }
+  if (!Object.hasOwn(record, "prompt")) throw new Error('missing required argument "prompt"');
 
-  const description = record["description"];
   const prompt = record["prompt"];
-  const agent = record["agent"];
-  const role = record["role"];
-  const roleIndex = record["roleIndex"];
-  const reasoningEffort = record["reasoningEffort"];
-  const cwd = record["cwd"];
-  const maxDepth = record["maxDepth"];
-
-  if (typeof description !== "string" || description.trim() === "") {
-    throw new Error("description must be a non-empty string");
-  }
   if (typeof prompt !== "string" || prompt.trim() === "") {
     throw new Error("prompt must be a non-empty string");
   }
+
+  const description = record["description"];
+  const descriptionText =
+    description === undefined
+      ? prompt.trim().split(/\s+/).slice(0, 5).join(" ").slice(0, 80)
+      : description;
+  if (typeof descriptionText !== "string" || descriptionText.trim() === "") {
+    throw new Error("description must be a non-empty string when provided");
+  }
+
+  const agent = record["agent"] ?? "general";
+  const role = record["role"] ?? null;
+  const roleRoute = record["roleRoute"] ?? null;
+  const reasoningEffort = record["reasoningEffort"] ?? null;
+  const cwd = record["cwd"] ?? null;
+  const maxDepth = record["maxDepth"];
+
   if (typeof agent !== "string" || !(AGENT_KINDS as readonly string[]).includes(agent)) {
     throw new Error(`agent must be one of: ${AGENT_KINDS.join(", ")}`);
   }
   if (role !== null && (typeof role !== "string" || role.trim() === "")) {
     throw new Error("role must be a non-empty string or null");
   }
-  if (roleIndex !== null && !isNonNegativeInteger(roleIndex)) {
-    throw new Error("roleIndex must be a non-negative integer or null");
+  if (roleRoute !== null && (typeof roleRoute !== "string" || roleRoute.trim() === "")) {
+    throw new Error("roleRoute must be a non-empty route string or null");
   }
-  if (roleIndex !== null && role === null) throw new Error("roleIndex requires a non-null role");
+  if (roleRoute !== null && role === null) throw new Error("roleRoute requires a non-null role");
   if (reasoningEffort !== null) {
     if (typeof reasoningEffort !== "string" || reasoningEffort.trim() === "") {
       throw new Error("reasoningEffort must be a non-empty string or null");
@@ -233,11 +222,11 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
   }
 
   return {
-    description: description.trim(),
+    description: descriptionText.trim(),
     prompt: prompt.trim(),
     agent: agent as AgentKind,
     role: role as string | null,
-    roleIndex: roleIndex as number | null,
+    roleRoute: typeof roleRoute === "string" ? roleRoute.trim() : null,
     reasoningEffort: typeof reasoningEffort === "string" ? reasoningEffort.trim() : null,
     cwd: typeof cwd === "string" ? cwd.trim() : null,
     maxDepth: maxDepth === undefined ? null : (maxDepth as number | null),
@@ -261,9 +250,7 @@ export function planDelegation(
   const diagnostics: string[] = [];
   if (roleFile.status === "loaded") {
     for (const issue of roleFile.issues) {
-      diagnostics.push(
-        `${path}${issue.line === undefined ? "" : `:${issue.line}`}: ${issue.message}`,
-      );
+      diagnostics.push(`${path}: ${issue.message}`);
     }
   }
 
@@ -271,15 +258,15 @@ export function planDelegation(
   if (args.role !== null) {
     const spec = requireRole(args.role);
     const entry = roleFile.status === "loaded" ? roleFile.roles.get(spec.key) : undefined;
-    selection = selectRoutes(spec, entry, args.roleIndex ?? undefined);
+    selection = selectRoutes(spec, entry, args.roleRoute ?? undefined);
     if (!selection.configured) {
       diagnostics.push(
-        `role "${spec.key}" has no line in ${path}, so it inherits the parent route`,
+        `role "${spec.key}" has no entry in ${path}, so it inherits the parent route`,
       );
     }
     if (selection.mode === "selected") {
       diagnostics.push(
-        `role "${spec.key}" has ${selection.total} entries; entry ${(selection.roleIndex ?? 0) + 1} was selected`,
+        `role "${spec.key}" has ${selection.total} routes; ${selection.roleRoute} was selected`,
       );
     }
   }
@@ -439,7 +426,8 @@ export function createPstackSubagentTool(
       properties: {
         description: {
           type: "string",
-          description: "A short 3-5 word label for the child, shown in notices.",
+          description:
+            "Optional short 3-5 word label for the child; derived from the prompt when omitted.",
         },
         prompt: {
           type: "string",
@@ -450,27 +438,27 @@ export function createPstackSubagentTool(
           type: "string",
           enum: [...AGENT_KINDS],
           description:
-            'Child preset: "poteto-agent" for pstack implementation, "comment-sicko" for comment review, "readonly" for a sandbox-enforced read-only researcher, or "general" to join the parent preset.',
+            'Optional child preset; defaults to "general". "poteto-agent" for pstack implementation, "comment-sicko" for comment review, "readonly" for a sandbox-enforced read-only researcher.',
         },
         role: {
           type: ["string", "null"],
           description:
-            "pstack role key. It selects the child's route and effort; null inherits the parent route.",
+            "Optional pstack role key; omit to inherit the parent route. It selects the child's route and effort.",
         },
-        roleIndex: {
-          type: ["integer", "null"],
+        roleRoute: {
+          type: ["string", "null"],
           description:
-            "Entry index for a list role that is not an automatic panel. Null selects the first entry; omit only through null.",
+            "Optional exact configured route string for a list role, such as `provider/model [effort]`. Omit to select the first route.",
         },
         reasoningEffort: {
           type: ["string", "null"],
           description:
-            "One advertised reasoning-effort token for this call, or null to keep the role's starting effort.",
+            "Optional advertised reasoning-effort token for this call; omit to keep the role's starting effort.",
         },
         cwd: {
           type: ["string", "null"],
           description:
-            "Initial child working directory inside this session or a separate Git worktree; null inherits the session directory.",
+            "Optional initial child working directory; omit to inherit the session directory.",
         },
         maxDepth: {
           type: ["integer", "null"],
@@ -479,7 +467,7 @@ export function createPstackSubagentTool(
             "Optional delegation-depth cap. Omit or null to use the configured row and Host cap; explicit values must be at least 1 and cannot exceed that cap.",
         },
       },
-      required: ["description", "prompt", "agent", "role", "roleIndex", "reasoningEffort", "cwd"],
+      required: ["prompt"],
     },
     output: {
       schema: OUTPUT_SCHEMA,
@@ -498,13 +486,13 @@ export function createPstackSubagentTool(
 const TOOL_DESCRIPTION = [
   "Delegate self-contained work to one or more fresh child agents.",
   "",
-  "Every argument is required except maxDepth. Pass null for role, roleIndex, reasoningEffort, or cwd when unused. Choose agent explicitly.",
+  "Only prompt is required. Omit description to derive a label, omit agent to use general, and omit role, roleRoute, reasoningEffort, or cwd to inherit defaults.",
   "",
   "Omit `maxDepth` to use the configured row and Host delegation cap; an explicit value cannot exceed that cap.",
   "",
   "`agent` picks a DSH agent preset: `poteto-agent` mounts the pstack implementation delegate and receives the absolute path of the poteto-mode instructions; `comment-sicko` mounts the comment reviewer; `readonly` mounts a read-only research preset with the sandbox policy set to read-only; `general` joins the parent preset.",
   "",
-  "`role` selects a configured pstack role and therefore the child's model route and starting effort. Null inherits the parent route. Automatic panel roles start one child per configured entry; `pstack_roles` reports which roles accept `roleIndex`.",
+  "`role` selects a configured pstack role and therefore the child's model route and starting effort. Null inherits the parent route. Automatic panel roles start one child per configured entry; `pstack_roles` reports which roles accept `roleRoute`.",
   "",
   "Returns every child id with its resolved route. Results arrive as completion notices; do not poll.",
 ].join("\n");

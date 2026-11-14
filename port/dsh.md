@@ -8,7 +8,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent` starts one child per selected role route and returns every child id with its resolved route. Pass `description`, `prompt`, `agent`, `role`, `roleRoute`, `reasoningEffort`, and `cwd`; `maxDepth` is optional. It validates routes and effort before starting; a later failure returns a partial result. |
+| `Task` | `pstack_subagent` starts one child per selected role route and returns every child id with its resolved route. Only `prompt` is required; `description`, `agent`, `role`, `roleRoute`, `reasoningEffort`, `cwd`, and `maxDepth` are optional. It validates routes and effort before starting; a later failure returns a partial result. |
 | `AskQuestion` | `ask_user_question` takes a batch of questions with options and free input. Only a live root agent can receive an answer; a delegated child keeps its questions in its result. Ask in plain text when the tool is absent. |
 | Open a todolist | `todo_write` replaces the whole list and has no `skipped` status. Keep a skipped step visible as `skip: <reason> - <step>` in `content` and mark it `completed`. |
 | Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads a pstack skill by exact kebab-case `name`, including skills hidden from the native `skill` tool. Pass a relative `resource` for a reference or playbook beside `SKILL.md`; a user `/name` gesture loads the skill directly. |
@@ -18,7 +18,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `subagent_type: generalPurpose` | `agent: "general"` joins the parent preset and inherits its tools. Every `pstack_subagent` call also passes `description`, `prompt`, `role`, `roleRoute`, `reasoningEffort`, and `cwd`; pass `null` for unused values. |
+| `subagent_type: generalPurpose` | `agent: "general"` joins the parent preset and inherits its tools. Only `prompt` is required; omit unused `description`, `role`, `roleRoute`, `reasoningEffort`, or `cwd`. |
 | `poteto-agent`, `comment-sicko` | `agent: "poteto-agent"` or `agent: "comment-sicko"`. They are agent presets, not `subagent_type` values. |
 | `readonly: true` | `agent: "readonly"`: the child receives a read-only sandbox. Use `general` when the child needs to write. |
 | `readonly: false` | `agent: "general"`. |

@@ -15,10 +15,15 @@ import {
 
 const directories: string[] = [];
 
-function home(text?: string): string {
+function home(roles?: Record<string, string[]>): string {
   const directory = mkdtempSync(join(tmpdir(), "pstack-subagent-"));
   directories.push(directory);
-  if (text !== undefined) writeFileSync(join(directory, "pstack-models.mdc"), text);
+  if (roles !== undefined) {
+    writeFileSync(
+      join(directory, "pstack-models.json"),
+      `${JSON.stringify({ version: 1, roles }, null, 2)}\n`,
+    );
+  }
   return directory;
 }
 
@@ -33,7 +38,7 @@ function args(overrides: Record<string, unknown> = {}) {
     prompt: "Read the parser and report.",
     agent: "poteto-agent",
     role: null,
-    roleIndex: null,
+    roleRoute: null,
     reasoningEffort: null,
     cwd: null,
     ...overrides,
@@ -69,6 +74,17 @@ describe("pstack_subagent arguments and planning", () => {
     expect(() => parseDelegationArgs({ agent: "general" })).toThrow(/missing required argument/);
   });
 
+  it("defaults optional delegation arguments instead of requiring null", () => {
+    expect(parseDelegationArgs({ prompt: "Read the parser and report." })).toMatchObject({
+      agent: "general",
+      role: null,
+      roleRoute: null,
+      reasoningEffort: null,
+      cwd: null,
+      maxDepth: null,
+    });
+  });
+
   it("maps the three preset agents and general explicitly", () => {
     const runtime = fakeRuntime(home());
     expect(planDelegation(args(), runtime).children[0]?.agentPreset).toBe("poteto-agent");
@@ -84,7 +100,7 @@ describe("pstack_subagent arguments and planning", () => {
   });
 
   it("reads a role file route and starts one child per panel entry", async () => {
-    const dshHome = home("arena runners: cpa/model-a [high], cpa/model-b [low]\n");
+    const dshHome = home({ "arena runners": ["cpa/model-a [high]", "cpa/model-b [low]"] });
     const runtime = fakeRuntime(dshHome);
     const plan = planDelegation(args({ role: "arena runners" }), runtime);
     expect(plan.children).toHaveLength(2);
@@ -111,7 +127,7 @@ describe("pstack_subagent arguments and planning", () => {
   });
 
   it("keeps started child ids when a later activation fails", async () => {
-    const dshHome = home("arena runners: cpa/model-a, cpa/model-b\n");
+    const dshHome = home({ "arena runners": ["cpa/model-a", "cpa/model-b"] });
     let starts = 0;
     const base = fakeRuntime(dshHome);
     const subagents = {
@@ -146,20 +162,20 @@ describe("pstack_subagent arguments and planning", () => {
   });
 
   it("selects a list entry and reports the selection", () => {
-    const runtime = fakeRuntime(home("swarm workers: cpa/model-a, cpa/model-b\n"));
-    const plan = planDelegation(args({ role: "swarm workers", roleIndex: 1 }), runtime);
+    const runtime = fakeRuntime(home({ "swarm workers": ["cpa/model-a", "cpa/model-b"] }));
+    const plan = planDelegation(args({ role: "swarm workers", roleRoute: "cpa/model-b" }), runtime);
     expect(plan.children.map((child) => child.routeLabel)).toEqual(["cpa/model-b"]);
-    expect(plan.diagnostics.join("\n")).toContain("entry 2 was selected");
+    expect(plan.diagnostics.join("\n")).toContain("cpa/model-b was selected");
   });
 
   it("reports a missing role line and preserves slash-containing model ids", () => {
     const missing = planDelegation(args({ role: "bug-fix" }), fakeRuntime(home()));
     expect(missing.children[0]?.routeLabel).toBe("inherit-parent");
-    expect(missing.diagnostics.join("\n")).toContain("has no line");
+    expect(missing.diagnostics.join("\n")).toContain("has no entry");
 
     const routed = planDelegation(
       args({ role: "bug-fix" }),
-      fakeRuntime(home("bug-fix: acme/quick-model [high]\n")),
+      fakeRuntime(home({ "bug-fix": ["acme/quick-model [high]"] })),
     );
     expect(routed.children[0]?.routeLabel).toBe("acme/quick-model [high]");
   });
