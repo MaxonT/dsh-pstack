@@ -1,0 +1,94 @@
+{
+  "scenarioId": "capability-task",
+  "phase": "adapted",
+  "environment": {
+    "worker": 5,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-86b232e7-4ae3-4280-a148-30b46d36b03c",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45; echo waited"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "You want a one-line summary of the repo's purpose from its README, produced by someone else. I'll delegate the reading to an executor agent and relay its conclusion.\nThe executor is running. Waiting for its result before I relay anything.\n执行者的结论如下（它读取的是 [README.md](README.md)，文件正文为中文）：\n\n> This repository is a temporary workspace whose only content is a README describing itself as a small test repository used to verify task delegation.\n\n中文转述：这是一个临时工作区，唯一的文件就是一份 README，它把自己描述为一个用于验证任务委派的小仓库。\n\n我另外核对了一遍该文件，确认转述与 README 的表述一致。",
+    "userText": "把一个独立的小任务交给执行者去做：读取工作区里的 README.md，用一句话概括这个仓库的用途，然后把执行者的结论转述给我。不要自己直接概括。",
+    "userTexts": [
+      "把一个独立的小任务交给执行者去做：读取工作区里的 README.md，用一句话概括这个仓库的用途，然后把执行者的结论转述给我。不要自己直接概括。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=3", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:28:57.562Z"
+}

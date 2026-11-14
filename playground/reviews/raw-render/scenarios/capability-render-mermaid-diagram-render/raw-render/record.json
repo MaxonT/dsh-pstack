@@ -2,7 +2,7 @@
   "scenarioId": "capability-render-mermaid-diagram-render",
   "phase": "raw",
   "environment": {
-    "worker": 1,
+    "worker": 2,
     "dshVersion": "0.2.2-rc.1",
     "adaptedVersion": null,
     "matrix": {
@@ -20,7 +20,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-a80ef1af-30e6-4005-bfda-1e2198340b7f",
+    "sessionId": "session-fdf829da-d056-45ac-989f-ebd3a964b0d0",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
@@ -30,44 +30,24 @@
         "name": "skill",
         "status": "ok",
         "argsSummary": "skill name=genui"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=ls -a; echo ---; find . -maxdepth 3 -type f -name \"*.md\" | head -50"
-      },
-      {
-        "name": "validate_dsh_ui",
-        "status": "ok",
-        "argsSummary": "validate_dsh_ui"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "这条链路的核心是「每一步的判断都有出口」，画成流程图最直观：\n\n```dsh-ui\n{\"title\":\"请求处理链路\",\"gap\":12,\"items\":[{\"type\":\"mermaid\",\"code\":\"flowchart TD\\n  A[客户端请求] --> B[网关/路由]\\n  B --> C{鉴权}\\n  C -- 无效令牌 --> X[返回 401]\\n  C -- 通过 --> D{请求类型}\\n  D -- 读 --> E[SELECT 查询]\\n  D -- 写 --> F[INSERT / UPDATE]\\n  E --> G[组装结果]\\n  F --> G\\n  G --> H[序列化响应]\\n  H --> I[返回客户端]\"}]}\n```\n\n读法：从上往下是主链路（请求 → 网关 → 鉴权 → 读写库 → 组装 → 返回），两条虚线分支是旁路出口——鉴权失败直接 401 返回，不进数据库；读写两条路在「组装结果」处汇合，之后的处理完全相同。",
-    "userText": "用一个流程图把“请求进来 → 鉴权 → 读写数据库 → 返回结果”这条链路画出来，我要一眼看懂每一步怎么连接。",
+    "assistantText": "三步是一条单向流水线：提交产生代码变更，构建把变更变成可运行产物，发布把产物推到用户面前。\n\n```dsh-ui\n{\"title\":\"提交 → 构建 → 发布\",\"gap\":14,\"items\":[{\"type\":\"mermaid\",\"code\":\"flowchart LR\\n  A[提交<br/>Commit / PR] --> B[构建<br/>CI 编译 + 测试]\\n  B -->|构建失败| C[失败反馈<br/>回到提交者修复]\\n  C --> A\\n  B -->|构建成功| D[发布<br/>上线 / 部署到环境]\\n  D --> E[用户可用\\n线上版本]\\n  D -->|发布回滚| A\\n  classDef step fill:#3d7eb8,color:#fff,stroke:#2b5f8a\\n  classDef fail fill:#d9534f,color:#fff,stroke:#a83229\\n  classDef out fill:#3ecf8e,color:#06281a,stroke:#2b8f61\\n  class A,B,D step\\n  class C fail\\n  class E out\"}],\"caption\":\"构建是唯一的门禁：只有构建通过才能进入发布，失败则回流到提交者。\"}]}\n```\n\n关系要点：\n\n- **提交**是入口，产出变更本身（代码 + 提交信息）。\n- **构建**是门槛，把提交变成产物（编译、测试、打包），失败就阻断并回流。\n- **发布**是出口，把产物铺到目标环境；发布后仍可回滚，重新回到提交环节。\n\n需要我改成纵版流程图，或加上泳道区分开发者 / CI / 生产环境吗？",
+    "userText": "用一个流程图把这三步之间的关系讲清楚：提交、构建、发布。我要看到画出来的图，不要只给我源码文本。",
     "userTexts": [
-      "用一个流程图把“请求进来 → 鉴权 → 读写数据库 → 返回结果”这条链路画出来，我要一眼看懂每一步怎么连接。"
+      "用一个流程图把这三步之间的关系讲清楚：提交、构建、发布。我要看到画出来的图，不要只给我源码文本。"
     ],
     "autoAnswers": [],
     "analysis": {
       "tools": [
         {
-          "name": "bash",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
           "name": "skill",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
-          "name": "validate_dsh_ui",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
       "artifacts": [],
@@ -77,7 +57,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=genui", "toolCalls=3", "warnings=0"]
+    "observed": ["skillLoads=genui", "toolCalls=1", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -89,6 +69,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-render-20261113193636",
-  "capturedAt": "2026-11-13T11:36:36.226Z"
+  "batchId": "raw-render-20261114144531",
+  "capturedAt": "2026-11-14T06:45:31.498Z"
 }

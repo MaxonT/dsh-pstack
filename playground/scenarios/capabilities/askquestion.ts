@@ -6,7 +6,7 @@ const scenario: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "开始干活前，先问我一个确认问题：这次只做功能，还是连测试一起做？我选好后你就按我的选择继续。",
+        "开始干活前，先问我一个确认问题：这次只做功能，还是连测试一起做？请把这两个选项都列出来让我挑，不要只给一个默认项。我选好后你就按我的选择继续。",
     },
   ],
   workspace: {
@@ -31,7 +31,7 @@ const scenario: BehaviorScenario = {
   ],
   answers: [
     {
-      match: "测试",
+      match: "",
       selected: ["连测试一起做"],
     },
   ],

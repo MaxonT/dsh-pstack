@@ -1,0 +1,115 @@
+{
+  "scenarioId": "capability-environment-cloud",
+  "phase": "raw",
+  "environment": {
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-65da4ff9-86fe-4c66-ae51-5589457581cf",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -a; git status 2>&1 | head -20; git remote -v"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=echo TMPDIR=$TMPDIR; ls -ld /tmp; touch <TEMP_PATH> && echo \"tmp writable\" && rm <TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=set -e ISO=$TMPDIR/iso-capability-environment-cloud rm -rf \"$ISO\"; mkdir -p \"$ISO\" cp -r <TEMP_PATH> \"$ISO\"/ cd \"$ISO\" "
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"$TMPDIR/iso-capability-environment-cloud\" && git add README.md && git commit -qm \"docs: record sandbox capability probe\" && git log --oneline && git diff HEAD~1 -- README.md"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "隔离执行可以做到：环境提供了可写的临时目录，于是我在工作区之外新建了一份独立的检出。\n\n- 隔离检出位置：`<TEMP_PATH> `$TMPDIR` 下，尚未纳入任何远端，git 仅作本地使用）\n- 改动内容：在 [README.md](<TEMP_PATH> 增加「探测项」小节，记录沙箱文件策略 `workspace-write` 与可写临时目录\n- 提交记录：`edf9cb2` 导入基线，`7bc818f` 记录探测结果\n\n当前工作区 [README.md](<TEMP_PATH> 保持原样未动。",
+    "userText": "请在一个和当前工作区彼此隔离、独立的检出里做一处小改动。如果这个环境提供不了这种隔离执行，就直接说明并跳过，不要在当前工作区硬做。",
+    "userTexts": [
+      "请在一个和当前工作区彼此隔离、独立的检出里做一处小改动。如果这个环境提供不了这种隔离执行，就直接说明并跳过，不要在当前工作区硬做。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "edit",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": ["edit file_path=<TEMP_PATH>"],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=6", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:13:36.701Z"
+}

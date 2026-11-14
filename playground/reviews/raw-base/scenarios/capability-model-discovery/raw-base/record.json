@@ -1,0 +1,136 @@
+{
+  "scenarioId": "capability-model-discovery",
+  "phase": "raw",
+  "environment": {
+    "worker": 11,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-9b3a69d0-769b-4ccb-9652-105cc170401d",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat \"${DSH_HOME}/pstack-models.json\" 2>/dev/null || echo \"NOT_FOUND $DSH_HOME\""
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: child LLM route \"magpie/magpie/workbuddy/minimax-m3.1-flash\" is not allowed for this Session"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: LLM provider \"magpie/workbuddy\" is not allowed for this Session"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: LLM provider \"magpie/workbuddy\" is not allowed for this Session"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la \"${DSH_HOME}\" 2>/dev/null | head -50; echo ---; ls \"${DSH_HOME}\"/*.json 2>/dev/null"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls \"${DSH_HOME}/profiles\"; find \"${DSH_HOME}/profiles\" -name '*.json' -o -name '*.yaml' | head -20"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: child LLM route \"magpie/workbuddy/deepseek-v4.1-flash\" is not allowed for this Session"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll check the available models and reasoning levels before doing anything.\n## 本会话可用能力清单\n\n**子代理 / LLM 路由**（`list_subagent_models` 实际探测结果）：\n\n| Provider | Model | 说明 |\n|---|---|---|\n| `magpie` | `workbuddy/minimax-m3.1-flash` | 当前会话正在使用的模型 |\n\n**推理档位（reasoning efforts）**——仅上述模型支持：\n\n| 档位 | 名称 |\n|---|---|\n| `off` | Off |\n| `low` | Low |\n| `high` | High（默认） |\n| `max` | Max |\n\n**不可用**：`magpie/workbuddy/deepseek-v4.1-flash`（在 `pstack-models.json` 中被大量角色引用），探测返回 `child LLM route ... is not allowed for this Session`。`magpie/workbuddy` 作为 provider、裸 `magpie` 作为 model 也都不合法（provider/model 必须是 `magpie` + `workbuddy/<model>`）。\n\n**当前 pstack 角色映射**（`$DSH_HOME/pstack-models.json`，仅供参考，其中 deepseek 条目在本会话无效）：\n- `low` 档（deepseek）：feature/refactoring、bug-fix、perf-issue、how explorer、why investigators、reflect tooling、arena runners、swarm workers、architect runners\n- `high` 档（minimax）：hillclimb、judgment and prose、hardest tasks、how explainer、why synthesizer、reflect judgment/synthesizer、arena cross-judge pool、interrogate reviewers\n\n**要点**：本会话只有 minimax-m3.1-flash 一条真实可用路由；若 pstack 需要按角色差异化推理强度，`low`/`high`/`max` 都可选，但 deepseek 那条线在此会话跑不起来。\n\n需要我接着按 `setup-pstack` 技能把这个会话可用的角色映射写成生效规则吗？",
+    "userText": "先查出这个会话里现在真正可用的模型和推理档位有哪些，列一份清单给我，然后再动手。",
+    "userTexts": [
+      "先查出这个会话里现在真正可用的模型和推理档位有哪些，列一份清单给我，然后再动手。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "list_subagent_models",
+          "attempts": 8,
+          "failures": 4,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "error",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": ["list_subagent_models needed 8 attempts with 4 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=11", "warnings=1"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:14:44.077Z"
+}

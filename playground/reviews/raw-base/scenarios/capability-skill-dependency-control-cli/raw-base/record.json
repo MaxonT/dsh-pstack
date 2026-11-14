@@ -1,0 +1,474 @@
+{
+  "scenarioId": "capability-skill-dependency-control-cli",
+  "phase": "raw",
+  "environment": {
+    "worker": 11,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-d19aaa22-fc74-4d0e-aa05-a84b82388b22",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["find-skills", "control-cli"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -la"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git log --oneline -20 2>&1; echo \"---\"; git status 2>&1 | head -20; echo \"---branches---\"; git branch -a 2>&1; echo \"---files---\"; git ls-files"
+      },
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=find-skills"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la <HOST_PATH> 2>&1; echo \"---\"; ls -la <HOST_PATH> 2>&1"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && timeout 120 npx -y skills find \"skill-dependency\" 2>&1 | head -50; echo \"EXIT:$?\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills find \"skill dependency\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills find \"skill dependency "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills find \"control-cli\" 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills find \"skill-dependency\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=export PATH=\"<HOST_PATH>\"; which dsh; dsh --help 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills add cursor/plugins --li"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=echo \"DSH_HOME=$DSH_HOME\"; ls -la \"$DSH_HOME\" 2>&1 | head -40; echo \"=== pstack-models ===\"; ls -la \"$DSH_HOME/pstack-models.json\" 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills add beremaran/pstack --"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills add beremaran/pstack --"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"$DSH_HOME\" && ls -R profiles 2>&1 | head -60; echo \"=== find skill dirs ===\"; find \"$DSH_HOME/profiles\" -maxdepth 4 -name \"*.md\" 2>/dev/null | head -40"
+      },
+      {
+        "name": "web_fetch",
+        "status": "error",
+        "argsSummary": "web_fetch url=https://skills.sh/?q=skill-dependency",
+        "errorText": "Error: cross-origin redirect to https://www.skills.sh is not followed automatically; retry against that URL directly"
+      },
+      {
+        "name": "web_fetch",
+        "status": "ok",
+        "argsSummary": "web_fetch url=https://www.skills.sh/?q=skill-dependency.control-cli"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"$DSH_HOME\" && cat profiles/playground/cordis.yml profiles/playground/package.json 2>&1 | head -80"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "web_fetch",
+        "status": "ok",
+        "argsSummary": "web_fetch url=https://www.skills.sh/api/search?q=skill-dependency.control-cli"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=find \"$DSH_HOME\" -maxdepth 6 -iname \"*skill*\" 2>/dev/null | head -40; echo \"=== agent impl checkout skills ===\"; find <HOST_PATH>"
+      },
+      {
+        "name": "web_fetch",
+        "status": "ok",
+        "argsSummary": "web_fetch url=https://www.skills.sh/api/search?q=control-cli"
+      },
+      {
+        "name": "web_fetch",
+        "status": "ok",
+        "argsSummary": "web_fetch url=https://www.skills.sh/api/search?q=skill-dependency"
+      },
+      {
+        "name": "web_fetch",
+        "status": "ok",
+        "argsSummary": "web_fetch url=https://www.skills.sh/api/skills/cursor/plugins/control-cli"
+      },
+      {
+        "name": "web_fetch",
+        "status": "error",
+        "argsSummary": "web_fetch url=https://skills.sh/cursor/plugins/control-cli",
+        "errorText": "Error: cross-origin redirect to https://www.skills.sh is not followed automatically; retry against that URL directly"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills add conscientiousness/h"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 180 npx -y skills add conscientiousness/h"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 300 git clone --depth 1 https://github.com/conscientiousness/herdr-pstack-orchestra"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && find skills/control-cli -type f | head -40; echo \"=== sizes ===\"; du -sh skills/contro"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls skills; echo \"=== e2e ===\"; find e2e -type f | head -40; echo \"=== scripts ===\"; fi"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which tmux script expect python3 node; echo \"---\"; tmux -V 2>&1; python3 -V; node -v"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && head -60 e2e/pi_startup.py; echo \"=== README head ===\"; head -60 README.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && head -80 e2e/skill_catalogs.py"
+      },
+      {
+        "name": "grep",
+        "status": "ok",
+        "argsSummary": "grep path=<TEMP_PATH> pattern=tmux|capture-pane|pty\\."
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 300 npx -y skills add conscientiousness/h"
+      },
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=control-cli"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && chmod +x harness.sh toy_cli.py && echo \"=== non-interactive sanity check (stdin pipe) ===\"; printf '6*7\\nexit()\\n' | python3 toy_cli.py; echo \"EXIT:$?\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 120 ./harness.sh \"python3 <TEMP_PATH>\"; echo \"HARNESS_EXIT:$?\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && tmux new-session -d -s probe-test -- echo hi 2>&1; echo \"EXIT:$?\"; tmux ls 2>&1; echo \"---\"; ulimit -u; cat /proc/sys/kernel/pid_max 2>/dev/null; echo \"--- try script(1) pty --"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && python3 -c \" import pty,os m,s=pty.openpty() print('openpty OK') os.close(m); os.close(s) \" 2>&1; echo \"EXIT:$?\"; echo \"--- devpts ---\"; ls -la /dev/pts 2>&1 | head; mount | gr"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && sed -n '80,200p' e2e/skill_catalogs.py"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 300 python3 skill_catalogs.py --installation-only <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=mkdir -p <TEMP_PATH> && cd <TEMP_PATH> && export npm_config_cache=<TEMP_PATH> && timeout 600 npx -y skills add conscientiousness/herdr-p"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 300 python3 skill_catalogs.py --installation-only <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && python3 -c \" import json d=json.load(open('<TEMP_PATH>'"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && diff <(ls <TEMP_PATH> | sort) <(ls <TEMP_PATH> | sort); e"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && python3 -c \" import json d=json.load(open('<TEMP_PATH>')) print('expected_n',len(d['expected_skills'])) p"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log -1 --format=\"%H %cI %s\"; git log --oneline -3 -- skills/verify-herdr-orchestra"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 300 git fetch --depth 1 origin main 2>&1 | tail -3 && git reset --hard FETCH_H"
+      },
+      {
+        "name": "grep",
+        "status": "ok",
+        "argsSummary": "grep path=<TEMP_PATH> pattern=verify-herdr-orchestrator"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls .agents/skills/ 2>&1; echo \"---\"; diff -r skills/verify-herdr-orchestrator .agents/"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && echo \"=== unshare pty ns ===\"; unshare -Urpf --mount-proc bash -c 'ls /dev/pts && python3 -c \"import pty; m,s=pty.openpty(); print(\\\"openpty OK\\\")\"' 2>&1 | head -5; echo \"=== d"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=set -e rm -rf <TEMP_PATH> && cp -r <TEMP_PATH> <TEMP_PATH> cp -r <TEMP_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 120 python3 pipe_harness.py; echo \"HARNESS_EXIT:$?\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which python3 sqlite3 git node npm psql mysql redis-cli gh 2>&1; echo \"=== node repl ===\"; echo \"console.log('node-stdin-ok')\" | node 2>&1 | head -3"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 180 python3 pipe_harness_repl.py; echo \"HARNESS_EXIT:$?\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > profile_test.js <<'EOF' const t0 = process.hrtime.bigint(); const crypto = require('crypto'); let acc = 0; for (let i = 0; i < 2e6; i++) acc = (acc + "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && python3 -c \" import json,glob f=glob.glob('<TEMP_PATH>')[0] d=json.load(open(f)) nodes={n['id']:n for n in d['nodes']} hits={} for i in d['sample"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"=== installed skill files ===\"; find .agents/skills/control-cli .claude/skills/contro"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf repo tmp .npmcache && ls -la; echo \"=== cleanup tmux/procs ===\"; tmux kill-server 2>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"### FINAL VERIFICATION RUN ###\"; echo echo \"--- 1. repo-native e2e (skill_catalogs.py"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=rm -rf <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> 2>/dev/null; echo cleaned; ls <TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll start by exploring the workspace to find the CLI tool.\nThe workspace only has a README pointing at \"skill-dependency.control-cli\". Let me load the relevant skill.\nThe registry search is fuzzy. Let me search for the exact skill name and check the deepseek-harness repo which hosts dsh skills.\nFound `control-cli`. Let me clone the repo and inspect it.\nFound the target skill. Now let me install it and verify it actually works by running its harness loop.\nThe skill is now installed and available in the catalog. Let me load it properly and then verify it works.\nSkill loaded. Now let me run its Harness Loop to verify it actually works in this environment. First, a capability probe of the harness tooling itself.\nNow I need a command under test. Let me build a small interactive CLI and also check what real CLIs are available.\nThe CLI works non-interactively. Now the real test — the interactive tmux harness:\ntmux can't fork in this sandbox. Let me investigate briefly, then fall back to the skill's PTY option.\n/dev/pts is read-only, so no PTY can be allocated — tmux, `script`, and `pty.openpty` all fail. Let me verify with the repo's own native harness first (step 2 of the skill's loop), which doesn't need a PTY.\nThis repo-native e2e supports `--installation-only` (no PTY needed). Let me run it against my actual install.\nThe e2e compares against the **full** 61-skill bundle (I installed only `control-cli`), so that failure is a fixture mismatch, not a broken install. Let me install the full bundle into a temp consumer and run the repo's native e2e properly.\nThe only differences are the `verify-herdr-orchestrator` skill — my shallow clone predates it. Let me sync and re-run.\nThe repo's e2e expects only `skills/*`, but the repo also ships `.agents/skills/verify-herdr-orchestrator` — an upstream fixture mismatch, not a broken install. Let me confirm and also probe harder for a usable PTY.\nPTY is definitively unavailable in this sandbox. Let me run the repo-native e2e with the correct fixture (the missing skill lives in `.agents/skills`, not `skills/`).\nRepo-native harness: **pass, exit 0**. Now let me validate the skill's core loop methodology (capture → send → wait for pattern → clean exit) with a pipe-based substitute, since tmux/PTY are blocked.\nHarness loop verified: capture → send → wait-for-pattern → clean exit, **exit code 0**. Now let me verify it against a *real* interactive CLI, not just my toy.\nLet me test against a genuinely interactive CLI: Python's interactive interpreter.\nExcellent — a real interactive CLI (Python REPL) driven end-to-end: expression evaluation, multi-line prompt escalation, SIGINT interrupt handling, and clean exit, all **exit code 0**.\n\nLet me verify the profiling recipe (the other half of the skill) and confirm the installed skill files are intact.\nThe profiling recipe works (CPU profile produced, top self-time functions ranked). Let me clean up and do a final consolidated verification run.\n验证完成。结论：**这个 skill 确实能用**，但这个环境驱动不了 tmux/PTY 交互式 CLI，我用了替代做法。\n\n## 我找到了什么\n\n工作区里只有一个 `README.md`，指向 `skill-dependency.control-cli`。它对应 registry 上的 `conscientiousness/herdr-pstack-orchestrator@control-cli`（2.7K 安装量级的那批 `control-cli` 里评分最高的之一）。我把它装到了工作区：\n\n```\nnpx skills add conscientiousness/herdr-pstack-orchestrator -s control-cli -y --copy\n```\n\n安装后 `.agents/skills/control-cli/` 与上游 `repo/skills/control-cli/` **逐字节一致**（`diff -r` → IDENTICAL），安全扫描结果为 Gen: Safe / Socket: 0 alerts / Snyk: Low Risk。\n\n## 环境能力探测（关键发现）\n\n这个沙箱**无法分配伪终端**：\n\n| 方式 | 结果 |\n|---|---|\n| `tmux new-session -d` | `create window failed: fork failed: Permission denied` |\n| `script -qec` | `failed to create pseudo-terminal: Permission denied` |\n| `python3 pty.openpty()` | `OSError: out of pty devices` |\n| `unshare -Urpf` | `Operation not permitted` |\n| `/dev/ptmx` | `Permission denied` |\n| `/dev/pts` 挂载 | `devpts on /dev/pts type devpts (ro,...)` ← 只读 |\n\n`/dev/pts` 是只读挂载，所以 skill 文档里的 tmux harness 和 PTY probe 两条主路径都走不通。这是环境限制，不是 skill 的缺陷。\n\n## 替代验证路径（都跑通了，退出码 0）\n\n**1. 复用仓库自带 harness**（skill 第 2 步「优先用仓库原生 harness」）：\n```\npython3 e2e/skill_catalogs.py --installation-only <consumer>\n→ {\"verdict\": \"pass\", \"checks\": {...全部 true}}   exit_code=0\n```\n中途有两次 `verdict: fail`，都是**夹具问题不是安装问题**：我第一次只装了 1 个 skill 而 e2e 比对全部 61 个；第二次浅克隆落后于上游，缺 `verify-herdr-orchestrator`（上游把它放在 `.agents/skills/` 而不是 `skills/`，e2e 只扫 `skills/`）。修正夹具后通过。\n\n**2. 用管道 harness 复刻 skill 的语义**（捕获 → 逐个动作 → 等待具体模式而非盲睡 → 干净退出），验证 skill 方法论本身可用：\n- 对自建 toy CLI：`capture_initial / action_multiply / clean_exit` 全 OK，exit_code=0\n- 对**真实交互式** `python3 -i`：表达式求值、`...` 多行提示符升级、SIGINT 中断后存活、干净退出，全 OK，exit_code=0\n\n**3. Profiling recipe**（skill 的另一半）：`node --cpu-prof` 成功产出 `.cpuprofile`，能按 self-time 排出 top 函数；启动耗时基线 21.7/22.2/25.5 ms 三次采样。\n\n## 说明与建议\n\n- skill 本体是**纯指令文档**（109 行 markdown + license），没有可执行二进制，所以「跑它」= 跑它规定的 harness 流程；上面的1/2/3 就是按它写的步骤实跑。\n- 拿到 PTY 的环境里，直接用文档里的 tmux 模板即可；本环境要跑 TUI 级验证（光标移动、resize、原始模式按键），需要把 `/dev/pts` 改为可写挂载或授予 `/dev/ptmx` 权限。\n\n工作区最终只留安装产物（`.agents/skills/control-cli`、`.claude/skills/control-cli`、`.zcode/skills/control-cli`、`skills-lock.json`），临时克隆和测试产物已清理。",
+    "userText": "帮我验证这个命令行工具真的能用：运行它、看一下输出、确认退出码是 0。这个环境驱动不了交互式命令行的话就说明并给替代做法。",
+    "userTexts": [
+      "帮我验证这个命令行工具真的能用：运行它、看一下输出、确认退出码是 0。这个环境驱动不了交互式命令行的话就说明并给替代做法。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 50,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "grep",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "skill",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "web_fetch",
+          "attempts": 7,
+          "failures": 2,
+          "firstAttemptStatus": "error",
+          "finalStatus": "error",
+          "recovered": false
+        },
+        {
+          "name": "write",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>",
+        "write file_path=<TEMP_PATH>"
+      ],
+      "warnings": ["web_fetch needed 7 attempts with 2 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=find-skills,control-cli", "toolCalls=70", "warnings=1"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:20:43.691Z"
+}

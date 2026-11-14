@@ -2,7 +2,7 @@
   "scenarioId": "capability-resume",
   "phase": "raw",
   "environment": {
-    "worker": 2,
+    "worker": 6,
     "dshVersion": "0.2.2-rc.1",
     "adaptedVersion": null,
     "matrix": {
@@ -20,32 +20,21 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-f3e8fab2-11aa-4c3f-8598-bc24fff4ad39",
+    "sessionId": "session-446dfb0c-73ad-4c1a-b83a-33cc52640544",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
       {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls src 2>&1 | head -20; echo \"---\"; pwd"
+      },
+      {
         "name": "subagent",
         "status": "ok",
         "argsSummary": "subagent"
-      },
-      {
-        "name": "subagent_fork",
-        "status": "ok",
-        "argsSummary": "subagent_fork"
-      },
-      {
-        "name": "interrupt_agent",
-        "status": "ok",
-        "argsSummary": "interrupt_agent"
-      },
-      {
-        "name": "job_output",
-        "status": "error",
-        "argsSummary": "job_output",
-        "errorText": "Error: unknown job 53ca359a-923b-471b-aba7-b3ca2f35e378"
       },
       {
         "name": "send_message",
@@ -53,104 +42,53 @@
         "argsSummary": "send_message"
       },
       {
-        "name": "list_agents",
+        "name": "send_message",
         "status": "ok",
-        "argsSummary": "list_agents"
-      },
-      {
-        "name": "job_output",
-        "status": "error",
-        "argsSummary": "job_output",
-        "errorText": "Error: unknown job 53ca359a-923b-471b-aba7-b3ca2f35e378"
-      },
-      {
-        "name": "list_agents",
-        "status": "ok",
-        "argsSummary": "list_agents"
-      },
-      {
-        "name": "job_output",
-        "status": "error",
-        "argsSummary": "job_output",
-        "errorText": "Error: unknown job 53ca359a-923b-471b-aba7-b3ca2f35e378"
-      },
-      {
-        "name": "glob",
-        "status": "ok",
-        "argsSummary": "glob path=<TEMP_PATH> pattern=**/*.md"
-      },
-      {
-        "name": "list_agents",
-        "status": "ok",
-        "argsSummary": "list_agents"
-      },
-      {
-        "name": "list_agents",
-        "status": "ok",
-        "argsSummary": "list_agents"
+        "argsSummary": "send_message"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "已派出执行者统计中，等待其返回结果。\n（误启动的一个空任务已中断。）等执行者返回统计结果。\n工作区里的 `.md` 文件数量：**3**\n\n- `README.md`\n- `docs/guide.md`\n- `notes/MEMO.md`\n\n（递归统计，不含隐藏目录与 node_modules 等 vendor 目录。）\n\n这个数字我已记住：**3 个 .md 文件**。后续需要我基于这个统计做什么吗？\n执行者已确认完成，结果与上面一致。\n\n**记忆中的数字：工作区内共 3 个 `.md` 文件**（`README.md`、`docs/guide.md`、`notes/MEMO.md`）。后续任务中我会以这个数字作为依据。\n\n--- turn 2 ---\n\n已让该执行者复核，等待它返回。\n执行者正在复核中。\n执行者仍在运行，我等待它的回复。\n复核已发出但执行者尚未回传；我这边独立核对得到的结果同样是 **3 个**。\n\n- `README.md`\n- `docs/guide.md`\n- `notes/MEMO.md`\n\n数字未变，仍是 **3 个 `.md` 文件**。等执行者回传后我再补充它的确认。\n复核完成，数字确认一致。\n\n**工作区 `.md` 文件数量：3**\n- `README.md`\n- `docs/guide.md`\n- `notes/MEMO.md`\n\n执行者第二次独立统计的结果与第一次完全相同，我本地核对也一致。记住的数字仍是 **3**。",
-    "userText": "让一个执行者统计工作区里有多少个 .md 文件，并把这个数字记住。",
+    "assistantText": "已派出执行者统计 `src` 文件数，等它回报后我会让同一个执行者继续做加注释行数的任务。\n\n--- turn 2 ---\n\n已让同一个执行者继续做第二步（把文件数 2 加上注释行数），等它回报结果。\n\n--- turn 3 ---\n\n同一个执行者完成了两步：\n\n- **文件数**（src 递归全部文件）：2（`src/a.ts`、`src/b.ts`）\n- **注释行数**：2（每个文件各 1 行 `//` 整行注释，块注释 `/* */` 为 0）\n- **合计**：2 + 2 = **4**\n\n第二步是在同一个执行者的上下文里续做的，沿用了它已统计出的数字 2，没有另起执行者重头再来。\n任务已结束，结果如上：合计 **4**（2 个文件 + 2 行注释）。执行者已停止，无需后续动作。",
+    "userText": "先让一个执行者统计 src 里的文件数。等它报完后，让同一个执行者接着把刚才那个数字加上注释行数，不要重新找一个执行者从头再来。",
     "userTexts": [
-      "让一个执行者统计工作区里有多少个 .md 文件，并把这个数字记住。",
-      "让刚才那个执行者再核对一次，并确认还是同一个数字。"
+      "先让一个执行者统计 src 里的文件数。等它报完后，让同一个执行者接着把刚才那个数字加上注释行数，不要重新找一个执行者从头再来。"
     ],
     "autoAnswers": [],
     "analysis": {
       "tools": [
         {
-          "name": "glob",
+          "name": "bash",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
-          "name": "interrupt_agent",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
-          "name": "job_output",
-          "attempts": 3,
-          "failures": 3,
-          "finalStatus": "error"
-        },
-        {
-          "name": "list_agents",
-          "attempts": 4,
-          "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         },
         {
           "name": "send_message",
-          "attempts": 1,
+          "attempts": 2,
           "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         },
         {
           "name": "subagent",
           "attempts": 1,
           "failures": 0,
-          "finalStatus": "ok"
-        },
-        {
-          "name": "subagent_fork",
-          "attempts": 1,
-          "failures": 0,
-          "finalStatus": "ok"
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
       "artifacts": [],
-      "warnings": ["job_output needed 3 attempts with 3 failures"]
+      "warnings": []
     }
   },
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=12", "warnings=1"]
+    "observed": ["skillLoads=none", "toolCalls=4", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -162,6 +100,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261113184827",
-  "capturedAt": "2026-11-13T10:49:02.512Z"
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:17:43.742Z"
 }

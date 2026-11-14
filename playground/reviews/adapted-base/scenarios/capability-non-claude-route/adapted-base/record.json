@@ -1,0 +1,121 @@
+{
+  "scenarioId": "capability-non-claude-route",
+  "phase": "adapted",
+  "environment": {
+    "worker": 8,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-ae8f7745-5b0f-405f-a4b9-25da0b56ae77",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/pstack-models.mdc 2>/dev/null | head -60; ls $DSH_HOME"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 20; cat note.txt 2>/dev/null || echo \"not yet\""
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "执行者已完成这件小事，并在工作区写出了 `note.txt`，内容恰好一行 `hello from the executor`。\n\n它最终走的路由不是 Claude 系，详情如下。\n\n- 提供方为 magpie。\n- 模型为 workbuddy/deepseek-v4.1-flash，完整路由 `magpie/workbuddy/deepseek-v4.1-flash`。\n- 档位为 low，reasoning effort 设置为 low，与角色配置里 bug-fix 角色的 `[low]` 一致。\n\n这个选择来自 role `bug-fix` 的默认路由行，我在启动时没有覆盖模型，只把 effort 明确设为 low，结果与配置相同。本会话可用的非 Claude 路由还有 `deepseek-account/deepseek-flash`、`deepseek-account/deepseek-v4-pro` 和 `magpie/workbuddy/minimax-m3.1-flash`，其中最后一条正是当前会话自身所在的模型。\n\n产物路径是 [note.txt](<TEMP_PATH>",
+    "userText": "用一个非 Claude 系的模型路由派一个执行者做一件小事，并告诉我它最终用的是哪个提供方、模型和档位。",
+    "userTexts": [
+      "用一个非 Claude 系的模型路由派一个执行者做一件小事，并告诉我它最终用的是哪个提供方、模型和档位。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_list",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=6", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:25:56.040Z"
+}

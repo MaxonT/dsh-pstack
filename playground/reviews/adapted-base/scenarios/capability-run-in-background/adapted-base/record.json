@@ -1,0 +1,174 @@
+{
+  "scenarioId": "capability-run-in-background",
+  "phase": "adapted",
+  "environment": {
+    "worker": 8,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-26c15572-df42-4c2e-82b0-97e8cb96fd97",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; echo ---; git log --oneline -5 2>/dev/null | head -20"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: unknown pstack role \"feature\"; role names come from the pstack role manifest, not free text. Known roles: \"feature, refactoring\", \"bug-fix\", \"perf-issue\", \"hillclimb\", \"judgment and prose\", \"hardest tasks\", \"how explorer\", \"how explainer\", \"why investigators\", \"why synthesizer\", \"reflect tooling\", \"reflect judgment, divergent, synthesizer\", \"arena runners\", \"arena cross-judge pool\", \"swarm workers\", \"architect runners\", \"interrogate reviewers\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: role \"feature, refactoring\" resolves to inherit-parent [xhigh], which failed route preflight: provider \"magpie\" model \"workbuddy/minimax-m3.1-flash\" does not support reasoning effort \"xhigh\""
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: missing required argument \"roleIndex\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -la notes/ && wc -l notes/async-dispatch-report.md && date -Iseconds && stat -c '%y' notes/async"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && find .git -maxdepth 2 | sort && echo --- && git remote -v; git log --oneline 2>&1 | head -3; echo -"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && grep -n '—' notes/async-dispatch-report.md; echo \"exit:$?\""
+      },
+      {
+        "name": "edit",
+        "status": "error",
+        "argsSummary": "edit file_path=<TEMP_PATH>",
+        "errorText": "Error: old_string was not found in \"<TEMP_PATH>\""
+      },
+      {
+        "name": "edit",
+        "status": "ok",
+        "argsSummary": "edit file_path=<TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "已派出去了。执行者是一个 poteto 子代理，任务是写一份非阻塞委派的设计报告并留下带真实时间戳的运行轨迹（会实际睡一会儿，让这次跑满一分钟以上），产出物落在 `notes/async-dispatch-report.md`。\n\n说明两点：\n- 委派是后台进行的，这个会话没有等它，主线程现在空着，你可以先说下一步。\n- 角色路由上有个小坑：`feature, refactoring` 角色在本机没有单独的模型配置，所以继承父模型；父模型 `workbuddy/minimax-m3.1-flash` 不支持 `xhigh`，我把推理档位降到 `high` 后才通过预检。\n\n等执行者回报完成，我把结果补给你。\n\n--- turn 2 ---\n\n后台委派完成了，结果补给你。\n\n**你的目标**：证明一次需要几分钟的独立任务可以派出去而不占住主会话。\n\n**产出物**：[notes/async-dispatch-report.md](<<TEMP_PATH> 行。\n\n**报告内容**。四节。Workspace scan 用表格列出根目录和 `.git` 内每个路径的用途。Method 把非阻塞委派拆成三块。队列边界是 `pstack_subagent` 那次调用本身，它立刻返回 child id，不等子进程。结果通过完成通知回传，子代理的持久产出写在磁盘上，评审者读文件而不是读聊天。失败分三类，路由被拒发生在子代理启动之前，子进程内部失败要留下部分产物和失败记录，沉默不完成则靠产物里的里程碑时间戳来区分仍在跑和已停。\n\n**证据，我本地复核过**。`git remote -v` 无输出，`git count-objects -v` 报 count 0，`git log` 提示分支无提交，与报告一致。报告里的时间线从 00:28:43 到文件 mtime 00:31:47，确实超过两分钟，两段 35 秒和 40 秒是刻意留的停顿。当前时间 00:32:01，文件 mtime 与之相符。\n\n**我做的一处修正**。结论第三条和第二条被挤在同一行，缺少换行，我把它拆成了独立的项目符号。其余内容我没有改动。\n\n**继承下来的两件事**。下一步的工程师拿到的是一份可直接复跑的证据文件，`.git` 仍是空仓库且无 remote，所以没有任何东西被推出去。子代理在约束上守住了边界，只在 workspace 内读写。\n\n**一条踩过的坑**。`feature, refactoring` 角色在本机没有独立的模型配置，继承父模型 `workbuddy/minimax-m3.1-flash`，该模型不支持 `xhigh`，预检直接失败，最终以 `high` 通过。若日后要加大推理预算，得先在 `pstack-models.mdc` 里给该角色配一条支持对应档位的路由。",
+    "userText": "把一个需要一点时间的独立任务交给执行者，交出去之后不要干等，先告诉我已经派出去了，等它完成再把结果补给我。",
+    "userTexts": [
+      "把一个需要一点时间的独立任务交给执行者，交出去之后不要干等，先告诉我已经派出去了，等它完成再把结果补给我。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 4,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "edit",
+          "attempts": 2,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 4,
+          "failures": 3,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": ["edit file_path=<TEMP_PATH>", "edit file_path=<TEMP_PATH>"],
+      "warnings": [
+        "edit needed 2 attempts with 1 failures",
+        "pstack_subagent needed 4 attempts with 3 failures"
+      ]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=14", "warnings=2"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:28:00.835Z"
+}

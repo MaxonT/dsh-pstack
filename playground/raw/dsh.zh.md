@@ -1,59 +1,61 @@
 # DSH 中的 pstack
 
-pstack 技能使用 Cursor 名称。在 DSH 中，每个会话读一次本文件，然后用下面的表格映射技能中的每个 Cursor 名称。`<pstack>` 指包含 `skills/` 和 `docs/` 的文件夹。每个 DSH 单元格都给出替代名、缺字段时的动作和会改变技能写法的回退。如果某个 Cursor 字段没有对应行，就丢弃它并说明。永远不要传入工具 schema 拒绝的字段或值。
+pstack 技能使用 Cursor 名称。在 DSH 中，每个会话读一次本文件，然后用下面的表格映射技能中的每个 Cursor 名称。`<pstack>` 指包含 `skills/` 和 `docs/` 的文件夹。
+
+只使用当前会话里实际可见的工具。若映射到的工具或可选能力不可用，按对应行的回退处理。不要因为某个名称出现在本文件里就假设可选插件已启用。
 
 ## 工具
 
 | Cursor | DSH |
 | --- | --- |
-| `Task` | `subagent` 立即返回 id，并在完成时通知；`subagent_fork` 继承当前对话。把角色写进 `prompt`，把目录写进 `cwd`；缺失的 Cursor 字段见“子代理字段”表。 |
-| `AskQuestion` | `ask_user_question` 接受一批问题。`selected` 为空且没有 `custom` 表示用户跳过；超时是 `pending`，不是跳过。工具不存在时用纯文本提问。 |
-| Open a todolist | `todo_write` 替换整个列表；状态为 `pending`、`in_progress` 和 `completed`。跳过的步骤保留为 `pending`，内容写 `skip: <reason>`；没有 `skipped` 状态。 |
-| Run another pstack skill (`/name` or "the **name** skill") | `skill` 按名称加载目录中的技能。`disable-model-invocation: true` 时，用 `read` 读取 `<pstack>/skills/<name>/SKILL.md`。用户 `/name` 手势会直接注入技能；不要再调用 `skill`。 |
-| `Grep`, `Glob` | `grep` 和 `glob` 是原生工具，直接调用。只有会话两者都没有时，才用 `bash` 运行 `rg`。 |
+| `Task` | `subagent` 启动一个全新子代理并立即返回它的 id；`subagent_fork` 改为让子代理继承当前对话。把任务写进 `prompt`，把标签写进 `description`，把目录写进 `cwd`；没有原生参数的 Cursor 字段见“子代理字段”。 |
+| `AskQuestion` | `ask_user_question` 接收一组 `questions`，每项含选项和自由输入。`selected` 为空且没有 `custom` 表示用户跳过，超时是 `pending`，不是跳过。子代理不能提问，所以它把问题留在结果里；工具不存在时用纯文本提问。 |
+| Open a todolist | `todo_write` 替换整个列表，且没有 `skipped` 状态。把跳过的步骤保留为 `skip: <reason> - <step>` 并把状态标为 `completed`。 |
+| Run another pstack skill (`/name` or "the **name** skill") | `skill` 按精确名称加载目录中的技能。带 `disable-model-invocation: true` 的技能对 `skill` 隐藏，所以用 `read` 读取 `<pstack>/skills/<name>/SKILL.md`；用户 `/name` 手势会直接注入技能，不要再调用 `skill`。 |
+| `Grep`, `Glob` | `grep` 和 `glob` 是原生工具，直接调用，`grep` 使用 ripgrep 语法。只有会话两者都没有时，才用 `bash` 运行 `rg`。 |
 
 ## 子代理字段
 
 | Cursor | DSH |
 | --- | --- |
-| `subagent_type: generalPurpose` | 没有这个字段；省略它。角色来自 `prompt`，命名角色时来自 `<pstack>/agents/<name>.md`。 |
-| `poteto-agent`, `comment-sicko` | 没有原生等价物。读取 `<pstack>/agents/<name>.md` 并作为 `prompt` 传入，或自己写角色说明。 |
-| `readonly: true` | 没有沙箱字段。在 `prompt` 写“不要编辑文件”，依赖会话权限模式，并检查 `git status`。 |
-| `readonly: false` | 省略。在会话权限模式下默认可写。 |
-| `environment: "cloud"` | 没有云代理。有 `create_worktree` 时使用它，并把 checkout 作为 `cwd`；否则写跳过行。 |
-| `environment: "local"` | 省略。默认就是本地。 |
-| `cloud_base_branch: <b>` | 没有这个字段。把 `<b>` 传给 `create_worktree.from`；否则告诉子代理先 checkout `<b>`。 |
-| `run_in_background: true` | 省略。`subagent` 总是立即返回，并在完成时通知。 |
-| `resume` | 向子代理的 `agent_id` 发送 `send_message` 可以继续；只有执行永久停止时才新建 `subagent`。 |
-| `file_attachments` | 没有这个字段。把路径列在 `prompt` 里；子代理会读取它们。 |
+| `subagent_type: generalPurpose` | 没有这个字段；省略它。子代理就是普通的 `subagent`，任务写进 `prompt`。 |
+| `poteto-agent`, `comment-sicko` | 没有原生预设。读取 `<pstack>/agents/<name>.md` 并作为 `prompt` 传入，或自己写出角色说明。 |
+| `readonly: true` | 没有沙箱参数。在 `prompt` 写“不要编辑文件”，依赖会话权限模式，并在事后检查 `git status`。 |
+| `readonly: false` | 省略；在会话权限模式下子代理可写。 |
+| `environment: "cloud"` | 没有云代理。有 `create_worktree` 这类独立检出工具时，把它的检出目录作为 `cwd`；否则写跳过行。 |
+| `environment: "local"` | 省略 `cwd`；子代理继承会话目录。 |
+| `cloud_base_branch: <b>` | 没有这个字段。把 `<b>` 作为 `create_worktree.from` 传入；否则告诉子代理先 checkout `<b>`。 |
+| `run_in_background: true` | 省略。`subagent` 立即返回并在完成时通知；没有后台开关。 |
+| `resume` | `send_message` 按 `agent_id` 继续子代理；运行中的子代理在下一步收到消息，空闲的会恢复。只有它永久停止时才新建 `subagent`。 |
+| `file_attachments` | 没有这个字段。把真实路径列在 `prompt` 里；子代理用 `read` 读取它们。 |
 
 ## 模型
 
 | Cursor | DSH |
 | --- | --- |
-| `claude-<family>-<version>-<effort>[-fast]`, such as `claude-opus-5-5-xhigh` | 用 `provider`、`model` 和 `reasoning_effort` 组成路由；去掉 `-fast`。有效 id 来自 `list_subagent_models`。 |
-| A `grok-*`, `gpt-*`, or other non-Claude slug | 选择最接近的已公布路由。没有匹配时省略 `provider` 和 `model`，让子代理回退，并说明这一点。 |
-| `auto` or `inherit-parent` | 省略 `provider` 和 `model`；省略时使用子代理或父级默认值。 |
-| The `pstack-models.mdc` rule, `~/.cursor/rules/pstack-models.mdc` | pstack 角色文件是 `$DSH_HOME/pstack-models.json`。base DSH 从不读取它；pstack 适配器在每次委派时读取这个 JSON。文件不在上下文时读取它。 |
-| A role value `<model> <effort>`, such as `opus high` | 写成 `<provider>/<model> <effort>`；拆成 `provider`、`model` 和 `reasoning_effort`。 |
+| `claude-<family>-<version>-<effort>[-fast]`, such as `claude-opus-5-5-xhigh` | 拆成 `provider`、`model` 和 `reasoning_effort`，并去掉 `-fast`；只有委派工具启用模型选择时才有这些参数。工具提供 `list_subagent_models` 时用发现到的 id；不提供时省略它们，子代理继承父级路由。 |
+| A `grok-*`, `gpt-*`, or other non-Claude slug | 选最接近的已公布路由。没有匹配时省略 `provider` 和 `model`，让子代理继承父级路由，并说明这一点。 |
+| `auto` or `inherit-parent` | 省略 `provider`、`model` 和 `reasoning_effort`；子代理继承父级路由。 |
+| The `pstack-models.mdc` rule, `~/.cursor/rules/pstack-models.mdc` | 基础 DSH 没有 `.mdc` rules 目录，也从不加载它。pstack 角色文件是 `$DSH_HOME/pstack-models.json`；基础 DSH 不读它，pstack 适配器在每次委派时读取，所以它不在上下文时读取它。 |
+| A role value `<model> <effort>`, such as `opus high` | 写成 `<provider>/<model> <effort>`，并拆成 `provider`、`model` 和 `reasoning_effort`。 |
 
 ## setup-pstack
 
-DSH 没有 rules 目录，也不会把 `.mdc` 文件当作会话规则读取。pstack 角色文件是 `$DSH_HOME/pstack-models.json`；pstack 适配器在委派时读取它。`AGENTS.md` 兼容链仍提供会话指令，但不能替代该角色文件。按它的步骤做这些替换：
+DSH 没有 rules 目录，从不把 `.mdc` 文件当作会话规则读取。pstack 角色文件是 `$DSH_HOME/pstack-models.json`；基础 DSH 不读它，pstack 适配器在每次委派时读取。`AGENTS.md` 兼容链提供会话指令，但不能替代该角色文件。按它的步骤做这些替换：
 
-- 检测。使用 `list_subagent_models`；把每条可用路由写成 `<provider>/<model> <effort>`。
+- 检测。使用 `list_subagent_models`，把每条可用路由写成 `<provider>/<model> <effort>`。检测不到任何路由时，请用户粘贴路由；绝不写入未确认的路由。
 - 默认值。可用的 slug 映射到路由；不可用的 slug 写成 `inherit-parent`。
-- 写入。写 `$DSH_HOME/pstack-models.json`，包含 `version: 1`、可选 `budget` 和 `roles` 对象；每个角色是路由字符串数组。覆盖整个文件；缺少某个角色时它继承父路由。
+- 写入。写 `$DSH_HOME/pstack-models.json`，包含 `version: 1`、可选 `budget` 和由路由字符串数组组成的 `roles` 对象。覆盖整个文件；缺少某个角色时它继承父路由。
 
 ## 路径
 
 | Cursor | DSH |
 | --- | --- |
-| `.cursor/skills/`, `~/.cursor/skills/` | 项目技能放在 `.dsh/skills/` 或 `.agents/skills/`。用户技能放在 `$DSH_HOME/skills/` 或 `$DSH_AGENTS_HOME/skills/`；后者默认 `~/.agents`。 |
-| `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | profile 是 `$DSH_HOME/profiles/<name>/`，包含 `package.json` 和 `cordis.patch.yml`；插件 manifest 是 `package.json` 的 `dsh` 段。 |
-| `.cursor/rules/*.mdc`, always-applied rules | 通用规则使用 `AGENTS.md` 兼容链；DSH 从不读取 `.mdc`。pstack 角色文件 `$DSH_HOME/pstack-models.json` 是例外，由 pstack 适配器读取。项目 `AGENTS.md`/`AGENTS.local.md` 加用户全局 `$DSH_HOME/AGENTS.md`。 |
+| `.cursor/skills/`, `~/.cursor/skills/` | 项目技能放在 `.dsh/skills/` 或 `.agents/skills/`；用户技能放在 `$DSH_HOME/skills/` 或 `$DSH_AGENTS_HOME/skills/`，后者默认 `~/.agents`。 |
+| `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | profile 是 `$DSH_HOME/profiles/<name>/`，包含 `cordis.patch.yml`；插件 manifest 是 `package.json` 的 `dsh` 段。 |
+| `.cursor/rules/*.mdc`, always-applied rules | 通用规则使用 `AGENTS.md` 链；DSH 从不读取 `.mdc`。项目 `AGENTS.md`/`AGENTS.local.md`（接受 `CLAUDE.md`）加 `$DSH_HOME/AGENTS.md`。模型里的 pstack 角色文件是例外，只由 pstack 适配器读取。 |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | 文件存在时用 `<pstack>/<path>`。读本地副本，不要抓取；需要时把 URL 给用户。 |
-| Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | `$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`，每个会话一个 append-only 日志。可选 session-search 增加模型可见的搜索工具。 |
+| Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | `$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`，每个会话一个追加式日志。可选 session search 增加模型可见的搜索工具。 |
 
 ## Cursor-only features
 

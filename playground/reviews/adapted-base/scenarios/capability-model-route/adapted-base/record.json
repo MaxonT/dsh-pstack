@@ -1,0 +1,123 @@
+{
+  "scenarioId": "capability-model-route",
+  "phase": "adapted",
+  "environment": {
+    "worker": 7,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-e294cc1c-6ef9-4fbc-8406-8d4a6277e8f9",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: unknown pstack role \"feature\"; role names come from the pstack role manifest, not free text. Known roles: \"feature, refactoring\", \"bug-fix\", \"perf-issue\", \"hillclimb\", \"judgment and prose\", \"hardest tasks\", \"how explorer\", \"how explainer\", \"why investigators\", \"why synthesizer\", \"reflect tooling\", \"reflect judgment, divergent, synthesizer\", \"arena runners\", \"arena cross-judge pool\", \"swarm workers\", \"architect runners\", \"interrogate reviewers\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: missing required argument \"roleIndex\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: missing required argument \"roleIndex\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 20; ls -l notes.txt 2>&1; cat notes.txt 2>&1"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "目标很简单，查清可用模型和档位，然后派一个小执行者做事并报告它实际用的模型与档位。\n\n**可用模型与推理档位**（来自 `pstack_models`）\n\n- `deepseek-account/deepseek-flash`，档位 off / low / high / max，默认 high。\n- `deepseek-account/deepseek-v4-pro`，档位 off / low / high / max，默认 high。\n- `magpie/workbuddy/deepseek-v4.1-flash`，档位 off / low / high / max，默认 high。\n- `magpie/workbuddy/minimax-m3.1-flash`，档位 off / low / high / max，默认 high。\n- `deepseek-official` 没有暴露任何模型。\n\n**执行者实际用的模型与档位**\n\n- 任务：在工作目录写一个三行的 `notes.txt`。\n- 角色：`feature, refactoring`，子代理类型 `general`。\n- 实际路由：`inherit-parent`，即跟随父会话路由，也就是当前这个 `magpie/workbuddy/minimax-m3.1-flash`。\n- 实际档位：`low`。\n- 原因：`pstack-models.mdc` 里 `feature, refactoring` 这个角色没有配置行，所以回退到父路由。\n\n**验证**：`notes.txt` 已在 `<TEMP_PATH> 落盘，内容正是三行 `line one` / `line two` / `line three`，我本地 `cat` 复核过。\n\n有一点值得你知道：如果想让这类执行者跑到 `deepseek-v4-pro` 之类的具体模型上，需要在 `pstack-models.mdc` 里给对应角色补一行，否则永远是父路由继承。",
+    "userText": "先查一下当前有哪些可用的模型和推理档位，再用其中一个可用模型派一个执行者做一件小事，并告诉我它实际用的模型和档位。",
+    "userTexts": [
+      "先查一下当前有哪些可用的模型和推理档位，再用其中一个可用模型派一个执行者做一件小事，并告诉我它实际用的模型和档位。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 4,
+          "failures": 3,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": ["pstack_subagent needed 4 attempts with 3 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=7", "warnings=1"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:25:55.988Z"
+}

@@ -1,0 +1,160 @@
+{
+  "scenarioId": "capability-inherit-parent",
+  "phase": "raw",
+  "environment": {
+    "worker": 6,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-ed84ed38-6f86-4bc7-9c05-f62636546eb1",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; echo ---; ls; echo ---; echo $DSH_HOME"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "subagent_fork",
+        "status": "ok",
+        "argsSummary": "subagent_fork"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=env | grep -iE 'dsh|model|provider|magpie' | sort"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job f400dbe9-3b69-4b8f-806e-8bab587a7829"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 60; ls -la <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la <TEMP_PATH> echo ---; cat <TEMP_PATH> 2>/dev"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "子任务已完成。\n\n**做了什么**：用 `subagent_fork`（继承当前会话上下文，不指定模型）派生一个子代理，让它读取工作区 `README.md` 并生成 `probe.md` 探测报告。子代理正常返回，产物已落盘。\n\n**实际路由**：\n- provider `magpie` / model `workbuddy/minimax-m3.1-flash`\n- 来源是子代理自身的会话运行时元数据（system prompt 中的模型标识），不是环境变量——环境里没有 `DSH_MODEL`/`DSH_PROVIDER`。\n- 旁证：`$DSH_HOME/pstack-models.json` 把 \"judgment and prose\"、\"swarm workers\" 等角色映射到 `magpie/workbuddy/minimax-m3.1-flash [high]`，与实际路由一致（\"inherit-parent\" 语义上继承父会话的模型路由，探测结果与配置相符）。\n\n**产物**：[probe.md](<<TEMP_PATH> 原文、运行时间戳 2026-11-14T14:15:09+08:00）。",
+    "userText": "这个子任务就沿用当前会话的模型，不要另外指定模型。跑完告诉我你实际用的是哪条路由。",
+    "userTexts": [
+      "这个子任务就沿用当前会话的模型，不要另外指定模型。跑完告诉我你实际用的是哪条路由。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 1,
+          "firstAttemptStatus": "error",
+          "finalStatus": "error",
+          "recovered": false
+        },
+        {
+          "name": "list_agents",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "list_subagent_models",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "subagent_fork",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=10", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:14:40.684Z"
+}

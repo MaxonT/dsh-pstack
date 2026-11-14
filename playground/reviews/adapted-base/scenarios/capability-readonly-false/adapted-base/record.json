@@ -1,0 +1,99 @@
+{
+  "scenarioId": "capability-readonly-false",
+  "phase": "adapted",
+  "environment": {
+    "worker": 11,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-0dd6804e-9aa0-45ae-85ac-fe44445ca32b",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; echo ---; cat status.txt 2>/dev/null"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 30; cat status.txt"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll delegate the write to a child agent and verify the result myself.\n\n**Goal.** Have an executor set `status.txt` in this workspace to `ready=yes`, then confirm the write landed. Smallest change: one line in one file, no other files touched.\n**Done.** `status.txt` now reads `ready=yes`.\n\nAn executor child made the change. I verified it myself rather than trusting the report. My own `cat status.txt` returned `ready=yes`, and the child confirmed the exact bytes with `od -c`: `r e a d y = y e s \\n`, 10 bytes, single line, no extra whitespace. No other file was touched, and nothing was committed.\n\nOne thing worth knowing for later: `git status --porcelain` reports `?? status.txt`, so the file is untracked in this repo rather than a tracked modification. That is how the workspace was set up, not something the executor changed.",
+    "userText": "让一个执行者在当前工作区里把 status.txt 的内容改成 ready=yes，然后回报它已经写入。不需要额外授权。",
+    "userTexts": [
+      "让一个执行者在当前工作区里把 status.txt 的内容改成 ready=yes，然后回报它已经写入。不需要额外授权。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=4", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:25:56.042Z"
+}

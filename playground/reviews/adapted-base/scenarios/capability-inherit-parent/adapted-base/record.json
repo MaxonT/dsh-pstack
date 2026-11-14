@@ -1,0 +1,139 @@
+{
+  "scenarioId": "capability-inherit-parent",
+  "phase": "adapted",
+  "environment": {
+    "worker": 6,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-5c6cc6d1-22e3-4dee-a555-8538520d1a61",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job 20b70942-bab6-4792-8681-6f9c2db9fcdc"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll dispatch one small executor on a role and read back the route it actually resolved to.\n**Goal.** Confirm which model route pstack picks for a role with no model line of its own, by dispatching one small executor and reading back what it resolved to.\n\n**What ran.** A single read-only child (`general` agent preset) was spawned on the role `reflect tooling`, with `roleIndex` null since the role is a single shape. Task was a one-command listing of the workspace top level plus a self-report of its own route.\n\n**Route used.** The dispatch resolved to `inherit-parent`. The diagnostic explains why. The role has no line in the pstack models config, so it inherits the parent route rather than picking a role-specific model.\n\n**Evidence from the child.** It reports its own route as `workbuddy/minimax-m3.1-flash`, which maps to the advertised route `magpie/workbuddy/minimax-m3.1-flash`. That is the same model the parent session runs on, so inheritance held. The reasoning effort is not exposed in the child's runtime context. The route advertises `off`, `low`, `high`, `max` with default `high`, so `high` is likely effective, but that is inference from the route default rather than a runtime read.\n\n**One side finding worth acting on.** The `deepseek-official` provider advertises no models at all. Any role or config line naming a route under that provider cannot resolve to a live model, while the `magpie` and `deepseek-account` routes resolve normally. That is a real config gap, not a code defect, and it would silently affect any role pointed there.\n\n**Impact for the maintainer.** The inheritance rule is confirmed working for unconfigured roles. The fix, if you want one, is to add a line for `reflect tooling` in the pstack models config, and to either populate `deepseek-official` or repoint the roles that use it.",
+    "userText": "当一个角色没有单独配置模型时，派一个执行者做一件小事，并说明它最终用的是哪条模型路由。",
+    "userTexts": [
+      "当一个角色没有单独配置模型时，派一个执行者做一件小事，并说明它最终用的是哪条模型路由。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_list",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 1,
+          "finalStatus": "error"
+        },
+        {
+          "name": "list_agents",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=7", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:25:55.990Z"
+}

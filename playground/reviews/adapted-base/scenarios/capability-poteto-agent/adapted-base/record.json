@@ -1,0 +1,123 @@
+{
+  "scenarioId": "capability-poteto-agent",
+  "phase": "adapted",
+  "environment": {
+    "worker": 10,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-5cf0e67e-b876-488b-838b-3736284c2cb5",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: unknown pstack role \"feature\"; role names come from the pstack role manifest, not free text. Known roles: \"feature, refactoring\", \"bug-fix\", \"perf-issue\", \"hillclimb\", \"judgment and prose\", \"hardest tasks\", \"how explorer\", \"how explainer\", \"why investigators\", \"why synthesizer\", \"reflect tooling\", \"reflect judgment, divergent, synthesizer\", \"arena runners\", \"arena cross-judge pool\", \"swarm workers\", \"architect runners\", \"interrogate reviewers\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: missing required argument \"roleIndex\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: role \"feature, refactoring\" holds a single route, so `roleIndex` does not apply"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 25; ls -la <TEMP_PATH> cat -A <TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "目标是把一行 `# 记录` 写进工作区的新文件 `notes.md`，最小改动就是这一个文件。\n\n完成情况:\n\n- [notes.md](<<TEMP_PATH> 已创建，内容为单行 `# 记录` 带结尾换行符。\n- 我用 `cat -A` 独立核对了字节,确认无多余内容,没有其他文件被改动,也没有提交。\n\n实现由一个 pstack `poteto-agent` 子代理(角色 `feature, refactoring`,沿用父模型路由,low effort)执行。",
+    "userText": "用一个 pstack 的实现型子代理完成一项改动：在工作区新建 notes.md，写一行标题 '# 记录'，然后让它报告完成。",
+    "userTexts": [
+      "用一个 pstack 的实现型子代理完成一项改动：在工作区新建 notes.md，写一行标题 '# 记录'，然后让它报告完成。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 4,
+          "failures": 3,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": ["pstack_subagent needed 4 attempts with 3 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=7", "warnings=1"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:25:56.063Z"
+}

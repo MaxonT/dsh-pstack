@@ -1,0 +1,89 @@
+{
+  "scenarioId": "capability-subagent-general",
+  "phase": "adapted",
+  "environment": {
+    "worker": 0,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-a1292c41-bf78-465d-b953-d363dd81d3bd",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: missing required argument \"role\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 25; ls -la out/ 2>&1; wc -c out/summary.txt 2>&1; od -c out/summary.txt 2>&1"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll delegate this to a general helper agent and verify the result myself.\nDone.\n\nThe helper agent created the file and I verified it independently in the workspace.\n\n`out/summary.txt` exists with exactly 4 bytes. `od -c` shows `d o n e` and nothing else, no trailing newline. Path: [out/summary.txt](out/summary.txt).\n\nPrinciple applied: **Prove It Works**. The agent's own read-back was not treated as sufficient. I re-checked the file with `od -c` and `wc -c` in the workspace before reporting.",
+    "userText": "请让一个通用的辅助执行者在工作区里新建 out/summary.txt，内容写 'done'，然后报告它确实写出了这个文件。",
+    "userTexts": [
+      "请让一个通用的辅助执行者在工作区里新建 out/summary.txt，内容写 'done'，然后报告它确实写出了这个文件。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 2,
+          "failures": 1,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": ["pstack_subagent needed 2 attempts with 1 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=3", "warnings=1"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:28:25.562Z"
+}

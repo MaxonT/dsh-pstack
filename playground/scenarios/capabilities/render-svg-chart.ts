@@ -6,7 +6,7 @@ const scenario: BehaviorScenario = {
   turns: [
     {
       prompt:
-        "把这份状态机导出成一份可以打开的 SVG 图片文件给我，我要能直接打开查看，不要只留下源码文件。",
+        "把这份状态机导出成可查看的 SVG，并且要我在当前界面里直接看到渲染出来的图，不要只给源码、文件路径或文件卡片。",
     },
   ],
   workspace: {
@@ -21,7 +21,7 @@ const scenario: BehaviorScenario = {
     },
   ],
   rubric: {
-    prompt: "用户能看到一份真实可打开的 SVG 图像文件。只有 .mmd 源码、没有可查看的 SVG，记为缺口。",
+    prompt: "用户在当前界面内看到真实渲染出来的 SVG 图像。只有源码、文件路径或文件卡片，记为缺口。",
   },
   uiObservations: [
     {

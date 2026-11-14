@@ -1,0 +1,245 @@
+{
+  "scenarioId": "capability-role-value",
+  "phase": "adapted",
+  "environment": {
+    "worker": 6,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-eb6d6fbf-4920-4244-86b6-1b9ec3d58558",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": ["setup-pstack"],
+    "toolCalls": [
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=setup-pstack"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=echo \"DSH_HOME=$DSH_HOME\"; ls -la \"${DSH_HOME:-$HOME/.dsh}\" 2>/dev/null | head -30"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "error",
+        "argsSummary": "write file_path=<HOST_PATH>",
+        "errorText": "Error: [sandbox: file access denied under workspace-write mode]\n[sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=printf '%s\\n' '# pstack role routes' 'bug-fix: magpie/workbuddy/deepseek-v4.1-flash [low]' 'judgment and prose: magpie/workbuddy/minimax-m3.1-flash [high]' 'feature, refactoring: deepseek"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: missing required argument \"roleIndex\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: missing required argument \"role\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "error",
+        "argsSummary": "pstack_subagent",
+        "errorText": "Error: missing required argument \"role\""
+      },
+      {
+        "name": "write",
+        "status": "error",
+        "argsSummary": "write file_path=<HOST_PATH>",
+        "errorText": "Error: the user rejected escalating this operation to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job 089106d7-8ff9-48c1-8006-12f84b5d218d"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 30; echo done"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 60; echo done"
+      },
+      {
+        "name": "job_kill",
+        "status": "ok",
+        "argsSummary": "job_kill"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -la && git log --oneline -3 && git status --short && cat README.md"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "**目标。** 你要我用「模型加档位」的角色写法指定一个执行者，并报告最终实际生效的提供方、模型和档位。\n\n**指定的执行者。** 角色写法是 `feature, refactoring`，并给这个角色显式档位 `max`，即角色值写成 `<provider>/<model> [max]` 的形式。\n\n**实际生效的结果。**\n\n- 提供方：magpie\n- 模型：workbuddy/minimax-m3.1-flash\n- 档位：max\n\n**证据。** 三个探针子代理各自从自己的会话日志读出 `subagent/descriptor`，三者一致。角色 `judgment and prose` 在角色文件里映射为 `magpie/workbuddy/minimax-m3.1-flash [high]`，但探针观察到的是 `max`，说明调用时给的档位覆盖了角色行的默认档位。`bug-fix` 角色映射到 `magpie/workbuddy/deepseek-v4.1-flash [low]`，探针同样观察到 `max`。\n\n**一个偏差。** 我本想把 `feature, refactoring` 这条角色行改写成一个明确的「模型加档位」值，比如 `deepseek-account/deepseek-v4-pro [max]`。写 `$DSH_HOME/pstack-models.mdc` 被工作区写沙箱拒绝，提权请求也被你驳回，所以我没有绕过它。结果是 `feature, refactoring` 在角色文件里没有对应行，回落到父路由 `magpie/workbuddy/minimax-m3.1-flash`，再由调用时的 `max` 覆盖生效。落到这个模型的功劳属于父路由回落，而不是一条显式的角色行。\n\n**运算符可以改的地方。** 在 pstack 标签页里直接编辑同一个文件，给 `feature, refactoring` 写一行 `deepseek-account/deepseek-v4-pro [max]`，下次委派就会走那条路线，不需要重启。\n\n**未做的事。** 我没有读取任何原则的叶子 SKILL.md，所以不引用任何原则。\n**目标。** 用「模型加档位」的角色写法指定一个执行者，并报告实际生效的提供方、模型和档位。\n\n**指定的执行者。** 角色 `judgment and prose`，调用时带档位 `max`。角色文件里那一行原本是 `magpie/workbuddy/minimax-m3.1-flash [high]`，调用时带的档位覆盖了行内默认值。\n\n**实际生效的结果。**\n\n- 提供方：magpie\n- 模型：workbuddy/minimax-m3.1-flash\n- 档位：max\n\n**证据。** 每个探针子代理都从自己的会话日志读出 `subagent/descriptor`，三处一致。`bug-fix` 角色（文件写 `[low]`）同样解析出 `max`，说明档位覆盖在第二个角色上同样成立。`role=null` 加 `low` 解析出父路由加 `low`，确认观测到的档位是真实生效值，不是默认值。\n\n**一个偏差。** 我想把 `feature, refactoring` 写成一条显式的「模型加档位」角色行，例如 `deepseek-account/deepseek-v4-pro [max]`。写 `$DSH_HOME/pstack-models.mdc` 被工作区写沙箱拒绝，提权请求被驳回，我没有绕过。因此这条角色仍走父路由回落 `magpie/workbuddy/minimax-m3.1-flash` 加 `max`，落到这个模型的功劳属于回落而非显式角色行。\n\n**子代理留下的文件。** 探针在工作区写了 [README.md](<<TEMP_PATH> `f4ea458`。没有做任何远程操作。\n\n**运算符可以改的地方。** 在 pstack 标签页直接编辑同一个文件，给 `feature, refactoring` 写一行 `deepseek-account/deepseek-v4-pro [max]`，下次委派就走那条路线，不需要重启。\n\n**未做的事。** 我没有读取任何原则的叶子 SKILL.md，所以不引用任何原则。",
+    "userText": "用“模型加档位”这种角色写法指定一个执行者，比如某个已公布的模型配一个档位，然后告诉我最终实际生效的提供方、模型和档位。",
+    "userTexts": [
+      "用“模型加档位”这种角色写法指定一个执行者，比如某个已公布的模型配一个档位，然后告诉我最终实际生效的提供方、模型和档位。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 5,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_kill",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 1,
+          "finalStatus": "error"
+        },
+        {
+          "name": "list_agents",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 7,
+          "failures": 3,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "skill",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "write",
+          "attempts": 2,
+          "failures": 2,
+          "finalStatus": "error"
+        }
+      ],
+      "artifacts": ["write file_path=<HOST_PATH>", "write file_path=<HOST_PATH>"],
+      "warnings": [
+        "pstack_subagent needed 7 attempts with 3 failures",
+        "write needed 2 attempts with 2 failures"
+      ]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=setup-pstack", "toolCalls=23", "warnings=2"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:27:43.830Z"
+}

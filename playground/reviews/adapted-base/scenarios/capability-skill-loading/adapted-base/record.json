@@ -1,0 +1,144 @@
+{
+  "scenarioId": "capability-skill-loading",
+  "phase": "adapted",
+  "environment": {
+    "worker": 9,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-5748b49b-5b12-4b86-beb0-05fa55389d4b",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": ["poteto-help"],
+    "toolCalls": [
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "error",
+        "argsSummary": "pstack_skill name=help",
+        "errorText": "Error: skill \"help\" is unknown or no longer available"
+      },
+      {
+        "name": "bash",
+        "status": "error",
+        "argsSummary": "bash command=ls <HOST_PATH>",
+        "errorText": "Error: invalid arguments: missing required property \"description\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH>"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=poteto-help"
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la ~/.dsh/pstack-models.mdc 2>&1; ls ~/.dsh 2>&1"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -a && git log --oneline -3 2>&1 | head"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "下面是这个环境里 pstack 能做的事。先说环境事实，再说技能地图。\n\n**当前环境**\n- 本会话已经跑在 `poteto-mode` 根预设里，poteto-mode 的全部说明常驻上下文，不用每次重新挂载。\n- 工作目录是 `<TEMP_PATH> `README.md`、还没有提交的空 git 仓库。\n- 角色模型已经配好（`~/.dsh/pstack-models.mdc`，预算 large）。所有单角色都指向 `magpie/workbuddy/deepseek-v4.1-flash`，`hardest tasks` 用 `max`，几个多模型面板各有两到三个候选路由。\n- 本环境是纯本地沙箱。只能写工作目录，没有远端 git，`gh` 与 forge 面板不可用，外部网络抓取以外部只读数据对待。\n\n**核心：怎么开始**\n`/poteto-mode` 是默认入口。它把任务匹配到一个 playbook，把步骤原样抄进 todo 列表，然后按需调用其他技能。本会话已经是这个模式，直接描述任务即可。playbook 本身不是技能，没有斜杠命令，但可以用句子点名，例如\"babysit 这个 PR\"、\"把这栈落地\"、\"接管这个分支\"、\"暂停一下\"、\"全自动跑完这个队列\"、\"跑 eval playbook\"。\n\n**按场景挑技能**\n| 你的意图 | 技能 |\n|---|---|\n| 任何非平凡任务，要严谨 | `/poteto-mode` |\n| 让代理先复述你的目标和问题 | `/in-your-own-words` |\n| 把提示词改深而不是改长 | `/sharpen` |\n| 搞清代码现在怎么跑，或新代码该放哪 | `/how` |\n| 搞清代码为什么这么写，或某个数字的来历 | `/why` |\n| 把某个改动或子系统讲成人话 | `/teach` |\n| 补齐最近几次对话里关于某话题的上下文 | `/recall` |\n| 回顾本次对话自上次发言后的变化 | `/ketchup` |\n| 同一份回顾做成字幕短视频 | `/ketchup-video` |\n| 看一个小 diff 可能影响哪些外部调用方 | `/blast-radius` |\n| 跨函数边界前先定类型和模块形状 | `/architect` |\n| 同一个 brief 多个方案，选最优合并 | `/arena` |\n| 切片并行检查，或让多个 worker 赛跑 | `/swarm` |\n| 多模型审 diff 并试图挑破它 | `/interrogate` |\n| 有廉价本地测试时按测试优先修 bug | `/tdd` |\n| TypeScript 规则 | `/typescript-best-practices` |\n| 送审前让另一个审稿人剥掉注释 | `/no-comments` |\n| 清掉 AI味的散文 | `/unslop` |\n| 文档、RFC、README、PR 描述、提交信息 | `/technical-writing` |\n| 复述上一条回复 | `/bro` |\n| 给代理一条可脚本化驱动应用的路径 | `/create-verification-skill` |\n| 形式化验证竞态或不变量 | `/create-formal-verification-skill` |\n| 性能数字送报前的体检 | `/benchmark-checklist` |\n| 大范围或跨切面改动 | `/figure-it-out` |\n| 长跑过程留决策日志 | `/show-me-your-work` |\n| 给每个角色配模型和推理预算 | `/setup-pstack` |\n| 把自己的工作习惯变成个人模式技能 | `/automate-me` |\n| 把一次任务的教训变成技能改动 | `/reflect` |\n| 防止代理重复犯同样的错 | `/correct` |\n\n**近义区分**\n`/how` 讲是什么，`/why` 讲为什么，`/teach` 跑一个或两个再讲人话。`/arena` 同一 brief 多份产出后合并，`/swarm` 切片后给一份汇总。`/architect` 定完设计立刻实现，加\"with checkpoint\"就先评审设计再写码。`/interrogate` 审 diff，`/blast-radius` 看 diff 之外的破坏面。`/figure-it-out` 设计一次严谨的运行，Orchestrate 是跨天多 PR 的项目级计划，Autonomous run 是把一个任务推到完成条件。\n\n**不在 pstack 里**\n`/deslop`、`control-cli`、`control-ui` 属于 `cursor-team-kit` 插件。`/loop` 和 `/create-skill` 是 Cursor 内建。pstack 没有 `/orchestrate` 技能，Orchestrate 是 poteto-mode 下的一个 playbook。\n\n**一个可用的提示词**\n```\n用 /poteto-mode 给这个仓库加一个健康检查端点，返回进程启动时间和工作区路径。完成标准是 curl 那个端点能打印出非空的上次启动时间。\n```\n\n**来源文件**\n这份地图来自 `poteto-help` 技能，它的公开副本在 https://github.com/cursor/plugins/blob/main/pstack/skills/poteto-help/SKILL.md 。相关的引导页是 https://github.com/cursor/plugins/blob/main/pstack/docs/guide/01-setup.md 和 https://github.com/cursor/plugins/blob/main/pstack/docs/guide/02-poteto-mode.md 。\n\n要我现在挑一个具体的活开跑，还是先把某个技能读透？",
+    "userText": "用 pstack 的帮助技能告诉我，这个环境里能做哪些事情。",
+    "userTexts": ["用 pstack 的帮助技能告诉我，这个环境里能做哪些事情。"],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 4,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_skill",
+          "attempts": 2,
+          "failures": 1,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": [
+        "bash needed 4 attempts with 1 failures",
+        "pstack_skill needed 2 attempts with 1 failures"
+      ]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=poteto-help", "toolCalls=10", "warnings=2"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:28:11.784Z"
+}

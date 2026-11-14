@@ -1,0 +1,164 @@
+{
+  "scenarioId": "capability-role-file",
+  "phase": "adapted",
+  "environment": {
+    "worker": 1,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-d0b0d980-0770-4814-9d92-5fa54ca4d5d3",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": ["setup-pstack"],
+    "toolCalls": [
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=setup-pstack"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob path=<TEMP_PATH> pattern=**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=echo \"DSH_HOME=${DSH_HOME:-unset}\"; ls -la \"${DSH_HOME:-$HOME/.dsh}\" 2>/dev/null | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat \"${DSH_HOME}/pstack-models.mdc\""
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45; echo done"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Goal: read the pstack role model config file, list its role routes, and dispatch one executor under a configured role.\n\n**The config file exists.** It lives at `$DSH_HOME/pstack-models.mdc` (`$DSH_HOME` is `<HOST_PATH> This is the one file `pstack_subagent` re-reads on every delegation, and base DSH never loads it as a rule.\n\n**Roles it defines.** Two of the manifest's 18 roles carry a route. Every other role inherits the parent route.\n\n- `bug-fix` → `magpie/workbuddy/deepseek-v4.1-flash` with effort `low`\n- `judgment and prose` → `magpie/workbuddy/minimax-m3.1-flash` with effort `high`\n\nThe manifest itself lists these shapes. Single roles take `roleIndex: null`. `arena runners`, `architect runners`, and `interrogate reviewers` are automatic panels that fan out one child per list entry. `arena cross-judge pool` and `swarm workers` take a `roleIndex` to select one entry.\n\n**The executor I dispatched.** I picked `bug-fix`, a role the file explicitly configures. The child resolved to route `magpie/workbuddy/deepseek-v4.1-flash` at effort `low`, matching the file line exactly. It read the config and reported the same two roles. I confirmed its output myself against the file.\n\n**One note.** The workspace README.md does not contain the role routes. It only names the probe and describes the task, so it is a task description rather than a copy of the config. If you wanted the README to be the config source, that file is still to be written.\n\n**What the next engineer inherits.** The role file is the single point of truth for delegation routes. Editing it affects the next child, never a running one, so changes are safe to make mid-session.",
+    "userText": "先确认当前的 pstack 角色模型配置文件是否存在、里面有哪些角色路由，然后按其中一个已配置的角色派一个执行者，说明它用的路由。",
+    "userTexts": [
+      "先确认当前的 pstack 角色模型配置文件是否存在、里面有哪些角色路由，然后按其中一个已配置的角色派一个执行者，说明它用的路由。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 3,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "list_agents",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_skill",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=setup-pstack", "toolCalls=11", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:27:34.136Z"
+}

@@ -1,0 +1,513 @@
+{
+  "phase": "adapted",
+  "environment": "base",
+  "updatedAt": "2026-11-13T16:40:02.477Z",
+  "lastBatchId": "adapted-base-20261114002555",
+  "lastMode": "full",
+  "lastScope": [
+    "capability-askquestion",
+    "capability-cloud-base-branch",
+    "capability-environment-cloud",
+    "capability-environment-local",
+    "capability-file-attachments",
+    "capability-grep-glob",
+    "capability-inherit-parent",
+    "capability-model-route",
+    "capability-non-claude-route",
+    "capability-open-a-todolist",
+    "capability-poteto-agent",
+    "capability-readonly-false",
+    "capability-readonly-true",
+    "capability-render-generated-image",
+    "capability-render-mermaid-diagram",
+    "capability-render-screenshot",
+    "capability-render-svg-chart",
+    "capability-render-video",
+    "capability-resume",
+    "capability-role-file",
+    "capability-role-value",
+    "capability-run-in-background",
+    "capability-skill-loading",
+    "capability-subagent-general",
+    "capability-task"
+  ],
+  "scenarioIds": [
+    "capability-askquestion",
+    "capability-cloud-base-branch",
+    "capability-environment-cloud",
+    "capability-environment-local",
+    "capability-file-attachments",
+    "capability-grep-glob",
+    "capability-inherit-parent",
+    "capability-model-route",
+    "capability-non-claude-route",
+    "capability-open-a-todolist",
+    "capability-poteto-agent",
+    "capability-readonly-false",
+    "capability-readonly-true",
+    "capability-render-generated-image",
+    "capability-render-mermaid-diagram",
+    "capability-render-screenshot",
+    "capability-render-svg-chart",
+    "capability-render-video",
+    "capability-resume",
+    "capability-role-file",
+    "capability-role-value",
+    "capability-run-in-background",
+    "capability-skill-loading",
+    "capability-subagent-general",
+    "capability-task"
+  ],
+  "scenarios": [
+    {
+      "id": "capability-askquestion",
+      "capturedAt": "2026-11-13T16:25:55.985Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 0,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-subagent-general",
+      "capturedAt": "2026-11-13T16:28:25.562Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 0,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-cloud-base-branch",
+      "capturedAt": "2026-11-13T16:25:56.010Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 1,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-role-file",
+      "capturedAt": "2026-11-13T16:27:34.136Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 1,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-poteto-agent",
+      "capturedAt": "2026-11-13T16:25:56.063Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 10,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-render-video",
+      "capturedAt": "2026-11-13T16:27:24.612Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 10,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-readonly-false",
+      "capturedAt": "2026-11-13T16:25:56.042Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 11,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-resume",
+      "capturedAt": "2026-11-13T16:27:33.959Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 11,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-environment-cloud",
+      "capturedAt": "2026-11-13T16:25:55.990Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 2,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-environment-local",
+      "capturedAt": "2026-11-13T16:25:55.990Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 3,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-render-mermaid-diagram",
+      "capturedAt": "2026-11-13T16:26:40.898Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 3,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-file-attachments",
+      "capturedAt": "2026-11-13T16:25:55.986Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 4,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-readonly-true",
+      "capturedAt": "2026-11-13T16:26:36.767Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 4,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-render-svg-chart",
+      "capturedAt": "2026-11-13T16:27:23.831Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 4,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-grep-glob",
+      "capturedAt": "2026-11-13T16:25:55.989Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 5,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-render-generated-image",
+      "capturedAt": "2026-11-13T16:26:36.985Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 5,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-task",
+      "capturedAt": "2026-11-13T16:28:57.562Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 5,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-inherit-parent",
+      "capturedAt": "2026-11-13T16:25:55.990Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 6,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-role-value",
+      "capturedAt": "2026-11-13T16:27:43.830Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 6,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-model-route",
+      "capturedAt": "2026-11-13T16:25:55.988Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 7,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-render-screenshot",
+      "capturedAt": "2026-11-13T16:27:16.938Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 7,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-non-claude-route",
+      "capturedAt": "2026-11-13T16:25:56.040Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 8,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-run-in-background",
+      "capturedAt": "2026-11-13T16:28:00.835Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 8,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-open-a-todolist",
+      "capturedAt": "2026-11-13T16:25:56.032Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 9,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    },
+    {
+      "id": "capability-skill-loading",
+      "capturedAt": "2026-11-13T16:28:11.784Z",
+      "batchId": "adapted-base-20261114002555",
+      "environment": {
+        "worker": 9,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "base",
+          "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+          "kind": "base",
+          "enabledPluginPackages": []
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+      }
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "scenarioId": "capability-render-svg-chart",
+  "phase": "adapted",
+  "environment": {
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-ea6f7f7c-5a94-4fc1-99d7-17aafa3700a9",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; echo ---; cat flow.mmd; echo ---; which mmdc npx node python3"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 180 npx -y @mermaid-js/mermaid-cli@11 -i flow.mmd -o artifacts/flow.svg 2>&1 | tail -20; ls "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache && timeout 300 npx -y @mermaid-js/mermaid-cli@11 -i flow.mmd "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p artifacts && export npm_config_cache=$PWD/.npmcache && timeout 300 npx -y @mermaid-js/merma"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> 2>&1; which chromium chromium-browser google-chrome google-chrome-stable 2>&1; ls /usr/bin | grep -i chrom"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache PUPPETEER_CACHE_DIR=$PWD/.pptr && timeout 300 npx -y @mermaid"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache PUPPETEER_CACHE_DIR=$PWD/.pptr && timeout 600 npx -y puppetee"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache PUPPETEER_CACHE_DIR=$PWD/.pptr && timeout 600 npx -y puppetee"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache PUPPETEER_CACHE_DIR=$PWD/.pptr && timeout 600 npx -y puppetee"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && timeout 60 curl -sI https://storage.googleapis.com/chrome-for-testing-public/157.0.8103.50/linux64/chrome-headless-shell-linux64.zip | head -5; echo \"=== npm mirror ===\"; timeo"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p .pptr/chrome-headless-shell/linux-157.0.8103.50 && timeout 300 curl -sL -o chs.zip https://"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && unzip -q -o chs.zip -d .pptr/chrome-headless-shell/linux-157.0.8103.50 && find .pptr -name chrome-he"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache PUPPETEER_CACHE_DIR=$PWD/.pptr && timeout 300 npx -y @mermaid"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && printf '{\"args\":[\"--no-sandbox\",\"--disable-setuid-sandbox\"]}' > pptr.json && export npm_config_cache"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && export npm_config_cache=$PWD/.npmcache PUPPETEER_CACHE_DIR=$PWD/.pptr && timeout 300 npx -y @mermaid"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf chs.zip .npmcache .pptr pptr.json && ls -la . artifacts && head -c 200 artifacts/flow.svg"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "你的目标是把工作区里的 `flow.mmd` 状态图渲染成一张 SVG 图片放进 `artifacts/`。我做了这件事，没有改动 `flow.mmd` 本身。\n\n**结果。** `artifacts/flow.svg` 是真正的矢量 SVG，由 mermaid-cli 渲染生成。同时留了一份 `artifacts/flow.png` 方便在聊天里直接预览。\n\n![状态图](artifacts/flow.png)\n\n图的内容是支付状态流转。初始态进入「待支付」，再按「付款」到「已支付」或按「取消」到「已取消」，两个终态各自回到结束态。\n\n**过程中的两个障碍。** npm 的默认缓存目录是只读的，我把缓存指到工作区内。mermaid-cli 依赖 Chrome，puppeteer 的自动下载在这个环境断连，我改为手动下载同版本的 chrome-headless-shell，并加上 `--no-sandbox` 启动参数，因为该环境的用户命名空间被禁用。这些临时文件已清理。\n\n**给你继承的东西。** 只有 `artifacts/` 下两个产物和工作区根部的 `flow.mmd`。若要重新生成，需要沿用上面的缓存与浏览器路径设置。",
+    "userText": "工作区里有一个状态图定义 flow.mmd。请把它渲染成一张 SVG 图片文件放进 artifacts/ 目录，然后把这张图给我看。",
+    "userTexts": [
+      "工作区里有一个状态图定义 flow.mmd。请把它渲染成一张 SVG 图片文件放进 artifacts/ 目录，然后把这张图给我看。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 16,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        },
+        {
+          "name": "read_image",
+          "attempts": 1,
+          "failures": 0,
+          "finalStatus": "ok"
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=18", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114002555",
+  "capturedAt": "2026-11-13T16:27:23.831Z"
+}
