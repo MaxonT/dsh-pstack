@@ -46,7 +46,7 @@
 Each Cursor feature is mapped to DeepSeek Harness in the [runtime mapping](./port/dsh.md). The port is checked against real DSH Web sessions. The [Port verification](#-port-verification) section explains how.
 
 > [!IMPORTANT]
-> Requires DSH `>=0.2.2-rc.1` and Node.js `>=24.21.1`. See the [script registry (in Chinese)](./port/AGENTS.md#脚本登记) for the extra runtime requirements of bundled workflows.
+> Requires DSH `>=0.2.2-rc.1` and Node.js `>=24.21.1`. See each bundled script's help for its extra runtime requirements.
 
 <a id="quick-start"></a>
 
@@ -170,7 +170,6 @@ Install dsh-pstack without these plugins, then enable only the capabilities you 
 | Persistent terminals | `@deepseek-ai/dsh-experimental-terminal-bundle` | Persistent shell and REPL sessions for CLI and TUI verification. |
 | MCP integrations | `@deepseek-ai/dsh-mcp-client` | Tools from explicitly configured MCP servers; no server is configured by default. |
 | Autonomous loops | `@deepseek-ai/dsh-experimental-ralph-bundle` | A foreground loop that starts a fresh child each round, rather than a persistent Session loop or event watcher. |
-| Agent Teams (incompatible) | `@deepseek-ai/dsh-experimental-agent-team-profile` | Lead and teammate roles and a shared task board. Do not enable it in a profile that offers the pstack root presets. Both own delegation and coordination, and while the Agent Teams service runs, the pstack root preset fails to load with `AGENT_TEAMS_CONFLICT`. The Web app still starts; the `poteto-mode` and `poteto-mode-creator` cards show a load failure in Settings → Agent presets. |
 
 For browser verification, choose one provider:
 
@@ -180,20 +179,17 @@ For browser verification, choose one provider:
 
 Enable packages through **Plugins → Add plugin**, then restart the profile when required. Most packages ship with DSH; `@deepseek-ai/dsh-cua-bundle` installs on demand. All except the MCP client are experimental.
 
-> [!NOTE]
-> **Agent Teams is probed, not predeclared.** A capability probe runs the real plugin and records what the session and UI show. If the current root-preset guard rejects the combination, the observed failure is written into `port/dsh.md` and this README; the probe does not assume the conflict in advance.
-
-Steps that depend on a disabled plugin report skipped or blocked, never passed. See the [DSH adaptation guide](./pstack/docs/harness/dsh.md#optional-plugins) for setup and fallbacks.
+Steps that depend on a disabled plugin report skipped or blocked, never passed. See the [DSH adaptation guide](./pstack/docs/harness/dsh.md) for setup and fallbacks.
 
 ## 🧪 Port verification
 
-The port is checked against real DeepSeek Harness Web sessions, not by comparing text with upstream. [playground/docs/verification-loop.md](./playground/docs/verification-loop.md) documents the full procedure.
+The port is checked against real DeepSeek Harness Web sessions, not by comparing text with upstream. [playground/docs/workflow.md](./playground/docs/workflow.md) documents the full procedure.
 
 - **Raw baseline.** The generator copies upstream pstack into `playground/raw/pstack` and installs nothing else. `playground/raw/dsh.md` states each upstream capability as one of three cases: native in base DSH, provided only by an official optional plugin, or absent. The generator copies that document and rewrites link references only, so the upstream wording stays intact.
 - **Capability-driven runs.** Capability probes are generated from pstack usage and `raw/dsh.md` at authoring time; the repository does not predefine a capability list. Skill and playbook files are consumers, not per-file test requirements.
 - **Semantic review.** A skill load only proves the skill was reachable. Each scenario records a separate verdict (`supported`, `gap`, or `inconclusive`) with a reviewer and a reason, and the adapted run records `verified`, `not-verified`, or `inconclusive`.
 - **Adapted re-check.** Review findings drive [port/dsh.md](./port/dsh.md). The adapted package is rebuilt with `vp run build`, then the same scenarios rerun to confirm the mapped behavior.
-- **Environment matrix.** Capability probes run in `base` by default. `agent-team` is a separate conflict environment used only by an explicitly requested pstack conflict probe.
+- **Environment matrix.** Capability probes run in `base` by default. `render` is the rendering comparison environment. `agent-team` is a separate conflict environment used only by an explicitly requested pstack conflict probe.
 
 ## ⚠️ Remaining gaps
 
@@ -203,7 +199,7 @@ These limitations remain even after all optional plugins that can coexist with p
 |---|---|
 | Cursor platform services | No Automations, Cursor webhooks, `SendToUser`, cloud agents, or persistent cloud Projects. |
 | Bugbot | Cannot start, configure, or wait for Bugbot. Existing Bugbot comments can still be handled as PR reviews. |
-| PR orchestration | No model-side change-request tool or Agent Teams-style PR tracking board and shared ledger. `watch-pr` still provides stack verdicts. |
+| PR orchestration | No model-side change-request tool or shared PR tracking board and ledger. `watch-pr` still provides stack verdicts. |
 | Mode switching | No Option+Enter toggle or mid-session mode switch. Select `poteto-mode` or `poteto-mode-creator` at session creation; other presets invoke `/poteto-mode` for each task. |
 | Event-driven loops | No forge event subscription. Local goals, schedules, and watchers are not equivalent. |
 | Diagram rendering | No built-in renderer. Charts return Mermaid text; render an image with your own tools when needed. |
