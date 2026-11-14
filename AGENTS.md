@@ -32,6 +32,12 @@ release. Add a tool name to select part of the graph. For example, run
 
 # AGENTS.md
 
+## Project docs
+
+- 修改模块前阅读 `docs/architecture.md`；模块边界或入口变化时同步更新。
+- 为概念命名时阅读 `docs/glossary.md`；引入新概念时补充术语。
+- 开始任何仓库任务前，阅读 `docs/decisions/AGENTS.md`，按其中的查找规则阅读与任务相关的记录。
+
 ## 总体流程
 
 `playground` → `port` + `src` → 根 `README` → 发布。
@@ -39,7 +45,7 @@ release. Add a tool name to select part of the graph. For example, run
 - `playground` 运行真实会话验证，产出能力缺口和证据分析。
 - `port` 维护最终 dsh 适配文档、发布兼容元数据和交付边界。
 - `src` 根据 playground 结论和适配需求实现 Host/Client 代码。
-- 根 `README` 记录使用方式、能力边界和发布兼容表。
+- 根 `README` 需要同步更新已有内容：兼容表、技能与能力状态、能力限制和最终适配结果；删除与当前实现不符的旧描述。
 - 发布由用户手动执行；agent 停在 release-ready。
 
 不能绕过 playground 直接改 `port` 或 `src` 的验证结论；raw 和 adapted 的阶段隔离按 playground 规则执行。
@@ -53,6 +59,7 @@ release. Add a tool name to select part of the graph. For example, run
 | `playground/` | [playground/AGENTS.md](./playground/AGENTS.md) |
 | `port/` | [port/AGENTS.md](./port/AGENTS.md) |
 | `src/` | [src/AGENTS.md](./src/AGENTS.md) |
+| `skills/` | [skills/AGENTS.md](./skills/AGENTS.md) |
 
 - 目录文档只写本目录规则，其他目录只放指针，不重复内容。
 - 跨目录的架构、术语和决策放在 `docs/`。
