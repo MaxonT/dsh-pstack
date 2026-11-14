@@ -3,6 +3,12 @@ import type { EnvironmentMatrix } from "../types.ts";
 /** Capability probes run in base unless a probe explicitly requires a special environment. */
 export const environments: readonly EnvironmentMatrix[] = [
   {
+    id: "preview",
+    description: "手动预览专用环境，仅供 playground:open 启动 adapted/preview worker，不参与 probe 选择。",
+    kind: "capability",
+    enabledPluginPackages: [],
+  },
+  {
     id: "base",
     description: "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
     kind: "base",
