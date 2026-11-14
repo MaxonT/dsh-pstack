@@ -119,7 +119,7 @@ vp run playground:collect -- --phase adapted --environment base
 
 ## 分析分流
 
-每个问题只能落到以下一种结论：
+每个问题只能落到以下一种结论。这里的“类型”是后续动作分流，不是能力类别；能力类别见 [evidence-analysis.md](./evidence-analysis.md)。
 
 - `dsh-md`：改当前阶段对应的 dsh.md；raw 改 `playground/raw/dsh.md`，adapted 改 `port/dsh.md`，必要时同步 `dsh.zh.md`。
 - `plugin`：改插件、工具或预设，build 后跑受影响场景。
