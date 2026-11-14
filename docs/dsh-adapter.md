@@ -32,7 +32,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 ## Local replacements
 ```
 
-`raw/dsh.md` 不写 `Plugin tools`、`Local replacements` 或 `Optional plugins`。`port/dsh.md` 也不写 `Optional plugins`；具体可选项和安装方式放在 `port/AGENTS.md` 或 README。
+`raw/dsh.md` 不写 `Plugin tools`、`Local replacements` 或 `Optional plugins`。`port/dsh.md` 也不写 `Optional plugins`；具体可选项和安装方式放在根 `README.md`。
 
 ## 模板块规则
 
