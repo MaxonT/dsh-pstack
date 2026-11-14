@@ -558,10 +558,11 @@ function blockedRecord(input: {
   sessionFile?: string;
   sessionId?: string;
   reason: string;
+  /** The attempt start stamp shared with the record and source filenames. */
+  capturedAt: string;
 }): RunRecord {
   const config = readPlaygroundConfig(input.configFile);
   const matrix = environmentMatrix(input.paths.environmentId);
-  const capturedAt = new Date().toISOString();
   const sessionFile = input.sessionFile;
   const session = sessionFile
     ? (() => {
@@ -602,7 +603,7 @@ function blockedRecord(input: {
       blockedReason: input.reason,
     }),
     batchId: process.env.PLAYGROUND_BATCH_ID,
-    capturedAt,
+    capturedAt: input.capturedAt,
   };
 }
 
@@ -708,6 +709,7 @@ async function main(): Promise<void> {
       sessionFile: reason.includes("external stop") ? lastSession?.file : undefined,
       sessionId: reason.includes("external stop") ? lastSession?.id : undefined,
       reason,
+      capturedAt,
     });
     if (!(error instanceof InfraError)) {
       record.artifacts.observed.push("scenario execution did not complete");
