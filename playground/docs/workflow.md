@@ -127,7 +127,7 @@ vp run playground:collect -- --phase adapted --environment base
 - `ignore-environment`：记录环境权限、凭据、网络或无头限制。
 - `待你判断`：证据不足或分类会影响方案，交用户决定。
 
-raw 分析只对照 `playground/raw/dsh.md`，adapted 分析只对照 `port/dsh.md`。结论必须由证据和根因支撑，不能把单一观察直接等同于适配说明缺陷。
+raw 分析只对照 `playground/raw/dsh.md`，adapted 分析只对照 `port/dsh.md`。具体按能力类别的分析维度和 finding 格式见 [evidence-analysis.md](./evidence-analysis.md)，结论必须由证据和根因支撑，不能把单一观察直接等同于适配说明缺陷。
 
 ## dsh.md
 

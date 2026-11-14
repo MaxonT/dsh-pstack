@@ -46,6 +46,7 @@ adapted 验证 pstack 的适配实现在真实 DSH Web 会话中是否成立。�
 ## 通过条件
 
 - 每个 probe 的机械断言、rubric、实际 tool call、截图和产物共同支持结论。
+- 分析维度按 [evidence-analysis.md](./evidence-analysis.md) 的能力类别执行，不写成一段总体结论。
 - 非文本产物必须看到实际呈现，不能只用源码、路径或文件卡片。
 - 不可用、被跳过或环境受限时，按 `ignore-environment` 或 `待你判断` 记录。
 - 不做“没看到失败就当通过”的推断。
