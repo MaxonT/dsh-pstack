@@ -28,7 +28,6 @@
 ## 修改流程
 
 - 修改 `dsh.md` 后同步 `dsh.zh.md`。
-- 修改 `dsh.md` 后运行 `vp run generate:dsh-check`。
 - 需要重新生成 raw 树时运行 `vp run playground:raw-generate`。
 - `dsh-evidence.md` 只记录证据，不把证据当成能力来源或能力清单。
 

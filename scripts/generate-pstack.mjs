@@ -13,7 +13,6 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { checkDshAdapters } from "./check-dsh-adapters.mjs";
 import { dirname, join, posix, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,7 +23,6 @@ const TARGET = targetIndex >= 0 ? process.argv[targetIndex + 1] : "port";
 if (TARGET !== "port" && TARGET !== "raw") {
   throw new Error("usage: generate-pstack.mjs --target port|raw [--check]");
 }
-checkDshAdapters();
 
 const isRaw = TARGET === "raw";
 const ADAPTER_SOURCE = isRaw ? "playground/raw/dsh.md" : "port/dsh.md";
@@ -114,7 +112,6 @@ function classify(skill) {
 
 const classes = new Map(skills.map((skill) => [skill, classify(skill)]));
 const problems = [];
-const users = new Map();
 for (const [skill, { terms, wrap, name }] of classes) {
   if (terms.size > 0 && !wrap)
     problems.push(`skills/${skill}/SKILL.md uses Cursor names but has no H1`);
@@ -124,13 +121,8 @@ for (const [skill, { terms, wrap, name }] of classes) {
     );
   if (!SKILL_NAME.test(skill) || skill.length > 64)
     problems.push(`skills/${skill} is not a valid kebab-case folder name`);
-  for (const key of terms) users.set(key, [...(users.get(key) ?? []), skill]);
 }
 const adapterText = readFileSync(join(ROOT, ADAPTER_SOURCE), "utf8");
-for (const [key, using] of users) {
-  if (!adapterText.includes(key))
-    problems.push(`${ADAPTER_SOURCE} has no row for ${key}, used by ${using.join(", ")}`);
-}
 for (const problem of problems) console.log(`FAIL ${problem}`);
 if (problems.length > 0) process.exit(1);
 

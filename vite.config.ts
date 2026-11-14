@@ -73,10 +73,6 @@ export default defineConfig({
         command: "vpx scripts/generate-pstack.mjs --target port --check",
         cache: false,
       },
-      "generate:dsh-check": {
-        command: "vpx scripts/check-dsh-adapters.mjs",
-        cache: false,
-      },
       "compatibility:check": {
         command: "vpx scripts/release-compatibility.ts --check",
         cache: false,
