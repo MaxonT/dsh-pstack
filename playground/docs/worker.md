@@ -22,6 +22,16 @@
 - scenario workspace 初始化本地 `git init`，不设置 origin。
 - worker 不携带 Git/GitHub 凭证。
 
+## 直接预览
+
+需要手动打开 adapted worker 的 Web URL 查看插件效果时：
+
+```sh
+vp run playground:open
+```
+
+该命令固定启动 `adapted/base` 的 w0，只启动 Web 服务并输出 URL，不打开浏览器、不处理 preview notice、不截图、不写 readiness。需要重建干净环境时，仍使用带参数的 `prepare`。
+
 ## 准备和运行
 
 - `prepare` 构建 worker home/profile，启动 Web，并检查 URL 可达性。
