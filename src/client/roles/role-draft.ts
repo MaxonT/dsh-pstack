@@ -1,6 +1,6 @@
 /** Draft algebra for the role settings page. */
 
-import type { RoleView, RouteView } from "../role-wire.ts";
+import type { RoleView, RouteView } from "../../roles/role-wire.ts";
 
 export interface RoleDraft {
   readonly routes: RouteView[];

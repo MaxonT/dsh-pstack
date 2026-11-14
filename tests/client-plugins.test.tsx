@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import {
   RecommendedPluginsView,
   type PluginManagerApi,
-} from "../src/client/RecommendedPluginsPage.tsx";
+} from "../src/client/pages/RecommendedPluginsPage.tsx";
 import { catalogs, type PstackTranslations } from "../src/client/locales/index.ts";
 import { createPluginManagerApi } from "../src/client/index.ts";
 

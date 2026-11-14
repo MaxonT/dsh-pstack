@@ -1,45 +1,49 @@
 /**
  * Role-file editing behind the settings page.
  *
- * A save changes or removes one logical role entry and preserves the other
- * logical lines. The editor normalizes line endings and the final newline.
- * Concrete routes are validated against the live model catalogue before the
- * first byte is written, so a rejected save leaves the file unchanged.
+ * A save changes or removes one logical role and preserves every other role and
+ * the budget. The editor mutates the JSON document, validates concrete routes
+ * against the live model catalogue before the first byte is written, and leaves
+ * a rejected save's file unchanged.
  */
 
-import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
-import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 
 import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
 
-import { collectCatalogue } from "./models.ts";
+import { collectCatalogue } from "../models.ts";
 import {
   isBudgetRowBlocked,
   planBudget,
   parseBudgetApplyRequest,
-  renderBudgetText,
   type BudgetApplyRequest,
 } from "./budget.ts";
-import { parseRoleFileDocument, isRoleLineFor } from "./role-file.ts";
+import { ROLE_MANIFEST, findRole } from "./role-manifest.ts";
+import { validateRoleRouteShape, validateRouteParts, type Route } from "./route.ts";
 import {
+  emptyRoleDocument,
   parseRoleConfiguration,
+  parseRoleDocument,
   readRoleConfiguration,
+  renderRoutes,
+  serializeRoleDocument,
+  writeRoleDocument,
   type RoleConfiguration,
   type RoleEntry,
-  type Route,
-} from "./role-config.ts";
-import { ROLE_MANIFEST, findRole } from "./role-manifest.ts";
-import { renderRouteValue, validateRoleRouteShape, validateRouteParts } from "./route.ts";
+  type RoleFileDocument,
+} from "./role-store.ts";
 import {
   parseSaveRoleRequest,
+  type BudgetApplyResult,
   type RoleFileSnapshot,
   type RoleView,
   type RouteView,
   type SaveRoleRequest,
   type SaveRoleResult,
-  type BudgetApplyResult,
 } from "./role-wire.ts";
+
+/** A catalogue stand-in for saves that never consult the model directory. */
+const EMPTY_CATALOGUE = { providers: [], truncated: false } as const;
 
 /** Project one parsed file onto the manifest. */
 export function snapshotFromConfiguration(config: RoleConfiguration): RoleFileSnapshot {
@@ -67,10 +71,7 @@ export function snapshotFromConfiguration(config: RoleConfiguration): RoleFileSn
     status: "loaded",
     ...(config.budget === undefined ? {} : { budget: config.budget }),
     roles: ROLE_MANIFEST.map((role) => roleView(role.key, role.shape, config.roles.get(role.key))),
-    issues: config.issues.map((issue) => ({
-      ...(issue.line === undefined ? {} : { line: issue.line }),
-      message: issue.message,
-    })),
+    issues: config.issues.map((issue) => ({ message: issue.message })),
     canSave: true,
   };
 }
@@ -80,7 +81,6 @@ function roleView(key: string, shape: "single" | "list", entry: RoleEntry | unde
     key,
     shape,
     configured: entry !== undefined,
-    ...(entry === undefined ? {} : { line: entry.line }),
     routes: entry === undefined ? [] : entry.routes.map(routeView),
     issues: entry === undefined ? [] : [...entry.issues],
   };
@@ -167,51 +167,6 @@ export function validateSaveRequest(
   return { ok: true, key: spec.key, routes };
 }
 
-/** Replace or append one role line, preserving the other logical lines. */
-export function updateRoleText(text: string, key: string, value: string): string {
-  const { bom, eol, body } = splitDocumentText(text);
-  const document = parseRoleFileDocument(stripTrailingEol(body), "");
-  const matches: number[] = [];
-  document.lines.forEach((line, index) => {
-    if (isRoleLineFor(line, key)) matches.push(index);
-  });
-  const target = matches.at(-1) ?? -1;
-  const matching = new Set(matches);
-  const lines = document.lines.flatMap((line, index) => {
-    if (index === target) return [`${key}: ${value}`];
-    if (matching.has(index)) return [];
-    return [line.raw];
-  });
-  if (target === -1) {
-    if (lines.length > 0 && lines[lines.length - 1] === "") lines.pop();
-    lines.push(`${key}: ${value}`);
-  }
-  return `${bom}${lines.join(eol)}${eol}`;
-}
-
-/** Remove every matching role line. Clearing an absent role is a no-op. */
-export function removeRoleText(text: string, key: string): string {
-  const { bom, eol, body } = splitDocumentText(text);
-  const document = parseRoleFileDocument(stripTrailingEol(body), "");
-  const remaining = document.lines
-    .filter((line) => !isRoleLineFor(line, key))
-    .map((line) => line.raw);
-  if (remaining.length === document.lines.length) return text;
-  return remaining.length === 0 ? "" : `${bom}${remaining.join(eol)}${eol}`;
-}
-
-/** Split a document into BOM, dominant EOL, and body. */
-function splitDocumentText(text: string): { bom: string; eol: string; body: string } {
-  const bom = text.startsWith("\uFEFF") ? "\uFEFF" : "";
-  const body = bom === "" ? text : text.slice(1);
-  const eol = body.includes("\r\n") ? "\r\n" : "\n";
-  return { bom, eol, body };
-}
-
-function stripTrailingEol(body: string): string {
-  return body.replace(/\r?\n$/, "");
-}
-
 /** Save one role and return the reloaded snapshot. */
 export async function saveRoleConfiguration(
   path: string,
@@ -227,38 +182,14 @@ export async function saveRoleConfiguration(
     return { ok: false, reason: describeError(error) };
   }
 
-  const current = readRoleConfiguration(path);
-  if (current.status === "unreadable") {
-    return { ok: false, reason: `the role file is unreadable: ${current.reason}` };
+  const initial = readRoleConfiguration(path);
+  if (initial.status === "unreadable") {
+    return { ok: false, reason: `the role file is unreadable: ${initial.reason}` };
   }
 
-  // Read the role file at most once per path. The concrete-route branch reads it after the
-  // catalogue await so a concurrent writer between validation and save is not clobbered.
-  let text = "";
-  const readText = (): { ok: true; text: string } | { ok: false; reason: string } => {
-    if (current.status !== "loaded") return { ok: true, text: "" };
-    try {
-      return { ok: true, text: readFileSync(path, "utf8") };
-    } catch (error) {
-      return { ok: false, reason: `the role file could not be read: ${describeError(error)}` };
-    }
-  };
-
-  let next: string;
-  if (parsed.routes.length === 0) {
-    const validation = validateSaveRequest(parsed, { providers: [], truncated: false });
-    if (!validation.ok) return validation;
-    const read = readText();
-    if (!read.ok) return read;
-    text = read.text;
-    next = removeRoleText(text, validation.key);
-  } else if (parsed.routes.every((route) => route.kind === "inherit")) {
-    const validation = validateSaveRequest(parsed, { providers: [], truncated: false });
-    if (!validation.ok) return validation;
-    const read = readText();
-    if (!read.ok) return read;
-    text = read.text;
-    next = updateRoleText(text, validation.key, renderRouteValue(validation.routes));
+  let validation: ReturnType<typeof validateSaveRequest>;
+  if (parsed.routes.length === 0 || parsed.routes.every((route) => route.kind === "inherit")) {
+    validation = validateSaveRequest(parsed, EMPTY_CATALOGUE);
   } else {
     let catalogue: Awaited<ReturnType<typeof collectCatalogue>>;
     try {
@@ -271,20 +202,47 @@ export async function saveRoleConfiguration(
       };
     }
     signal.throwIfAborted();
-    const validation = validateSaveRequest(parsed, catalogue);
-    if (!validation.ok) return validation;
-    const read = readText();
-    if (!read.ok) return read;
-    text = read.text;
-    next = updateRoleText(text, validation.key, renderRouteValue(validation.routes));
+    validation = validateSaveRequest(parsed, catalogue);
+  }
+  if (!validation.ok) return validation;
+  const key = validation.key;
+  const nextRoutes = validation.routes;
+
+  // Re-read after the catalogue await so a concurrent writer is not clobbered.
+  const current = readRoleConfiguration(path);
+  if (current.status === "unreadable") {
+    return { ok: false, reason: `the role file is unreadable: ${current.reason}` };
+  }
+  if (current.status === "missing" && nextRoutes.length === 0) {
+    return { ok: true, snapshot: snapshotFromConfiguration(current) };
   }
 
-  if (next === text) {
-    return { ok: true, snapshot: snapshotFromConfiguration(readRoleConfiguration(path)) };
+  let text = "";
+  let document = emptyRoleDocument();
+  if (current.status === "loaded") {
+    try {
+      text = readFileSync(path, "utf8");
+      document = parseRoleDocument(text);
+    } catch (error) {
+      return { ok: false, reason: `the role file could not be edited: ${describeError(error)}` };
+    }
+  }
+
+  const roles = { ...document.roles };
+  if (nextRoutes.length === 0) delete roles[key];
+  else roles[key] = renderRoutes(nextRoutes);
+  const updated: RoleFileDocument = {
+    version: 1,
+    ...(document.budget === undefined ? {} : { budget: document.budget }),
+    roles,
+  };
+  const next = serializeRoleDocument(updated);
+  if (current.status === "loaded" && next === text) {
+    return { ok: true, snapshot: snapshotFromConfiguration(current) };
   }
 
   try {
-    writeAtomically(path, next);
+    writeRoleDocument(path, updated);
   } catch (error) {
     return { ok: false, reason: `the role file could not be written: ${describeError(error)}` };
   }
@@ -328,26 +286,27 @@ export async function saveBudgetConfiguration(
     return { ok: false, reason: `the role file is unreadable: ${current.reason}` };
   }
   let text = "";
+  let document = emptyRoleDocument();
   if (current.status === "loaded") {
     try {
       text = readFileSync(path, "utf8");
+      document = parseRoleDocument(text);
     } catch (error) {
-      return { ok: false, reason: `the role file could not be read: ${describeError(error)}` };
+      return { ok: false, reason: `the role file could not be edited: ${describeError(error)}` };
     }
   }
 
   try {
-    const document = parseRoleFileDocument(text, path);
-    const inputs = ROLE_MANIFEST.map((spec) => ({
-      key: spec.key,
-      shape: spec.shape,
-      autoPanel: spec.autoPanel,
-      configured: document.roles.has(spec.key),
-      routes: document.roles.get(spec.key)?.routes ?? [
-        { kind: "inherit" as const, alias: "inherit-parent" as const },
-      ],
-      hasIssues: (document.roles.get(spec.key)?.issues.length ?? 0) > 0,
-    }));
+    const inputs = ROLE_MANIFEST.map((spec) => {
+      const entry = current.status === "loaded" ? current.roles.get(spec.key) : undefined;
+      return {
+        key: spec.key,
+        shape: spec.shape,
+        configured: entry !== undefined,
+        routes: entry?.routes ?? [{ kind: "inherit" as const, alias: "inherit-parent" as const }],
+        hasIssues: (entry?.issues.length ?? 0) > 0,
+      };
+    });
     const plan = planBudget(inputs, catalogue, parsed);
     const blocked = plan.rows.filter(isBudgetRowBlocked);
     if (blocked.length > 0) {
@@ -356,29 +315,28 @@ export async function saveBudgetConfiguration(
         reason: `the budget needs attention for: ${blocked.map((row) => row.key).join(", ")}`,
       };
     }
-    const next = renderBudgetText(text, plan, updateRoleText);
-    if (next === text) {
-      return { ok: true, snapshot: snapshotFromConfiguration(readRoleConfiguration(path)) };
+
+    const roles = { ...document.roles };
+    for (const row of plan.rows) {
+      if (row.status === "skipped") continue;
+      if (routeSignature(row.routes) === routeSignature(row.previous)) continue;
+      if (row.routes.length === 0) delete roles[row.key];
+      else roles[row.key] = renderRoutes(row.routes);
     }
-    writeAtomically(path, next);
+    const updated: RoleFileDocument = { version: 1, budget: plan.budget, roles };
+    const next = serializeRoleDocument(updated);
+    if (current.status === "loaded" && next === text) {
+      return { ok: true, snapshot: snapshotFromConfiguration(current) };
+    }
+    writeRoleDocument(path, updated);
     return { ok: true, snapshot: snapshotFromConfiguration(parseRoleConfiguration(next, path)) };
   } catch (error) {
     return { ok: false, reason: describeError(error) };
   }
 }
 
-function writeAtomically(path: string, text: string): void {
-  mkdirSync(dirname(path), { recursive: true });
-  const temporary = `${path}.${process.pid}.${randomUUID()}.tmp`;
-  try {
-    writeFileSync(temporary, text, "utf8");
-    renameSync(temporary, path);
-  } catch (error) {
-    try {
-      rmSync(temporary, { force: true });
-    } catch {}
-    throw error;
-  }
+function routeSignature(routes: readonly Route[]): string {
+  return JSON.stringify(routes);
 }
 
 function describeError(error: unknown): string {

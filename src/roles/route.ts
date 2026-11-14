@@ -124,13 +124,3 @@ export function validateRoleRouteShape(
   }
   return undefined;
 }
-
-/** Stable id for one configured route; the label is rendered separately. */
-export function routeId(route: Route): string {
-  let hash = 2166136261;
-  for (const char of renderRouteValue([route])) {
-    hash ^= char.codePointAt(0) ?? 0;
-    hash = Math.imul(hash, 16777619);
-  }
-  return `route-${(hash >>> 0).toString(36)}`;
-}

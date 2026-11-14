@@ -9,8 +9,6 @@ const en = {
     "Work directly with the pstack workflow and should usually be enabled.",
   groupNormal: "Optional",
   groupNormalDescription: "Useful for specific workflows. Enable only when the workflow needs it.",
-  groupConflict: "Conflicts",
-  groupConflictDescription: "Conflicts with the pstack root preset or pstack_subagent.",
   loadFailed: "Could not read plugin status: {message}",
   managerUnavailable: "Plugin manager unavailable",
   pluginEnabled: "Enabled",
@@ -18,7 +16,6 @@ const en = {
   pluginMissing: "Not installed",
   pluginUnavailable: "Unavailable",
   pluginReadOnly: "Read-only",
-  pluginConflict: "Conflict",
   enablePlugin: "Enable",
   disablePlugin: "Disable",
   enableAll: "Enable all",
@@ -53,9 +50,6 @@ const en = {
   recommendedMcpDescription: "Connect configured MCP servers. No server is configured by default.",
   recommendedRalphTitle: "Ralph loop",
   recommendedRalphDescription: "Run a foreground fresh-agent loop with structured handoff.",
-  recommendedAgentTeamTitle: "Agent Teams",
-  recommendedAgentTeamDescription:
-    "Conflicts with the pstack root preset and pstack_subagent. Enabling it makes the pstack root preset fail at startup.",
 } as const;
 
 const zh = {
@@ -65,8 +59,6 @@ const zh = {
   groupRecommendedDescription: "与 pstack 工作流直接配合，通常应启用。",
   groupNormal: "可选",
   groupNormalDescription: "用于特定工作流，按需启用。",
-  groupConflict: "冲突",
-  groupConflictDescription: "与 pstack 根预设或 pstack_subagent 冲突。",
   loadFailed: "无法读取插件状态：{message}",
   managerUnavailable: "插件管理器不可用",
   pluginEnabled: "已启用",
@@ -74,7 +66,6 @@ const zh = {
   pluginMissing: "未安装",
   pluginUnavailable: "不可用",
   pluginReadOnly: "只读",
-  pluginConflict: "冲突",
   enablePlugin: "启用",
   disablePlugin: "停用",
   enableAll: "全部启用",
@@ -105,9 +96,6 @@ const zh = {
   recommendedMcpDescription: "连接已配置的 MCP server；默认不配置任何 server。",
   recommendedRalphTitle: "Ralph 循环",
   recommendedRalphDescription: "运行带结构化交接的前台 fresh-agent 循环。",
-  recommendedAgentTeamTitle: "智能体团队",
-  recommendedAgentTeamDescription:
-    "与 pstack 根预设和 pstack_subagent 冲突。启用后 pstack 根预设会启动失败。",
 } as const satisfies Record<keyof typeof en, string>;
 
 export type PluginsKey = keyof typeof en;

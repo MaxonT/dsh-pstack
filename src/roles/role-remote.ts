@@ -18,7 +18,7 @@ import type {
 } from "@deepseek-ai/dsh-typert-protocol";
 import type { TypertContribution } from "@deepseek-ai/dsh-typert-registry";
 
-import type { CatalogueResult } from "./models.ts";
+import type { CatalogueResult } from "../models.ts";
 import { type BudgetApplyRequest, parseBudgetApplyRequest } from "./budget.ts";
 import {
   parseBudgetApplyResult,

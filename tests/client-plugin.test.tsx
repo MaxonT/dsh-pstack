@@ -4,13 +4,13 @@ import { describe, expect, it } from "vite-plus/test";
 import type { Context } from "@deepseek-ai/cordis";
 
 import { apply, inject } from "../src/client/index.ts";
-import { ROLE_COPY } from "../src/client/role-copy.ts";
-import { ROLE_MANIFEST } from "../src/role-manifest.ts";
-import type { PstackRolesNamespace } from "../src/role-remote.ts";
+import { ROLE_COPY } from "../src/client/roles/role-copy.ts";
+import { ROLE_MANIFEST } from "../src/roles/role-manifest.ts";
+import type { PstackRolesNamespace } from "../src/roles/role-remote.ts";
 import type { BundleInfo } from "@deepseek-ai/dsh-api-remotes/client";
-import { RecommendedPluginsView } from "../src/client/RecommendedPluginsPage.tsx";
+import { RecommendedPluginsView } from "../src/client/pages/RecommendedPluginsPage.tsx";
 import { catalogs, type PstackTranslations } from "../src/client/locales/index.ts";
-import { FALLBACK_LOCALE } from "../src/preset-copy.ts";
+import { FALLBACK_LOCALE } from "../src/presets/preset-copy.ts";
 
 type Dictionaries = Record<string, Record<string, string>>;
 
@@ -32,7 +32,7 @@ function translationsFrom(language = FALLBACK_LOCALE): PstackTranslations {
 
 function roleApi() {
   const snapshot = {
-    path: "/tmp/pstack-models.mdc",
+    path: "/tmp/pstack-models.json",
     status: "missing" as const,
     roles: [],
     issues: [],

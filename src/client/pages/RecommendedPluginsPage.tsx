@@ -15,14 +15,13 @@ import {
   IconRepeat,
   IconSearch,
   IconTerminal,
-  IconUsers,
   type IconComponent,
-} from "./icons.tsx";
-import { ensurePstackStyles } from "./styles.ts";
-import { messageOf } from "./message.ts";
-import { Toast, type ToastMessage } from "./toast.tsx";
-import { Button, IconButton, Spinner, Status, Switch, type StatusTone } from "./ui.tsx";
-import type { PstackTranslations, PluginsKey } from "./locales/index.ts";
+} from "../components/icons.tsx";
+import { ensurePstackStyles } from "../components/styles.ts";
+import { messageOf } from "../components/message.ts";
+import { Toast, type ToastMessage } from "../components/toast.tsx";
+import { Button, IconButton, Spinner, Status, Switch, type StatusTone } from "../components/ui.tsx";
+import type { PstackTranslations, PluginsKey } from "../locales/index.ts";
 
 ensurePstackStyles();
 
@@ -31,7 +30,7 @@ export interface PluginManagerApi {
   setBundleEnabled(name: string, enabled: boolean): Promise<ChangeResult>;
 }
 
-type PluginGroupId = "recommended" | "normal" | "conflict";
+type PluginGroupId = "recommended" | "normal";
 
 interface RelatedPlugin {
   readonly name: string;
@@ -104,19 +103,6 @@ const PLUGIN_GROUPS: readonly PluginGroup[] = [
       },
     ],
   },
-  {
-    id: "conflict",
-    titleKey: "groupConflict",
-    descriptionKey: "groupConflictDescription",
-    plugins: [
-      {
-        name: "@deepseek-ai/dsh-experimental-agent-team-profile",
-        titleKey: "recommendedAgentTeamTitle",
-        descriptionKey: "recommendedAgentTeamDescription",
-        icon: IconUsers,
-      },
-    ],
-  },
 ];
 
 const ALL = "__all__";
@@ -169,15 +155,14 @@ export function RecommendedPluginsView(props: {
     bundle.availability !== "missing" &&
     bundle.error === undefined &&
     bundle.readOnlyReason === undefined;
-  const switchable = (bundle: BundleInfo | undefined, group: PluginGroupId): boolean =>
-    available(bundle) && (group !== "conflict" || bundle?.enabled === true);
+  const switchable = (bundle: BundleInfo | undefined): boolean => available(bundle);
   const recommended = PLUGIN_GROUPS.find((group) => group.id === "recommended")!;
   const recommendedEnabled = recommended.plugins.filter(
     (plugin) => byName.get(plugin.name)?.enabled === true,
   ).length;
   const enableable = recommended.plugins.filter((plugin) => {
     const bundle = byName.get(plugin.name);
-    return switchable(bundle, "recommended") && bundle?.enabled !== true;
+    return switchable(bundle) && bundle?.enabled !== true;
   }).length;
 
   const toggle = async (bundle: BundleInfo): Promise<void> => {
@@ -215,7 +200,7 @@ export function RecommendedPluginsView(props: {
       .map((plugin) => byName.get(plugin.name))
       .filter(
         (bundle): bundle is BundleInfo =>
-          bundle !== undefined && switchable(bundle, "recommended") && !bundle.enabled,
+          bundle !== undefined && switchable(bundle) && !bundle.enabled,
       );
     if (targets.length === 0) return;
     setBusy(ALL);
@@ -308,27 +293,22 @@ export function RecommendedPluginsView(props: {
                   <p className="pstack-plugin-group-desc">{t(group.descriptionKey)}</p>
                 </div>
                 <Status
-                  tone={
-                    group.id === "conflict" ? "error" : enabledInGroup > 0 ? "success" : "neutral"
-                  }
+                  tone={enabledInGroup > 0 ? "success" : "neutral"}
                   label={`${enabledInGroup}/${group.plugins.length}`}
                 />
               </header>
               <ul className="pstack-plugin-list">
                 {group.plugins.map((plugin) => {
                   const bundle = byName.get(plugin.name);
-                  const status = bundleStatus(bundle, group.id, t);
-                  const canSwitch = switchable(bundle, group.id);
+                  const status = bundleStatus(bundle, t);
+                  const canSwitch = switchable(bundle);
                   const title = t(plugin.titleKey);
                   const action = bundle?.enabled === true ? t("disablePlugin") : t("enablePlugin");
                   const PluginIcon = plugin.icon;
                   const message = messages[plugin.name];
                   return (
                     <li key={plugin.name}>
-                      <article
-                        className="pstack-plugin-card"
-                        data-conflict={group.id === "conflict" ? "true" : undefined}
-                      >
+                      <article className="pstack-plugin-card">
                         <span className="pstack-plugin-icon">
                           <PluginIcon size={18} />
                         </span>
@@ -380,7 +360,6 @@ function pluginMessage(reason: unknown, t: PstackTranslations["plugins"]): strin
 
 function bundleStatus(
   bundle: BundleInfo | undefined,
-  group: PluginGroupId,
   t: PstackTranslations["plugins"],
 ): { label: string; tone: StatusTone } {
   if (bundle === undefined || bundle.availability === "missing") {
@@ -390,7 +369,6 @@ function bundleStatus(
   if (bundle.readOnlyReason !== undefined) {
     return { label: t("pluginReadOnly"), tone: "neutral" };
   }
-  if (group === "conflict") return { label: t("pluginConflict"), tone: "error" };
   return bundle.enabled
     ? { label: t("pluginEnabled"), tone: "success" }
     : { label: t("pluginDisabled"), tone: "neutral" };

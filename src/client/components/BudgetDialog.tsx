@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 
-import type { CatalogueResult } from "../models.ts";
+import type { CatalogueResult } from "../../models.ts";
 import {
   BUDGET_TIERS,
   BudgetPlanError,
@@ -14,17 +14,16 @@ import {
   type BudgetApplyRequest,
   type BudgetRolePlan,
   type BudgetTier,
-} from "../budget.ts";
-import type { BudgetApplyResult, RoleFileSnapshot } from "../role-wire.ts";
-import { renderRouteValue, type Route } from "../route.ts";
+} from "../../roles/budget.ts";
+import type { BudgetApplyResult, RoleFileSnapshot } from "../../roles/role-wire.ts";
+import { renderRouteValue, type Route } from "../../roles/route.ts";
 import { IconClose } from "./icons.tsx";
 import { useFocusTrap } from "./focus-trap.ts";
 import { messageOf } from "./message.ts";
-import { roleLabel } from "./role-copy.ts";
-import { providerIsUsable, providerIssue, providerLabel } from "./role-selectors.ts";
-import { findRole } from "../role-manifest.ts";
+import { roleLabel } from "../roles/role-copy.ts";
+import { providerIsUsable, providerIssue, providerLabel } from "../roles/role-selectors.ts";
 import { Button, IconButton, Spinner, Status, type StatusTone } from "./ui.tsx";
-import type { PstackTranslations } from "./locales/index.ts";
+import type { PstackTranslations } from "../locales/index.ts";
 
 export interface BudgetDialogProps {
   readonly snapshot: RoleFileSnapshot;
@@ -95,7 +94,6 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
           snapshot.roles.map((role) => ({
             key: role.key,
             shape: role.shape,
-            autoPanel: findRole(role.key)?.autoPanel ?? false,
             configured: role.configured,
             routes: role.routes,
             hasIssues: role.issues.length > 0,
@@ -262,18 +260,6 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
               {plan.error}
             </div>
           )}
-          {plan.plan !== undefined && plan.plan.warnings.length > 0 ? (
-            <div className="pstack-notice">
-              <strong>{t("budgetWarnings")}</strong>
-              <ul className="pstack-notice-list">
-                {plan.plan.warnings.map((warning) => (
-                  <li key={`${warning.kind}:${warning.role}`}>
-                    {t("budgetWarningAutoPanel", { role: roleLabel(warning.role, t) })}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
           {visibleRows.length === 0 ? null : (
             <div className="pstack-budget-preview">
               <h5 className="pstack-budget-preview-title">{t("budgetPreview")}</h5>

@@ -8,13 +8,13 @@ import {
   type RoleShape,
 } from "./role-manifest.ts";
 import { validateRouteParts, type Route } from "./route.ts";
-import { WireTypeError } from "./wire-error.ts";
+import { WireTypeError } from "../lib/wire-error.ts";
 
-export type { CatalogueResult } from "./catalogue.ts";
+export type { CatalogueResult } from "../models/catalogue.ts";
 export type { BudgetApplyRequest } from "./budget.ts";
 export { parseBudgetApplyRequest } from "./budget.ts";
-export { parseCatalogueResult } from "./catalogue.ts";
-export { WireTypeError } from "./wire-error.ts";
+export { parseCatalogueResult } from "../models/catalogue.ts";
+export { WireTypeError } from "../lib/wire-error.ts";
 export type { InheritAlias } from "./role-manifest.ts";
 
 export type RouteView = Route;
@@ -23,13 +23,11 @@ export interface RoleView {
   readonly key: string;
   readonly shape: RoleShape;
   readonly configured: boolean;
-  readonly line?: number;
   readonly routes: readonly RouteView[];
   readonly issues: readonly string[];
 }
 
 export interface RoleFileIssueView {
-  readonly line?: number;
   readonly message: string;
 }
 
@@ -132,11 +130,7 @@ function parseRoleFileIssue(value: unknown, path: string): RoleFileIssueView {
   if (typeof record["message"] !== "string") {
     throw new WireTypeError(`${path}.message`, "a string");
   }
-  const line = record["line"];
-  if (line !== undefined && typeof line !== "number") {
-    throw new WireTypeError(`${path}.line`, "a number when present");
-  }
-  return { ...(typeof line === "number" ? { line } : {}), message: record["message"] };
+  return { message: record["message"] };
 }
 
 function parseRoleView(value: unknown, index: number): RoleView {
@@ -157,15 +151,10 @@ function parseRoleView(value: unknown, index: number): RoleView {
   if (!Array.isArray(record["routes"]) || !Array.isArray(record["issues"])) {
     throw new WireTypeError(path, "routes and issues arrays");
   }
-  const line = record["line"];
-  if (line !== undefined && typeof line !== "number") {
-    throw new WireTypeError(`${path}.line`, "a number when present");
-  }
   return {
     key: record["key"],
     shape: record["shape"] as RoleShape,
     configured: record["configured"],
-    ...(typeof line === "number" ? { line } : {}),
     routes: record["routes"].map((route, routeIndex) =>
       parseRouteView(route, `${path}.routes[${routeIndex}]`),
     ),

@@ -5,12 +5,15 @@ import { afterEach, beforeEach, describe, expect, it } from "vite-plus/test";
 import type { Context } from "@deepseek-ai/cordis";
 
 import { apply } from "../src/client/index.ts";
-import { createPstackConfigAction, PstackConfigDialog } from "../src/client/PstackConfigDialog.tsx";
-import { draftOf, resetRoutes } from "../src/client/role-draft.ts";
-import type { RoleSettingsApi } from "../src/client/RoleSettingsPage.tsx";
+import {
+  createPstackConfigAction,
+  PstackConfigDialog,
+} from "../src/client/pages/PstackConfigDialog.tsx";
+import { draftOf, resetRoutes } from "../src/client/roles/role-draft.ts";
+import type { RoleSettingsApi } from "../src/client/pages/RoleSettingsPage.tsx";
 import { catalogs, type PstackTranslations } from "../src/client/locales/index.ts";
 import type { CatalogueResult } from "../src/models.ts";
-import type { RoleFileSnapshot, RoleView, SaveRoleRequest } from "../src/role-wire.ts";
+import type { RoleFileSnapshot, RoleView, SaveRoleRequest } from "../src/roles/role-wire.ts";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -63,7 +66,6 @@ function bugFixRole(configured = true): RoleView {
     key: "bug-fix",
     shape: "single",
     configured,
-    ...(configured ? { line: 2 } : {}),
     routes: configured
       ? [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }]
       : [],
@@ -73,7 +75,7 @@ function bugFixRole(configured = true): RoleView {
 
 function snapshotFor(configured = true): RoleFileSnapshot {
   return {
-    path: "/home/user/.dsh/pstack-models.mdc",
+    path: "/home/user/.dsh/pstack-models.json",
     status: "loaded",
     roles: [bugFixRole(configured)],
     issues: [],
@@ -86,7 +88,6 @@ function inheritedRole(alias: "inherit-parent" | "auto" = "inherit-parent"): Rol
     key: "bug-fix",
     shape: "single",
     configured: true,
-    line: 2,
     routes: [{ kind: "inherit", alias }],
     issues: [],
   };
@@ -113,14 +114,13 @@ function snapshotWithSecondUnconfiguredRole(): RoleFileSnapshot {
 function snapshotAfter(request: SaveRoleRequest): RoleFileSnapshot {
   const configured = request.routes.length > 0;
   return {
-    path: "/home/user/.dsh/pstack-models.mdc",
+    path: "/home/user/.dsh/pstack-models.json",
     status: "loaded",
     roles: [
       {
         key: request.key,
         shape: "single",
         configured,
-        ...(configured ? { line: 2 } : {}),
         routes: request.routes.map((route) => ({ ...route })),
         issues: [],
       },

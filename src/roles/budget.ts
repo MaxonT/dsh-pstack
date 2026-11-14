@@ -1,9 +1,9 @@
-/** Budget planning, wire parsing, and role-file rendering for global reasoning targets. */
+/** Budget planning and wire parsing for global reasoning targets. */
 
-import type { CatalogueResult, ModelEntry } from "./catalogue.ts";
+import type { CatalogueResult, ModelEntry } from "../models/catalogue.ts";
 import type { RoleShape } from "./role-manifest.ts";
-import { renderRouteValue, type Route } from "./route.ts";
-import { WireTypeError } from "./wire-error.ts";
+import type { Route } from "./route.ts";
+import { WireTypeError } from "../lib/wire-error.ts";
 
 export const BUDGET_TIERS = ["unlimited", "large", "medium", "small"] as const;
 export type BudgetTier = (typeof BUDGET_TIERS)[number];
@@ -36,15 +36,6 @@ export class BudgetPlanError extends Error {
   }
 }
 
-/** The single matcher for a `# budget:` line. Captures the value after the colon. */
-export const BUDGET_LINE = /^[ \t]*#[ \t]*budget[ \t]*:[ \t]*(.*)$/i;
-
-/** Return the value after `# budget:`, or `undefined` when the line is not a budget line. */
-export function budgetLineValue(line: string): string | undefined {
-  const match = BUDGET_LINE.exec(line);
-  return match === null ? undefined : (match[1] ?? "").trim();
-}
-
 export interface BudgetModelChoice {
   readonly provider: string;
   readonly model: string;
@@ -59,7 +50,6 @@ export interface BudgetApplyRequest {
 export interface BudgetRoleInput {
   readonly key: string;
   readonly shape: RoleShape;
-  readonly autoPanel: boolean;
   readonly configured: boolean;
   readonly routes: readonly Route[];
   /** The role line carries parse issues; the plan must not rewrite it. */
@@ -74,11 +64,6 @@ export type BudgetRowStatus =
   | "custom"
   | "unsupported"
   | "skipped";
-
-export interface BudgetWarning {
-  readonly kind: "auto-panel";
-  readonly role: string;
-}
 
 export type BudgetDetail =
   | { readonly kind: "fallback"; readonly effort: string }
@@ -98,25 +83,20 @@ export interface BudgetRolePlan {
 export interface BudgetPlan {
   readonly tier: BudgetTier;
   readonly scope: BudgetScope;
-  readonly budgetLine: string;
+  readonly budget: string;
   readonly rows: readonly BudgetRolePlan[];
-  readonly warnings: readonly BudgetWarning[];
 }
 
-/** Read a tier from the existing `# budget: <tier> (<target>)` line. */
+/** Read a tier from a stored budget value such as `large (xhigh)`. */
 export function budgetTierFromLabel(raw: string | undefined): BudgetTier | undefined {
   if (raw === undefined) return undefined;
   const match = /^\s*(unlimited|large|medium|small)\b/i.exec(raw);
   return match?.[1]?.toLowerCase() as BudgetTier | undefined;
 }
 
-/** Render the persisted budget value that follows `# budget:`. */
+/** Render the persisted budget value, such as `large (xhigh)`. */
 export function budgetValueFor(tier: BudgetTier): string {
   return `${tier} (${BUDGET_TARGETS[tier]})`;
-}
-
-export function budgetLineFor(tier: BudgetTier): string {
-  return `# budget: ${budgetValueFor(tier)}`;
 }
 
 /** Parse and validate a budget apply request at the wire boundary. */
@@ -171,49 +151,13 @@ export function planBudget(
     request.scope === "unconfigured"
       ? resolveDefaultModel(catalogue, request.defaultModel)
       : undefined;
-  const warnings: BudgetWarning[] = [];
-  const rows = roles.map((role) => planRole(role, request, defaultModel, catalogue, warnings));
+  const rows = roles.map((role) => planRole(role, request, defaultModel, catalogue));
   return {
     tier: request.tier,
     scope: request.scope,
-    budgetLine: budgetLineFor(request.tier),
+    budget: budgetValueFor(request.tier),
     rows,
-    warnings,
   };
-}
-
-export function updateBudgetText(text: string, line: string): string {
-  const bom = text.startsWith("\uFEFF") ? "\uFEFF" : "";
-  const body = bom === "" ? text : text.slice(1);
-  const eol = body.includes("\r\n") ? "\r\n" : "\n";
-  const lines = body.split(/\r?\n/);
-  const indexes = lines.flatMap((value, index) => (BUDGET_LINE.test(value) ? [index] : []));
-  if (indexes.length === 0) {
-    return bom + (body === "" ? `${line}${eol}` : `${line}${eol}${body}`);
-  }
-  const first = indexes[0]!;
-  const next = lines
-    .flatMap((value, index) => {
-      if (!indexes.includes(index)) return [value];
-      return index === first ? [line] : [];
-    })
-    .join(eol);
-  return bom + next;
-}
-
-/** Apply a plan to role file text and return an untouched string when nothing changed. */
-export function renderBudgetText(
-  text: string,
-  plan: BudgetPlan,
-  updateRole: (text: string, key: string, value: string) => string,
-): string {
-  let next = text;
-  for (const row of plan.rows) {
-    if (row.status === "skipped") continue;
-    if (routeSignature(row.routes) === routeSignature(row.previous)) continue;
-    next = updateRole(next, row.key, renderRouteValue(row.routes));
-  }
-  return updateBudgetText(next, plan.budgetLine);
 }
 
 function planRole(
@@ -221,7 +165,6 @@ function planRole(
   request: BudgetApplyRequest,
   defaultModel: ModelEntry | undefined,
   catalogue: CatalogueResult,
-  warnings: BudgetWarning[],
 ): BudgetRolePlan {
   const previous = role.routes;
   if (role.hasIssues === true) {
@@ -232,9 +175,6 @@ function planRole(
       return { key: role.key, status: "skipped", previous, routes: previous };
     }
     const effort = effortFor(defaultModel, request.tier);
-    if (role.autoPanel) {
-      warnings.push({ kind: "auto-panel", role: role.key });
-    }
     return {
       key: role.key,
       status: statusForNew(effort),
@@ -402,8 +342,4 @@ function splitRoute(route: string): { provider: string; model: string } {
   const slash = route.indexOf("/");
   if (slash <= 0) throw new Error(`invalid model route "${route}"`);
   return { provider: route.slice(0, slash), model: route.slice(slash + 1) };
-}
-
-function routeSignature(routes: readonly Route[]): string {
-  return JSON.stringify(routes);
 }

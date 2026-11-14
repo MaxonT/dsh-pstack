@@ -2,7 +2,7 @@
 
 import type { JsonSchemaNode } from "@deepseek-ai/dsh-tools";
 
-import { WireTypeError } from "./wire-error.ts";
+import { WireTypeError } from "../lib/wire-error.ts";
 
 export interface ModelEntry {
   readonly route: string;

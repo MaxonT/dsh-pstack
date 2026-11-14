@@ -1,7 +1,7 @@
 /** Locale keys for the display name and scenario of every pstack role. */
 
-import { isRoleKey, type RoleKey } from "../role-manifest.ts";
-import type { RolesKey, Translate } from "./locales/index.ts";
+import { isRoleKey, type RoleKey } from "../../roles/role-manifest.ts";
+import type { RolesKey, Translate } from "../locales/index.ts";
 
 export interface RoleCopy {
   readonly nameKey: RolesKey;

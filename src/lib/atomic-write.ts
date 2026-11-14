@@ -1,0 +1,20 @@
+/** Write a file by renaming a fully written sibling temp file over it. */
+
+import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
+import { randomUUID } from "node:crypto";
+
+/** Write `text` to `path`, creating the parent directory and replacing atomically. */
+export function writeFileAtomically(path: string, text: string): void {
+  mkdirSync(dirname(path), { recursive: true });
+  const temporary = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    writeFileSync(temporary, text, "utf8");
+    renameSync(temporary, path);
+  } catch (error) {
+    try {
+      rmSync(temporary, { force: true });
+    } catch {}
+    throw error;
+  }
+}

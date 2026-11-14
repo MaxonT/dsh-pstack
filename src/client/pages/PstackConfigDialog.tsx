@@ -5,13 +5,13 @@ import { createPortal } from "react-dom";
 import type { PropsRuntime } from "@deepseek-ai/dsh-client-ui-slots";
 import type {} from "@deepseek-ai/dsh-client-ui-plugin-manager/client";
 
-import { IconClose, IconSettings } from "./icons.tsx";
-import { useFocusTrap } from "./focus-trap.ts";
+import { IconClose, IconSettings } from "../components/icons.tsx";
+import { useFocusTrap } from "../components/focus-trap.ts";
 import { RecommendedPluginsView, type PluginManagerApi } from "./RecommendedPluginsPage.tsx";
 import { RoleSettingsView, type RoleSettingsApi } from "./RoleSettingsPage.tsx";
-import { ensurePstackStyles } from "./styles.ts";
-import { Button, IconButton, SegmentedTabs, confirmDiscard } from "./ui.tsx";
-import type { PstackTranslations } from "./locales/index.ts";
+import { ensurePstackStyles } from "../components/styles.ts";
+import { Button, IconButton, SegmentedTabs, confirmDiscard } from "../components/ui.tsx";
+import type { PstackTranslations } from "../locales/index.ts";
 
 ensurePstackStyles();
 

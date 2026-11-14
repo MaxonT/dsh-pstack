@@ -8,11 +8,11 @@ import type {} from "@deepseek-ai/dsh-client-ui-settings/client";
 import type {} from "@deepseek-ai/dsh-client-ui-slots";
 import type {} from "@deepseek-ai/dsh-client-ui-plugin-manager/client";
 
-import { pstackRolesRemote, type PstackRolesNamespace } from "../role-remote.ts";
-import { createPstackConfigAction } from "./PstackConfigDialog.tsx";
+import { pstackRolesRemote, type PstackRolesNamespace } from "../roles/role-remote.ts";
+import { createPstackConfigAction } from "./pages/PstackConfigDialog.tsx";
 import { NS, catalogs } from "./locales/index.ts";
-import type { PluginManagerApi } from "./RecommendedPluginsPage.tsx";
-import type { RoleSettingsApi } from "./RoleSettingsPage.tsx";
+import type { PluginManagerApi } from "./pages/RecommendedPluginsPage.tsx";
+import type { RoleSettingsApi } from "./pages/RoleSettingsPage.tsx";
 
 /** Browser services this plugin needs. `remote.pluginManager` stays optional, so roles load without it. */
 export const inject = ["remote", "slots", "locale"];

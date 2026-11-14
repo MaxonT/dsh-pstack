@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
-  budgetLineFor,
   budgetTierFromLabel,
+  budgetValueFor,
   isBudgetRowBlocked,
   parseBudgetApplyRequest,
   planBudget,
-  updateBudgetText,
   type BudgetRoleInput,
-} from "../src/budget.ts";
-import type { CatalogueResult } from "../src/catalogue.ts";
+} from "../src/roles/budget.ts";
+import type { CatalogueResult } from "../src/models/catalogue.ts";
 
 const catalogue: CatalogueResult = {
   truncated: false,
@@ -42,7 +41,6 @@ function role(overrides: Partial<BudgetRoleInput>): BudgetRoleInput {
   return {
     key: "bug-fix",
     shape: "single",
-    autoPanel: false,
     configured: true,
     routes: [{ kind: "route", provider: "p", model: "full", effort: "low" }],
     ...overrides,
@@ -115,23 +113,6 @@ describe("budget planning", () => {
     ]);
   });
 
-  it("warns when filling a single entry for an automatic panel", () => {
-    const fill = planBudget(
-      [
-        role({
-          key: "arena runners",
-          shape: "list",
-          autoPanel: true,
-          configured: false,
-          routes: [{ kind: "inherit", alias: "inherit-parent" }],
-        }),
-      ],
-      catalogue,
-      { tier: "large", scope: "unconfigured", defaultModel: { provider: "p", model: "full" } },
-    );
-    expect(fill.warnings[0]).toEqual({ kind: "auto-panel", role: "arena runners" });
-  });
-
   it("fills a custom-effort model without inventing an effort", () => {
     const fill = planBudget(
       [role({ key: "custom role", configured: false, routes: [] })],
@@ -171,7 +152,7 @@ describe("budget planning", () => {
     expect(isBudgetRowBlocked(plan.rows[0]!)).toBe(true);
   });
 
-  it("parses, renders, and replaces the budget line", () => {
+  it("parses a budget request and records the persisted budget value", () => {
     expect(parseBudgetApplyRequest({ tier: "small", scope: "concrete" })).toEqual({
       tier: "small",
       scope: "concrete",
@@ -180,28 +161,10 @@ describe("budget planning", () => {
       "defaultModel",
     );
     expect(budgetTierFromLabel("large (xhigh)")).toBe("large");
-    expect(budgetLineFor("medium")).toBe("# budget: medium (high)");
-    expect(
-      updateBudgetText(
-        "# keep\n# budget: large (xhigh)\nbug-fix: p/a\n",
-        "# budget: small (medium)",
-      ),
-    ).toBe("# keep\n# budget: small (medium)\nbug-fix: p/a\n");
-    expect(updateBudgetText("bug-fix: p/a\n", "# budget: large (xhigh)")).toBe(
-      "# budget: large (xhigh)\nbug-fix: p/a\n",
-    );
-    expect(
-      updateBudgetText(
-        "# budget: small (medium)\nbug-fix: p/a\n# budget: unlimited (max)\n",
-        budgetLineFor("large"),
-      ),
-    ).toBe("# budget: large (xhigh)\nbug-fix: p/a\n");
-    expect(
-      updateBudgetText("  # budget: small (medium)\nbug-fix: p/a\n", budgetLineFor("large")),
-    ).toBe("# budget: large (xhigh)\nbug-fix: p/a\n");
-    expect(
-      updateBudgetText("\uFEFF# budget: small (medium)\nbug-fix: p/a\n", budgetLineFor("large")),
-    ).toBe("\uFEFF# budget: large (xhigh)\nbug-fix: p/a\n");
+    expect(budgetTierFromLabel(undefined)).toBeUndefined();
+    expect(budgetValueFor("medium")).toBe("medium (high)");
+    const plan = planBudget([], catalogue, { tier: "large", scope: "concrete" });
+    expect(plan.budget).toBe("large (xhigh)");
   });
 
   it("does not re-tier configured concrete routes in the unconfigured scope", () => {

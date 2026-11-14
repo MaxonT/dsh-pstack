@@ -2,9 +2,9 @@
 
 import type { ReactElement } from "react";
 
-import type { CatalogueResult } from "../models.ts";
-import { isRoleKey } from "../role-manifest.ts";
-import type { RoleView, RouteView } from "../role-wire.ts";
+import type { CatalogueResult } from "../../models.ts";
+import { isRoleKey } from "../../roles/role-manifest.ts";
+import type { RoleView, RouteView } from "../../roles/role-wire.ts";
 import {
   IconAlert,
   IconCheck,
@@ -15,8 +15,8 @@ import {
   IconTrash,
   IconUndo,
 } from "./icons.tsx";
-import { ROLE_COPY, roleLabel } from "./role-copy.ts";
-import { isClearDraft, isDirty, type RoleDraft } from "./role-draft.ts";
+import { ROLE_COPY, roleLabel } from "../roles/role-copy.ts";
+import { isClearDraft, isDirty, type RoleDraft } from "../roles/role-draft.ts";
 import {
   effortChoices,
   modelChoices,
@@ -24,9 +24,9 @@ import {
   providerLabel,
   routeIsIncomplete,
   routeIsInvalid,
-} from "./role-selectors.ts";
+} from "../roles/role-selectors.ts";
 import { Button, IconButton, Spinner, Status, type StatusTone } from "./ui.tsx";
-import type { PstackTranslations } from "./locales/index.ts";
+import type { PstackTranslations } from "../locales/index.ts";
 
 export function RoleCard(props: {
   role: RoleView;
@@ -66,7 +66,7 @@ export function RoleCard(props: {
     role.issues.length > 0
       ? { tone: "error" as StatusTone, label: t("roleInvalid") }
       : routeProblem
-        ? { tone: "error" as StatusTone, label: t("roleRouteInvalid") }
+        ? { tone: "error" as StatusTone, label: t("routeInvalid") }
         : role.configured
           ? { tone: "success" as StatusTone, label: t("roleConfigured") }
           : { tone: "neutral" as StatusTone, label: t("roleMissing") };
@@ -91,9 +91,6 @@ export function RoleCard(props: {
         </div>
         <div className="pstack-role-status">
           <Status tone={status.tone} label={status.label} />
-          {role.line === undefined ? null : (
-            <span className="pstack-role-line">{t("roleLine", { line: role.line })}</span>
-          )}
         </div>
       </header>
       {role.issues.length === 0 ? null : (

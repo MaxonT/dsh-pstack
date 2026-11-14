@@ -3,27 +3,56 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
-import { parseRoleConfiguration } from "../src/role-config.ts";
+import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
+
+import { parseRoleConfiguration } from "../src/roles/role-store.ts";
 import {
-  removeRoleText,
   saveBudgetConfiguration,
   saveRoleConfiguration,
   snapshotFromConfiguration,
-  updateRoleText,
   validateSaveRequest,
-} from "../src/role-editor.ts";
-import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
-
-import { parseSaveRoleRequest } from "../src/role-wire.ts";
+} from "../src/roles/role-editor.ts";
+import { parseSaveRoleRequest } from "../src/roles/role-wire.ts";
 import type { CatalogueResult } from "../src/models.ts";
 
 const directories: string[] = [];
 
-function tempHome(text: string): string {
+interface SeededDocument {
+  readonly version?: 1;
+  readonly budget?: string;
+  readonly roles: Record<string, string[]>;
+}
+
+function tempHome(document: SeededDocument | undefined): string {
   const directory = mkdtempSync(join(tmpdir(), "pstack-editor-"));
   directories.push(directory);
-  writeFileSync(join(directory, "pstack-models.mdc"), text);
+  if (document !== undefined) {
+    writeFileSync(
+      join(directory, "pstack-models.json"),
+      `${JSON.stringify({ version: 1, ...document }, null, 2)}\n`,
+    );
+  }
   return directory;
+}
+
+function pathOf(directory: string): string {
+  return join(directory, "pstack-models.json");
+}
+
+function readDoc(path: string): {
+  version: number;
+  budget?: string;
+  roles: Record<string, string[]>;
+} {
+  return JSON.parse(readFileSync(path, "utf8")) as {
+    version: number;
+    budget?: string;
+    roles: Record<string, string[]>;
+  };
+}
+
+function writeDoc(path: string, document: unknown): void {
+  writeFileSync(path, `${JSON.stringify(document, null, 2)}\n`);
 }
 
 afterEach(() => {
@@ -37,7 +66,10 @@ const catalogue: CatalogueResult = {
     {
       provider: "cpa",
       name: "CPA",
-      models: [{ route: "cpa/model-a", id: "model-a", name: "Model A", efforts: ["low", "high"] }],
+      models: [
+        { route: "cpa/model-a", id: "model-a", name: "Model A", efforts: ["low", "high"] },
+        { route: "cpa/model-b", id: "model-b", name: "Model B", efforts: ["low", "high"] },
+      ],
     },
   ],
 };
@@ -46,7 +78,10 @@ function llmFixture(overrides: Partial<Record<keyof LlmRuntime, unknown>> = {}):
   return {
     listProviders: () =>
       catalogue.providers.map((entry) => ({ id: entry.provider, name: entry.name })),
-    listModels: async () => [{ provider: "cpa", id: "model-a", name: "Model A" }],
+    listModels: async () => [
+      { provider: "cpa", id: "model-a", name: "Model A" },
+      { provider: "cpa", id: "model-b", name: "Model B" },
+    ],
     resolveModelInfo: async (provider: string, model: string) => ({
       provider,
       id: model,
@@ -59,20 +94,40 @@ function llmFixture(overrides: Partial<Record<keyof LlmRuntime, unknown>> = {}):
 
 const llm = llmFixture();
 
+const unavailable = {
+  listProviders() {
+    throw new Error("catalogue unavailable");
+  },
+} as unknown as LlmRuntime;
+
 describe("role editor", () => {
   it("reports every manifest role in a missing snapshot", () => {
-    const path = join(tempHome(""), "missing.mdc");
+    const path = join(tempHome(undefined), "missing.json");
     const snapshot = snapshotFromConfiguration({ status: "missing", path });
     expect(snapshot.status).toBe("missing");
     expect(snapshot.roles.length).toBe(17);
     expect(snapshot.canSave).toBe(true);
   });
 
-  it("replaces one role line and preserves comments", () => {
-    const text = "# keep me\n# budget: large (xhigh)\nbug-fix: cpa/model-a [low]\n";
-    expect(updateRoleText(text, "bug-fix", "cpa/model-a [high]")).toBe(
-      "# keep me\n# budget: large (xhigh)\nbug-fix: cpa/model-a [high]\n",
+  it("saves one role and preserves the budget and other roles", async () => {
+    const home = tempHome({ budget: "large (xhigh)", roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
+    const result = await saveRoleConfiguration(
+      path,
+      {
+        key: "feature, refactoring",
+        routes: [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
+      },
+      llm,
+      new AbortController().signal,
     );
+    if (!result.ok) throw new Error(result.reason);
+    const document = readDoc(path);
+    expect(document.budget).toBe("large (xhigh)");
+    expect(document.roles["bug-fix"]).toEqual(["cpa/model-a [low]"]);
+    expect(document.roles["feature, refactoring"]).toEqual(["cpa/model-a [high]"]);
+    expect(readFileSync(path, "utf8").endsWith("\n")).toBe(true);
+    expect(parseRoleConfiguration(readFileSync(path, "utf8"), path).status).toBe("loaded");
   });
 
   it("validates provider, model, and effort against the catalogue", () => {
@@ -107,50 +162,49 @@ describe("role editor", () => {
     ).toThrow();
   });
 
-  it("removes every matching role line by its normalized key", () => {
-    const text = "Feature,refactoring: cpa/a\nbug-fix: cpa/b\nfeature, refactoring: cpa/c\n";
-    expect(removeRoleText(text, "feature, refactoring")).toBe("bug-fix: cpa/b\n");
-    expect(removeRoleText("bug-fix: cpa/b", "bug-fix")).toBe("");
-  });
-
-  it("removes duplicate role lines and writes one effective line", () => {
-    const text = "bug-fix: cpa/a [low]\nbug-fix: cpa/b [low]\n";
-    expect(updateRoleText(text, "bug-fix", "cpa/b [high]")).toBe("bug-fix: cpa/b [high]\n");
-  });
-
-  it("keeps a list role on one line when routes change", () => {
-    const text = "arena runners: cpa/a [high], cpa/b [low]\n";
-    expect(updateRoleText(text, "arena runners", "cpa/c [high], cpa/d [low]")).toBe(
-      "arena runners: cpa/c [high], cpa/d [low]\n",
+  it("deletes a role by removing its key", async () => {
+    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
+    const result = await saveRoleConfiguration(
+      path,
+      { key: "bug-fix", routes: [] },
+      llm,
+      new AbortController().signal,
     );
+    if (!result.ok) throw new Error(result.reason);
+    expect(readDoc(path).roles["bug-fix"]).toBeUndefined();
   });
 
-  it("saves one role and leaves the rest of the file intact", async () => {
-    const home = tempHome("# header\nbug-fix: cpa/model-a [low]\n");
-    const path = join(home, "pstack-models.mdc");
+  it("updates every route of a list role", async () => {
+    const home = tempHome({ roles: { "arena runners": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
     const result = await saveRoleConfiguration(
       path,
       {
-        key: "feature, refactoring",
-        routes: [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
+        key: "arena runners",
+        routes: [
+          { kind: "route", provider: "cpa", model: "model-a", effort: "high" },
+          { kind: "route", provider: "cpa", model: "model-b", effort: "low" },
+        ],
       },
-      llm as unknown as LlmRuntime,
+      llm,
       new AbortController().signal,
     );
-    expect(result.ok).toBe(true);
-    const text = readFileSync(path, "utf8");
-    expect(text).toContain("# header");
-    expect(text).toContain("bug-fix: cpa/model-a [low]");
-    expect(text).toContain("feature, refactoring: cpa/model-a [high]");
-    expect(parseRoleConfiguration(text, path).status).toBe("loaded");
+    if (!result.ok) throw new Error(result.reason);
+    expect(readDoc(path).roles["arena runners"]).toEqual([
+      "cpa/model-a [high]",
+      "cpa/model-b [low]",
+    ]);
   });
 
   it("re-reads the role file after an asynchronous catalogue lookup", async () => {
-    const home = tempHome("# header\nbug-fix: cpa/model-a [low]\n");
-    const path = join(home, "pstack-models.mdc");
+    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
     const concurrentLlm = llmFixture({
       listModels: async () => {
-        writeFileSync(path, `${readFileSync(path, "utf8")}perf-issue: cpa/model-a [high]\n`);
+        const current = readDoc(path);
+        current.roles["perf-issue"] = ["cpa/model-a [high]"];
+        writeDoc(path, current);
         return [{ provider: "cpa", id: "model-a", name: "Model A" }];
       },
     });
@@ -164,17 +218,12 @@ describe("role editor", () => {
       new AbortController().signal,
     );
     expect(result.ok).toBe(true);
-    expect(readFileSync(path, "utf8")).toContain("perf-issue: cpa/model-a [high]");
+    expect(readDoc(path).roles["perf-issue"]).toEqual(["cpa/model-a [high]"]);
   });
 
   it("clears a role without model discovery and makes repeat clears a no-op", async () => {
-    const home = tempHome("# header\nbug-fix: cpa/model-a [low]\n");
-    const path = join(home, "pstack-models.mdc");
-    const unavailable = {
-      listProviders() {
-        throw new Error("catalogue unavailable");
-      },
-    } as unknown as LlmRuntime;
+    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
     const first = await saveRoleConfiguration(
       path,
       { key: "bug-fix", routes: [] },
@@ -182,9 +231,10 @@ describe("role editor", () => {
       new AbortController().signal,
     );
     if (!first.ok) throw new Error(first.reason);
-    expect(readFileSync(path, "utf8")).toBe("# header\n");
+    expect(readDoc(path).roles["bug-fix"]).toBeUndefined();
     expect(first.snapshot.roles.find((role) => role.key === "bug-fix")?.configured).toBe(false);
 
+    const afterFirst = readFileSync(path, "utf8");
     const second = await saveRoleConfiguration(
       path,
       { key: "bug-fix", routes: [] },
@@ -192,17 +242,12 @@ describe("role editor", () => {
       new AbortController().signal,
     );
     expect(second.ok).toBe(true);
-    expect(readFileSync(path, "utf8")).toBe("# header\n");
+    expect(readFileSync(path, "utf8")).toBe(afterFirst);
   });
 
   it("saves an inherit-only route without model discovery", async () => {
-    const home = tempHome("# header\nbug-fix: cpa/model-a [low]\n");
-    const path = join(home, "pstack-models.mdc");
-    const unavailable = {
-      listProviders() {
-        throw new Error("catalogue unavailable");
-      },
-    } as unknown as LlmRuntime;
+    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
     const result = await saveRoleConfiguration(
       path,
       { key: "bug-fix", routes: [{ kind: "inherit", alias: "auto" }] },
@@ -210,15 +255,15 @@ describe("role editor", () => {
       new AbortController().signal,
     );
     if (!result.ok) throw new Error(result.reason);
-    expect(readFileSync(path, "utf8")).toContain("bug-fix: auto\n");
+    expect(readDoc(path).roles["bug-fix"]).toEqual(["auto"]);
   });
 
   it("does not create a file when an absent role is cleared", async () => {
-    const path = join(tempHome(""), "missing.mdc");
+    const path = join(tempHome(undefined), "missing.json");
     const result = await saveRoleConfiguration(
       path,
       { key: "bug-fix", routes: [] },
-      llm as unknown as LlmRuntime,
+      llm,
       new AbortController().signal,
     );
     if (!result.ok) throw new Error(result.reason);
@@ -227,24 +272,21 @@ describe("role editor", () => {
   });
 
   it("rejects an aborted clear without changing the file", async () => {
-    const home = tempHome("bug-fix: cpa/model-a [low]\n");
-    const path = join(home, "pstack-models.mdc");
+    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
+    const original = readFileSync(path, "utf8");
     const controller = new AbortController();
     controller.abort();
     await expect(
-      saveRoleConfiguration(
-        path,
-        { key: "bug-fix", routes: [] },
-        llm as unknown as LlmRuntime,
-        controller.signal,
-      ),
+      saveRoleConfiguration(path, { key: "bug-fix", routes: [] }, llm, controller.signal),
     ).rejects.toThrow();
-    expect(readFileSync(path, "utf8")).toBe("bug-fix: cpa/model-a [low]\n");
+    expect(readFileSync(path, "utf8")).toBe(original);
   });
 
   it("returns a refused save for provider and model discovery failures", async () => {
-    const home = tempHome("# header\n");
-    const path = join(home, "pstack-models.mdc");
+    const home = tempHome({ roles: {} });
+    const path = pathOf(home);
+    const original = readFileSync(path, "utf8");
     const failures = [
       {
         listProviders() {
@@ -267,14 +309,14 @@ describe("role editor", () => {
         new AbortController().signal,
       );
       expect(result).toMatchObject({ ok: false, reason: expect.any(String) });
-      expect(readFileSync(path, "utf8")).toBe("# header\n");
+      expect(readFileSync(path, "utf8")).toBe(original);
     }
   });
 
   it("rejects malformed input before reading the model catalogue", async () => {
-    const home = tempHome("");
+    const home = tempHome(undefined);
     const result = await saveRoleConfiguration(
-      join(home, "pstack-models.mdc"),
+      pathOf(home),
       { key: 42, routes: [] } as never,
       {
         listProviders() {
@@ -286,70 +328,66 @@ describe("role editor", () => {
     expect(result).toMatchObject({ ok: false, reason: expect.stringContaining("request.key") });
   });
 
-  it("applies a budget to concrete routes and rewrites the budget line", async () => {
-    const home = tempHome("# budget: large (xhigh)\nbug-fix: cpa/model-a [low]\n");
-    const path = join(home, "pstack-models.mdc");
+  it("applies a budget to concrete routes and sets the budget value", async () => {
+    const home = tempHome({ budget: "large (xhigh)", roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
     const result = await saveBudgetConfiguration(
       path,
       { tier: "large", scope: "concrete" },
-      llm as unknown as LlmRuntime,
+      llm,
       new AbortController().signal,
     );
     if (!result.ok) throw new Error(result.reason);
-    expect(readFileSync(path, "utf8")).toBe(
-      "# budget: large (xhigh)\nbug-fix: cpa/model-a [high]\n",
-    );
+    const document = readDoc(path);
+    expect(document.budget).toBe("large (xhigh)");
+    expect(document.roles["bug-fix"]).toEqual(["cpa/model-a [high]"]);
   });
 
   it("leaves the file byte-identical when the budget is a no-op", async () => {
-    const original = "# budget: large (xhigh)\nbug-fix: cpa/model-a [high]\n";
-    const home = tempHome(original);
-    const path = join(home, "pstack-models.mdc");
+    const original = `${JSON.stringify(
+      { version: 1, budget: "large (xhigh)", roles: { "bug-fix": ["cpa/model-a [high]"] } },
+      null,
+      2,
+    )}\n`;
+    const home = tempHome(undefined);
+    const path = pathOf(home);
+    writeFileSync(path, original);
     const result = await saveBudgetConfiguration(
       path,
       { tier: "large", scope: "concrete" },
-      llm as unknown as LlmRuntime,
+      llm,
       new AbortController().signal,
     );
     expect(result.ok).toBe(true);
     expect(readFileSync(path, "utf8")).toBe(original);
   });
 
-  it("applies a budget to the effective duplicate role line", async () => {
-    const home = tempHome("bug-fix: cpa/model-a [low]\nbug-fix: cpa/model-a [low]\n");
-    const path = join(home, "pstack-models.mdc");
-    const result = await saveBudgetConfiguration(
-      path,
-      { tier: "large", scope: "concrete" },
-      llm as unknown as LlmRuntime,
-      new AbortController().signal,
-    );
-    if (!result.ok) throw new Error(result.reason);
-    expect(readFileSync(path, "utf8")).toBe(
-      "# budget: large (xhigh)\nbug-fix: cpa/model-a [high]\n",
-    );
-  });
-
   it("refuses a budget when a configured route model is missing", async () => {
-    const home = tempHome("bug-fix: ghost/model [low]\n");
-    const path = join(home, "pstack-models.mdc");
+    const home = tempHome({ roles: { "bug-fix": ["ghost/model [low]"] } });
+    const path = pathOf(home);
+    const original = readFileSync(path, "utf8");
     const result = await saveBudgetConfiguration(
       path,
       { tier: "large", scope: "concrete" },
-      llm as unknown as LlmRuntime,
+      llm,
       new AbortController().signal,
     );
     expect(result).toMatchObject({ ok: false, reason: expect.stringContaining("bug-fix") });
-    expect(readFileSync(path, "utf8")).toBe("bug-fix: ghost/model [low]\n");
+    expect(readFileSync(path, "utf8")).toBe(original);
   });
 
   it("re-reads the role file after an asynchronous catalogue lookup for a budget", async () => {
-    const home = tempHome("# header\nbug-fix: cpa/model-a [low]\n");
-    const path = join(home, "pstack-models.mdc");
+    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
     const concurrentLlm = llmFixture({
       listModels: async () => {
-        writeFileSync(path, `${readFileSync(path, "utf8")}perf-issue: cpa/model-a [high]\n`);
-        return [{ provider: "cpa", id: "model-a", name: "Model A" }];
+        const current = readDoc(path);
+        current.roles["perf-issue"] = ["cpa/model-a [high]"];
+        writeDoc(path, current);
+        return [
+          { provider: "cpa", id: "model-a", name: "Model A" },
+          { provider: "cpa", id: "model-b", name: "Model B" },
+        ];
       },
     });
     const result = await saveBudgetConfiguration(
@@ -359,14 +397,14 @@ describe("role editor", () => {
       new AbortController().signal,
     );
     if (!result.ok) throw new Error(result.reason);
-    const text = readFileSync(path, "utf8");
-    expect(text).toContain("perf-issue: cpa/model-a [high]");
-    expect(text).toContain("bug-fix: cpa/model-a [high]");
+    const document = readDoc(path);
+    expect(document.roles["perf-issue"]).toEqual(["cpa/model-a [high]"]);
+    expect(document.roles["bug-fix"]).toEqual(["cpa/model-a [high]"]);
   });
 
-  it("fills an unconfigured role with the selected default model", async () => {
-    const home = tempHome("# header\n");
-    const path = join(home, "pstack-models.mdc");
+  it("fills unconfigured roles with the selected default model", async () => {
+    const home = tempHome({ roles: {} });
+    const path = pathOf(home);
     const result = await saveBudgetConfiguration(
       path,
       {
@@ -374,19 +412,18 @@ describe("role editor", () => {
         scope: "unconfigured",
         defaultModel: { provider: "cpa", model: "model-a" },
       },
-      llm as unknown as LlmRuntime,
+      llm,
       new AbortController().signal,
     );
     if (!result.ok) throw new Error(result.reason);
-    const text = readFileSync(path, "utf8");
-    expect(text).toContain("# budget: large (xhigh)");
-    expect(text).toContain("feature, refactoring: cpa/model-a [high]");
+    const document = readDoc(path);
+    expect(document.budget).toBe("large (xhigh)");
+    expect(document.roles["feature, refactoring"]).toEqual(["cpa/model-a [high]"]);
   });
 
   it("does not rewrite configured concrete routes in the unconfigured scope", async () => {
-    const original = "# header\nbug-fix: cpa/model-a [low]\n";
-    const home = tempHome(original);
-    const path = join(home, "pstack-models.mdc");
+    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low]"] } });
+    const path = pathOf(home);
     const result = await saveBudgetConfiguration(
       path,
       {
@@ -394,31 +431,23 @@ describe("role editor", () => {
         scope: "unconfigured",
         defaultModel: { provider: "cpa", model: "model-a" },
       },
-      llm as unknown as LlmRuntime,
+      llm,
       new AbortController().signal,
     );
     if (!result.ok) throw new Error(result.reason);
-    expect(readFileSync(path, "utf8")).toContain("bug-fix: cpa/model-a [low]");
+    expect(readDoc(path).roles["bug-fix"]).toEqual(["cpa/model-a [low]"]);
   });
 
-  it("leaves a role line with parse issues untouched during a budget apply", async () => {
-    const original = "bug-fix: cpa/model-a [low], bad token\n";
-    const home = tempHome(original);
-    const path = join(home, "pstack-models.mdc");
+  it("leaves a role with a parse issue untouched during a budget apply", async () => {
+    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low], bad token"] } });
+    const path = pathOf(home);
     const result = await saveBudgetConfiguration(
       path,
       { tier: "large", scope: "concrete" },
-      llm as unknown as LlmRuntime,
+      llm,
       new AbortController().signal,
     );
-    expect(result.ok).toBe(true);
-    expect(readFileSync(path, "utf8")).toContain("bad token");
-  });
-
-  it("preserves CRLF line endings when editing a role line", () => {
-    const text = "# header\r\nbug-fix: cpa/model-a [low]\r\n";
-    expect(updateRoleText(text, "bug-fix", "cpa/model-a [high]")).toBe(
-      "# header\r\nbug-fix: cpa/model-a [high]\r\n",
-    );
+    if (!result.ok) throw new Error(result.reason);
+    expect(readDoc(path).roles["bug-fix"]).toEqual(["cpa/model-a [low], bad token"]);
   });
 });

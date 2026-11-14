@@ -3,8 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
-import { selectRoutes } from "../src/roles/role-config.ts";
-import { parseRoute, routeId } from "../src/roles/route.ts";
+import { parseRoute } from "../src/roles/route.ts";
 import { findRole } from "../src/roles/role-manifest.ts";
 import { parseRoleConfiguration, readRoleConfiguration } from "../src/roles/role-store.ts";
 
@@ -104,67 +103,6 @@ describe("role manifest, parser, and route selection", () => {
   it("distinguishes a missing file from an unreadable path", () => {
     expect(readRoleConfiguration(jsonPath(homeWithRoles(undefined))).status).toBe("missing");
     expect(readRoleConfiguration(homeWithRoles(undefined)).status).toBe("unreadable");
-  });
-
-  it("expands automatic panels and selects a list entry by its exact route", () => {
-    const parsed = parseRoleConfiguration(
-      JSON.stringify({
-        version: 1,
-        roles: {
-          "arena runners": ["p/a [high]", "p/b [low]"],
-          "swarm workers": ["p/a [high]", "p/b [low]"],
-        },
-      }),
-      "/x",
-    );
-    expect(parsed.status).toBe("loaded");
-    if (parsed.status !== "loaded") return;
-    const panel = selectRoutes(
-      findRole("arena runners")!,
-      parsed.roles.get("arena runners"),
-      undefined,
-    );
-    expect(panel.mode).toBe("panel");
-    expect(panel.routes).toHaveLength(2);
-    const entry = parsed.roles.get("swarm workers");
-    const selected = selectRoutes(findRole("swarm workers")!, entry, "p/b [low]");
-    expect(selected.mode).toBe("selected");
-    expect(selected.routes[0]).toMatchObject({ model: "b" });
-    expect(selected.roleRoute).toBe("p/b [low]");
-    const selectedById = selectRoutes(
-      findRole("swarm workers")!,
-      entry,
-      routeId(entry!.routes[1]!),
-    );
-    expect(selectedById.routes[0]).toMatchObject({ model: "b" });
-    expect(() => selectRoutes(findRole("swarm workers")!, entry, undefined)).toThrow(
-      /has 2 routes; pass roleRoute/,
-    );
-  });
-
-  it("rejects roleRoute on a single role or an automatic panel, and lists available routes", () => {
-    const parsed = parseRoleConfiguration(
-      JSON.stringify({
-        version: 1,
-        roles: {
-          "bug-fix": ["p/a"],
-          "arena runners": ["p/a", "p/b"],
-          "swarm workers": ["p/a", "p/b"],
-        },
-      }),
-      "/x",
-    );
-    expect(parsed.status).toBe("loaded");
-    if (parsed.status !== "loaded") return;
-    expect(() => selectRoutes(findRole("bug-fix")!, parsed.roles.get("bug-fix"), "p/a")).toThrow(
-      /single route/,
-    );
-    expect(() =>
-      selectRoutes(findRole("arena runners")!, parsed.roles.get("arena runners"), "p/a"),
-    ).toThrow(/automatic panel/);
-    expect(() =>
-      selectRoutes(findRole("swarm workers")!, parsed.roles.get("swarm workers"), "ghost/model"),
-    ).toThrow(/available routes/);
   });
 });
 

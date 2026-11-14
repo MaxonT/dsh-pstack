@@ -6,9 +6,7 @@ import type { Context } from "@deepseek-ai/cordis";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import {
-  AGENT_TEAMS_CONFLICT,
   apply,
-  assertNoAgentTeams,
   createPotetoModeSection,
   SECTION_NAME,
   SECTION_ORDER,
@@ -104,18 +102,6 @@ describe("poteto-mode creator root preset", () => {
     expect(block).toContain("id: tool-subagent-control");
     expect(block).not.toMatch(/^\s+- id: tool-subagent$/m);
     expect(block).not.toMatch(/^\s+- id: tool-subagent-fork$/m);
-  });
-});
-
-describe("Agent Teams guard", () => {
-  it("rejects a profile with the Agent Teams service", () => {
-    const ctx = {
-      get(name: string) {
-        return name === "agentTeams" ? {} : undefined;
-      },
-    } as unknown as Context;
-
-    expect(() => assertNoAgentTeams(ctx)).toThrow(AGENT_TEAMS_CONFLICT);
   });
 });
 

@@ -2,19 +2,26 @@
 
 import { useEffect, useRef, useState, type ReactElement } from "react";
 
-import type { CatalogueResult } from "../models.ts";
-import type { BudgetApplyRequest } from "../budget.ts";
+import type { CatalogueResult } from "../../models.ts";
+import type { BudgetApplyRequest } from "../../roles/budget.ts";
 import type {
   BudgetApplyResult,
   RoleFileSnapshot,
   RouteView,
   SaveRoleRequest,
   SaveRoleResult,
-} from "../role-wire.ts";
-import { IconAlert, IconEraser, IconInfo, IconRefresh, IconSave, IconUndo } from "./icons.tsx";
-import { BudgetDialog, budgetLabel } from "./BudgetDialog.tsx";
-import { messageOf } from "./message.ts";
-import { RoleCard } from "./RoleCard.tsx";
+} from "../../roles/role-wire.ts";
+import {
+  IconAlert,
+  IconEraser,
+  IconInfo,
+  IconRefresh,
+  IconSave,
+  IconUndo,
+} from "../components/icons.tsx";
+import { BudgetDialog, budgetLabel } from "../components/BudgetDialog.tsx";
+import { messageOf } from "../components/message.ts";
+import { RoleCard } from "../components/RoleCard.tsx";
 import {
   draftOf,
   inheritedRoutes,
@@ -22,12 +29,19 @@ import {
   isDirty,
   resetRoutes,
   type DraftMap,
-} from "./role-draft.ts";
-import { routeIsIncomplete, routeIsInvalid } from "./role-selectors.ts";
-import { ensurePstackStyles } from "./styles.ts";
-import { Toast, type ToastMessage } from "./toast.tsx";
-import { Button, IconButton, Spinner, Status, confirmDiscard, type StatusTone } from "./ui.tsx";
-import type { PstackTranslations } from "./locales/index.ts";
+} from "../roles/role-draft.ts";
+import { routeIsIncomplete, routeIsInvalid } from "../roles/role-selectors.ts";
+import { ensurePstackStyles } from "../components/styles.ts";
+import { Toast, type ToastMessage } from "../components/toast.tsx";
+import {
+  Button,
+  IconButton,
+  Spinner,
+  Status,
+  confirmDiscard,
+  type StatusTone,
+} from "../components/ui.tsx";
+import type { PstackTranslations } from "../locales/index.ts";
 
 ensurePstackStyles();
 
@@ -455,11 +469,7 @@ export function RoleSettingsView(props: {
           <IconAlert size={14} />
           <ul className="pstack-notice-list">
             {snapshot.issues.map((issue, index) => (
-              <li key={`${issue.line ?? "x"}-${index}`}>
-                {issue.line === undefined
-                  ? issue.message
-                  : t("issueAtLine", { line: issue.line, message: issue.message })}
-              </li>
+              <li key={index}>{issue.message}</li>
             ))}
           </ul>
         </div>

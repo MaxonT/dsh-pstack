@@ -7,22 +7,22 @@ import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
 import type {} from "@deepseek-ai/dsh-typert-registry";
 
 import { collectCatalogue, type CatalogueResult } from "./models.ts";
-import type { BudgetApplyRequest } from "./budget.ts";
-import { modelsFilePath, readRoleConfiguration, resolveDshHome } from "./role-config.ts";
+import type { BudgetApplyRequest } from "./roles/budget.ts";
+import { modelsFilePath, readRoleConfiguration, resolveDshHome } from "./roles/role-store.ts";
 import {
   saveBudgetConfiguration,
   saveRoleConfiguration,
   snapshotFromConfiguration,
-} from "./role-editor.ts";
-import { pstackRolesHostContribution, ROLES_SERVICE } from "./role-remote.ts";
+} from "./roles/role-editor.ts";
+import { pstackRolesHostContribution, ROLES_SERVICE } from "./roles/role-remote.ts";
 import type {
   BudgetApplyResult,
   RoleFileSnapshot,
   SaveRoleRequest,
   SaveRoleResult,
-} from "./role-wire.ts";
+} from "./roles/role-wire.ts";
 
-/** Read and write `$DSH_HOME/pstack-models.mdc` for the Web settings page. */
+/** Read and write `$DSH_HOME/pstack-models.json` for the Web settings page. */
 export class PstackRolesService extends TypertRemoteService {
   static inject = ["llm", "typert"];
 

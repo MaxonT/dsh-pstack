@@ -1,7 +1,7 @@
 /** Catalogue selectors used by the role route editor. */
 
-import type { CatalogueResult, ModelEntry, ProviderEntry } from "../models.ts";
-import type { RouteView } from "../role-wire.ts";
+import type { CatalogueResult, ModelEntry, ProviderEntry } from "../../models.ts";
+import type { RouteView } from "../../roles/role-wire.ts";
 
 /** Why a provider cannot supply a selectable route, or undefined when it can. */
 export type ProviderIssue = "unavailable" | "noModels";

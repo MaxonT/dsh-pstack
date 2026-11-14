@@ -633,12 +633,6 @@ const CSS = `
   flex: none;
   padding-top: 4px;
 }
-.pstack-role-line {
-  color: var(--dsw-alias-label-dimmed);
-  font-size: 11px;
-  line-height: 16px;
-  white-space: nowrap;
-}
 .pstack-route-list {
   display: flex;
   flex-direction: column;
