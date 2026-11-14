@@ -4,7 +4,7 @@
 
 ## Role（角色）
 
-pstack 工作流中的委派职责，由 `src/role-manifest.ts` 的精确 key 标识。Role 决定子代理使用哪些模型路由以及路由如何展开；它不是 Agent preset，也不直接规定子代理的人格或工具集合。
+pstack 工作流中的委派职责，由 `src/roles/role-manifest.ts` 的精确 key 标识。调用方读取角色文件把 Role 映射到子代理要用的模型路由，工具本身不做角色解析；Role 不是 Agent preset，也不直接规定子代理的人格或工具集合。
 
 ## Route（路由）
 
@@ -15,23 +15,20 @@ pstack 工作流中的委派职责，由 `src/role-manifest.ts` 的精确 key �
 
 角色文件中的 `routes: []` 是保存协议中的**删除该角色行**操作，不是一个继承路由。删除后角色处于未配置状态，委派时同样继承父级。
 
-## Role shape 与 autoPanel
+## Role shape
 
-Role 的路由基数和展开方式由两个独立属性描述：
+Role 的路由基数由 `shape` 描述：
 
-- `shape = single`：最多配置一条路由，不接受 `roleIndex`。
-- `shape = list`：配置多条路由。普通 list 通过 `roleIndex` 选择一条，缺省选择第一条。
-- `autoPanel = true`：list 角色的一种展开方式，一次调用为每条配置启动一个子代理，不接受 `roleIndex`。
-
-`shape` 描述存储结构，`autoPanel` 描述是否自动展开，两者不可互相替代。
+- `shape = single`：最多配置一条路由。
+- `shape = list`：配置多条路由；由调用方挑一条传给子代理。
 
 ## Budget（推理预算）
 
-`budget` 是角色文件中的全局推理目标，写作 `# budget: <tier> (<target>)`。四档为 `unlimited`、`large`、`medium`、`small`，分别以 `max`、`xhigh`、`high`、`medium` 为目标 effort。它是一次批量应用操作的记录，不直接参与委派；真正生效的是每个角色行里的具体模型和 `[effort]`。应用预算时按模型实际公布的 efforts 做精确匹配、向下回退或标记需要手动选择；自定义 efforts 或没有 effort 的模型保持原值并提示。
+`budget` 是角色文件中的全局推理目标，存为 JSON 的 `budget` 字段，值形如 `<tier> (<target>)`，如 `large (xhigh)`。四档为 `unlimited`、`large`、`medium`、`small`，分别以 `max`、`xhigh`、`high`、`medium` 为目标 effort。它是一次批量应用操作的记录，不直接参与委派；真正生效的是每个角色的具体模型和路由 effort。应用预算时按模型实际公布的 efforts 做精确匹配、向下回退或标记需要手动选择；自定义 efforts 或没有 effort 的模型保持原值并提示。
 
 ## Agent preset（Agent 预设）
 
-DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会话能力。根 preset 面向用户会话，子代理 preset 面向委派。`pstack_subagent` 的 `agent` 选择 preset 类别，`role` 选择模型路由，两者是正交配置。
+DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会话能力。根 preset 面向用户会话，子代理 preset 面向委派。`pstack_subagent` 的 `agent` 选择 preset 类别；模型路由由调用方读取角色文件后通过 `provider`/`model`/`reasoningEffort` 传入，两者是正交配置。
 
 ## Generated tree（生成树）
 
