@@ -11,14 +11,14 @@
 - `baseline.json`：发布兼容键、DSH 范围、上游 pstack commit。
 - `docs/`：port 自身的详细规则和记录。
 
-`port/` 不保存插件实现、测试、生成树或 playground 的验证资料。实现位于 `src/`，验证位于 `playground/`。
+`port/` 只保存上述交付文件。
 
 ## 文档指针
 
 | 文档 | 职责 |
 | --- | --- |
 | [docs/baseline.md](./docs/baseline.md) | baseline.json 字段、兼容键和发布同步规则 |
-| [docs/extensions.md](./docs/extensions.md) | 非 playground gap 直接产生的本地扩展 |
+| [docs/extensions.md](./docs/extensions.md) | 非 gap 移植的本地扩展 |
 | [docs/regressions.md](./docs/regressions.md) | 反复出现的移植问题和验证方式 |
 | [../docs/dsh-adapter.md](../docs/dsh-adapter.md) | dsh.md 模板、分块规则和 raw/port 差异 |
 | [../src/AGENTS.md](../src/AGENTS.md) | src 长期实现规范和边界原则 |

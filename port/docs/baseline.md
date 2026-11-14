@@ -19,6 +19,5 @@
 
 ## 边界
 
-- 本文件属于 port 的发布边界，不属于 playground 的测试配置。
-- 不要在 playground 场景或 worker 配置中读取或复制 `baseline.json`。
+- 本文件只属于 port 的发布边界。
 - 兼容键变更和发布版本变更应在同一个发布准备批次中完成。

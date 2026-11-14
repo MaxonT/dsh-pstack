@@ -1,7 +1,5 @@
 # skills 目录
 
-本文件只描述 `skills/` 技能工作区的职责和文档同步规则，不记录 `port/`、`src/` 或 `playground/` 的规则。
-
 本目录是随包发布的技能工作区：`authored/` 由本仓维护，`.agents/skills/` 是 vendored 上游技能（构建时以 `vendored/` 发布）。根 `README.md` 是这些技能的用户文档。
 
 ## 变更技能后同步用户文档

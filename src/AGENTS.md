@@ -11,8 +11,8 @@
 ## 边界
 
 - Host、Client 和共享协议各守自己的边界；跨边界只走明确契约，不绕过运行时服务直接访问对方内部。
-- 生成树、生成配置和 `port/dsh.md` 不是实现源码；不要手工修改生成物。
-- 业务逻辑留在 `src/`；不要塞进 `cordis.patch.yml`、`scripts/` 或 `port/`。
+- 生成物不是实现源码，不手工修改生成结果。
+- 业务逻辑在 `src/` 内实现。
 - 新功能先确认它是否来自 playground 缺口；非缺口扩展按 [../port/docs/extensions.md](../port/docs/extensions.md) 登记。
 
 ## UI 风格
