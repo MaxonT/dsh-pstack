@@ -1,6 +1,6 @@
 # raw 目录说明
 
-本文件说明 `playground/raw/` 的文件职责和生成规则。`dsh.md` 的逐行编写规则不在 playground 内维护，统一链接根目录的 [docs/harness/AGENTS.md](../../docs/harness/AGENTS.md)。
+本文件说明 `playground/raw/` 的文件职责和生成规则。`dsh.md` 的逐行编写规则不在 playground 内维护，统一链接根目录的 [docs/dsh-adapter.md](../../docs/dsh-adapter.md)。
 
 ## 文件职责
 
@@ -21,7 +21,7 @@
 
 ## dsh.md 规则边界
 
-`playground/raw/dsh.md` 和 `playground/raw/dsh.zh.md` 的结构、单元格、逐行同构和证据要求，以根目录 [docs/harness/AGENTS.md](../../docs/harness/AGENTS.md) 为准。
+`playground/raw/dsh.md` 和 `playground/raw/dsh.zh.md` 的结构、单元格、逐行同构和证据要求，以根目录 [docs/dsh-adapter.md](../../docs/dsh-adapter.md) 为准。
 
 本文件只说明 raw 目录的职责和生成边界，不重复根目录的编写规则。
 

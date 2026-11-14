@@ -6,7 +6,7 @@
 
 - 根 `pstack/` 只放生成的插件树。生成器可以整体替换该目录，不允许把手工文件放在其中。
 - 根 `port/` 只保存最终适配文档与维护规则：`dsh.md`、`dsh.zh.md`、`AGENTS.md`。生成器和发布工具在 `scripts/`，测试脚手架在 `playground/`。以 `dsh.md` 为源生成的本地化适配文档进入生成树；面向审阅者的本地化版本不进入生成树，由对应本地化 README 直接链接。
-- `port/dsh.md` 是当前适配文案的唯一手写来源，必须按审核通过的适配说明、当前 `cordis.patch.yml` 和实现维护。`dsh.md` 和 `dsh.zh.md` 的编写规则统一在 [docs/harness/AGENTS.md](../docs/harness/AGENTS.md)；本文件只保留 port 专属的生成与发布约束。可选插件表以包名为主键，不另外维护编号。
+- `port/dsh.md` 是当前适配文案的唯一手写来源，必须按审核通过的适配说明、当前 `cordis.patch.yml` 和实现维护。`dsh.md` 和 `dsh.zh.md` 的编写规则统一在 [docs/dsh-adapter.md](../docs/dsh-adapter.md)；本文件只保留 port 专属的生成与发布约束。可选插件表以包名为主键，不另外维护编号。
 - 插件源码、测试、扩展登记和回归记录都在生成树之外。生成器不会修改这些内容。
 - 根 `package.json` 的 `exports` 由根 `vite.config.ts` 生成。主 pack 的 `entry` 为 `./src/*.ts`；仅第一个 pack 的 `customExports` 补齐非源码入口。其他 pack 使用 `exports: false`。
 - `upstream/cursor-plugins` 提供 pstack 源文件。DSH 的基线来自目标运行时及其随附文档和 API。
