@@ -40,9 +40,9 @@ release. Add a tool name to select part of the graph. For example, run
 
 ## Bundle assembly
 
-- 根 `cordis.patch.yml` 的装配规则见 [src/AGENTS.md](./src/AGENTS.md#root-bundle-assembly)；它不是生成物。
-- 修改前同时读 `docs/architecture.md`；`src/` 模块实现遵循 `src/AGENTS.md`。
-- 生成树 `pstack/` 由 `scripts/generate-pstack.mjs` 维护，不手工编辑。
+- 根 `cordis.patch.yml` 是 Host/Client 装配清单，不是生成物；修改前读 `docs/architecture.md`。
+- 新增、删除或改变模块、工具、服务或 preset 时，同步 `src/` 实现、导出和测试；生成树 `pstack/` 不手工编辑。
+- `src/` 的长期实现规范见 [src/AGENTS.md](./src/AGENTS.md)。
 
 ## Commits
 

@@ -21,7 +21,7 @@
 | [docs/extensions.md](./docs/extensions.md) | 非 playground gap 直接产生的本地扩展 |
 | [docs/regressions.md](./docs/regressions.md) | 反复出现的移植问题和验证方式 |
 | [../docs/dsh-adapter.md](../docs/dsh-adapter.md) | dsh.md 模板、分块规则和 raw/port 差异 |
-| [../src/AGENTS.md](../src/AGENTS.md) | src 模块边界和开发规则 |
+| [../src/AGENTS.md](../src/AGENTS.md) | src 长期实现规范和边界原则 |
 
 `dsh.md` 的编写规则只链接 `docs/dsh-adapter.md`，不在 port 内复制。可选插件表以包名为主键，不另外维护编号。
 
@@ -39,4 +39,4 @@
 - 通用本地能力可以独立适配，但不宣称等价于云服务。
 - 非常用能力不默认提供插件补偿；环境不满足时明确报告不可用，不把跳过算作适配成功。
 - `port/` 只写最终交付和发布规则；实现细节见 `src/AGENTS.md`，验证流程见 `playground/AGENTS.md`。
-- 适配实现变化如果需要新增、删除或改变工具、服务、skill 目录或 preset，还要同步根 `cordis.patch.yml`；装配规则见 [../src/AGENTS.md](../src/AGENTS.md#root-bundle-assembly)。
+- 适配实现变化如果需要新增、删除或改变工具、服务、skill 目录或 preset，还要同步根 `cordis.patch.yml`；装配规则见根 [AGENTS.md](../AGENTS.md#bundle-assembly)。
