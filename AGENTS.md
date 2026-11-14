@@ -38,6 +38,11 @@ release. Add a tool name to select part of the graph. For example, run
 - 为概念命名时阅读 `docs/glossary.md`；引入新概念时补充术语。
 - 开始任何仓库任务前，阅读 `docs/decisions/AGENTS.md`，按其中的查找规则阅读与任务相关的记录。
 
+## Bundle assembly
+
+- 根 `cordis.patch.yml` 负责选择 Host/Client 模块、注册技能和组合 preset，不是生成物；修改前先读 `docs/architecture.md`。
+- `src/` 模块实现遵循 `src/AGENTS.md`；生成树 `pstack/` 由 `scripts/generate-pstack.mjs` 维护，不手工编辑。
+
 ## Commits
 
 - 破坏性变更提交使用 Conventional Commits 的 `type!:` 形式，例如 `feat!: ...`；不要使用 `!feat:`。
