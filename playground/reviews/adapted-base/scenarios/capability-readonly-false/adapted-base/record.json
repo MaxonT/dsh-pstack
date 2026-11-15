@@ -1,0 +1,103 @@
+{
+  "scenarioId": "capability-readonly-false",
+  "phase": "adapted",
+  "environment": {
+    "worker": 3,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-c6ee8ba7-ac37-41bd-ac71-45a772624d80",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -R . | head -50; echo ---; cat src/a.ts"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 30; cat src/a.ts"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "我的目标很简单：让一个执行者子代理把 `src/a.ts` 里的常量从 1 改成 2，然后把结果汇报给你。改动本身只有一行。\n你的目标是让一个执行者把 `src/a.ts` 里的常量从 1 改成 2 并汇报结果。已经完成。\n\n执行者子代理读取并编辑了文件，我独立复核了内容。\n\n`src/a.ts` 当前内容：\n\n```ts\nexport const a = 2;\n```\n\n改动只有一处：导出的常量字面量由 1 变为 2，其余文件与格式未受影响。后续维护者只需注意这个常量值已被改为 2。",
+    "userText": "让一个执行者把 src/a.ts 里的常量值从 1 改成 2，改完把结果告诉我。",
+    "userTexts": ["让一个执行者把 src/a.ts 里的常量值从 1 改成 2，改完把结果告诉我。"],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=4", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:21:25.166Z"
+}

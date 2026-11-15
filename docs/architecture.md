@@ -2,6 +2,28 @@
 
 本文描述 `dsh-pstack` 当前的模块边界、依赖方向和扩展入口。用户使用方式见根 README；移植、上游升级、生成树及其构建边界按 `port/AGENTS.md` 执行。
 
+## 端到端流程
+
+```text
+playground 真实会话验证
+  → 能力缺口和证据分析
+  → port/dsh.md + baseline.json
+  → src/ 实现和 cordis.patch.yml 装配
+  → 生成 pstack/ 和 build
+  → 根 README 状态/兼容表
+  → release-ready
+```
+
+- `playground` 负责运行 raw/adapted probe、收集证据和分析问题。
+- `port` 负责最终 dsh 适配文案和发布兼容元数据。
+- `src` 负责 Host/Client 实现；`cordis.patch.yml` 负责装配。
+- 根 README 同步已有兼容表、技能与能力状态、能力限制和最终适配结果。
+- 发布由用户手动执行；agent 停在 release-ready。
+
+## Bundle assembly
+
+根 `cordis.patch.yml` 是 Host/Client 装配清单，不是生成物。它选择模块、注册技能和组合 preset；新增、删除或改变模块、工具、服务或 preset 时，同步 `src/` 实现、导出和测试，生成树 `pstack/` 不手工编辑。
+
 ## 系统边界
 
 本仓提供一个 DSH Cordis bundle：
@@ -9,28 +31,28 @@
 - Host 端注册技能、模型目录、角色目录和子代理工具，并提供角色配置 Remote 服务与 Agent preset。
 - Client 端在插件详情页注入配置入口，通过 Remote 服务管理角色配置，并通过可选的插件管理接口管理关联插件。
 - 上游 pstack 内容经生成器进入 `pstack/`，构建时复制到 `dist/pstack/`；vendored 和 authored 技能分别复制到 `dist/skills/` 下。
-- 角色配置保存在 `$DSH_HOME/pstack-models.mdc`。该文件由本插件读取和编辑，不是 DSH 自动加载的规则文件。
+- 角色配置保存在 `$DSH_HOME/pstack-models.json`。该文件由本插件读取和编辑，不是 DSH 自动加载的规则文件；同目录存在旧 `pstack-models.mdc` 时，缺失 JSON 会先迁移并删除旧文件。
 
 ## 模块与入口
 
 | 模块 | 真实路径与入口 | 当前职责 |
 |---|---|---|
 | Bundle 装配 | `cordis.patch.yml` | 注册技能目录、Host 工具和角色服务；组合两个根 preset 与三个子代理 preset。 |
-| Host 主入口 | `src/index.ts` | 注册可信的隐藏技能加载器；其余 Host 能力各自通过独立子路径（如 `dsh-pstack/models`）由 bundle 按行加载。 |
-| 技能加载 | `src/skill.ts`、`src/paths.ts` | 实现 `pstack_skill`，按名称加载技能及目录内资源；集中定义发布包内资源路径。 |
-| 模型目录 | `src/models.ts`、`src/catalogue.ts` | 实现 `pstack_models`，读取实时 LLM adapter 目录，保留单 provider 或 model 的发现错误；共享 catalogue 类型、schema 与 wire 解析。 |
-| 角色清单 | `src/role-manifest.ts`、`src/role-catalog.ts` | 定义角色 key、shape 和自动面板属性；实现只读的 `pstack_roles`。 |
-| 子代理委派 | `src/subagent.ts` | 实现 `pstack_subagent`；解析角色路由，完成参数、能力和模型预检，再调用 `ctx.subagents.startActivation`。 |
-| 角色文件 | `src/role-config.ts`、`src/role-file.ts`、`src/route.ts`、`src/budget.ts`、`src/role-editor.ts` | 解析 `$DSH_HOME/pstack-models.mdc`，以共享 Route 语法和 RoleFileDocument 选择路由；按预算把目标推理档位映射到具体模型并原子保存。 |
-| 角色 Remote 边界 | `src/role-wire.ts`、`src/role-remote.ts`、`src/role-service.ts` | 定义并严格校验传输结构；共享 Typert 描述符；在 Host 暴露状态、目录、保存和预算应用方法。 |
-| 根与子代理 preset | `src/preset.ts`、`src/preset-copy.ts`、`src/poteto-mode.ts`、`src/readonly.ts` | 注册本地化 preset，向根会话注入常驻 `poteto-mode` 内容，并为只读子代理设置沙箱策略。 |
-| Client 入口与对话框 | `src/client/index.ts`、`src/client/PstackConfigDialog.tsx` | 挂载 Remote 描述符、注册 locale 和插件详情动作；管理配置对话框、页签和未保存草稿。 |
-| 角色与插件页面 | `src/client/RoleSettingsPage.tsx`、`src/client/RoleCard.tsx`、`src/client/BudgetDialog.tsx`、`src/client/RecommendedPluginsPage.tsx` | 编辑角色草稿并展示保存结果；按预算批量预览并应用推理档位；展示关联插件及其变更结果。 |
-| Client 支撑 | `src/client/ui.tsx`、`src/client/icons.tsx`、`src/client/styles.ts`、`src/client/toast.tsx`、`src/client/message.ts`、`src/client/focus-trap.ts`、`src/client/locales/`、`src/client/role-copy.ts`、`src/client/role-draft.ts`、`src/client/role-selectors.ts` | 提供本插件的 UI 组件、样式、共享提示、焦点陷阱、翻译、角色草稿和选择器文案。 |
-| 移植与生成 | `port/generate.mjs`、`port/dsh.md`、`port/dsh.zh.md`、`playground/raw/`（`AGENTS.md`、`dsh.md`、`generate.ts`）、`playground/scenarios/` | 从固定上游生成 `pstack/`；按 `playground/raw/AGENTS.md` 的规则改判出 DSH 适配文档，并在场景注册表维护行为场景、排除与环境。 |
-| 发布元数据 | `port/release-compatibility.ts`、`bump.config.ts` | 按显式兼容键同步双语 README 的版本表；每个 `x.y` 保留最新 `z`，新兼容键新增行，并把双语 README 加入发布提交。 |
+| Host 主入口 | `src/index.ts` | 注册受信技能加载器；其余 Host 能力各自通过独立子路径（如 `dsh-pstack/models`）由 bundle 按行加载。 |
+| 技能加载 | `src/skill.ts`、`src/lib/paths.ts` | 实现 `pstack_skill`，按名称加载技能及目录内资源；集中定义发布包内资源路径。 |
+| 模型目录 | `src/models.ts`、`src/models/catalogue.ts` | 实现 `pstack_models`，读取实时 LLM adapter 目录，保留单 provider 或 model 的发现错误；共享 catalogue 类型、schema 与 wire 解析。 |
+| 角色清单 | `src/roles/role-manifest.ts`、`src/role-catalog.ts` | 定义角色 key 与 shape；实现只读的 `pstack_roles`，按角色报告配置好的 provider/model/effort 路由。 |
+| 子代理委派 | `src/subagent.ts` | 实现 `pstack_subagent` 薄包装：一次调用只启动一个子代理，只有 `prompt` 必填；`provider`/`model`/`reasoningEffort` 覆盖子代理路由，省略则继承父路由；完成参数、能力和模型预检后调用 `ctx.subagents.startActivation`。 |
+| 角色文件 | `src/roles/role-store.ts`、`src/roles/route.ts`、`src/roles/budget.ts`、`src/roles/role-editor.ts`、`src/compat/legacy-role-file.ts` | 读写 `$DSH_HOME/pstack-models.json` 这份 typed JSON 文档，以共享 Route 语法保存每个角色的路由；旧 `.mdc` 行格式只在首次读取时由 `compat/` 迁移。按预算把目标推理档位映射到具体模型并原子保存。 |
+| 角色 Remote 边界 | `src/roles/role-wire.ts`、`src/roles/role-remote.ts`、`src/role-service.ts` | 定义并严格校验传输结构；共享 Typert 描述符；在 Host 暴露状态、目录、保存和预算应用方法。 |
+| 根与子代理 preset | `src/preset.ts`、`src/presets/preset-copy.ts`、`src/poteto-mode.ts`、`src/readonly.ts` | 注册本地化 preset，向根会话注入常驻 `poteto-mode` 内容，并为只读子代理设置沙箱策略。 |
+| Client 入口与对话框 | `src/client/index.ts`、`src/client/pages/PstackConfigDialog.tsx` | 挂载 Remote 描述符、注册 locale 和插件详情动作；管理配置对话框、页签和未保存草稿。 |
+| 角色与插件页面 | `src/client/pages/RoleSettingsPage.tsx`、`src/client/pages/RecommendedPluginsPage.tsx`、`src/client/components/RoleCard.tsx`、`src/client/components/BudgetDialog.tsx` | 编辑角色草稿并展示保存结果；按预算批量预览并应用推理档位；展示关联插件及其变更结果。 |
+| Client 支撑 | `src/client/components/`（`ui.tsx`、`icons.tsx`、`styles.ts`、`toast.tsx`、`message.ts`、`focus-trap.ts`）、`src/client/roles/`（`role-copy.ts`、`role-draft.ts`、`role-selectors.ts`）、`src/client/locales/` | 提供本插件的 UI 组件、样式、共享提示、焦点陷阱、翻译、角色草稿和选择器文案。 |
+| 移植与生成 | `scripts/generate-pstack.mjs`、`port/dsh.md`、`port/dsh.zh.md`、`playground/raw/`（`dsh.md`、`dsh.zh.md`、`dsh-evidence.md`）、`playground/scenarios/` | 从固定上游生成根 `pstack/` 和 `playground/raw/pstack/`；按 `playground/docs/raw.md` 的规则维护 DSH 适配文档，并在 `playground/scenarios/capability-inventory.json` 和 `playground/scenarios/capabilities/` 维护能力探针。 |
+| 发布元数据 | `scripts/release-compatibility.ts`、`bump.config.ts` | 按显式兼容键同步各本地化 README 的版本表；每个 `x.y` 保留最新 `z`，新兼容键新增行，并把对应本地化 README 加入发布提交。 |
 | 构建与打包 | `vite.config.ts`、`package.json` | 分别构建 Host 与浏览器 Client；导出 Host 模块，复制生成树和技能资源。 |
-| 自动化验证 | `tests/`、`playground/scripts/`（raw-generate、prepare、bootstrap、run、run-batch、run-ui、run-conflict、collect、review、status、stop、browser） | 运行单元和 DOM 交互测试；在真实 DSH playground 中运行行为、插件 UI 与冲突场景，收集 RunRecord 并用审核侧车校验，浏览器脚本做不涉及模型选择的交互。 |
+| 自动化验证 | `tests/`、`playground/scripts/`（doctor、raw-generate、prepare、bootstrap、run、run-batch、collect、review、status、stop、browser） | 运行单元和 DOM 交互测试；在真实 DSH playground 中运行 capability probes，收集 RunRecord、SessionAnalysis 和当前评审快照。 |
 
 ## 依赖方向
 
@@ -49,44 +71,47 @@
 ```text
 Client 页面
   → src/client/index.ts 的页面 API 适配
-  → src/role-remote.ts 的 Typert 描述符
+  → src/roles/role-remote.ts 的 Typert 描述符
   → src/role-service.ts
-  → src/role-editor.ts
-  → src/role-config.ts
-  → $DSH_HOME/pstack-models.mdc
+  → src/roles/role-editor.ts
+  → src/roles/role-store.ts
+  → $DSH_HOME/pstack-models.json
 ```
 
-`role-wire.ts` 是 Host 与 Client 共享的传输契约；`role-remote.ts` 同时供 Host 注册和 Client 挂载。Client 使用共享类型、清单和描述符，不直接访问文件系统或 Host 的 LLM 服务。
+`roles/role-wire.ts` 是 Host 与 Client 共享的传输契约；`roles/role-remote.ts` 同时供 Host 注册和 Client 挂载。Client 使用共享类型、清单和描述符，不直接访问文件系统或 Host 的 LLM 服务。
 
-委派链路独立读取同一份角色文件：
+委派链路不再读取角色文件。调用方在委派前按需读取同一份角色文件，自己决定传哪个模型：
 
 ```text
 src/subagent.ts
-  → src/role-config.ts + src/role-manifest.ts
-  → DSH LLM 预检
+  → 参数校验 + DSH LLM 预检（仅当显式给了 provider/model）
   → ctx.subagents.startActivation
 ```
 
-委派前重新读取文件。未配置的角色继承父级路由；配置读取或校验失败会阻止相应委派，而不是静默改用其他路由。
+`pstack_subagent` 只把调用方给的 `provider`、`model` 和可选 `reasoningEffort` 转成子代理的 `agentOptions`；三者都省略时子代理继承父路由。文件缺失或某个角色未配置不影响委派，因为工具本身不解析角色文件。一次调用只启动一个子代理；多子代理由调用方在同一消息里并行多次调用。
 
 ### 生成与发布
 
 ```text
 upstream/cursor-plugins/pstack + port/dsh.md
-  → port/generate.mjs
+  → scripts/generate-pstack.mjs --target port
   → 根 pstack/
   → vite.config.ts
   → dist/pstack/
+
+upstream/cursor-plugins/pstack + playground/raw/dsh.md
+  → scripts/generate-pstack.mjs --target raw
+  → playground/raw/pstack/
 ```
 
-`skills/.agents/skills/` 与 `skills/authored/` 由构建配置分别复制到 `dist/skills/vendored/` 和 `dist/skills/authored/`；vendored 与 authored 技能目录由 `cordis.patch.yml` 的 `bundledSkillDir` 值在 `dist/skills/...` 下定位。`src/paths.ts` 在发布后的 `dist/pstack/` 下定位 pstack 资源。
+`skills/.agents/skills/` 与 `skills/authored/` 由构建配置分别复制到 `dist/skills/vendored/` 和 `dist/skills/authored/`；vendored 与 authored 技能目录由 `cordis.patch.yml` 的 `bundledSkillDir` 值在 `dist/skills/...` 下定位。`src/lib/paths.ts` 在发布后的 `dist/pstack/` 下定位 pstack 资源。
 
 ## 扩展点
 
 - **技能内容**：生成树只由生成器维护。手工适配文案进入 `port/dsh.md`，本仓技能进入 `skills/authored/`，外部随包技能保留在 vendored 工作区。
 - **Host 工具或服务**：在 `src/` 实现 Cordis 入口，由 `cordis.patch.yml` 选择并配置；声明实际需要的 DSH 服务依赖。
-- **角色能力**：`src/role-manifest.ts` 同时驱动角色目录、文件解析、设置视图和委派选择。修改角色时同步其上游来源和对应测试。
-- **Agent preset**：在 `cordis.patch.yml` 组合插件行，由 `src/preset.ts` 注册；展示文案集中在 `src/client/locales/` 或 `src/preset-copy.ts`。
+- **角色能力**：`src/roles/role-manifest.ts` 同时驱动角色目录、文件解析、设置视图和只读的 `pstack_roles` 发现；`pstack_subagent` 不按角色解析路由。修改角色时同步其上游来源和对应测试。
+- **Agent preset**：在 `cordis.patch.yml` 组合插件行，由 `src/preset.ts` 注册；展示文案集中在 `src/client/locales/` 或 `src/presets/preset-copy.ts`。
 - **Client 配置能力**：通过 `plugins.detail.actions` 进入现有对话框；Host 数据通过显式 Remote 描述符和页面 API 适配层传递。
 - **上游移植**：先在 playground 审核技能，再调整生成器或手写适配来源，最后重新生成并检查漂移。
 - **验证**：纯逻辑和 DOM 行为放入 `tests/`；需要真实 Cordis、profile 或模型的验证放入 `playground/`。

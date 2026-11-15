@@ -1,45 +1,32 @@
 import type { EnvironmentMatrix } from "../types.ts";
 
-/**
- * The official-plugin environments the port is verified against. `prepare` adds
- * `dsh-pstack` to every adapted profile automatically, so `enabledPluginPackages` holds
- * only the extra official packages layered on top of the base bundle.
- *
- * Two environments force-load packages the pinned dsh runtime would otherwise disable.
- * `session-search`'s experimental plugin pins its session-query packages to an older runtime
- * line the pinned dsh rejects, and `agent-team-conflict` ships experimental Agent Teams plugins
- * whose peer range omits the runtime. The loader disables those rows unless the exact package is
- * exempted, so `versionExemptions` lists the packages to force-load through
- * `dsh plugin allow-version`.
- *
- * `agent-team-conflict` is not a capability sample: it force-loads the Agent Teams profile so
- * `run-conflict` can prove the pstack root presets (poteto-mode) cannot compose beside it.
- */
+/** Capability probes run in base unless a probe explicitly requires a special environment. */
 export const environments: readonly EnvironmentMatrix[] = [
-  { id: "base", enabledPluginPackages: [] },
   {
-    id: "session-search",
-    enabledPluginPackages: ["@deepseek-ai/dsh-experimental-session-search"],
-    versionExemptions: [
-      "@deepseek-ai/dsh-session-query-sqlite",
-      "@deepseek-ai/dsh-tool-session-query",
-    ],
-  },
-  { id: "browser-use", enabledPluginPackages: ["@deepseek-ai/dsh-browser-use"] },
-  {
-    id: "terminal",
-    enabledPluginPackages: ["@deepseek-ai/dsh-experimental-terminal-bundle"],
+    id: "preview",
+    description:
+      "手动预览专用环境，仅供 playground:open 启动 adapted/preview worker，不参与 probe 选择。",
+    kind: "capability",
+    enabledPluginPackages: [],
   },
   {
-    id: "forge",
-    enabledPluginPackages: ["@deepseek-ai/dsh-experimental-forge-bundle"],
+    id: "base",
+    description: "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+    kind: "base",
+    enabledPluginPackages: [],
   },
   {
-    id: "agent-team-conflict",
+    id: "render",
+    description:
+      "用于验证 mermaid、图表、图片、视频和 UI 渲染能力；显式作为 raw/adapted 的对照环境。",
+    kind: "capability",
+    enabledPluginPackages: ["@changfenhuang/dsh-genui"],
+  },
+  {
+    id: "agent-team",
+    description:
+      "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
+    kind: "conflict",
     enabledPluginPackages: ["@deepseek-ai/dsh-experimental-agent-team-profile"],
-    versionExemptions: [
-      "@deepseek-ai/dsh-experimental-agent-team",
-      "@deepseek-ai/dsh-experimental-tool-agent-team",
-    ],
   },
 ];

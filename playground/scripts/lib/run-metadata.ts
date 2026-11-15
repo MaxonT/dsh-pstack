@@ -6,15 +6,14 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { PlaygroundConfig, RunEnvironment } from "../../types.ts";
-import { environments } from "../../scenarios/index.ts";
+import { environments } from "../../scenarios/environments.ts";
 
 export const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 export const PLAYGROUND_DIRECTORY = join(REPOSITORY_ROOT, "playground");
 export const DEFAULT_CONFIG_FILE = join(PLAYGROUND_DIRECTORY, "config.json");
-export const RAW_ROOT = join(PLAYGROUND_DIRECTORY, "raw/generated");
-export const RAW_TREE = join(RAW_ROOT, "tree");
+export const RAW_ROOT = join(PLAYGROUND_DIRECTORY, "raw");
+export const RAW_TREE = join(RAW_ROOT, "pstack");
 export const RAW_SKILLS = join(RAW_TREE, "skills");
-export const REPORT_DIRECTORY = join(PLAYGROUND_DIRECTORY, "reports");
 export const WORKERS_ROOT = join(PLAYGROUND_DIRECTORY, ".workers");
 export const ISOLATED_ROOT = join(tmpdir(), "dsh-pstack-playground");
 
@@ -34,11 +33,14 @@ export function isolatedRootDirectory(): string {
   return override ? resolve(override) : ISOLATED_ROOT;
 }
 
-export function environmentMatrix(id: string | undefined): RunEnvironment["matrix"] {
-  const matrix = environments.find((entry) => entry.id === (id ?? "base"));
-  if (!matrix) throw new Error(`unknown playground environment: ${id ?? "base"}`);
+export function environmentMatrix(id: string): RunEnvironment["matrix"] {
+  if (id.trim() === "") throw new Error("playground environment id is required");
+  const matrix = environments.find((entry) => entry.id === id);
+  if (!matrix) throw new Error(`unknown playground environment: ${id}`);
   return {
     id: matrix.id,
+    description: matrix.description,
+    kind: matrix.kind,
     enabledPluginPackages: [...matrix.enabledPluginPackages],
     ...(matrix.versionExemptions === undefined
       ? {}
@@ -62,8 +64,10 @@ export function publicConfigHash(
 }
 
 function versionFromPackage(file: string): string {
-  if (!existsSync(file)) return "unavailable";
-  return (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version ?? "unknown";
+  if (!existsSync(file)) throw new Error(`cannot read installed package version: ${file}`);
+  const version = (JSON.parse(readFileSync(file, "utf8")) as { version?: string }).version;
+  if (!version) throw new Error(`installed package has no version: ${file}`);
+  return version;
 }
 
 export function dshVersion(): string {

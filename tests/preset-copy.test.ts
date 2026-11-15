@@ -4,7 +4,7 @@ import type { Context } from "@deepseek-ai/cordis";
 import type { PresetDefinition } from "@deepseek-ai/dsh-agent-preset-registry";
 import { describe, expect, it } from "vite-plus/test";
 
-import { FALLBACK_LOCALE, PRESET_COPY, presetCopyFor } from "../src/preset-copy.ts";
+import { FALLBACK_LOCALE, PRESET_COPY, presetCopyFor } from "../src/presets/preset-copy.ts";
 import { localizePresetConfig, readWebUiLocale } from "../src/preset.ts";
 
 const PATCH = readFileSync("cordis.patch.yml", "utf8");

@@ -1,19 +1,22 @@
-import { behaviorScenario, behaviorScenarios, reviewScenarioIds } from "../../scenarios/index.ts";
+import { fileURLToPath } from "node:url";
+
+import { runnerImport } from "vite-plus";
+
 import type { BehaviorScenario } from "../../types.ts";
 
-export function listScenarioIds(): string[] {
-  return behaviorScenarios.map((scenario) => scenario.id);
+interface ScenarioRegistry {
+  behaviorScenarios: readonly BehaviorScenario[];
+  behaviorScenario: (id: string) => BehaviorScenario;
 }
 
-/** Behavior, plugin-UI, and conflict scenario ids: every owner of a review sidecar. */
-export function listReviewScenarioIds(): string[] {
-  return reviewScenarioIds();
+const registryPath = fileURLToPath(new URL("../../scenarios/registry.ts", import.meta.url));
+const loaded = (await runnerImport(registryPath)) as { module: ScenarioRegistry };
+const registry = loaded.module;
+
+export function listScenarioIds(): string[] {
+  return registry.behaviorScenarios.map((scenario) => scenario.id);
 }
 
 export function loadScenario(id: string): BehaviorScenario {
-  return behaviorScenario(id);
-}
-
-export function listScenariosForSkill(skill: string): BehaviorScenario[] {
-  return behaviorScenarios.filter((scenario) => scenario.skill === skill);
+  return registry.behaviorScenario(id);
 }

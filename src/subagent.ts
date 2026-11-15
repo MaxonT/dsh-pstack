@@ -1,10 +1,11 @@
 /**
  * `pstack_subagent`: pstack's delegation entry point.
  *
- * One call resolves the role file, validates every route and effort before the
- * first child starts, then starts one fresh child per selected route through
- * `ctx.subagents.startActivation`. Results arrive as completion notices; this
- * tool never polls.
+ * One call starts exactly one fresh child through `ctx.subagents.startActivation`.
+ * The caller either passes a `provider` + `model` route, with an optional
+ * `reasoningEffort`, or omits both to inherit the parent route. Fan-out belongs
+ * to the caller: it starts several children by calling this tool several times
+ * in one message. Results arrive as completion notices; this tool never polls.
  */
 
 import { existsSync, statSync } from "node:fs";
@@ -21,17 +22,7 @@ import type {
 } from "@deepseek-ai/dsh-subagent";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
-import { POTETO_MODE_SKILL_PATH } from "./paths.ts";
-import {
-  modelsFilePath,
-  readRoleConfiguration,
-  requireRole,
-  resolveDshHome,
-  selectRoutes,
-  type Route,
-  type RouteSelection,
-} from "./role-config.ts";
-import { isRoute } from "./route.ts";
+import { POTETO_MODE_SKILL_PATH } from "./lib/paths.ts";
 
 export const name = "pstack-subagent";
 
@@ -39,7 +30,12 @@ export const inject = ["tools", "subagents", "llm", "workingDirectory"];
 
 export const TOOL_NAME = "pstack_subagent";
 
-/** Default backend when the row does not name one. */
+/** pstack's own continuation controls, named apart from the native `*_agent` tools. */
+export const AGENTS_TOOL_NAME = "pstack_agents";
+export const SEND_TOOL_NAME = "pstack_send";
+export const INTERRUPT_TOOL_NAME = "pstack_interrupt";
+
+/** Default subagent backend when the row does not name one. */
 export const DEFAULT_PROVIDER = "spawn";
 
 /** Child kinds this tool can brief. */
@@ -54,7 +50,7 @@ const AGENT_PRESETS: Readonly<Record<Exclude<AgentKind, "general">, string>> = {
   readonly: "readonly",
 };
 
-/** Row configuration. */
+/** Row configuration. `provider` names the subagent backend, not a model route. */
 export interface PstackSubagentConfig {
   readonly provider: string;
   readonly maxDepth?: number;
@@ -66,20 +62,20 @@ export interface DelegationArgs {
   readonly description: string;
   readonly prompt: string;
   readonly agent: AgentKind;
-  readonly role: string | null;
-  readonly roleIndex: number | null;
+  readonly provider: string | null;
+  readonly model: string | null;
   readonly reasoningEffort: string | null;
   readonly cwd: string | null;
   readonly maxDepth: number | null;
 }
 
-export interface ChildPlan {
-  readonly index: number;
-  readonly total: number;
+/** One child ready to start. */
+export interface DelegationPlan {
+  /** Registered subagent backend that carries the child. */
+  readonly backend: string;
   readonly label: string;
   readonly agent: AgentKind;
-  readonly role: string;
-  readonly route: Route;
+  readonly prompt: string;
   readonly routeLabel: string;
   readonly agentOptions?: AgentOptions;
   readonly agentPreset?: string;
@@ -87,55 +83,23 @@ export interface ChildPlan {
   readonly maxDepth?: number;
 }
 
-export interface DelegationPlan {
-  readonly provider: string;
-  readonly role: string;
-  readonly prompt: string;
-  readonly children: readonly ChildPlan[];
-  readonly diagnostics: readonly string[];
-}
-
 export interface ChildRecord {
   readonly childId: string;
-  readonly label: string;
   readonly agent: string;
-  readonly role: string;
   readonly route: string;
   readonly effort?: string;
   readonly maxDepth?: number;
 }
-
-export interface DelegationFailure {
-  readonly index: number;
-  readonly total: number;
-  readonly label: string;
-  readonly routeLabel: string;
-  readonly reason: string;
-}
-
-export type DelegationResult =
-  | {
-      readonly kind: "activation" | "activations";
-      readonly children: readonly ChildRecord[];
-      readonly diagnostics: readonly string[];
-    }
-  | {
-      readonly kind: "partial";
-      readonly children: readonly ChildRecord[];
-      readonly diagnostics: readonly string[];
-      readonly failure: DelegationFailure;
-    };
 
 /** The live services one delegation reads. */
 export interface DelegationRuntime {
   readonly subagents: SubagentRuntime;
   readonly llm: LlmRuntime;
   readonly workingDirectory: WorkingDirectoryService;
-  readonly dshHome: string;
   readonly potetoModeSkillPath: string;
 }
 
-/** Validate the row's own config; omitted config uses the default provider. */
+/** Validate the row's own config; omitted config uses the default backend. */
 export function normalizeConfig(value: unknown): PstackSubagentConfig {
   if (value === undefined || value === null) return DEFAULT_CONFIG;
   if (typeof value !== "object" || Array.isArray(value)) {
@@ -171,8 +135,8 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
     "description",
     "prompt",
     "agent",
-    "role",
-    "roleIndex",
+    "provider",
+    "model",
     "reasoningEffort",
     "cwd",
     "maxDepth",
@@ -180,43 +144,40 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
   for (const key of Object.keys(record)) {
     if (!known.has(key)) throw new Error(`unknown pstack_subagent argument "${key}"`);
   }
-  for (const key of [
-    "description",
-    "prompt",
-    "agent",
-    "role",
-    "roleIndex",
-    "reasoningEffort",
-    "cwd",
-  ]) {
-    if (!Object.hasOwn(record, key)) throw new Error(`missing required argument "${key}"`);
-  }
+  if (!Object.hasOwn(record, "prompt")) throw new Error('missing required argument "prompt"');
 
-  const description = record["description"];
   const prompt = record["prompt"];
-  const agent = record["agent"];
-  const role = record["role"];
-  const roleIndex = record["roleIndex"];
-  const reasoningEffort = record["reasoningEffort"];
-  const cwd = record["cwd"];
-  const maxDepth = record["maxDepth"];
-
-  if (typeof description !== "string" || description.trim() === "") {
-    throw new Error("description must be a non-empty string");
-  }
   if (typeof prompt !== "string" || prompt.trim() === "") {
     throw new Error("prompt must be a non-empty string");
   }
+
+  const description = record["description"];
+  const descriptionText =
+    description === undefined
+      ? prompt.trim().split(/\s+/).slice(0, 5).join(" ").slice(0, 80)
+      : description;
+  if (typeof descriptionText !== "string" || descriptionText.trim() === "") {
+    throw new Error("description must be a non-empty string when provided");
+  }
+
+  const agent = record["agent"] ?? "general";
   if (typeof agent !== "string" || !(AGENT_KINDS as readonly string[]).includes(agent)) {
     throw new Error(`agent must be one of: ${AGENT_KINDS.join(", ")}`);
   }
-  if (role !== null && (typeof role !== "string" || role.trim() === "")) {
-    throw new Error("role must be a non-empty string or null");
+
+  const provider = record["provider"] ?? null;
+  const model = record["model"] ?? null;
+  if (provider !== null && (typeof provider !== "string" || provider.trim() === "")) {
+    throw new Error("provider must be a non-empty string or null");
   }
-  if (roleIndex !== null && !isNonNegativeInteger(roleIndex)) {
-    throw new Error("roleIndex must be a non-negative integer or null");
+  if (model !== null && (typeof model !== "string" || model.trim() === "")) {
+    throw new Error("model must be a non-empty string or null");
   }
-  if (roleIndex !== null && role === null) throw new Error("roleIndex requires a non-null role");
+  if ((provider === null) !== (model === null)) {
+    throw new Error("provider and model must be provided together, or both omitted");
+  }
+
+  const reasoningEffort = record["reasoningEffort"] ?? null;
   if (reasoningEffort !== null) {
     if (typeof reasoningEffort !== "string" || reasoningEffort.trim() === "") {
       throw new Error("reasoningEffort must be a non-empty string or null");
@@ -225,69 +186,35 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
       throw new Error("reasoningEffort must be one token, exactly as the model advertises it");
     }
   }
+
+  const cwd = record["cwd"] ?? null;
   if (cwd !== null && (typeof cwd !== "string" || cwd.trim() === "")) {
     throw new Error("cwd must be a non-empty string or null");
   }
+
+  const maxDepth = record["maxDepth"];
   if (maxDepth !== undefined && maxDepth !== null && !isDepth(maxDepth)) {
     throw new Error("maxDepth must be a positive safe integer or null");
   }
 
   return {
-    description: description.trim(),
+    description: descriptionText.trim(),
     prompt: prompt.trim(),
     agent: agent as AgentKind,
-    role: role as string | null,
-    roleIndex: roleIndex as number | null,
+    provider: typeof provider === "string" ? provider.trim() : null,
+    model: typeof model === "string" ? model.trim() : null,
     reasoningEffort: typeof reasoningEffort === "string" ? reasoningEffort.trim() : null,
     cwd: typeof cwd === "string" ? cwd.trim() : null,
     maxDepth: maxDepth === undefined ? null : (maxDepth as number | null),
   };
 }
 
-/** Resolve the role file, child routes, prompt, and depth before activation starts. */
+/** Resolve the child's route, preset, prompt, and depth before activation starts. */
 export function planDelegation(
   args: DelegationArgs,
   runtime: DelegationRuntime,
   config: PstackSubagentConfig = DEFAULT_CONFIG,
 ): DelegationPlan {
-  const path = modelsFilePath(runtime.dshHome);
-  const roleFile = readRoleConfiguration(path);
-  if (roleFile.status === "unreadable") {
-    throw new Error(
-      `the pstack role file at ${path} exists but cannot be read (${roleFile.reason}). Fix its permissions or delete it to let every role inherit the parent route.`,
-    );
-  }
-
-  const diagnostics: string[] = [];
-  if (roleFile.status === "loaded") {
-    for (const issue of roleFile.issues) {
-      diagnostics.push(
-        `${path}${issue.line === undefined ? "" : `:${issue.line}`}: ${issue.message}`,
-      );
-    }
-  }
-
-  let selection: RouteSelection | undefined;
-  if (args.role !== null) {
-    const spec = requireRole(args.role);
-    const entry = roleFile.status === "loaded" ? roleFile.roles.get(spec.key) : undefined;
-    selection = selectRoutes(spec, entry, args.roleIndex ?? undefined);
-    if (!selection.configured) {
-      diagnostics.push(
-        `role "${spec.key}" has no line in ${path}, so it inherits the parent route`,
-      );
-    }
-    if (selection.mode === "selected") {
-      diagnostics.push(
-        `role "${spec.key}" has ${selection.total} entries; entry ${(selection.roleIndex ?? 0) + 1} was selected`,
-      );
-    }
-  }
-
-  const routes = selection?.routes ?? [
-    { kind: "inherit" as const, alias: "inherit-parent" as const },
-  ];
-  const roleName = selection?.role.key ?? "(none)";
   const agentPreset = args.agent === "general" ? undefined : AGENT_PRESETS[args.agent];
   const prompt =
     args.agent === "poteto-agent"
@@ -295,122 +222,70 @@ export function planDelegation(
       : args.prompt;
   const hostDepth = runtime.subagents.resolveMaxDepth(config.maxDepth);
   const depth = resolveChildDepth(args.maxDepth, config, hostDepth);
-
-  const total = routes.length;
-  const children: ChildPlan[] = routes.map((route, index) => {
-    const effort = args.reasoningEffort ?? (route.kind === "route" ? route.effort : undefined);
-    return {
-      index,
-      total,
-      label:
-        total > 1 ? `${args.description} [${roleName} ${index + 1}/${total}]` : args.description,
-      agent: args.agent,
-      role: roleName,
-      route,
-      routeLabel: formatRoute(route, args.reasoningEffort ?? undefined),
-      ...(isRoute(route) || effort !== undefined
-        ? { agentOptions: agentOptionsFor(route, effort) }
-        : {}),
-      ...(agentPreset === undefined ? {} : { agentPreset }),
-      ...(args.cwd === null ? {} : { cwd: args.cwd }),
-      ...(depth === undefined ? {} : { maxDepth: depth }),
-    };
-  });
-
-  if (selection?.mode === "panel" && children.length > 1) {
-    const distinct = new Set(children.map((child) => child.routeLabel));
-    if (distinct.size === 1) {
-      diagnostics.push(
-        `all ${children.length} entries of panel "${roleName}" resolve to ${[...distinct][0]}, so they are not a cross-model panel`,
-      );
-    }
-  }
+  const effort = args.reasoningEffort ?? undefined;
+  const agentOptions = buildAgentOptions(args.provider, args.model, effort);
 
   return {
-    provider: config.provider,
-    role: roleName,
+    backend: config.provider,
+    label: args.description,
+    agent: args.agent,
     prompt,
-    children,
-    diagnostics,
+    routeLabel: formatRoute(args.provider, args.model, effort),
+    ...(agentOptions === undefined ? {} : { agentOptions }),
+    ...(agentPreset === undefined ? {} : { agentPreset }),
+    ...(args.cwd === null ? {} : { cwd: args.cwd }),
+    ...(depth === undefined ? {} : { maxDepth: depth }),
   };
 }
 
-/** Start every planned child after one final capability and route check. */
-export async function startPlannedChildren(
+/** Check capabilities, resolve cwd, preflight the route, then start one child. */
+export async function startChild(
   parent: Agent,
   plan: DelegationPlan,
   runtime: DelegationRuntime,
   signal: AbortSignal,
-): Promise<DelegationResult> {
-  const provider = runtime.subagents.getProvider(plan.provider);
+): Promise<ChildRecord> {
+  const provider = runtime.subagents.getProvider(plan.backend);
   if (provider === undefined) {
     const available = runtime.subagents.list();
     throw new Error(
-      `subagent provider "${plan.provider}" is not registered; available providers: ${available.length === 0 ? "(none)" : available.join(", ")}`,
+      `subagent provider "${plan.backend}" is not registered; available providers: ${available.length === 0 ? "(none)" : available.join(", ")}`,
     );
   }
 
   assertCapabilities(provider.capabilities, plan);
   const sessionRoot = await runtime.workingDirectory.ensure(parent, signal);
-  const children = plan.children.map((child) => ({
-    ...child,
-    ...(child.cwd === undefined ? {} : { cwd: resolveChildCwd(child.cwd, sessionRoot) }),
-  }));
+  const cwd = plan.cwd === undefined ? undefined : resolveChildCwd(plan.cwd, sessionRoot);
 
-  await preflightRoutes(runtime.llm, parent, children, signal);
+  await preflightRoute(runtime.llm, plan, signal);
+  signal.throwIfAborted();
 
-  const records: ChildRecord[] = [];
-  for (const child of children) {
-    try {
-      signal.throwIfAborted();
-      const activation = await runtime.subagents.startActivation({
-        provider: plan.provider,
-        label: child.label,
-        request: {
-          prompt: [{ type: "text", text: plan.prompt }],
-          parent,
-          ...(child.agentPreset === undefined ? {} : { agentPreset: child.agentPreset }),
-          ...(child.cwd === undefined ? {} : { cwd: child.cwd }),
-          ...(child.agentOptions === undefined ? {} : { agentOptions: child.agentOptions }),
-          ...(child.maxDepth === undefined ? {} : { maxDepth: child.maxDepth }),
-        },
-        signal,
-        delivery: "parent",
-      });
-      records.push(recordFor(child, activation));
-    } catch (error) {
-      if (records.length === 0) throw error;
-      return {
-        kind: "partial",
-        children: records,
-        diagnostics: plan.diagnostics,
-        failure: {
-          index: child.index,
-          total: child.total,
-          label: child.label,
-          routeLabel: child.routeLabel,
-          reason: describeError(error),
-        },
-      };
-    }
-  }
-
-  return {
-    kind: records.length === 1 ? "activation" : "activations",
-    children: records,
-    diagnostics: plan.diagnostics,
-  };
+  const activation = await runtime.subagents.startActivation({
+    provider: plan.backend,
+    label: plan.label,
+    request: {
+      prompt: [{ type: "text", text: plan.prompt }],
+      parent,
+      ...(plan.agentPreset === undefined ? {} : { agentPreset: plan.agentPreset }),
+      ...(cwd === undefined ? {} : { cwd }),
+      ...(plan.agentOptions === undefined ? {} : { agentOptions: plan.agentOptions }),
+      ...(plan.maxDepth === undefined ? {} : { maxDepth: plan.maxDepth }),
+    },
+    signal,
+    delivery: "parent",
+  });
+  return recordFor(plan, activation);
 }
 
-/** Complete delegation: plan, check, start. */
+/** Complete delegation: plan, check, start one child. */
 export async function delegate(
   parent: Agent,
   args: DelegationArgs,
   runtime: DelegationRuntime,
   config: PstackSubagentConfig,
   signal: AbortSignal,
-): Promise<DelegationResult> {
-  return startPlannedChildren(parent, planDelegation(args, runtime, config), runtime, signal);
+): Promise<ChildRecord> {
+  return startChild(parent, planDelegation(args, runtime, config), runtime, signal);
 }
 
 export function apply(ctx: Context, rawConfig?: unknown): void {
@@ -419,10 +294,12 @@ export function apply(ctx: Context, rawConfig?: unknown): void {
     subagents: ctx.subagents,
     llm: ctx.llm,
     workingDirectory: ctx.workingDirectory,
-    dshHome: resolveDshHome(),
     potetoModeSkillPath: POTETO_MODE_SKILL_PATH,
   };
   ctx.tools.register(createPstackSubagentTool(runtime, config));
+  ctx.tools.register(createPstackAgentsTool(runtime));
+  ctx.tools.register(createPstackSendTool(runtime));
+  ctx.tools.register(createPstackInterruptTool(runtime));
 }
 
 /** Build the model-facing tool. Exported for tests. */
@@ -439,7 +316,8 @@ export function createPstackSubagentTool(
       properties: {
         description: {
           type: "string",
-          description: "A short 3-5 word label for the child, shown in notices.",
+          description:
+            "Optional short 3-5 word label for the child; derived from the prompt when omitted.",
         },
         prompt: {
           type: "string",
@@ -450,27 +328,27 @@ export function createPstackSubagentTool(
           type: "string",
           enum: [...AGENT_KINDS],
           description:
-            'Child preset: "poteto-agent" for pstack implementation, "comment-sicko" for comment review, "readonly" for a sandbox-enforced read-only researcher, or "general" to join the parent preset.',
+            'Optional child preset; defaults to "general". "poteto-agent" for pstack implementation, "comment-sicko" for comment review, "readonly" for a sandbox-enforced read-only researcher.',
         },
-        role: {
+        provider: {
           type: ["string", "null"],
           description:
-            "pstack role key. It selects the child's route and effort; null inherits the parent route.",
+            "Optional model provider; pass together with `model` to override the child route, or omit both to inherit the parent route.",
         },
-        roleIndex: {
-          type: ["integer", "null"],
+        model: {
+          type: ["string", "null"],
           description:
-            "Entry index for a list role that is not an automatic panel. Null selects the first entry; omit only through null.",
+            "Optional model id; pass together with `provider` to override the child route, or omit both to inherit the parent route.",
         },
         reasoningEffort: {
           type: ["string", "null"],
           description:
-            "One advertised reasoning-effort token for this call, or null to keep the role's starting effort.",
+            "Optional advertised reasoning-effort token; omit to keep the route's default effort.",
         },
         cwd: {
           type: ["string", "null"],
           description:
-            "Initial child working directory inside this session or a separate Git worktree; null inherits the session directory.",
+            "Optional initial child working directory; omit to inherit the session directory.",
         },
         maxDepth: {
           type: ["integer", "null"],
@@ -479,12 +357,12 @@ export function createPstackSubagentTool(
             "Optional delegation-depth cap. Omit or null to use the configured row and Host cap; explicit values must be at least 1 and cannot exceed that cap.",
         },
       },
-      required: ["description", "prompt", "agent", "role", "roleIndex", "reasoningEffort", "cwd"],
+      required: ["prompt"],
     },
     output: {
       schema: OUTPUT_SCHEMA,
       render: (_args, value) => [
-        { type: "text", text: renderDelegation(value as unknown as DelegationResult) },
+        { type: "text", text: renderDelegation(value as unknown as ChildRecord) },
       ],
     },
     isConcurrencySafe: () => true,
@@ -495,108 +373,299 @@ export function createPstackSubagentTool(
   };
 }
 
+/** Build the pstack-owned child listing tool. Exported for tests. */
+export function createPstackAgentsTool(runtime: DelegationRuntime): ToolDefinition {
+  return {
+    name: AGENTS_TOOL_NAME,
+    description: AGENTS_TOOL_DESCRIPTION,
+    parameters: { type: "object", additionalProperties: false, properties: {}, required: [] },
+    output: {
+      schema: AGENTS_OUTPUT_SCHEMA,
+      render: (_args, value) => [
+        { type: "text", text: renderAgents(value as unknown as AgentsResult) },
+      ],
+    },
+    isConcurrencySafe: () => true,
+    async execute(_rawArgs, exec: ToolRunContext) {
+      if (exec.agent === undefined) throw new Error("pstack_agents requires a calling Agent");
+      const rows = await runtime.subagents.listDescendants(exec.agent.id, exec.signal);
+      const children = rows.flatMap((row) =>
+        row.kind === "child" && row.depth === 1
+          ? [
+              {
+                childId: row.id,
+                mode: row.mode,
+                activity: row.activity,
+                ...(row.label === undefined ? {} : { label: row.label }),
+                hasChildren: row.hasChildren,
+              },
+            ]
+          : [],
+      );
+      return { children };
+    },
+  };
+}
+
+/** Build the pstack-owned continuation tool. Exported for tests. */
+export function createPstackSendTool(runtime: DelegationRuntime): ToolDefinition {
+  return {
+    name: SEND_TOOL_NAME,
+    description: SEND_TOOL_DESCRIPTION,
+    parameters: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        childId: {
+          type: "string",
+          description: "The pstack child id returned by pstack_subagent.",
+        },
+        message: { type: "string", description: "The follow-up message to deliver to that child." },
+      },
+      required: ["childId", "message"],
+    },
+    output: {
+      schema: SEND_OUTPUT_SCHEMA,
+      render: (_args, value) => [
+        { type: "text", text: renderSend(value as unknown as SendResult) },
+      ],
+    },
+    isConcurrencySafe: () => true,
+    async execute(rawArgs, exec: ToolRunContext) {
+      if (exec.agent === undefined) throw new Error("pstack_send requires a calling Agent");
+      const { childId, message } = parseControlArgs(rawArgs, ["childId", "message"]) as {
+        childId: string;
+        message: string;
+      };
+      const messageId = await runtime.subagents.sendMessage(
+        exec.agent,
+        asChildSessionId(childId),
+        textContent(message),
+        { signal: exec.signal },
+      );
+      return { sent: true, messageId };
+    },
+  };
+}
+
+/** Build the pstack-owned interrupt tool. Exported for tests. */
+export function createPstackInterruptTool(runtime: DelegationRuntime): ToolDefinition {
+  return {
+    name: INTERRUPT_TOOL_NAME,
+    description: INTERRUPT_TOOL_DESCRIPTION,
+    parameters: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        childId: {
+          type: "string",
+          description: "The pstack child id returned by pstack_subagent.",
+        },
+      },
+      required: ["childId"],
+    },
+    output: {
+      schema: INTERRUPT_OUTPUT_SCHEMA,
+      render: (_args, value) => [
+        { type: "text", text: renderInterrupt(value as unknown as InterruptResult) },
+      ],
+    },
+    isConcurrencySafe: () => true,
+    async execute(rawArgs, exec: ToolRunContext) {
+      if (exec.agent === undefined) throw new Error("pstack_interrupt requires a calling Agent");
+      const { childId } = parseControlArgs(rawArgs, ["childId"]) as { childId: string };
+      runtime.subagents.interrupt(asChildSessionId(childId), {
+        kind: "ancestor",
+        agent: exec.agent,
+      });
+      return { interrupted: true };
+    },
+  };
+}
+
+interface AgentRow {
+  childId: string;
+  mode: string;
+  activity: string;
+  label?: string;
+  hasChildren?: boolean;
+}
+interface AgentsResult {
+  children: AgentRow[];
+}
+interface SendResult {
+  sent: boolean;
+  messageId: string;
+}
+interface InterruptResult {
+  interrupted: boolean;
+}
+
+const AGENTS_TOOL_DESCRIPTION = [
+  "List the direct child sessions of the calling agent, including pstack_subagent children.",
+  "",
+  "Use this instead of the native `list_agents` when you need a pstack child id. In an Agent Teams profile the native `list_agents` only returns teammates and hides pstack children.",
+].join("\n");
+
+const SEND_TOOL_DESCRIPTION = [
+  "Deliver a follow-up message to one direct child by its pstack child id.",
+  "",
+  "Use this instead of the native `send_message` when the target was started by `pstack_subagent`. The child id from `pstack_subagent` or `pstack_agents` is the address.",
+].join("\n");
+
+const INTERRUPT_TOOL_DESCRIPTION = [
+  "Stop the current turn of one direct child by its pstack child id.",
+  "",
+  "Use this instead of the native `interrupt_agent` when the target was started by `pstack_subagent`. The child id from `pstack_subagent` or `pstack_agents` is the address.",
+].join("\n");
+
+const AGENTS_OUTPUT_SCHEMA: JsonSchemaNode = {
+  type: "object",
+  additionalProperties: false,
+  required: ["children"],
+  properties: {
+    children: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["childId", "mode", "activity"],
+        properties: {
+          childId: { type: "string" },
+          mode: { type: "string" },
+          activity: { type: "string" },
+          label: { type: "string" },
+          hasChildren: { type: "boolean" },
+        },
+      },
+    },
+  },
+};
+
+const SEND_OUTPUT_SCHEMA: JsonSchemaNode = {
+  type: "object",
+  additionalProperties: false,
+  required: ["sent", "messageId"],
+  properties: { sent: { type: "boolean" }, messageId: { type: "string" } },
+};
+
+const INTERRUPT_OUTPUT_SCHEMA: JsonSchemaNode = {
+  type: "object",
+  additionalProperties: false,
+  required: ["interrupted"],
+  properties: { interrupted: { type: "boolean" } },
+};
+
+function renderAgents(result: AgentsResult): string {
+  if (result.children.length === 0) return "no direct children";
+  return result.children
+    .map(
+      (child) =>
+        `child ${child.childId}: mode=${child.mode} activity=${child.activity}${child.label === undefined ? "" : ` label=${child.label}`}${child.hasChildren === true ? " hasChildren" : ""}`,
+    )
+    .join("\n");
+}
+
+function renderSend(result: SendResult): string {
+  return `sent message ${result.messageId} to the child`;
+}
+
+function renderInterrupt(result: InterruptResult): string {
+  return result.interrupted ? "interrupt admitted to the child" : "interrupt not admitted";
+}
+
+/** Reject unknown or non-string control-tool arguments before touching the runtime. */
+function parseControlArgs(raw: unknown, keys: readonly string[]): Record<string, string> {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    throw new Error("arguments must be an object");
+  }
+  const record = raw as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (!keys.includes(key)) throw new Error(`unknown argument "${key}"`);
+  }
+  const parsed: Record<string, string> = {};
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value !== "string" || value.trim() === "") {
+      throw new Error(`${key} must be a non-empty string`);
+    }
+    parsed[key] = value.trim();
+  }
+  return parsed;
+}
+
+type ChildSessionId = Parameters<SubagentRuntime["sendMessage"]>[1];
+type SendContent = Parameters<SubagentRuntime["sendMessage"]>[2];
+
+function asChildSessionId(value: string): ChildSessionId {
+  return value as ChildSessionId;
+}
+
+function textContent(text: string): SendContent {
+  return [{ type: "text", text }] as SendContent;
+}
+
 const TOOL_DESCRIPTION = [
-  "Delegate self-contained work to one or more fresh child agents.",
+  "Delegate self-contained work to one subagent.",
   "",
-  "Every argument is required except maxDepth. Pass null for role, roleIndex, reasoningEffort, or cwd when unused. Choose agent explicitly.",
+  "Only prompt is required. Pass `provider` and `model` together, plus an optional `reasoningEffort` token the model advertises, to override the child route; omit both to inherit the parent route.",
   "",
-  "Omit `maxDepth` to use the configured row and Host delegation cap; an explicit value cannot exceed that cap.",
+  "One call starts one child. Fan out by calling this tool several times in one message; each call is independent.",
   "",
   "`agent` picks a DSH agent preset: `poteto-agent` mounts the pstack implementation delegate and receives the absolute path of the poteto-mode instructions; `comment-sicko` mounts the comment reviewer; `readonly` mounts a read-only research preset with the sandbox policy set to read-only; `general` joins the parent preset.",
   "",
-  "`role` selects a configured pstack role and therefore the child's model route and starting effort. Null inherits the parent route. Automatic panel roles start one child per configured entry; `pstack_roles` reports which roles accept `roleIndex`.",
+  "Omit `cwd` to inherit the session directory. Omit `maxDepth` to use the configured row and Host delegation cap; an explicit value cannot exceed that cap.",
   "",
-  "Returns every child id with its resolved route. Results arrive as completion notices; do not poll.",
+  "Returns the child id with its resolved route. Results arrive as a completion notice; do not poll.",
 ].join("\n");
 
 const OUTPUT_SCHEMA: JsonSchemaNode = {
   type: "object",
   additionalProperties: false,
   properties: {
-    kind: { type: "string", enum: ["activation", "activations", "partial"] },
-    children: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          childId: { type: "string" },
-          label: { type: "string" },
-          agent: { type: "string" },
-          role: { type: "string" },
-          route: { type: "string" },
-          effort: { type: "string" },
-          maxDepth: { type: "integer" },
-        },
-        required: ["childId", "label", "agent", "role", "route"],
-      },
-    },
-    diagnostics: { type: "array", items: { type: "string" } },
-    failure: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        index: { type: "integer" },
-        total: { type: "integer" },
-        label: { type: "string" },
-        routeLabel: { type: "string" },
-        reason: { type: "string" },
-      },
-      required: ["index", "total", "label", "routeLabel", "reason"],
-    },
+    childId: { type: "string" },
+    agent: { type: "string" },
+    route: { type: "string" },
+    effort: { type: "string" },
+    maxDepth: { type: "integer" },
   },
-  required: ["kind", "children", "diagnostics"],
+  required: ["childId", "agent", "route"],
 };
 
-function renderDelegation(result: DelegationResult): string {
-  const lines = [
-    result.kind === "partial"
-      ? `started ${result.children.length} of ${result.failure.total} children; entry ${result.failure.index + 1} failed: ${result.failure.reason}`
-      : result.kind === "activation"
-        ? `started 1 child: ${result.children[0]?.childId ?? "(none)"}`
-        : `started ${result.children.length} children:`,
-    ...result.children.map(
-      (child) =>
-        `- ${child.childId} (${child.label}) agent=${child.agent} role=${child.role} route=${child.route}${child.effort === undefined ? "" : ` effort=${child.effort}`}${child.maxDepth === undefined ? "" : ` maxDepth=${child.maxDepth}`}`,
-    ),
-    "Results from started children arrive as completion notices; do not poll for them.",
-  ];
-  if (result.diagnostics.length > 0) {
-    lines.push("", "Diagnostics:", ...result.diagnostics.map((line) => `- ${line}`));
-  }
-  return lines.join("\n");
+function renderDelegation(child: ChildRecord): string {
+  return [
+    `started child ${child.childId}: agent=${child.agent} route=${child.route}${child.effort === undefined ? "" : ` effort=${child.effort}`}${child.maxDepth === undefined ? "" : ` maxDepth=${child.maxDepth}`}`,
+    "The result arrives as a completion notice; do not poll for it.",
+  ].join("\n");
 }
 
-function recordFor(child: ChildPlan, activation: SubagentActivation): ChildRecord {
+function buildAgentOptions(
+  provider: string | null,
+  model: string | null,
+  effort: string | undefined,
+): AgentOptions | undefined {
+  const effortOption = effort === undefined ? {} : { reasoningEffort: effort as ReasoningEffortId };
+  if (provider !== null && model !== null) {
+    return { provider, model, ...effortOption };
+  }
+  return effort === undefined ? undefined : effortOption;
+}
+
+function formatRoute(provider: string | null, model: string | null, effort?: string): string {
+  const base = provider !== null && model !== null ? `${provider}/${model}` : "inherit-parent";
+  return effort === undefined ? base : `${base} [${effort}]`;
+}
+
+function recordFor(plan: DelegationPlan, activation: SubagentActivation): ChildRecord {
   return {
     childId: activation.childId,
-    label: child.label,
-    agent: child.agent,
-    role: child.role,
-    route: child.routeLabel,
-    ...(child.agentOptions?.reasoningEffort === undefined
+    agent: plan.agent,
+    route: plan.routeLabel,
+    ...(plan.agentOptions?.reasoningEffort === undefined
       ? {}
-      : { effort: child.agentOptions.reasoningEffort }),
-    ...(child.maxDepth === undefined ? {} : { maxDepth: child.maxDepth }),
+      : { effort: plan.agentOptions.reasoningEffort }),
+    ...(plan.maxDepth === undefined ? {} : { maxDepth: plan.maxDepth }),
   };
-}
-
-function agentOptionsFor(route: Route, effort: string | undefined): AgentOptions {
-  return isRoute(route)
-    ? {
-        provider: route.provider,
-        model: route.model,
-        ...(effort === undefined ? {} : { reasoningEffort: effort as ReasoningEffortId }),
-      }
-    : effort === undefined
-      ? {}
-      : { reasoningEffort: effort as ReasoningEffortId };
-}
-
-function formatRoute(route: Route, override?: string): string {
-  const effort = override ?? (isRoute(route) ? route.effort : undefined);
-  const base = isRoute(route) ? `${route.provider}/${route.model}` : "inherit-parent";
-  return effort === undefined ? base : `${base} [${effort}]`;
 }
 
 function resolveChildDepth(
@@ -619,51 +688,37 @@ function resolveChildDepth(
 }
 
 function assertCapabilities(capabilities: SubagentCapabilities, plan: DelegationPlan): void {
-  const needsAgentOptions = plan.children.some((child) => child.agentOptions !== undefined);
-  const needsPreset = plan.children.some((child) => child.agentPreset !== undefined);
-  const needsDepth = plan.children.some((child) => child.maxDepth !== undefined);
   const missing = [
-    ...(needsAgentOptions && !capabilities.agentOptions ? ["agentOptions"] : []),
-    ...(needsPreset && !capabilities.agentPreset ? ["agentPreset"] : []),
-    ...(needsDepth && !capabilities.depthLimit ? ["maxDepth"] : []),
+    ...(plan.agentOptions !== undefined && !capabilities.agentOptions ? ["agentOptions"] : []),
+    ...(plan.agentPreset !== undefined && !capabilities.agentPreset ? ["agentPreset"] : []),
+    ...(plan.maxDepth !== undefined && !capabilities.depthLimit ? ["maxDepth"] : []),
   ];
   if (missing.length > 0) {
     throw new Error(`subagent provider does not support ${missing.join(", ")}`);
   }
 }
 
-async function preflightRoutes(
+async function preflightRoute(
   llm: LlmRuntime,
-  parent: Agent,
-  children: readonly ChildPlan[],
+  plan: DelegationPlan,
   signal: AbortSignal,
 ): Promise<void> {
-  for (const child of children) {
-    const options = child.agentOptions;
-    if (options === undefined) continue;
-    const provider = options.provider ?? parent.options.provider;
-    const model = options.model ?? parent.options.model;
-    if (provider === undefined || model === undefined) {
-      throw new Error(
-        `cannot resolve role "${child.role}" because the child has no provider/model and the parent has not made a request yet`,
-      );
-    }
-    try {
-      await llm.resolveCallConfig(
-        {
-          provider,
-          model,
-          ...(options.reasoningEffort === undefined
-            ? {}
-            : { reasoningEffort: options.reasoningEffort }),
-        },
-        signal,
-      );
-    } catch (error) {
-      throw new Error(
-        `role "${child.role}" resolves to ${child.routeLabel}, which failed route preflight: ${describeError(error)}`,
-      );
-    }
+  const options = plan.agentOptions;
+  if (options === undefined || options.provider === undefined || options.model === undefined)
+    return;
+  try {
+    await llm.resolveCallConfig(
+      {
+        provider: options.provider,
+        model: options.model,
+        ...(options.reasoningEffort === undefined
+          ? {}
+          : { reasoningEffort: options.reasoningEffort }),
+      },
+      signal,
+    );
+  } catch (error) {
+    throw new Error(`route ${plan.routeLabel} failed route preflight: ${describeError(error)}`);
   }
 }
 

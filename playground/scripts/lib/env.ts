@@ -25,7 +25,7 @@ export const PROFILE_TEMPLATE_DIR = join(REPOSITORY_ROOT, "playground/profile");
 export const DEFAULT_HOST_PATCH_FILE = join(homedir(), ".dsh/profiles/web/cordis.patch.yml");
 export const DEFAULT_CREDENTIALS_FILE = join(homedir(), ".dsh/.credentials.yaml");
 export const HOST = "127.0.0.1";
-const DSH_BIN = process.env.DSH_BIN ?? (process.platform === "win32" ? "dsh.cmd" : "dsh");
+const DSH_BIN = process.env.DSH_BIN ?? "dsh";
 
 export { DEFAULT_CONFIG_FILE as CONFIG_FILE, RAW_ROOT, RAW_SKILLS } from "./run-metadata.ts";
 
@@ -133,20 +133,93 @@ function profileDirectory(paths: WorkerPaths): string {
   return join(paths.home, "profiles", PROFILE_NAME);
 }
 
-function persistentInstructions(rawMount: string): string {
-  const skill = join(rawMount, "tree/skills/poteto-mode/SKILL.md");
-  if (!existsSync(skill))
-    throw new Error("raw mount is missing; run playground:prepare for the raw phase first");
-  const body = readFileSync(skill, "utf8").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "");
-  return [
-    "You are running the raw baseline under the standard agent preset.",
-    `Read ${join(rawMount, "dsh.md")} once before following the skill below.`,
-    `Skill file: ${skill}`,
-    body,
-  ].join("\n\n");
+function anonymousProviders(providers: ProviderPlan["providers"]): ProviderPlan["providers"] {
+  return Object.fromEntries(
+    Object.entries(providers).map(([id, provider]) => [
+      id,
+      {
+        ...provider,
+        ...(provider.models === undefined
+          ? {}
+          : { models: provider.models.map((model) => ({ ...model, name: "匿名模型" })) }),
+      },
+    ]),
+  );
 }
 
-export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, phase: Phase): void {
+interface WorkerInstructionSection {
+  heading: string;
+  rules: readonly string[];
+}
+
+const WORKER_INSTRUCTION_SECTIONS: readonly WorkerInstructionSection[] = [
+  {
+    heading: "Read boundary",
+    rules: [
+      "You may read files only inside the current workspace.",
+      "Read-only runtime input explicitly mounted for this session is also allowed.",
+      "The worker role file $DSH_HOME/pstack-models.json is allowed read-only runtime input.",
+      "Never read, list, stat, search, or infer any other path, even when the user supplies an absolute path.",
+    ],
+  },
+  {
+    heading: "External path requests",
+    rules: [
+      "Refuse briefly when a request targets a path outside the allowed roots.",
+      "State that the path is outside the workspace.",
+      "Do not call read, grep, glob, bash, cat, find, ls, or any other tool against it.",
+    ],
+  },
+  {
+    heading: "External side effects",
+    rules: [
+      "Treat git as local-only. Never add an origin or remote to a repository.",
+      "Never create, modify, delete, push, tag, or otherwise change a remote repository or external service.",
+      "Do not use gh or another forge CLI, and do not read or use credentials or tokens.",
+      "If a task requires remote work, state that it is unavailable and produce a local plan instead.",
+    ],
+  },
+  {
+    heading: "Reporting",
+    rules: [
+      "Never paste or summarize content from a path outside the allowed roots.",
+      "Continue with work that stays inside the workspace.",
+    ],
+  },
+];
+
+function renderWorkerInstructions(): string {
+  return [
+    "# Playground Worker Instructions",
+    "",
+    ...WORKER_INSTRUCTION_SECTIONS.flatMap((section) => [
+      `## ${section.heading}`,
+      "",
+      ...section.rules.map((rule) => `- ${rule}`),
+      "",
+    ]),
+  ].join("\n");
+}
+
+export function writeWorkerInstructions(paths: WorkerPaths): void {
+  mkdirSync(paths.home, { recursive: true });
+  writeFileSync(join(paths.home, "AGENTS.md"), renderWorkerInstructions());
+}
+
+export function writeRoleFile(paths: WorkerPaths, config: PlaygroundConfig): void {
+  mkdirSync(paths.home, { recursive: true });
+  const roles: Record<string, string[]> = {};
+  for (const [role, value] of Object.entries(config.roleModels ?? {})) {
+    const routes = Array.isArray(value) ? value : [value];
+    roles[role] = routes.map((route) => `${route.provider}/${route.model} [${route.effort}]`);
+  }
+  writeFileSync(
+    join(paths.home, "pstack-models.json"),
+    `${JSON.stringify({ version: 1, roles }, null, 2)}\n`,
+  );
+}
+
+export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, _phase: Phase): void {
   mkdirSync(paths.home, { recursive: true });
   const patch = [
     {
@@ -158,26 +231,21 @@ export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, phase: Ph
         reasoningEffort: plan.main.effort,
       },
     },
-    { id: "llm-pi-ai", name: "@deepseek-ai/dsh-llm-pi-ai", config: { providers: plan.providers } },
+    {
+      id: "llm-pi-ai",
+      name: "@deepseek-ai/dsh-llm-pi-ai",
+      config: { providers: anonymousProviders(plan.providers) },
+    },
     {
       id: "approval",
       name: "@deepseek-ai/dsh-user-approval",
       config: { policy: "never" },
     },
-    ...(phase === "raw"
-      ? [
-          {
-            id: "system-prompt",
-            name: "@deepseek-ai/dsh-system-prompt",
-            config: { personaSuffix: persistentInstructions(paths.rawMount) },
-          },
-        ]
-      : []),
     {
       id: "permission",
       name: "@deepseek-ai/dsh-permission-presets",
-      // Approval "never" keeps gated actions from blocking the absent user. 待冒烟验证：workspace-write
-      // 与 never 的配对是否被 base bundle 接受；若被拒，退回脱敏沙箱的 danger-full-access + never。
+      // Approval "never" keeps gated actions from blocking the absent user. The worker uses
+      // the fixed workspace-write + never preset; a base-bundle rejection is a prepare failure.
       config: {
         presets: { unattended: { sandbox: "workspace-write", approval: "never" } },
         defaultPreset: "unattended",
@@ -185,6 +253,7 @@ export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, phase: Ph
     },
   ];
   writeFileSync(homePatchFile(paths), yamlDump(patch, { lineWidth: 120 }));
+  writeWorkerInstructions(paths);
 }
 
 export interface HomePlan extends TestTarget {
@@ -206,7 +275,7 @@ export function readHomePlan(paths: WorkerPaths): HomePlan {
     provider: config.provider,
     model: config.model,
     effort: config.reasoningEffort,
-    name: config.model,
+    name: "匿名模型",
   };
 }
 
@@ -245,7 +314,13 @@ export function profileManifest(
   const dependencies = Object.fromEntries(
     enabledPluginPackages.map((name) => [
       name,
-      name === "dsh-pstack" ? `link:${REPOSITORY_ROOT}` : "*",
+      name === "dsh-pstack"
+        ? `link:${REPOSITORY_ROOT}`
+        : // Experimental DSH packages share the dsh version. A bare "*" resolves the older
+          // `latest` tag, which no longer matches the dsh runtime API.
+          name.startsWith("@deepseek-ai/")
+          ? dshVersion()
+          : "*",
     ]),
   );
   const bundles = ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-web-app", ...enabledPluginPackages];
@@ -258,7 +333,7 @@ export function profileManifest(
 }
 
 export function rawProfileEntries(template: unknown[], rawMount: string): unknown[] {
-  const skills = join(rawMount, "tree/skills");
+  const skills = join(rawMount, "pstack/skills");
   if (!existsSync(skills))
     throw new Error("raw mount is missing; run playground:prepare for the raw phase first");
   return [
@@ -453,18 +528,35 @@ export async function startWeb(paths: WorkerPaths, plan: ProviderPlan): Promise<
     );
   }
   mkdirSync(paths.home, { recursive: true });
+  mkdirSync(paths.isolatedRoot, { recursive: true });
   const logFd = openSync(paths.logFile, "w");
+  const spawnEnvironment = {
+    ...process.env,
+    ...runtimeEnv(paths),
+    DSH_HOME: paths.home,
+    GH_CONFIG_DIR: join(paths.home, "gh-config"),
+    GIT_TERMINAL_PROMPT: "0",
+    [plan.apiKeyEnv]: plan.apiKey,
+  };
+  for (const key of [
+    "PWD",
+    "OLDPWD",
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+    "GITHUB_ENTERPRISE_TOKEN",
+    "GH_HOST",
+    "GITHUB_HOST",
+    "GIT_ASKPASS",
+  ]) {
+    delete spawnEnvironment[key];
+  }
+  mkdirSync(join(paths.home, "gh-config"), { recursive: true });
   const child = spawn(
     DSH_BIN,
     ["--profile", PROFILE_NAME, "--port", "0", "--host", HOST, "--no-open"],
     {
-      cwd: REPOSITORY_ROOT,
-      env: {
-        ...process.env,
-        ...runtimeEnv(paths),
-        DSH_HOME: paths.home,
-        [plan.apiKeyEnv]: plan.apiKey,
-      },
+      cwd: paths.isolatedRoot,
+      env: spawnEnvironment,
       detached: true,
       stdio: ["ignore", logFd, logFd],
     },

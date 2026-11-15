@@ -7,7 +7,7 @@ import type { PresetDefinition } from "@deepseek-ai/dsh-agent-preset-registry";
 import type { SettingsForms } from "@deepseek-ai/dsh-settings";
 import z from "@deepseek-ai/schemastery";
 
-import { presetCopyFor } from "./preset-copy.ts";
+import { presetCopyFor } from "./presets/preset-copy.ts";
 
 /** Read the explicit Web UI locale from `locale.preference`. */
 export function readWebUiLocale(ctx: Context): string | undefined {

@@ -6,7 +6,7 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
-    "types": ["node"],
+    "types": ["node", "vite-plus/client"],
     "strict": true,
     "noUnusedLocals": true,
     "noEmit": true,
@@ -16,5 +16,5 @@
     "skipLibCheck": true
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "raw/generated", ".workers", ".workers-*"]
+  "exclude": ["node_modules", "raw/pstack", ".workers", ".workers-*"]
 }

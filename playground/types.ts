@@ -1,4 +1,9 @@
-export type Phase = "raw" | "adapted";
+export const PHASES = ["raw", "adapted"] as const;
+export type Phase = (typeof PHASES)[number];
+
+export function isPhase(value: unknown): value is Phase {
+  return typeof value === "string" && PHASES.some((phase) => phase === value);
+}
 
 export interface TestTarget {
   provider: string;
@@ -11,9 +16,12 @@ export interface ProviderAllowance {
   models: Record<string, string[]>;
 }
 
+export type RoleModels = Record<string, TestTarget | TestTarget[]>;
+
 export interface PlaygroundConfig {
   testModel: TestTarget;
   providers: Record<string, ProviderAllowance>;
+  roleModels?: RoleModels;
   hostPatchFile?: string;
   credentialsFile?: string;
 }
@@ -22,15 +30,6 @@ export type AllowedRoute = TestTarget & {
   efforts: string[];
   apiKey: string;
 };
-
-export interface PreparedEnv {
-  phase: Phase;
-  home: string;
-  browserHome: string;
-  port: number;
-  url: string;
-  workspaceDirs: Record<string, string>;
-}
 
 export type Assertion =
   | { kind: "turn-completed" }
@@ -53,69 +52,30 @@ export interface UiObservation {
   description: string;
 }
 
-export interface ScenarioSource {
-  upstreamSkill: string;
-  regression?: string;
-}
-
 export interface BehaviorScenario {
-  type: "behavior";
   id: string;
-  skill: string;
   turns: Array<{ prompt: string }>;
   workspace: WorkspaceFixture;
   assertions: Assertion[];
   rubric: SemanticRubric;
   uiObservations: UiObservation[];
-  source: ScenarioSource;
+  /** Phases this probe is allowed to run in; omitted means both raw and adapted. */
+  phases?: readonly Phase[];
   environmentId?: string;
   answers?: Array<{ match: string; selected?: string[]; custom?: string }>;
+  /** Capability id this probe covers. */
+  capability: string;
 }
 
-export interface ConflictRegression {
-  type: "conflict-regression";
-  id: string;
-  turns: Array<{ prompt: string }>;
-  workspace: WorkspaceFixture;
-  expectedConflict: {
-    packages: string[];
-    symptom: string;
-    recovery: string;
-  };
-  observations: UiObservation[];
-  source: ScenarioSource;
-  environmentId: string;
-}
-
-export interface PluginUiScenario {
-  type: "plugin-ui";
-  id: string;
-  steps: Array<{ action: string; expected: string }>;
-  observations: UiObservation[];
-  source: ScenarioSource;
-  environmentId: string;
-}
-
-export type Scenario = BehaviorScenario | ConflictRegression | PluginUiScenario;
-
-export interface Exclusion {
-  id: string;
-  skill: string;
-  reason: string;
-  evidence: string;
-}
+export type EnvironmentKind = "base" | "capability" | "conflict";
 
 export interface EnvironmentMatrix {
   id: string;
+  /** Why this environment exists. Written in Chinese. */
+  description: string;
+  kind: EnvironmentKind;
   enabledPluginPackages: string[];
-  /**
-   * Plugin packages force-loaded despite a peer/runtime version mismatch. Two fixtures need
-   * this: `session-search`, whose experimental plugin pins session-query packages the runtime
-   * does not satisfy, and `agent-team-conflict`, whose experimental Agent Teams plugins declare
-   * a peer range the pinned dsh runtime does not satisfy. The loader disables those rows unless
-   * the exact package@version is exempted for this runtime. `prepare` reads the installed
-   * version and the actual runtime version to grant each exemption.
-   */
+  /** Package names force-loaded despite a peer/runtime version mismatch. */
   versionExemptions?: string[];
 }
 
@@ -128,9 +88,11 @@ export interface RunEnvironment {
   configHash: string;
 }
 
+export type ToolCallStatus = "pending" | "ok" | "error";
+
 export interface ToolCallEvidence {
   name: string;
-  status: string;
+  status: ToolCallStatus;
   /**
    * Tool name plus its whitelisted audit arguments, capped at 200 characters. Only
    * listed keys (paths, commands, patterns, targets) are copied, so credentials and
@@ -138,6 +100,23 @@ export interface ToolCallEvidence {
    */
   argsSummary: string;
   errorText?: string;
+}
+
+export const SKILL_TOOL_NAMES = ["skill", "pstack_skill", "pstack-skill"] as const;
+export interface ToolAttemptAnalysis {
+  name: string;
+  attempts: number;
+  failures: number;
+  firstAttemptStatus: "ok" | "error" | "pending";
+  finalStatus: "ok" | "error" | "pending";
+  /** True when at least one attempt failed and the final attempt succeeded. */
+  recovered: boolean;
+}
+
+export interface SessionAnalysis {
+  tools: ToolAttemptAnalysis[];
+  artifacts: string[];
+  warnings: string[];
 }
 
 export interface SessionFacts {
@@ -153,6 +132,7 @@ export interface SessionFacts {
   /** Every user-authored turn text in order; userText stays the first one for the entry check. */
   userTexts: string[];
   autoAnswers: Array<{ question: string; answer: string }>;
+  analysis?: SessionAnalysis;
 }
 
 export interface ArtifactEvidence {
@@ -161,13 +141,26 @@ export interface ArtifactEvidence {
   observed: string[];
 }
 
+export const SEMANTIC_REVIEW_STATUSES = ["supported", "gap", "inconclusive"] as const;
+export type SemanticReviewStatus = (typeof SEMANTIC_REVIEW_STATUSES)[number];
+
 export type SemanticReview =
   | { status: "pending"; reason: string }
   | {
-      status: "supported" | "gap" | "inconclusive";
+      status: SemanticReviewStatus;
       reason: string;
       reviewer: { kind: "model"; route: TestTarget } | { kind: "human"; name: string };
     };
+
+export const VERDICT_STATUSES = [
+  "observed",
+  "gap",
+  "blocked",
+  "unobserved",
+  "verified",
+  "not-verified",
+  "inconclusive",
+] as const;
 
 export type Verdict =
   | { phase: "raw"; status: "observed"; gaps: string[] }
@@ -197,6 +190,6 @@ export interface RunRecord {
   mechanicalFailures: string[];
   verdict: Verdict;
   capturedAt: string;
-  /** Set on a review revision: the reviewedAt of the sidecar that produced this record. */
-  reviewedAt?: string;
+  /** Batch that produced this record; optional on records written before current snapshots. */
+  batchId?: string;
 }

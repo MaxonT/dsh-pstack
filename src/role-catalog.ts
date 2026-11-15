@@ -1,15 +1,17 @@
 /**
- * `pstack_roles`: a read-only capability query over the role manifest.
+ * `pstack_roles`: a read-only discovery query over the role manifest.
  *
- * `pstack_subagent` requires `role` and accepts `roleIndex` only for a
- * list-valued role that is not an automatic panel. This tool reports those
- * facts before a caller starts a child.
+ * It reports each role, its shape, and the routes configured in the role file as
+ * structured `{ provider, model, effort? }` values a caller can pass straight to
+ * `pstack_subagent`.
  */
 
 import type { Context } from "@deepseek-ai/cordis";
 import type { JsonSchemaNode, ToolDefinition } from "@deepseek-ai/dsh-tools";
 
-import { ROLE_MANIFEST, type RoleSpec } from "./role-manifest.ts";
+import { ROLE_MANIFEST, type RoleSpec } from "./roles/role-manifest.ts";
+import { modelsFilePath, readRoleConfiguration, resolveDshHome } from "./roles/role-store.ts";
+import { isRoute, type Route } from "./roles/route.ts";
 
 export const name = "pstack-role-catalog";
 
@@ -17,57 +19,53 @@ export const inject = ["tools"];
 
 export const TOOL_NAME = "pstack_roles";
 
+/** One configured route, structured for direct reuse by `pstack_subagent`. */
+export interface RoleRoute {
+  readonly provider?: string;
+  readonly model?: string;
+  readonly effort?: string;
+  readonly inherit?: true;
+}
+
 export interface RoleCapability {
   readonly role: string;
   readonly shape: "single" | "list";
-  readonly autoPanel: boolean;
-  readonly roleIndex: "not-applicable" | "optional";
   readonly usage: string;
+  readonly routes: readonly RoleRoute[];
 }
 
-/** Derive one role's capability record. */
-export function roleCapability(spec: RoleSpec): RoleCapability {
-  if (spec.autoPanel) {
-    return {
-      role: spec.key,
-      shape: spec.shape,
-      autoPanel: true,
-      roleIndex: "not-applicable",
-      usage: "starts one child per configured entry",
-    };
-  }
-  if (spec.shape === "list") {
-    return {
-      role: spec.key,
-      shape: spec.shape,
-      autoPanel: false,
-      roleIndex: "optional",
-      usage: "starts one child on the selected entry",
-    };
-  }
+/** Derive one role's discovery record. */
+export function roleCapability(spec: RoleSpec, routes: readonly RoleRoute[] = []): RoleCapability {
   return {
     role: spec.key,
     shape: spec.shape,
-    autoPanel: false,
-    roleIndex: "not-applicable",
-    usage: "starts one child on the role's single route",
+    usage: usageFor(spec, routes.length > 0),
+    routes,
   };
 }
 
-/** Every role's capability record in manifest order. */
-export function roleCapabilities(): readonly RoleCapability[] {
-  return ROLE_MANIFEST.map(roleCapability);
+/** Every role's discovery record in manifest order. */
+export function roleCapabilities(
+  entries?: ReadonlyMap<string, { readonly routes: readonly Route[] }>,
+): readonly RoleCapability[] {
+  return ROLE_MANIFEST.map((spec) => {
+    const entry = entries?.get(spec.key);
+    const routes = entry?.routes.map(routeToChoice) ?? [];
+    return roleCapability(spec, routes);
+  });
 }
 
-/** Render the capabilities for the model. */
+/** Render the discovery records for the model. */
 export function renderRoleCapabilities(roles: readonly RoleCapability[]): string {
   return [
-    "pstack roles. Pass the exact `role` key. `roleIndex` is null unless the role is a list that is not an automatic panel.",
+    "pstack roles. Each role lists its configured routes as provider/model/effort; pass provider, model, and an optional reasoningEffort to `pstack_subagent`. Omit provider and model to inherit the parent route.",
     "",
-    ...roles.map(
-      (role) =>
-        `- ${role.role} — shape=${role.shape}${role.autoPanel ? ", autoPanel=true" : ""}; roleIndex=${role.roleIndex}; ${role.usage}`,
-    ),
+    ...roles.map((role) => {
+      const routes = role.routes.length
+        ? `; routes=${role.routes.map(renderChoice).join(", ")}`
+        : "";
+      return `- ${role.role} — shape=${role.shape}; ${role.usage}${routes}`;
+    }),
   ].join("\n");
 }
 
@@ -83,11 +81,22 @@ const OUTPUT_SCHEMA: JsonSchemaNode = {
         properties: {
           role: { type: "string" },
           shape: { type: "string", enum: ["single", "list"] },
-          autoPanel: { type: "boolean" },
-          roleIndex: { type: "string", enum: ["not-applicable", "optional"] },
           usage: { type: "string" },
+          routes: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                provider: { type: "string" },
+                model: { type: "string" },
+                effort: { type: "string" },
+                inherit: { type: "boolean" },
+              },
+            },
+          },
         },
-        required: ["role", "shape", "autoPanel", "roleIndex", "usage"],
+        required: ["role", "shape", "usage", "routes"],
       },
     },
   },
@@ -95,15 +104,15 @@ const OUTPUT_SCHEMA: JsonSchemaNode = {
 };
 
 const TOOL_DESCRIPTION = [
-  "List every pstack role with its `shape` and `autoPanel`, so a `pstack_subagent` call passes the right `role` and `roleIndex` before it starts.",
+  "List every pstack role with its shape and configured routes as structured provider/model/effort values.",
   "",
-  "Read-only. It reports the role manifest, not the routes in `$DSH_HOME/pstack-models.mdc`; use `pstack_models` for the routes this deployment actually serves.",
+  "Read-only. Use it to pick the provider, model, and optional reasoningEffort to pass to `pstack_subagent`; use `pstack_models` for the routes this deployment actually serves.",
   "",
-  "`roleIndex` applies only to a list role that is not an automatic panel: `arena cross-judge pool` and `swarm workers`. Pass null for every single role and for an automatic panel.",
+  "A role with no configured route inherits the parent route when provider and model are omitted.",
 ].join("\n");
 
 /** Build the tool definition. */
-export function createPstackRolesTool(): ToolDefinition {
+export function createPstackRolesTool(dshHome: string = resolveDshHome()): ToolDefinition {
   return {
     name: TOOL_NAME,
     description: TOOL_DESCRIPTION,
@@ -121,11 +130,41 @@ export function createPstackRolesTool(): ToolDefinition {
     },
     isConcurrencySafe: () => true,
     async execute() {
-      return { roles: roleCapabilities() };
+      const roleFile = readRoleConfiguration(modelsFilePath(dshHome));
+      if (roleFile.status === "unreadable") {
+        throw new Error(
+          `the pstack role file at ${roleFile.path} cannot be read: ${roleFile.reason}`,
+        );
+      }
+      const entries = roleFile.status === "loaded" ? roleFile.roles : undefined;
+      return { roles: roleCapabilities(entries) };
     },
   };
 }
 
 export function apply(ctx: Context): void {
   ctx.tools.register(createPstackRolesTool());
+}
+
+function routeToChoice(route: Route): RoleRoute {
+  return isRoute(route)
+    ? {
+        provider: route.provider,
+        model: route.model,
+        ...(route.effort === undefined ? {} : { effort: route.effort }),
+      }
+    : { inherit: true };
+}
+
+function renderChoice(route: RoleRoute): string {
+  if (route.inherit) return "inherit-parent";
+  const base = `${route.provider}/${route.model}`;
+  return route.effort === undefined ? base : `${base} [${route.effort}]`;
+}
+
+function usageFor(spec: RoleSpec, configured: boolean): string {
+  if (!configured)
+    return "no configured route; omit provider and model to inherit the parent route";
+  if (spec.shape === "list") return "multiple configured routes; the caller picks one";
+  return "one child on the role's single configured route";
 }

@@ -3,19 +3,23 @@ import {
   appendFileSync,
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { isPhase } from "../types.ts";
 import type { Phase, RunRecord, Verdict } from "../types.ts";
 import { latestRecords } from "./lib/evidence.ts";
 import { computeWorkers } from "./lib/capacity.ts";
 import {
   environmentMatrix,
-  REPORT_DIRECTORY,
   REPOSITORY_ROOT,
+  upstreamRevision,
   workersDirectory,
 } from "./lib/run-metadata.ts";
 import {
@@ -26,10 +30,11 @@ import {
   writeProgress,
   type ProgressState,
 } from "./lib/progress.ts";
-import { listScenarioIds, listScenariosForSkill } from "./lib/scenarios.ts";
-import { workerCount } from "./lib/worker.ts";
+import { listScenarioIds, loadScenario } from "./lib/scenarios.ts";
+import { writeBatchMetadata } from "./lib/review-snapshot.ts";
+import { currentTaskFile, stopRequestFile, workerCount, workerPaths } from "./lib/worker.ts";
 
-const VPX = process.platform === "win32" ? "vpx.cmd" : "vpx";
+const VPX = "vpx";
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -58,28 +63,37 @@ function readRecords(directory: string): RunRecord[] {
       return typeof record.scenarioId === "string" && typeof record.phase === "string"
         ? [record]
         : [];
-    } catch {
-      return [];
+    } catch (error) {
+      throw new Error(
+        `invalid RunRecord JSON in ${file}: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   });
 }
 
 function allRecords(): RunRecord[] {
-  return [...readRecords(join(REPORT_DIRECTORY, "evidence")), ...readRecords(workersDirectory())];
+  return readRecords(workersDirectory());
 }
 
 function selectedScenarios(phase: Phase, environmentId: string): string[] {
   const scenarios = argValue("--scenarios");
-  const skills = argValue("--skills");
   const failed = process.argv.includes("--only-failed");
-  if ([scenarios, skills, failed ? "failed" : undefined].filter(Boolean).length > 1) {
-    throw new Error("--scenarios, --skills and --only-failed are mutually exclusive");
+  const full = process.argv.includes("--full");
+  if (
+    [scenarios, failed ? "failed" : undefined, full ? "full" : undefined].filter(Boolean).length > 1
+  ) {
+    throw new Error("--full, --scenarios and --only-failed are mutually exclusive");
+  }
+  if (full) {
+    return listScenarioIds().filter((id) => {
+      const scenario = loadScenario(id);
+      const phaseAllowed = scenario.phases === undefined || scenario.phases.includes(phase);
+      const environmentAllowed =
+        scenario.environmentId === undefined || scenario.environmentId === environmentId;
+      return phaseAllowed && environmentAllowed;
+    });
   }
   if (scenarios) return parseList(scenarios);
-  if (skills)
-    return parseList(skills).flatMap((skill) =>
-      listScenariosForSkill(skill).map((scenario) => scenario.id),
-    );
   if (failed) {
     return latestRecords(allRecords())
       .filter((record) => record.phase === phase && record.environment.matrix.id === environmentId)
@@ -90,13 +104,7 @@ function selectedScenarios(phase: Phase, environmentId: string): string[] {
       )
       .map((record) => record.scenarioId);
   }
-  return listScenarioIds();
-}
-
-function distribute(ids: string[], workers: number): string[][] {
-  const queues = Array.from({ length: workers }, () => [] as string[]);
-  ids.forEach((id, index) => queues[index % workers]?.push(id));
-  return queues;
+  throw new Error("run-batch requires --full, --scenarios <ids>, or --only-failed");
 }
 
 interface ChildResult {
@@ -104,9 +112,9 @@ interface ChildResult {
   output: string;
 }
 
-function runCase(args: string[]): Promise<ChildResult> {
+function runCase(args: string[], env: NodeJS.ProcessEnv): Promise<ChildResult> {
   return new Promise((resolvePromise) => {
-    const child = spawn(VPX, args, { cwd: REPOSITORY_ROOT, env: process.env });
+    const child = spawn(VPX, args, { cwd: REPOSITORY_ROOT, env });
     let output = "";
     child.stdout.on("data", (chunk: Buffer) => {
       output += chunk.toString();
@@ -117,6 +125,13 @@ function runCase(args: string[]): Promise<ChildResult> {
     child.on("error", (error) => resolvePromise({ code: -1, output: error.message }));
     child.on("close", (code) => resolvePromise({ code, output }));
   });
+}
+
+function createScenarioBundle(ids: string[]): { directory: string; file: string } {
+  const directory = mkdtempSync(join(tmpdir(), "pstack-scenario-bundle-"));
+  const file = join(directory, "scenarios.json");
+  writeFileSync(file, JSON.stringify(ids.map((id) => loadScenario(id))), { mode: 0o600 });
+  return { directory, file };
 }
 
 function statuses(): ProgressState["statuses"] {
@@ -138,12 +153,14 @@ function statusFor(record: RunRecord | undefined, phase: Phase): Verdict["status
 
 async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
-  if (phase !== "raw" && phase !== "adapted") {
+  if (!isPhase(phase)) {
     throw new Error(
-      "usage: run-batch.ts --phase raw|adapted [--environment base] [--scenarios a,b|--skills a,b|--only-failed] [--workers N] [--round N]",
+      "usage: run-batch.ts --phase raw|adapted --environment ID [--full|--scenarios a,b|--only-failed] [--workers N] [--round N]",
     );
   }
-  const matrix = environmentMatrix(argValue("--environment"));
+  const environmentId = argValue("--environment");
+  if (environmentId === undefined) throw new Error("--environment is required");
+  const matrix = environmentMatrix(environmentId);
   const ids = selectedScenarios(phase, matrix.id);
   if (ids.length === 0) {
     console.log("[run-batch] no scenarios selected");
@@ -151,8 +168,9 @@ async function main(): Promise<void> {
   }
   const requested = argValue("--workers") === undefined ? undefined : Number(argValue("--workers"));
   const prepared = workerCount(matrix.id, phase);
-  const workers = Math.min(computeWorkers(requested).workers, prepared || requested || 1);
-  const queues = distribute(ids, workers);
+  if (prepared === 0) throw new Error("no prepared workers; run playground:prepare first");
+  const workers = Math.min(computeWorkers(requested).workers, prepared, ids.length);
+  const pending = [...ids];
   const roundFlag = argValue("--round");
   const file = progressFilePath(matrix.id, phase);
   const round = roundFlag ? Number(roundFlag) : (readProgress(file)?.round ?? 0) + 1;
@@ -168,66 +186,101 @@ async function main(): Promise<void> {
     startedAt: formatTimestamp(),
     updatedAt: formatTimestamp(),
     perWorker: Object.fromEntries(
-      queues.map((queue, index) => [`w${index}`, { done: 0, total: queue.length }]),
+      Array.from({ length: workers }, (_, index) => [`w${index}`, { done: 0, total: 0 }]),
     ),
     failures: [],
     workers,
   };
   writeProgress(file, state);
+  console.log(`[run-batch] progress=${file}`);
   mkdirSync(join(workersDirectory(), phase, matrix.id), { recursive: true });
   const logFile = join(workersDirectory(), phase, matrix.id, "batch.log");
   writeFileSync(logFile, `phase=${phase} environment=${matrix.id} round=${round}\n`);
-  await Promise.all(
-    queues.map(async (queue, worker) => {
-      for (const scenarioId of queue) {
-        updateProgress(file, (current) => {
-          current.running.push({ worker, scenarioId });
-        });
-        const args = [
-          "playground/scripts/run-case.ts",
-          "--worker",
-          String(worker),
-          "--scenario",
-          scenarioId,
-          "--phase",
-          phase,
-          "--environment",
-          matrix.id,
-        ];
-        const config = argValue("--config");
-        if (config) args.push("--config", config);
-        const result = await runCase(args);
-        appendFileSync(
-          logFile,
-          `\n===== ${scenarioId} ${phase} ${matrix.id} exit=${String(result.code)} =====\n${result.output}\n`,
-        );
-        const records = latestRecords(
-          readRecords(join(workersDirectory(), phase, matrix.id, `w${worker}/evidence`)),
-        );
-        const record = records.find(
-          (entry) => entry.scenarioId === scenarioId && entry.phase === phase,
-        );
-        const status = statusFor(record, phase);
-        updateProgress(file, (current) => {
-          current.running = current.running.filter(
-            (entry) => !(entry.worker === worker && entry.scenarioId === scenarioId),
+  const batchId = `${phase}-${matrix.id}-${formatTimestamp().replace(/[-: ]/g, "")}`;
+  const mode = process.argv.includes("--full") ? "full" : "incremental";
+  writeBatchMetadata({
+    batchId,
+    phase,
+    environment: matrix.id,
+    mode,
+    scope: ids,
+    startedAt: new Date().toISOString(),
+    upstreamRevision: upstreamRevision(),
+  });
+  const bundle = createScenarioBundle(ids);
+  const childEnvironment = {
+    ...process.env,
+    PLAYGROUND_BATCH_ID: batchId,
+    PLAYGROUND_SCENARIO_BUNDLE: bundle.file,
+  };
+  try {
+    await Promise.all(
+      Array.from({ length: workers }, async (_, worker) => {
+        while (true) {
+          const scenarioId = pending.shift();
+          if (scenarioId === undefined) return;
+          updateProgress(file, (current) => {
+            current.running.push({ worker, scenarioId });
+            const perWorker = current.perWorker[`w${worker}`];
+            if (perWorker) perWorker.total += 1;
+          });
+          const workerPathsForTask = workerPaths(worker, matrix.id, phase);
+          const taskFile = currentTaskFile(workerPathsForTask);
+          rmSync(stopRequestFile(workerPathsForTask), { force: true });
+          writeFileSync(
+            taskFile,
+            `${JSON.stringify({ scenarioId, startedAt: new Date().toISOString(), batchId }, null, 2)}\n`,
           );
-          current.done += 1;
-          current.statuses[status] += 1;
-          const perWorker = current.perWorker[`w${worker}`];
-          if (perWorker) perWorker.done += 1;
-          if (status !== "verified" && status !== "observed") {
-            current.failures.push({
-              scenarioId,
-              worker,
-              reason: record?.verdict.status ?? result.output.slice(-500),
-            });
-          }
-        });
-        console.log(`[run-batch] ${scenarioId} ${phase} ${matrix.id} ${status}`);
-      }
-    }),
-  );
+          const args = [
+            "playground/scripts/run-case.ts",
+            "--worker",
+            String(worker),
+            "--scenario",
+            scenarioId,
+            "--phase",
+            phase,
+            "--environment",
+            matrix.id,
+          ];
+          const config = argValue("--config");
+          if (config) args.push("--config", config);
+          const result = await runCase(args, childEnvironment);
+          rmSync(taskFile, { force: true });
+          rmSync(stopRequestFile(workerPathsForTask), { force: true });
+          appendFileSync(
+            logFile,
+            `\n===== ${scenarioId} ${phase} ${matrix.id} exit=${String(result.code)} =====\n${result.output}\n`,
+          );
+          const records = latestRecords(
+            readRecords(join(workersDirectory(), phase, matrix.id, `w${worker}/evidence`)),
+          );
+          const record = records.find(
+            (entry) => entry.scenarioId === scenarioId && entry.phase === phase,
+          );
+          const status = statusFor(record, phase);
+          updateProgress(file, (current) => {
+            current.running = current.running.filter(
+              (entry) => !(entry.worker === worker && entry.scenarioId === scenarioId),
+            );
+            current.done += 1;
+            current.statuses[status] += 1;
+            const perWorker = current.perWorker[`w${worker}`];
+            if (perWorker) perWorker.done += 1;
+            if (status !== "verified" && status !== "observed") {
+              current.failures.push({
+                scenarioId,
+                worker,
+                reason: record?.verdict.status ?? result.output.slice(-500),
+              });
+            }
+          });
+          console.log(`[run-batch] ${scenarioId} ${phase} ${matrix.id} ${status}`);
+        }
+      }),
+    );
+  } finally {
+    rmSync(bundle.directory, { recursive: true, force: true });
+  }
   console.log(`[run-batch] log=${logFile}`);
 }
 

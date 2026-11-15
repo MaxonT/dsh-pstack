@@ -1,0 +1,140 @@
+{
+  "scenarioId": "capability-render-audio",
+  "phase": "raw",
+  "environment": {
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-1fb1a027-f766-4704-bb28-c9b197f948d6",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && git status --short && git log --oneline -5"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=which ffmpeg espeak espeak-ng pico2wave say flite sox python3 node 2>&1; python3 -c \"import edge_tts\" 2>&1 | tail -1; ls /usr/share/espeak* 2>&1 | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && timeout 60 pip install edge-tts 2>&1 | tail -3"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && timeout 120 pip install --break-system-packages edge-tts 2>&1 | tail -3"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 180 pip install --break-system-packages --target ./.pylibs edge-tts 2>&1 | tail -3"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && PYTHONPATH=.pylibs timeout 90 python3 -m edge_tts --text \"测试\" --write-media <TEMP_PATH> 2>&1 | tail -5; ls -l"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat > <TEMP_PATH> <<'EOF' 本次改动要点播报。工作区名称为 render-audio，主题是能力探测。第一，新增了 README.md 文档，说明该工作区用于音频渲染能力探测。第二，完"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && xxd -l 16 change-summary.mp3 && ls -l"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf .pylibs && ls -la"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "音频已生成，是真正的 MP3 文件（219 KB，MPEG 音频头 `fff3`），可直接播放：\n\n![改动要点播报](change-summary.mp3)\n\n[下载 change-summary.mp3](change-summary.mp3)\n\n播报内容覆盖：\n1. 新增 README.md，说明该工作区是 render-audio 能力探测\n2. 打通语音合成链路（工作区内临时安装 edge-tts，调用 Edge 在线 TTS）\n3. 产出真实可播放音频，而非文字稿或链接\n\n临时安装的依赖已清理，工作区只留下 README.md 和音频文件。",
+    "userText": "把这次改动的要点做成一段能用音频播放的简短播报给我，要真的能播放，不要只给文字稿或链接。",
+    "userTexts": [
+      "把这次改动的要点做成一段能用音频播放的简短播报给我，要真的能播放，不要只给文字稿或链接。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 9,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=11", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:16:37.732Z"
+}

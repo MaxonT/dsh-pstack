@@ -1,0 +1,74 @@
+{
+  "scenarioId": "capability-readonly-true",
+  "phase": "raw",
+  "environment": {
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-a6b17819-525d-4af0-a265-101e04675ebf",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll delegate this to a read-only subagent.\nI've dispatched a read-only explorer to walk the `src` directory. I'll report back once it returns.\n\n--- turn 2 ---\n\n`src` 目录很小，只有两个文件：\n\n**1. [src/a.ts](src/a.ts)**\n- 用途：示例/占位用的极简模块。\n- 内容（全文一行）：`export const a = 1;`\n- 导出：`a`（数字，值为 1）。无导入、无函数、无类、无类型。\n\n**2. [src/b.ts](src/b.ts)**\n- 用途：示例/占位用的极简模块。\n- 内容（全文一行）：`export const b = 2;`\n- 导出：`b`（数字，值为 2）。无导入、无函数、无类、无类型。\n\n没有子目录，也没有其他类型的文件（无 index、配置、测试或资源文件）。整个过程中只做了读取，没有修改任何文件。\n探查者已结束工作，结果如上：`src` 目录仅含 [src/a.ts](src/a.ts)（导出常量 `a = 1`）和 [src/b.ts](src/b.ts)（导出常量 `b = 2`），均为一行占位模块，无子目录。全程只读，未修改任何文件。",
+    "userText": "让一个只读的探查者读一遍 src 目录，告诉我每个文件负责什么。它只负责读，不要修改任何文件。",
+    "userTexts": [
+      "让一个只读的探查者读一遍 src 目录，告诉我每个文件负责什么。它只负责读，不要修改任何文件。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=1", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:16:37.247Z"
+}

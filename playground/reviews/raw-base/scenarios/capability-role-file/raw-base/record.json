@@ -1,0 +1,602 @@
+{
+  "scenarioId": "capability-role-file",
+  "phase": "raw",
+  "environment": {
+    "worker": 6,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-8719b1e9-fcac-4ce1-8bce-a0e676f8c2f0",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": ["setup-pstack"],
+    "toolCalls": [
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=setup-pstack"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; echo ---; cat $DSH_HOME/pstack-models.json"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat README.md; echo ---; git -C . log --oneline -5 2>/dev/null; echo ---; ls ~/.cursor/rules 2>/dev/null; echo ---HOME=$HOME; ls $DSH_HOME"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> 2>&1 | head -30"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la ~/.cursor 2>&1; echo ---; ls ~/.cursor/rules 2>&1; echo ---; find ~/.cursor -name \"*.mdc\" 2>/dev/null | head; echo ---; ls $DSH_HOME/profiles $DSH_HOME/sessions 2>&1 | head -40"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls $DSH_HOME/profiles/playground; echo ---; find $DSH_HOME/profiles -name \"*.json\" | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rl \"pstack-models\" <HOST_PATH> 2>/dev/null | head -20"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: child LLM route \"magpie/magpie/workbuddy/minimax-m3.1-flash\" is not allowed for this Session"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> echo ---; grep -rn \"pstack-models\\|role-file\\|roles\\[\" <TEMP_PATH> --include=*.md --include=*.j"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rn \"pstack-models\" <TEMP_PATH> | head -20; echo ---; grep -rn \"pstack-models\" <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && ls && ls packages 2>/dev/null | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --stat -3 && git status"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && ls; echo ---; grep -rl \"pstack-models\" . | head -20"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/profiles/playground/package.json $DSH_HOME/profiles/playground/cordis.yml $DSH_HOME/cordis.patch.yml 2>&1 | head -80"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && ls; echo ---; ls @deepseek-ai | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rl \"pstack\" <HOST_PATH> 2>/dev/null | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <TEMP_PATH> <TEMP_PATH> echo ---; cat <TEMP_PATH>"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: child LLM route \"magpie/workbuddy/deepseek-v4.1-flash\" is not allowed for this Session"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rn \"pstack-models.json\\|pstack-models\" <HOST_PATH> 2>/dev/null |"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -R $DSH_HOME/sessions | head -40; echo ---; ls $DSH_HOME/storages"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/storages/workspace.json 2>&1 | head -40; echo ---; ls -R $DSH_HOME/storages/session_projcache | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rn \"DSH_HOME\\|pstack-models.json\" <TEMP_PATH> --include=* -l 2>/dev/null | head; echo ---; grep -rn \"DSH_HOME\" <TEMP_PATH>"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rn \"allowed\\|model\" $DSH_HOME/profiles/playground/cordis.patch.yml $DSH_HOME/cordis.patch.yml | head -30; echo ---; ls $DSH_HOME/profiles/playground; cat $DSH_HOME/profiles/playgrou"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> ; echo ---; cat <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> ; echo ---; find <HOST_PATH> -maxdepth 4 -name \"*.yml\" | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && cat current-task.json phase.txt web-url.txt; echo ---; ls -R evidence | head -40"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && ls && grep -rln \"capability-role-file\" --include=* . | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && ls && find . -path \"*capability-role-file*\" | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && ls && grep -rn \"role-file\" -r . | head -20"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -n \"role-file\" -A20 capability-inventory.json | head -60; echo ===; cat capabilities/model-route.ts capabilities/model"
+      },
+      {
+        "name": "subagent",
+        "status": "error",
+        "argsSummary": "subagent",
+        "errorText": "Error: child LLM route \"magpie/workbuddy/deepseek-v4.1-flash\" is not allowed for this Session; without a recorded model-selection policy, explicit selection (including reasoning_effort) is limited to the parent route"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> 2>/dev/null && ls @deepseek-ai | grep -i \"subag"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -n \"not "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rn \"subagentModelSelectio"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && sed -n 120,166p dsh-tool-subage"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rln \"subagent/model-selec"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rn \"allowedModels\" */lib/"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rn \"subagentModelSelectio"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rn \"subagent-model-select"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && sed -n 730,800p dsh-client-ui-s"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rn \"model-selection-setti"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && sed -n 40,80p dsh-web-app/cordi"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && ls dsh-settings/lib; grep -rn \""
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME/storages/session_projcache/sessions && grep -l \"model-selection-policy\" *.json 2>/dev/null; echo ---; for f in *.json; do echo \"== $f\"; python3 -c \" import json,sys d=json.lo"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job none"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "error",
+        "argsSummary": "subagent",
+        "errorText": "Error: subagent limit reached (active child limit: 8); wait for an existing child to finish or complete this work with the current agents"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45; echo done"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 60; echo done"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 90; echo done"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 120; echo done"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "send_message",
+        "status": "ok",
+        "argsSummary": "send_message"
+      },
+      {
+        "name": "send_message",
+        "status": "ok",
+        "argsSummary": "send_message"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 100; echo done"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 90; echo done"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 120; echo done"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Config read confirmed. Now validating the routes it names against what this session actually permits.\n已按项目角色配置跑完。\n\n**先确认配置读到了**：`$DSH_HOME/pstack-models.json`（`version: 1`，17 个角色键 / 22 条路由），格式是 `<provider>/<model> [effort]`，需要拆成 `provider` / `model` / `reasoning_effort` 三个参数。\n\n**但有一半路由在本会话里跑不了**。配置里 22 条路由各占一半：\n\n- `magpie/workbuddy/minimax-m3.1-flash [high]`（11 条）→ 按配置直接生效，high 是该模型公布的档位。\n- `magpie/workbuddy/deepseek-v4.1-flash [low]`（11 条）→ **不可选**。两个模型都由 `magpie` 提供商正常提供，不是模型缺失；是本会话没有记录 `subagent/model-selection-policy`，`dsh-tool-subagent` 的 `assertAllowedModelSelection` 因此只放行父路由，报 `child LLM route \"magpie/workbuddy/deepseek-v4.1-flash\" is not allowed for this Session`。\n\n深seek 路由没有同族可用档位可退，所以落到终级回退：省略 provider/model/effort，继承父路由 `magpie/workbuddy/minimax-m3.1-flash`，effort 取父路由的 `low`——与配置的 `[low]` 恰好一致，所以 effort 中性、但模型变了，逐条都做了说明，没有静默切换。\n\n**要让它完全按配置跑**，会话所有者需要在 GUI 里：设置 → Subagent → 模型选择 → 打开开关并把 `magpie / workbuddy/deepseek-v4.1-flash` 加入授权清单，然后**新开会话**（策略只在会话创建时采样一次，当前会话改设置无效）。\n\n本次实际委派覆盖了 9 个角色（路由探针、feature/refactoring、bug-fix、perf-issue、hillclimb、judgment and prose、hardest tasks、how explorer、why investigators）以及 arena/architect/interrogate 的面板席；未执行的 `how explainer`、`why synthesizer`、`reflect *`、`swarm workers`、`arena cross-judge pool` 与已执行角色路由完全同型，两条取值路径都已验证。完整角色×模型对照表、回退原因和修复步骤在 [ROLE-MODEL-REPORT.md](<TEMP_PATH>",
+    "userText": "按项目里配置的角色模型设置来跑这次工作：每个角色用什么模型以那份角色配置为准，跑之前先确认它读到了这份配置。",
+    "userTexts": [
+      "按项目里配置的角色模型设置来跑这次工作：每个角色用什么模型以那份角色配置为准，跑之前先确认它读到了这份配置。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 47,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_list",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 1,
+          "firstAttemptStatus": "error",
+          "finalStatus": "error",
+          "recovered": false
+        },
+        {
+          "name": "list_agents",
+          "attempts": 9,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "list_subagent_models",
+          "attempts": 6,
+          "failures": 2,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": true
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "send_message",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "skill",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "subagent",
+          "attempts": 15,
+          "failures": 2,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": true
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": [
+        "list_subagent_models needed 6 attempts with 2 failures",
+        "subagent needed 15 attempts with 2 failures"
+      ]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=setup-pstack", "toolCalls=89", "warnings=2"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:18:49.228Z"
+}

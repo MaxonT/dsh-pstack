@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 
 import { defineConfig } from "bumpp";
 
-import { releaseMetadata, syncCompatibility } from "./port/release-compatibility.ts";
+import { releaseMetadata, syncCompatibility } from "./scripts/release-compatibility.ts";
 
 /** Update the bilingual compatibility tables after the version bump and before the release commit. */
 export default defineConfig({

@@ -1,10 +1,11 @@
 # 决策：以场景测试与审核侧车驱动移植，发布兼容键迁到 baseline.json
 
-Status: proposed
+Status: superseded
 Date: 2026-11-11
-Scope: playground/**, port/release-compatibility.ts, port/AGENTS.md, docs/architecture.md, docs/glossary.md
+Scope: playground/**, scripts/generate-pstack.mjs, scripts/release-compatibility.ts, port/AGENTS.md, docs/architecture.md, docs/glossary.md, docs/decisions/**
 Implemented-by: -
 Review: 2026-11-11
+Superseded-by: docs/decisions/2026-11-13-current-review-snapshot.md — 证据、审核和报告结构已改为当前快照。
 
 ## 背景
 
@@ -13,10 +14,11 @@ Review: 2026-11-11
 ## 决策
 
 - raw 基线独立生成。`playground/raw/dsh.md` 由 agent 按 `playground/raw/AGENTS.md` 的规则，从上游 `docs/harness/claude-code.md` 逐项改判为 DSH 真实能力，区分 base 原生、仅官方可选插件、无此能力三态。生成器只复制上游并插入 dsh 引用行，不改写上游任何文案。
-- 场景注册表取代逐技能用例文件。`playground/scenarios/` 用同一份 `Scenario` 跨 raw 与 adapted 运行，覆盖上游技能主要能力，另设插件 UI、冲突回归与环境矩阵。上游技能必须有用例或明确排除，覆盖守卫测试在两者都缺时失败。
+- 场景注册表取代逐技能用例文件。`playground/scenarios/` 分 `skills`、`playbooks`、`official-plugins` 三组，用同一份 `Scenario` 跨 raw 与 adapted 运行；官方插件环境做 base 与插件环境对比，不另设插件 UI 或冲突回归。上游技能和 playbook 必须有用例或明确排除，覆盖守卫测试在两者都缺时失败。
+- 生成器统一为 `scripts/generate-pstack.mjs --target port|raw`。`--target port` 生成根 `pstack/`，`--target raw` 生成 `playground/raw/pstack/`；`port/` 只保留最终适配文档 `dsh.md`、`dsh.zh.md`、`AGENTS.md`。原始 raw 文档另存 `playground/raw/dsh.md`、`dsh.zh.md` 与判定依据 `dsh-evidence.md`。
 - 执行器等待每个 turn 的真实 `turn/end`，不做 probe 或到点中止。raw 四态为 observed、gap、blocked、unobserved，adapted 三态为 verified、not-verified、inconclusive。
 - 语义审核独立于机械断言。审核侧车放在 `playground/reviews/<scenarioId>-<phase>-<environmentId>.json`，记录 supported、gap 或 inconclusive 与审核者；`review --apply` 合并成 append-only 的 RunRecord 修订。侧车早于最新记录时判 stale 并跳过。
-- 发布兼容键迁到 `playground/baseline.json`，字段为 `compatibilityKey`、`dshVersion`、`pstackCommit`。`port/release-compatibility.ts` 从该文件读取，不再读取 cases.lock。
+- 发布兼容键迁到 `playground/baseline.json`，字段为 `compatibilityKey`、`dshVersion`、`pstackCommit`。`scripts/release-compatibility.ts` 从该文件读取，不再读取 cases.lock。
 - 旧 cases lock、approve、lockfile、skill-audit 报告与其生成脚本删除，不保留兼容层。
 
 ## 替代方案
@@ -31,5 +33,6 @@ Review: 2026-11-11
 
 - 发布流程只依赖 `playground/baseline.json`，`vp run compatibility:check` 与 release 不再受审核文件影响。
 - 审核结论以侧车形式进库，`review --apply` 产生可追溯的 RunRecord 修订。运行时证据仍在 gitignored 的 worker 目录与 `reports/evidence`，由重跑重新生成。
+- `reports/` 镜像 `scenarios/` 的三组目录。每个 case 的 `record.json`、截图和 session 日志不提交；`index.md`、`summary-*.md`、`comparison.md`、`approval-*.md` 提交。
 - 上游 pstack 或 DSH 升级时按 `playground/raw/AGENTS.md` 重新判定适配文档，按场景注册表重跑 raw 与 adapted，不需要旧 lock 或审批轮次。
-- 本记录替代 [2026-11-08-release-compatibility-metadata.md](./2026-11-08-release-compatibility-metadata.md)。实现已落在 `refactor/test-driven-pstack-port` 分支的 `test-driven-pstack-port` 合并提交，合入默认分支后补实现锚点。
+- 本记录替代 [2026-11-08-release-compatibility-metadata.md](./2026-11-08-release-compatibility-metadata.md)。实现正在 `refactor/test-driven-pstack-port` 分支按批次提交；合入默认分支后补实现锚点。

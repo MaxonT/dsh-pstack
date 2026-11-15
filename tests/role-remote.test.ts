@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 import type { TypertClientRemote } from "@deepseek-ai/dsh-typert-protocol";
 
-import { pstackRolesHostContribution, pstackRolesRemote } from "../src/role-remote.ts";
+import { pstackRolesHostContribution, pstackRolesRemote } from "../src/roles/role-remote.ts";
 
 describe("pstack role Remote contribution", () => {
   it("registers strict Host invocations for every Gateway endpoint", () => {

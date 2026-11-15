@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import type { CatalogueResult } from "../src/models.ts";
-import { parseRoleConfiguration } from "../src/role-config.ts";
-import { snapshotFromConfiguration } from "../src/role-editor.ts";
+import { parseRoleConfiguration } from "../src/roles/role-store.ts";
+import { snapshotFromConfiguration } from "../src/roles/role-editor.ts";
 import {
   parseBudgetApplyResult,
   parseCatalogueResult,
@@ -11,7 +11,7 @@ import {
   parseSaveRoleResult,
   WireTypeError,
   type RoleFileSnapshot,
-} from "../src/role-wire.ts";
+} from "../src/roles/role-wire.ts";
 
 const validCatalogue: CatalogueResult = {
   providers: [
@@ -33,7 +33,7 @@ function catalogueWithModel(patch: Record<string, unknown>): CatalogueResult {
 }
 
 const snapshot: RoleFileSnapshot = {
-  path: "/home/user/.dsh/pstack-models.mdc",
+  path: "/home/user/.dsh/pstack-models.json",
   status: "loaded",
   budget: "large (xhigh)",
   roles: [
@@ -41,7 +41,6 @@ const snapshot: RoleFileSnapshot = {
       key: "bug-fix",
       shape: "single",
       configured: true,
-      line: 2,
       routes: [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
       issues: [],
     },
@@ -69,7 +68,11 @@ describe("role wire parsers", () => {
   it("round-trips the Host producer's snapshot without losing fields", () => {
     const produced = snapshotFromConfiguration(
       parseRoleConfiguration(
-        "# budget: large (xhigh)\nbug-fix: cpa/model-a [high]\n",
+        JSON.stringify({
+          version: 1,
+          budget: "large (xhigh)",
+          roles: { "bug-fix": ["cpa/model-a [high]"] },
+        }),
         snapshot.path,
       ),
     );

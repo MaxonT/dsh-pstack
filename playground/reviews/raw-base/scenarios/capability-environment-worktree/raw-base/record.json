@@ -1,0 +1,158 @@
+{
+  "scenarioId": "capability-environment-worktree",
+  "phase": "raw",
+  "environment": {
+    "worker": 10,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-ac6de714-46db-4842-bc8e-2dec36c85741",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -a; git status 2>&1 | head -30; git worktree list 2>&1"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git rev-parse --git-dir && git rev-parse --is-inside-work-tree && git config --get core.bare; git w"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo hi > probe.txt && cat probe.txt && ls"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git worktree remove <TEMP_PATH> --force && git branc"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git worktree list; git branch -a; git status --short; ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -a .git && cat .git/HEAD && ls .git/refs/heads && git log --all --oneline 2>&1|head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat .git/config; find .git/objects -type f | head; git count-objects -v"
+      },
+      {
+        "name": "ask_user_question",
+        "status": "ok",
+        "argsSummary": "ask_user_question"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git --version && mkdir -p worktrees && git worktree add worktrees/readme-docs -b feat/readme-docs 2"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git add README.md && git -c user.name=agent -c user.email=agent@local commit "
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "仓库在 `capability-environment-worktree`，当前 `main` 分支还没有任何提交（只有一个未跟踪的 `README.md`）。工作树功能本身可用，我已验证过 `git worktree add` 能成功。\n\n但“这处改动”具体指什么内容，我这边没有上下文记录。\n环境支持 git worktree，已完成。\n\n**工作树路径**：`<TEMP_PATH> `feat/readme-docs`）\n\n改动内容：在工作树里创建并提交了扩写后的 `README.md`（补充能力探测说明 + 工作树隔离用法）。主仓库 `main` 分支保持原样，仍只有那个未跟踪的原始 `README.md`，未被触碰。\n\n两点说明：\n- 该仓库还没有任何提交，所以新工作树是以 `--orphan` 创建的，`README.md` 在工作树内是新建并提交为 root commit 的。将来合并时 `main` 的 `README.md` 与它无共同祖先，需要 `git merge -X theirs feat/readme-docs` 或手动处理。\n- 主仓库根目录出现了未跟踪的 `worktrees/` 目录（因为 `.gitignore` 尚未包含它）。要我加一条 `.gitignore` 忽略工作树目录吗？",
+    "userText": "在一个独立的工作树里做这处改动，别弄脏我当前的分支。这个环境支持的话就把工作树路径告诉我，不支持就说明并给替代办法。",
+    "userTexts": [
+      "在一个独立的工作树里做这处改动，别弄脏我当前的分支。这个环境支持的话就把工作树路径告诉我，不支持就说明并给替代办法。"
+    ],
+    "autoAnswers": [
+      {
+        "question": "要放进独立工作树的具体改动是什么？",
+        "answer": "改 README.md 补充说明"
+      }
+    ],
+    "analysis": {
+      "tools": [
+        {
+          "name": "ask_user_question",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "bash",
+          "attempts": 9,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=12", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:13:36.723Z"
+}

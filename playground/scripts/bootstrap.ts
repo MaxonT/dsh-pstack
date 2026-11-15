@@ -3,15 +3,22 @@
 // chip instead of a login or 401 wall. `--worker <k>` checks one, `--all` checks all,
 // default is the first worker.
 
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { createBrowserSession } from "./lib/browser.ts";
+import { collapseSidebar, createBrowserSession } from "./lib/browser.ts";
+import { UI_LABELS } from "./lib/runtime.ts";
 import { readHomePlan, readWebUrl, readWorkspaceStore } from "./lib/env.ts";
-import { listWorkers, workerPaths, type WorkerPaths } from "./lib/worker.ts";
+import {
+  bootstrapReadyFile,
+  hasBootstrapReady,
+  listWorkers,
+  workerPaths,
+  type WorkerPaths,
+} from "./lib/worker.ts";
 import type { Phase } from "../types.ts";
 
-const CONTINUE_LABEL = "继续";
-const PREVIEW_NOTICE = "预览版说明";
+const { continue: CONTINUE_LABEL, previewNotice: PREVIEW_NOTICE } = UI_LABELS;
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -19,8 +26,10 @@ function argValue(flag: string): string | undefined {
 }
 
 function selectWorkers(): WorkerPaths[] {
-  const environment = argValue("--environment") ?? "base";
-  const phase = (argValue("--phase") ?? "adapted") as Phase;
+  const environment = argValue("--environment");
+  if (environment === undefined) throw new Error("--environment is required");
+  const phase = argValue("--phase") as Phase;
+  if (phase !== "raw" && phase !== "adapted") throw new Error("--phase must be raw or adapted");
   if (process.argv.includes("--all")) {
     const workers = listWorkers({ environmentId: environment, phase });
     if (workers.length === 0)
@@ -71,10 +80,45 @@ function validateWorker(paths: WorkerPaths): string[] {
       failures.push(
         `preview notice "${PREVIEW_NOTICE}" still present after clicking "${CONTINUE_LABEL}"`,
       );
+    const openedDefault = session.eval<boolean>(
+      `(() => {
+        const title = ${JSON.stringify(defaultTitle)};
+        const button = [...document.querySelectorAll("button")].find((element) => {
+          const label = element.getAttribute("aria-label") || "";
+          return label.includes(title) && (label.includes("新建会话") || label.toLowerCase().includes("new session"));
+        });
+        if (!button) return false;
+        button.click();
+        return true;
+      })()`,
+    );
+    if (openedDefault) {
+      session.wait(3000);
+      body = session.eval<string>("document.body.innerText");
+    }
     if (!body.includes(defaultTitle))
       failures.push(`page does not show workspace "${defaultTitle}"`);
+    const modelSelected = session.eval<boolean>(
+      `(() => {
+        const provider = ${JSON.stringify(plan.provider)};
+        const model = ${JSON.stringify(plan.model)};
+        const visible = (element) => !!element && (element.offsetParent !== null || element.getClientRects().length > 0);
+        return [...document.querySelectorAll("[data-model-id]")].some((element) => {
+          if (!visible(element) || element.getAttribute("data-model-id") !== model) return false;
+          const elementProvider = element.getAttribute("data-provider-id");
+          return elementProvider === null || elementProvider === provider;
+        });
+      })()`,
+    );
+    const modelLabels = [
+      plan.name,
+      plan.model,
+      `${plan.provider}/${plan.model}`,
+      plan.model.split("/").at(-1),
+    ].filter((label): label is string => typeof label === "string" && label.length > 0);
     const nameShown =
-      body.toLowerCase().includes(plan.name.toLowerCase()) || body.includes(plan.model);
+      modelSelected ||
+      modelLabels.some((label) => body.toLowerCase().includes(label.toLowerCase()));
     if (!nameShown) failures.push(`page does not show model chip "${plan.name}"`);
     const effortShown =
       body.toLowerCase().includes(plan.effort.toLowerCase()) || body.includes("低");
@@ -82,6 +126,7 @@ function validateWorker(paths: WorkerPaths): string[] {
     if (/登录|401|authentication required|sign in|unauthorized|认证失败/i.test(body))
       failures.push("page shows a login / 401 / authentication wall");
 
+    collapseSidebar(session);
     session.screenshot(join(paths.browserDir, "ready.png"));
 
     if (failures.length > 0) {
@@ -104,11 +149,28 @@ function validateWorker(paths: WorkerPaths): string[] {
 
 async function main(): Promise<void> {
   const workers = selectWorkers();
+  const environment = argValue("--environment");
+  if (environment === undefined) throw new Error("--environment is required");
+  const phase = argValue("--phase") as Phase;
+  if (hasBootstrapReady(environment, phase)) {
+    console.log(`[bootstrap] environment ${environment}/${phase} already ready`);
+    return;
+  }
   let failed = 0;
   for (const paths of workers) {
-    if (validateWorker(paths).length > 0) failed += 1;
+    const failures = validateWorker(paths);
+    if (failures.length > 0) failed += 1;
   }
-  if (failed > 0) process.exitCode = 1;
+  if (failed > 0) {
+    process.exitCode = 1;
+    return;
+  }
+  if (process.argv.includes("--all")) {
+    writeFileSync(
+      bootstrapReadyFile(environment, phase),
+      `${JSON.stringify({ checkedAt: new Date().toISOString(), workers: workers.map((worker) => worker.index) }, null, 2)}\n`,
+    );
+  }
 }
 
 main().catch((error: unknown) => {

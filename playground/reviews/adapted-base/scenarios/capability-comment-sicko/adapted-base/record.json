@@ -1,0 +1,180 @@
+{
+  "scenarioId": "capability-comment-sicko",
+  "phase": "adapted",
+  "environment": {
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-09f48f7f-c2e7-4d71-b428-cb9222015d6b",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git status --porcelain && echo \"---\" && git diff --stat && echo \"---STAGED---\" && git diff --cached --stat"
+      },
+      {
+        "name": "working_directory",
+        "status": "ok",
+        "argsSummary": "working_directory"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=find . -path ./.git -prune -o -type f -print | head -50 && echo \"---\" && wc -l README.md $(find src -type f)"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45; echo waited"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "审查者已启动，正在对 `README.md` 和 `src/app.ts` 做只读审查。等它返回报告。\n审查者已完成，只报告未改代码。\n\n## 审查结论\n\n**范围。** 仓库还没有任何提交，`git log` 显示 `main` 无提交，所以\"与 main 的 diff\"不成立。可审查的只有两个未跟踪文件。\n\n### [src/app.ts](src/app.ts)\n\n删除 1 条。\n\n第 1 行 `// 这里先这样，后面再说` 是纯占位注释。它没有说明任何外部约束、平台行为或 API 契约，底下的 `export const x = 1` 本身也不需要解释，注释只叙述了一个项目阶段，读者只能猜。\n\n保留 0 条。文件里没有其他注释。\n\n另外它点出一个 `MUST KILL` 的符号：导出的常量 `x`。单字母名字加上\"以后再说\"的注释，正是会长期留存的占位物。代码里没有任何地方说明 `x` 是什么、给谁用、何时该变。要修的是重命名或把它挪到真正拥有它的模块，让意图从标识符本身可读，而不是靠一条没人会读的注释。\n\n### [README.md](README.md)\n\n无可删项。第 1 行 `# 注释审查` 是 Markdown 标题，不属于注释范畴。\n\n## 工作区约定掩盖的问题\n\n[AGENTS.md]($DSH_HOME/AGENTS.md) 只覆盖三件事：读取边界、外部副作用、汇报。对审查关心的每个点都是沉默的。\n\n它对代码质量、注释、lint、类型和测试只字未提。这个工作区只有一个 TypeScript 文件，没有 `package.json`、没有 `tsconfig.json`、没有测试框架、没有 lint 配置。约定文件的存在制造了一种\"已被覆盖\"的错觉，实际它对代码一句都没说。\n\n它也没有说明审查范围是怎么确定的。零提交情况下，\"相对 main 的改动\"这个默认范围规则无法满足，未跟踪文件列表成了唯一的范围信号。\n\n它也没有说明提交就绪状态。它写了\"把 git 当作仅本地\"，但没说工作区必须提交，也没说 `git status` 干净与否。当前两个审查目标都还是未跟踪状态，这一点对文件里的每一条规则都不可见。\n\n## 约定与改动文件的冲突\n\n改动文件本身没有冲突，里面没有路径、git 命令、远程操作，也没有来自工作区外的内容。\n\n但它提到一个相邻风险：仓库本地配置把 `credential.https://github.com.helper` 设成了 `!/usr/bin/gh auth git-credential`，也就是每次 GitHub HTTPS 操作都会 shell out 到 `gh`。AGENTS.md 禁止使用 `gh`、禁止读取凭据，但那条禁令写的是对 agent 的行为约束，不是对已配置凭据路径的防护。在这个仓库里跑一次普通的 `git push` 或 `git fetch` 就会触发 `gh` 并读取它存储的凭据，而约定文件对此没有任何提示。它没有执行任何远程操作。建议工作区所有者要么在这个仓库里取消该 helper，要么在 AGENTS.md 里写明该 helper 在本工作区已禁用。\n\n需要我把这些改动落实吗。",
+    "userText": "在提交前，请一个专门讨厌注释的审查者过一遍我改动的文件，指出该删的注释和被工作区约定掩盖的问题，只报告、不要改代码。",
+    "userTexts": [
+      "在提交前，请一个专门讨厌注释的审查者过一遍我改动的文件，指出该删的注释和被工作区约定掩盖的问题，只报告、不要改代码。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_list",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "list_agents",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "working_directory",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=11", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:18:51.159Z"
+}

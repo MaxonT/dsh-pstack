@@ -49,6 +49,26 @@ export function workerPaths(index: number, environmentId: string, phase: Phase):
   };
 }
 
+export function stopRequestFile(paths: WorkerPaths): string {
+  return join(paths.root, "stop-request");
+}
+
+export function bootstrapReadyFile(environmentId: string, phase: Phase): string {
+  return join(phaseWorkersDirectory(environmentId, phase), "bootstrap-ready.json");
+}
+
+export function hasBootstrapReady(environmentId: string, phase: Phase): boolean {
+  return existsSync(bootstrapReadyFile(environmentId, phase));
+}
+
+export function clearBootstrapReady(environmentId: string, phase: Phase): void {
+  rmSync(bootstrapReadyFile(environmentId, phase), { force: true });
+}
+
+export function currentTaskFile(paths: WorkerPaths): string {
+  return join(paths.root, "current-task.json");
+}
+
 /** The in-repo directory that holds every worker of one phase and environment. */
 export function phaseWorkersDirectory(environmentId: string, phase: Phase): string {
   return join(workersDirectory(), phase, environmentId);

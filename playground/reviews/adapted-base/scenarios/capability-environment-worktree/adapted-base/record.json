@@ -1,0 +1,125 @@
+{
+  "scenarioId": "capability-environment-worktree",
+  "phase": "adapted",
+  "environment": {
+    "worker": 10,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-4c4613ed-e3e6-458f-9d23-70ebfdd3e922",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -a; git status 2>&1 | head -40; git log --oneline -10 2>&1"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/*.md"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git --version; git branch -a; git worktree list; git config --get core.bare; ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git -C capability-environment-worktree worktree add ../wt-feature-demo -b feature/demo 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --all --oneline; ls -a ../wt-feature-demo; find . -name '*.json' -not -path './.git/*'"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"# feature demo\" > FEATURE.md && git add FEATURE.md && git -c user.email=a@b -c user.name=agent commit -m "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git worktree list && git status --short && git branch"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "支持 git worktree,已经建好并验证过,你的 `main` 分支没被动过。\n\n**工作树路径。** `<TEMP_PATH> `feature/demo`。\n\n**验证结果。** `git worktree list` 显示主工作区仍在 `main` 且状态干净(只剩原有的未跟踪 `README.md`)。新工作树里有一个独立提交 `b7ed781 feat: add feature demo file`,只包含 `FEATURE.md`。两条工作树互不影响,主分支的 HEAD 没有移动。\n\n**一点说明。** 这个仓库还没有任何提交,所以 `git worktree add` 只能以 orphan 分支新建,新工作树里没有 `README.md` 的历史。如果你要在它上面基于主分支的某个提交开发,先在主仓库提交一次再重新建工作树,或者直接 `git -C <主工作区> checkout <commit>` 后再建。\n\n**替代办法(如果哪天环境不给建工作树)。** `git clone --shared <主仓库路径> ../<名字>` 起一个独立克隆,或者用 `git worktree add` 之外的 `git switch -c` 在同一目录建分支再手工还原。后者会脏当前分支,所以我没用。\n\n**下一步。** 告诉我要改哪处改动,我在 `wt-feature-demo` 里做,主目录不动。",
+    "userText": "在一个独立的工作树里做这处改动，别弄脏我当前的分支。这个环境支持的话就把工作树路径告诉我，不支持就说明并给替代办法。",
+    "userTexts": [
+      "在一个独立的工作树里做这处改动，别弄脏我当前的分支。这个环境支持的话就把工作树路径告诉我，不支持就说明并给替代办法。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 6,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=8", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:18:51.220Z"
+}

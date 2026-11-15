@@ -1,0 +1,93 @@
+{
+  "phase": "adapted",
+  "environment": "agent-team",
+  "updatedAt": "2026-11-15T01:01:37.981Z",
+  "lastBatchId": "adapted-agent-team-20261115085926",
+  "lastMode": "full",
+  "lastScope": [
+    "conflict-agent-team-interrupt-agent-contract",
+    "conflict-agent-team-list-agents-contract",
+    "conflict-agent-team-send-message-contract",
+    "conflict-agent-team-spawn-contract"
+  ],
+  "scenarioIds": [
+    "conflict-agent-team-interrupt-agent-contract",
+    "conflict-agent-team-list-agents-contract",
+    "conflict-agent-team-send-message-contract",
+    "conflict-agent-team-spawn-contract"
+  ],
+  "scenarios": [
+    {
+      "id": "conflict-agent-team-interrupt-agent-contract",
+      "capturedAt": "2026-11-15T00:59:26.339Z",
+      "batchId": "adapted-agent-team-20261115085926",
+      "environment": {
+        "worker": 0,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "agent-team",
+          "description": "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
+          "kind": "conflict",
+          "enabledPluginPackages": ["@deepseek-ai/dsh-experimental-agent-team-profile"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "c87343579fb4d5124a9bfc74336dfb027c7410c15f3a7508c6d1b74234dd921c"
+      }
+    },
+    {
+      "id": "conflict-agent-team-list-agents-contract",
+      "capturedAt": "2026-11-15T00:59:26.356Z",
+      "batchId": "adapted-agent-team-20261115085926",
+      "environment": {
+        "worker": 1,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "agent-team",
+          "description": "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
+          "kind": "conflict",
+          "enabledPluginPackages": ["@deepseek-ai/dsh-experimental-agent-team-profile"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "c87343579fb4d5124a9bfc74336dfb027c7410c15f3a7508c6d1b74234dd921c"
+      }
+    },
+    {
+      "id": "conflict-agent-team-send-message-contract",
+      "capturedAt": "2026-11-15T00:59:26.355Z",
+      "batchId": "adapted-agent-team-20261115085926",
+      "environment": {
+        "worker": 2,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "agent-team",
+          "description": "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
+          "kind": "conflict",
+          "enabledPluginPackages": ["@deepseek-ai/dsh-experimental-agent-team-profile"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "c87343579fb4d5124a9bfc74336dfb027c7410c15f3a7508c6d1b74234dd921c"
+      }
+    },
+    {
+      "id": "conflict-agent-team-spawn-contract",
+      "capturedAt": "2026-11-15T00:59:26.373Z",
+      "batchId": "adapted-agent-team-20261115085926",
+      "environment": {
+        "worker": 3,
+        "dshVersion": "0.2.2-rc.1",
+        "adaptedVersion": "0.3.1",
+        "matrix": {
+          "id": "agent-team",
+          "description": "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
+          "kind": "conflict",
+          "enabledPluginPackages": ["@deepseek-ai/dsh-experimental-agent-team-profile"]
+        },
+        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "configHash": "c87343579fb4d5124a9bfc74336dfb027c7410c15f3a7508c6d1b74234dd921c"
+      }
+    }
+  ]
+}

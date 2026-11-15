@@ -7,7 +7,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolveJsonModule": true,
-    "types": ["node"],
+    "types": ["node", "vite-plus/client"],
     "strict": true,
     "noUnusedLocals": true,
     "declaration": true,
@@ -18,5 +18,5 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["src", "tests", "vite.config.ts", "bump.config.ts", "port/release-compatibility.ts"]
+  "include": ["src", "tests", "vite.config.ts", "bump.config.ts", "scripts"]
 }

@@ -1,7 +1,8 @@
-import { spawnSync } from "node:child_process";
+import { zstdDecompressSync } from "node:zlib";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import { SKILL_TOOL_NAMES } from "../../types.ts";
 import type {
   Assertion,
   BehaviorScenario,
@@ -28,16 +29,17 @@ export interface SessionDigest extends Omit<SessionFacts, "sessionFile" | "autoA
 
 export function readSessionEvents(file: string): SessionEvent[] {
   if (!existsSync(file)) throw new Error(`session log is missing: ${file}`);
-  const result = spawnSync("zstdcat", [file], { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
-  if (result.status !== 0) throw new Error(`cannot decompress session log: ${file}`);
-  return (result.stdout ?? "")
+  const text = zstdDecompressSync(readFileSync(file)).toString("utf8");
+  return text
     .split("\n")
     .filter((line) => line.trim() !== "")
-    .flatMap((line) => {
+    .map((line, index) => {
       try {
-        return [JSON.parse(line) as SessionEvent];
-      } catch {
-        return [];
+        return JSON.parse(line) as SessionEvent;
+      } catch (error) {
+        throw new Error(
+          `invalid session event at line ${index + 1} in ${file}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     });
 }
@@ -90,11 +92,16 @@ function parseArguments(raw: unknown): Record<string, unknown> {
   if (typeof raw === "string") {
     try {
       return JSON.parse(raw) as Record<string, unknown>;
-    } catch {
-      return {};
+    } catch (error) {
+      throw new Error(
+        `invalid tool arguments: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
-  return (raw as Record<string, unknown>) ?? {};
+  if (raw === null || typeof raw !== "object") {
+    throw new Error("tool arguments must be an object or JSON string");
+  }
+  return raw as Record<string, unknown>;
 }
 
 /**
@@ -188,7 +195,7 @@ export function digestEvents(events: SessionEvent[], sessionId: string, worker =
         };
         toolCalls.push(call);
         callsById.set(callId, call);
-        if (["skill", "pstack_skill", "pstack-skill"].includes(name)) {
+        if (SKILL_TOOL_NAMES.some((tool) => tool === name)) {
           const args = parseArguments(data.arguments);
           const skill = typeof args.name === "string" ? args.name : "";
           const resource = typeof args.resource === "string" ? args.resource : "";
@@ -210,6 +217,14 @@ export function digestEvents(events: SessionEvent[], sessionId: string, worker =
           call.status = "ok";
           const loaded = skillCallById.get(rawCallId as string);
           if (loaded) skillLoads.push(loaded);
+        }
+        break;
+      }
+      case "user/message": {
+        const text = textOfContent(data.content);
+        for (const match of text.matchAll(/<skill_content name="([^"]+)">/g)) {
+          const loaded = `${match[1]}#user-gesture`;
+          if (!skillLoads.includes(loaded)) skillLoads.push(loaded);
         }
         break;
       }

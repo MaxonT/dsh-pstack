@@ -1,0 +1,271 @@
+{
+  "scenarioId": "capability-poteto-agent",
+  "phase": "adapted",
+  "environment": {
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-60348a39-0918-4557-9ff1-44d4cb3e17a1",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [
+      "poteto-mode",
+      "poteto-mode#playbooks/feature.md",
+      "principle-laziness-protocol",
+      "principle-model-the-domain",
+      "unslop",
+      "technical-writing",
+      "principle-build-the-lever",
+      "principle-prove-it-works"
+    ],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat <HOST_PATH> 2>/dev/null | head -100"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git -C <TEMP_PATH> log --oneline -5; git -C <TEMP_PATH> s"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=poteto-mode"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "error",
+        "argsSummary": "pstack_skill name=feature",
+        "errorText": "Error: skill \"feature\" is unknown or no longer available"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=poteto-mode resource=playbooks/feature.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat -A <TEMP_PATH> ls <HOST_PATH>"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=principle-laziness-protocol"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=principle-model-the-domain"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git branch -a && git log --all --oneline && git ls-files && cat .git/config"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/pstack-models.json 2>/dev/null; echo ---; ls $DSH_HOME 2>/dev/null | head"
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=unslop"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=technical-writing"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=principle-build-the-lever"
+      },
+      {
+        "name": "pstack_skill",
+        "status": "ok",
+        "argsSummary": "pstack_skill name=principle-prove-it-works"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 60; ls -la <TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && bash check.sh; echo \"exit=$?\"; echo ---; bash -n check.sh; echo \"syntax=$?\"; echo ---; git status --shor"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && rm -rf probe-fail && mkdir probe-fail && cp <TEMP_PATH> probe-fail/ && cd probe-fail && bash check.sh;"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git add README.md check.sh && git -c user.name=poteto -c user.email=poteto@local commit -q -m \"Add capab"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Workspace is nearly empty: one uncommitted `README.md` with a placeholder line, and a git repo with no commits and no remote. Goal restated: run the next step in poteto style, which means I compress the intended implementation into the smallest change, then hand that one small change to a poteto-style executor.\n\nSmallest change I expect to meet it. Turn the placeholder README into a real capability probe with a check script that proves the probe's structure, in two files.\nNow I verify the real artifact myself.\nGoal restated. You wanted the poteto loop driven forward, with the implementation compressed to the smallest change and handed to one poteto-style executor. I did that. The workspace now holds a working capability probe in two files, and the executor made both of them.\n\n**What shipped.** `check.sh` runs three probe entries and prints one PASS or FAIL line per entry, then exits nonzero if any entry failed. `README.md` keeps its `# poteto-agent` title and lists each probe with the command that runs it. One commit, `2b71c71`, holds both files. Nothing else was added.\n\n**What I chose and why.** The data shape is a probe entry with a name, a check, and an expected observed result. The organizing structure is one lookup table of those records, not three inline conditionals, which is what the Model the Domain principle asked for and what the delegate built. The Laziness Protocol set the size. The diff is 37 lines across two files with no dependency, no config, and no wrapper.\n\n**Throughput checkpoint.** Blocking first steps were the shape and structure choice, done before any delegate wrote logic. The README prose and the script touch disjoint files, so one delegate owned both in one pass. Only the delegate wrote to the workspace, so writes were serialized. One delegate was the smallest safe decomposition because the two files share a fixed contract.\n\n**Verification.** I ran the real script, not the delegate's word. `bash check.sh` prints three PASS lines and exits 0. `bash -n check.sh` exits 0. Running it from another directory gives the same output because the script resolves its own directory. A temp copy without `README.md` printed two FAIL lines and exited 1, so the failure branch works too.\n\n**For the next person.** Keep `# poteto-agent` as line one of `README.md`. The `readme h1` probe reads that literal line, so moving the title breaks the check. Add new probes as new rows in the `probes` table and a matching function.\n\n**Open decisions.** None on the code. Two notes on the environment. This repo has no remote and no commits existed before this one, so I made a local commit and stopped there. The Opening a PR step has no forge available here, so it could not run. I also skipped the `how` and `architect` explorations as separate phases, because the change was two files with a contract I could state up front.",
+    "userText": "接下来按 poteto 风格推进：把你准备做的实现压缩成最小改动，并交给一个遵循 poteto 风格的执行者来完成一处小改动。",
+    "userTexts": [
+      "接下来按 poteto 风格推进：把你准备做的实现压缩成最小改动，并交给一个遵循 poteto 风格的执行者来完成一处小改动。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 10,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_skill",
+          "attempts": 9,
+          "failures": 1,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": true
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "todo_write",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": ["pstack_skill needed 9 attempts with 1 failures"]
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": [
+      "skillLoads=poteto-mode,poteto-mode#playbooks/feature.md,principle-laziness-protocol,principle-model-the-domain,unslop,technical-writing,principle-build-the-lever,principle-prove-it-works",
+      "toolCalls=28",
+      "warnings=1"
+    ]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:21:01.187Z"
+}

@@ -38,6 +38,21 @@ release. Add a tool name to select part of the graph. For example, run
 - 为概念命名时阅读 `docs/glossary.md`；引入新概念时补充术语。
 - 开始任何仓库任务前，阅读 `docs/decisions/AGENTS.md`，按其中的查找规则阅读与任务相关的记录。
 
+## 目录文档
+
+每个目录的文档只负责本目录的实际职责、约定和边界：
+
+| 目录 | 入口文档 |
+| --- | --- |
+| `playground/` | [playground/AGENTS.md](./playground/AGENTS.md) |
+| `port/` | [port/AGENTS.md](./port/AGENTS.md) |
+| `src/` | [src/AGENTS.md](./src/AGENTS.md) |
+| `skills/` | [skills/AGENTS.md](./skills/AGENTS.md) |
+
+- 目录文档只写本目录规则，其他目录只放指针，不重复内容。
+- 目录职责变化时同步更新对应目录的 `AGENTS.md` 和根指针。
+- `pstack/` 是生成树，不手工编辑。
+
 ## Commits
 
 - 破坏性变更提交使用 Conventional Commits 的 `type!:` 形式，例如 `feat!: ...`；不要使用 `!feat:`。

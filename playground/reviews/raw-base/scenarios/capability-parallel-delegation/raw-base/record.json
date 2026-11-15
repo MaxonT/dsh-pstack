@@ -1,0 +1,115 @@
+{
+  "scenarioId": "capability-parallel-delegation",
+  "phase": "raw",
+  "environment": {
+    "worker": 11,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-716224c5-44fa-4277-b1d8-56a57cb1bca6",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; ls -la src 2>/dev/null"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 20; echo done"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "三个执行者已并行完成各自模块的研读，结果如下：\n\n| 模块 | 职责（一句话） |\n| --- | --- |\n| [src/a.ts](src/a.ts) | 最小化模块，唯一职责是定义并导出数值常量 `a`（值为 1），无函数、类或副作用 |\n| [src/b.ts](src/b.ts) | 占位模块，仅导出数值常量 `b`（值为 2），除该具名导出外无其他行为 |\n| [src/c.ts](src/c.ts) | 占位模块，仅导出数值常量 `c`（值为 3），没有其他逻辑 |\n\n三个模块相互独立，各自只导出一个数字常量。",
+    "userText": "把三个互相独立的模块 src/a.ts、src/b.ts、src/c.ts 分给三个执行者同时各看一个，每人报该模块的一句话职责，最后合成一张表给我。",
+    "userTexts": [
+      "把三个互相独立的模块 src/a.ts、src/b.ts、src/c.ts 分给三个执行者同时各看一个，每人报该模块的一句话职责，最后合成一张表给我。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "list_agents",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "subagent",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=6", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:15:39.643Z"
+}

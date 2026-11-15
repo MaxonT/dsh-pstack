@@ -1,0 +1,160 @@
+{
+  "scenarioId": "capability-non-claude-route",
+  "phase": "adapted",
+  "environment": {
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-5a112433-659d-434a-9663-42fea6ecef6f",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; cat AGENTS.md 2>/dev/null | head -50; cat README* 2>/dev/null | head -50"
+      },
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git log --oneline -5 2>/dev/null; git status --short; ls -R . --ignore=.git"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/pstack-models.json"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git branch -a; git log --all --oneline; git show --stat HEAD 2>/dev/null | head -30"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "job_output",
+        "status": "error",
+        "argsSummary": "job_output",
+        "errorText": "Error: unknown job c7a6eb08-16e8-4e5e-a1ab-40c047267018"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45; echo waited"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Waiting for the subagent to finish.\nNo fallback was needed. The probe ran on a real non-default route.\n\n**Route used.** `magpie/workbuddy/deepseek-v4.1-flash` with effort `low`. This is the route the pstack role `feature, refactoring` already maps to, and it is a different vendor and a different model family from the parent chat model, `magpie/workbuddy/minimax-m3.1-flash`.\n\n**How I picked it.** `pstack_models` advertised four routes. Two sit under `deepseek-account` (`deepseek-flash`, `deepseek-v4-pro`), and the current role config only lists `magpie` routes, so the `magpie/workbuddy/deepseek-v4.1-flash` entry is the closest match for a non-Claude-style vendor swap under the existing role routing.\n\n**Evidence the route is live.** The subagent ran `pwd` and `ls -la` and read `README.md` with the read tool. It reported the working directory as `<TEMP_PATH> found `README.md` alongside `.git`, and reproduced the file's three lines including the Chinese text `能力探测。`. It created, edited, and deleted nothing, and ran no git commands.\n\n**What a maintainer inherits.** The workspace itself is unchanged. `README.md` is still untracked in git, and the repo has no commits on any branch yet. If you want this probe recorded rather than left as a live run, say so and I will commit the README as the seed commit.",
+    "userText": "这个子任务想用一个别的厂商的模型来跑。请挑一个最接近的可用路由；如果确实没有匹配，就退回默认并明确告诉我你退回了。",
+    "userTexts": [
+      "这个子任务想用一个别的厂商的模型来跑。请挑一个最接近的可用路由；如果确实没有匹配，就退回默认并明确告诉我你退回了。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 5,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_output",
+          "attempts": 1,
+          "failures": 1,
+          "firstAttemptStatus": "error",
+          "finalStatus": "error",
+          "recovered": false
+        },
+        {
+          "name": "list_agents",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=10", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:20:45.157Z"
+}

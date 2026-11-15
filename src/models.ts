@@ -15,9 +15,9 @@ import {
   type CatalogueResult,
   type ModelEntry,
   type ProviderEntry,
-} from "./catalogue.ts";
+} from "./models/catalogue.ts";
 
-export type { CatalogueResult, ModelEntry, ProviderEntry } from "./catalogue.ts";
+export type { CatalogueResult, ModelEntry, ProviderEntry } from "./models/catalogue.ts";
 
 export const name = "pstack-models";
 
@@ -145,11 +145,11 @@ function entryFor(provider: string, info: LlmResolvedModelInfo): ModelEntry {
 const TOOL_DESCRIPTION = [
   "List the exact model routes this deployment serves, with each route's advertised reasoning-effort tokens.",
   "",
-  "Read-only. Use it before writing `$DSH_HOME/pstack-models.mdc`: it reports what the live adapters actually serve, so a role line names a route that exists instead of a slug guessed from a Cursor name.",
+  "Read-only. Use it before writing `$DSH_HOME/pstack-models.json`: it reports what the live adapters actually serve, so a role route names a route that exists instead of a slug guessed from a Cursor name.",
   "",
   "`provider` limits discovery to one registered provider id or display name; omit it to list every provider.",
   "",
-  "A route is written `<provider>/<model>`, and a role line may add `[effort]` using a token from that route's `efforts`.",
+  "A route is written `<provider>/<model>`, and a role route may add `[effort]` using a token from that route's `efforts`.",
 ].join("\n");
 
 /** Build `pstack_models` for one LLM service. */

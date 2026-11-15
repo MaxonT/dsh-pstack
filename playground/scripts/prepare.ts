@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
+import { isPhase } from "../types.ts";
 import type { Phase } from "../types.ts";
 import { environmentMatrix, workersDirectory } from "./lib/run-metadata.ts";
 import {
@@ -15,15 +16,17 @@ import {
   startWeb,
   stopWeb,
   writeHomePatch,
+  writeRoleFile,
+  writeWorkerInstructions,
   CONFIG_FILE,
   type ProviderPlan,
 } from "./lib/env.ts";
 import { listScenarioIds } from "./lib/scenarios.ts";
 import { computeWorkers } from "./lib/capacity.ts";
 import {
+  clearBootstrapReady,
   listWorkers,
   resetPhase,
-  workerCount,
   workerPaths,
   type WorkerPaths,
 } from "./lib/worker.ts";
@@ -66,17 +69,22 @@ async function startWorkers(paths: WorkerPaths[], plan: ProviderPlan): Promise<v
 
 async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
-  if (phase !== "raw" && phase !== "adapted") {
+  if (!isPhase(phase)) {
     throw new Error(
-      "usage: prepare.ts --phase raw|adapted [--environment base] [--workers N] [--reset|--reuse]",
+      "usage: prepare.ts --phase raw|adapted --environment ID [--workers N] [--reset|--reuse]",
     );
   }
-  const matrix = environmentMatrix(argValue("--environment"));
-  if (phase === "raw" && matrix.enabledPluginPackages.length > 0) {
-    throw new Error("raw baseline does not allow additional plugin packages");
+  const environmentId = argValue("--environment");
+  if (environmentId === undefined) throw new Error("--environment is required");
+  const matrix = environmentMatrix(environmentId);
+  clearBootstrapReady(matrix.id, phase);
+  if (phase === "raw" && matrix.enabledPluginPackages.length > 0 && matrix.kind !== "capability") {
+    throw new Error("raw only accepts additional packages in an explicit capability environment");
   }
   const enabledPackages =
-    phase === "adapted" ? ["dsh-pstack", ...matrix.enabledPluginPackages] : [];
+    phase === "adapted"
+      ? ["dsh-pstack", ...matrix.enabledPluginPackages]
+      : matrix.enabledPluginPackages;
   const configFile = argValue("--config") ?? process.env.PLAYGROUND_CONFIG_FILE ?? CONFIG_FILE;
   const config = readPlaygroundConfig(configFile);
   const plan = loadProviderPlan(config);
@@ -87,7 +95,7 @@ async function main(): Promise<void> {
   const reuse = process.argv.includes("--reuse");
   if (reset && reuse) throw new Error("--reset and --reuse are mutually exclusive");
   if (reuse) {
-    const workers = Array.from({ length: requested ?? workerCount(matrix.id, phase) }, (_, index) =>
+    const workers = Array.from({ length: count }, (_, index) =>
       workerPaths(index, matrix.id, phase),
     );
     for (const worker of workers) stopWeb(worker);
@@ -95,6 +103,8 @@ async function main(): Promise<void> {
     // cleared temp root does not restart raw workers with missing skills.
     for (const worker of workers) {
       if (readPhase(worker) === "raw") mountRawTree(worker);
+      writeWorkerInstructions(worker);
+      writeRoleFile(worker, config);
     }
     await startWorkers(workers, plan);
     return;
@@ -119,6 +129,7 @@ async function main(): Promise<void> {
     writeFileSync(worker.phaseFile, `${phase}\n`);
     copyCredentials(worker, config.credentialsFile);
     writeHomePatch(worker, plan, phase);
+    writeRoleFile(worker, config);
     registerWorkspaces(worker, listScenarioIds());
     if (enabledPackages.length > 0) {
       if (installed === null) {

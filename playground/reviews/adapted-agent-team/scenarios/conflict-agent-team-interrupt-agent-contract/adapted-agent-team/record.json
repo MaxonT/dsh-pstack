@@ -1,0 +1,156 @@
+{
+  "scenarioId": "conflict-agent-team-interrupt-agent-contract",
+  "phase": "adapted",
+  "environment": {
+    "worker": 0,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "agent-team",
+      "description": "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
+      "kind": "conflict",
+      "enabledPluginPackages": ["@deepseek-ai/dsh-experimental-agent-team-profile"]
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "c87343579fb4d5124a9bfc74336dfb027c7410c15f3a7508c6d1b74234dd921c"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-4b2f3b98-a1a7-4d89-97d8-5c3c20a9c919",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "pstack_agents",
+        "status": "ok",
+        "argsSummary": "pstack_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -a"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -R data | head -50"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 20; echo done"
+      },
+      {
+        "name": "pstack_agents",
+        "status": "ok",
+        "argsSummary": "pstack_agents"
+      },
+      {
+        "name": "pstack_interrupt",
+        "status": "ok",
+        "argsSummary": "pstack_interrupt"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 8; echo ok"
+      },
+      {
+        "name": "pstack_agents",
+        "status": "ok",
+        "argsSummary": "pstack_agents"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "Done. The executor is stopped.\n\n**目标。** 你要的是一个能跑多轮仓库遍历的执行者，用来验证子代理的启动与中断链路是否可靠。最小验证标准是：子代理在运行中被中断，并确认它真的停了。\n\n**用的标识。** 我用的是 `pstack_subagent` 返回的 child id，`0583223e-35d2-4f33-bcab-6a1cd6b64d6f`，然后调 `pstack_interrupt` 并把同一个 id 传进去。这符合 harness 适配文档的规则：由 `pstack_subagent` 创建的子代理要用 `pstack_interrupt` 停，而不是原生 `interrupt_agent`。子代理本身的 preset 是 `poteto-agent`，路由继承父级。\n\n**是否真的停掉了。** 是。`pstack_agents` 先显示 `activity=running`，中断后系统通知它 \"was stopped before it finished. It left no closing message.\"，再查一次变为 `activity=inactive`。`mode=continuable` 表明它的上下文还留着，可以用 `pstack_send` 接着跑，但当前没有在执行。\n\n**它跑到了哪。** 这一点我没有证据，所以不下结论。中断发生在启动约 28 秒后，子代理每轮之间要 sleep 5 秒，最多6 轮。它没有留下收尾消息，我无法确认它完成了第几轮。\n\n**对使用者的影响。** 这次探测证明的是：多轮长跑子代理可以被干净地中断，不会留下悬挂进程或丢失的会话状态。留给下一个工程师的是那个 `continuable` 状态，想让它继续时用 `pstack_send` 配同一个 child id 即可。",
+    "userText": "用 pstack_subagent 派一个执行者，让它分几轮遍历整个仓库，每轮之间等几秒，最多跑 6 轮就自己停。趁它还在跑的时候把它停掉，并告诉我你用的是哪种标识、是否真的停掉了。",
+    "userTexts": [
+      "用 pstack_subagent 派一个执行者，让它分几轮遍历整个仓库，每轮之间等几秒，最多跑 6 轮就自己停。趁它还在跑的时候把它停掉，并告诉我你用的是哪种标识、是否真的停掉了。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_agents",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_interrupt",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=11", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-agent-team-20261115085926",
+  "capturedAt": "2026-11-15T00:59:26.339Z"
+}

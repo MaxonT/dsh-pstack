@@ -7,10 +7,20 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 
+import { isPhase } from "../types.ts";
 import type { BehaviorScenario, Phase, RunRecord, SessionFacts, TestTarget } from "../types.ts";
-import { createBrowserSession, type BrowserSession } from "./lib/browser.ts";
+import { analyzeSession } from "./lib/analysis.ts";
+import {
+  captureFullPage,
+  collapseSidebar,
+  createBrowserSession,
+  type BrowserSession,
+} from "./lib/browser.ts";
+import { isBlankImage } from "./lib/png.ts";
 import {
   assertSafeRecord,
   digestSession,
@@ -22,15 +32,30 @@ import {
   sessionMatchesPrompt,
   verdictFor,
   type SessionDigest,
+  type SessionEvent,
 } from "./lib/evidence.ts";
 import { readHomePlan, readPlaygroundConfig, readWebUrl, CONFIG_FILE } from "./lib/env.ts";
-import { createEnvironment, environmentMatrix, REPORT_DIRECTORY } from "./lib/run-metadata.ts";
-import { loadScenario } from "./lib/scenarios.ts";
-import { workerPaths, type WorkerPaths } from "./lib/worker.ts";
+import { EVIDENCE_FILES } from "./lib/evidence-files.ts";
+import { sanitizeRecord } from "./lib/redaction.ts";
+import {
+  DEFAULT_ANSWER_TEXT,
+  POLL_INTERVAL_MS,
+  PRESET_LABELS,
+  SETTLE_WINDOW_MS,
+  SUBAGENT_TIMEOUT_MS,
+  TURN_TIMEOUT_MS,
+  UI_LABELS,
+} from "./lib/runtime.ts";
+import { createEnvironment, environmentMatrix } from "./lib/run-metadata.ts";
+import { reviewSnapshotDirectory } from "./lib/review-snapshot.ts";
+import { stopRequestFile, workerPaths, type WorkerPaths } from "./lib/worker.ts";
 
-const COMPOSER_SELECTOR = '[data-composer-input="true"]';
-const NEW_SESSION_LABEL = "新会话";
-const POLL_INTERVAL_MS = 2_000;
+const {
+  composerSelector: COMPOSER_SELECTOR,
+  newSession: NEW_SESSION_LABEL,
+  previewNotice: PREVIEW_NOTICE,
+  continue: CONTINUE_LABEL,
+} = UI_LABELS;
 
 class InfraError extends Error {}
 
@@ -41,6 +66,85 @@ function argValue(flag: string): string | undefined {
 
 function sleep(ms: number): void {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function sessionSignature(file: string): string {
+  const events = readSessionEvents(file);
+  return `${events.length}:${events.at(-1)?.type ?? "none"}`;
+}
+
+function waitForSettledSession(file: string): void {
+  const deadline = Date.now() + TURN_TIMEOUT_MS;
+  let signature = sessionSignature(file);
+  let stableSince = Date.now();
+  while (Date.now() < deadline) {
+    sleep(POLL_INTERVAL_MS);
+    const next = sessionSignature(file);
+    if (next !== signature) {
+      signature = next;
+      stableSince = Date.now();
+      continue;
+    }
+    if (Date.now() - stableSince >= SETTLE_WINDOW_MS) return;
+  }
+  throw new InfraError("session did not settle after turn/end");
+}
+
+function eventText(event: SessionEvent): string {
+  const content = (event.data as { content?: unknown } | undefined)?.content;
+  if (!Array.isArray(content)) return "";
+  return content
+    .map((part) =>
+      part && typeof part === "object" && (part as { type?: string }).type === "text"
+        ? ((part as { text?: string }).text ?? "")
+        : "",
+    )
+    .join("");
+}
+
+/**
+ * Async subagents finish after the main turn ended and then start a follow-up turn.
+ * Capture must wait until every spawned subagent reports finished, so the record and
+ * screenshot include the completion result instead of stopping at the dispatch notice.
+ */
+function activeSubagents(file: string): number {
+  const events = readSessionEvents(file);
+  const ids = new Set<string>();
+  const finished = new Set<string>();
+  for (const event of events) {
+    if (event.type === "subagent/catalog") {
+      const childId = (event.data as { childId?: unknown } | undefined)?.childId;
+      if (typeof childId === "string") ids.add(childId);
+      continue;
+    }
+    if (event.type !== "user/message") continue;
+    const text = eventText(event);
+    for (const id of ids) {
+      if (text.includes(`Background subagent ${id}`) && /finished|was stopped/.test(text)) {
+        finished.add(id);
+      }
+    }
+  }
+  return ids.size - finished.size;
+}
+
+function waitForSubagentsSettled(file: string): void {
+  const deadline = Date.now() + SUBAGENT_TIMEOUT_MS;
+  let signature = sessionSignature(file);
+  let stableSince = Date.now();
+  for (;;) {
+    if (Date.now() > deadline) throw new InfraError("subagents did not settle before capture");
+    sleep(POLL_INTERVAL_MS);
+    const next = sessionSignature(file);
+    if (next !== signature) {
+      signature = next;
+      stableSince = Date.now();
+      continue;
+    }
+    if (activeSubagents(file) === 0 && Date.now() - stableSince >= SETTLE_WINDOW_MS) {
+      return;
+    }
+  }
 }
 
 interface SessionFile {
@@ -61,6 +165,12 @@ function listSessionFiles(paths: WorkerPaths): SessionFile[] {
   });
 }
 
+function latestSessionFile(paths: WorkerPaths): SessionFile | null {
+  const files = listSessionFiles(paths);
+  files.sort((left, right) => statSync(right.file).mtimeMs - statSync(left.file).mtimeMs);
+  return files[0] ?? null;
+}
+
 function waitFor(predicate: () => boolean, timeoutMs: number): boolean {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -71,9 +181,9 @@ function waitFor(predicate: () => boolean, timeoutMs: number): boolean {
 }
 
 function dismissPreview(session: BrowserSession): void {
-  if (!session.eval<string>("document.body.innerText").includes("预览版说明")) return;
+  if (!session.eval<string>("document.body.innerText").includes(PREVIEW_NOTICE)) return;
   session.eval<boolean>(
-    `(() => { const button = [...document.querySelectorAll("button")].find((element) => element.innerText.trim() === "继续"); if (!button) return false; button.click(); return true; })()`,
+    `(() => { const button = [...document.querySelectorAll("button")].find((element) => element.innerText.trim() === ${JSON.stringify(CONTINUE_LABEL)}); if (!button) return false; button.click(); return true; })()`,
   );
   session.wait(2000);
 }
@@ -94,11 +204,6 @@ function startSession(session: BrowserSession, scenarioId: string): void {
   );
   if (started === "none") throw new Error("could not start a session in the scenario workspace");
 }
-
-const PRESET_LABELS: Record<string, string[]> = {
-  "poteto-mode": ["Poteto 模式", "Poteto mode"],
-  standard: ["标准模式", "Standard mode"],
-};
 
 function selectPreset(session: BrowserSession, preset: string): void {
   const seat = session.eval<string>(
@@ -137,6 +242,9 @@ function materializeWorkspace(paths: WorkerPaths, scenario: BehaviorScenario): s
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, content);
   }
+  const git = spawnSync("git", ["init", "-q"], { cwd: workspace, encoding: "utf8" });
+  if (git.error) throw new Error(`git init failed: ${git.error.message}`);
+  if (git.status !== 0) throw new Error(`git init failed: ${git.stderr.trim() || git.status}`);
   return workspace;
 }
 
@@ -158,8 +266,6 @@ function findMatchingSession(
   }
   return null;
 }
-
-const DEFAULT_ANSWER_TEXT = "按你的最佳判断继续";
 
 /**
  * Answer the open ask_user_question card as the absent user would. The card is a
@@ -191,29 +297,8 @@ function answerPendingQuestions(
       const selected = optionButtons.filter((b) => b.getAttribute("aria-checked") === "true");
       const actions = [];
       const record = (answer) => actions.push({ question, answer: answer || "(clicked first option)" });
-      if (selected.length === 0) {
-        const custom = rule && rule.custom ? rule.custom : (!rule && optionButtons.length === 0 ? fallback : "");
-        if (custom) {
-          const input = card.querySelector("textarea, input:not([type=checkbox]):not([type=radio])");
-          if (input) {
-            const proto = input.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-            Object.getOwnPropertyDescriptor(proto, "value").set.call(input, custom);
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-            record(custom);
-          }
-        } else if (optionButtons.length > 0) {
-          let target = null;
-          if (rule && rule.selected && rule.selected.length) {
-            target = optionButtons.find((b) => (b.getAttribute("aria-label") || b.innerText || "").includes(rule.selected[0]));
-          }
-          if (!target) target = optionButtons[0];
-          record((target.getAttribute("aria-label") || target.innerText || "").trim());
-          target.click();
-        }
-        return JSON.stringify(actions);
-      }
-      // Already answered: click the primary footer button (advance on non-last, submit on last).
-      // Skip the pager arrows (aria nav.prev/nav.next with no text) and the skip button.
+      // The primary footer button advances a non-last question and submits the last.
+      // Skip the pager arrows and the skip button.
       const footer = card.querySelector("footer");
       const primary = footer
         ? [...footer.querySelectorAll("button")].find((b) => {
@@ -223,6 +308,40 @@ function answerPendingQuestions(
             return visible(b) && !b.disabled;
           })
         : null;
+      const input = card.querySelector("textarea, input:not([type=checkbox]):not([type=radio])");
+      const wantsCustom = Boolean(rule && rule.custom);
+      const wantsFallback = !rule && optionButtons.length === 0;
+      if (selected.length === 0 && (wantsCustom || wantsFallback)) {
+        const text = wantsCustom ? rule.custom : fallback;
+        const current = input ? String(input.value || "").trim() : "";
+        if (input && current !== text.trim()) {
+          const proto = input.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+          Object.getOwnPropertyDescriptor(proto, "value").set.call(input, text);
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          record(text);
+          return JSON.stringify(actions);
+        }
+        if (primary) primary.click();
+        return JSON.stringify(actions);
+      }
+      if (selected.length === 0) {
+        if (optionButtons.length > 0) {
+          let target = null;
+          if (rule && rule.selected && rule.selected.length) {
+            target = optionButtons.find((b) => (b.getAttribute("aria-label") || b.innerText || "").includes(rule.selected[0]));
+          }
+          if (!target) {
+            target = optionButtons.find((b) => {
+              const label = (b.getAttribute("aria-label") || "") + " " + (b.innerText || "");
+              return /(Recommended)|（推荐）|推荐/.test(label);
+            });
+          }
+          if (!target) target = optionButtons[0];
+          record((target.getAttribute("aria-label") || target.innerText || "").trim());
+          target.click();
+        }
+        return JSON.stringify(actions);
+      }
       if (primary) primary.click();
       return JSON.stringify(actions);
     })()`,
@@ -254,6 +373,71 @@ interface AttemptInput {
   expectedPreset: string;
 }
 
+function captureScreenshot(session: BrowserSession, path: string): void {
+  captureFullPage(session, path);
+}
+
+function throwIfStopped(paths: WorkerPaths, session: BrowserSession, screenshotFile: string): void {
+  if (!existsSync(stopRequestFile(paths))) return;
+  try {
+    captureScreenshot(session, screenshotFile);
+  } catch {
+    // The stop happened before the page could be captured; the blocked record still remains.
+  }
+  throw new InfraError("external stop requested");
+}
+
+function sessionHealthy(session: BrowserSession): boolean {
+  try {
+    const length = session.eval<number>("document.body ? document.body.innerText.length : 0");
+    return typeof length === "number" && length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/** The conversation always renders the user turn, so it is a stable marker that the
+ * screenshot page still shows this scenario and not a fresh empty session. */
+function pageShowsPrompt(session: BrowserSession, prompt: string): boolean {
+  const needle = prompt.trim().slice(0, 16);
+  if (!needle) return false;
+  try {
+    return session.eval<boolean>(
+      `document.body ? document.body.innerText.includes(${JSON.stringify(needle)}) : false`,
+    );
+  } catch {
+    return false;
+  }
+}
+
+function captureOnce(session: BrowserSession, screenshotFile: string, lastPrompt: string): boolean {
+  if (!sessionHealthy(session) || !pageShowsPrompt(session, lastPrompt)) return false;
+  collapseSidebar(session);
+  try {
+    captureScreenshot(session, screenshotFile);
+  } catch {
+    return false;
+  }
+  return !isBlankImage(screenshotFile) && sessionHealthy(session);
+}
+
+/**
+ * Capture only after the page provably shows this scenario and the frame is not one flat
+ * color. A dead browser, a lost conversation, or a blank frame fails closed: delete the
+ * screenshot and throw, so the record becomes blocked instead of storing an invalid image.
+ */
+export function captureVerified(
+  session: BrowserSession,
+  screenshotFile: string,
+  lastPrompt: string,
+): void {
+  if (captureOnce(session, screenshotFile, lastPrompt)) return;
+  rmSync(screenshotFile, { force: true });
+  throw new InfraError(
+    "screenshot capture failed, was blank, or the page lost the conversation; refusing to record an invalid screenshot",
+  );
+}
+
 function attemptScenario(input: AttemptInput): {
   digest: SessionDigest;
   file: string;
@@ -267,6 +451,11 @@ function attemptScenario(input: AttemptInput): {
   });
   const autoAnswers: Array<{ question: string; answer: string }> = [];
   try {
+    try {
+      session.raw(["close", "--all"]);
+    } catch {
+      // No prior daemon is fine; the open below starts a clean browser either way.
+    }
     session.open(url);
     session.wait(6000);
     dismissPreview(session);
@@ -308,6 +497,7 @@ function attemptScenario(input: AttemptInput): {
       }
       for (;;) {
         try {
+          throwIfStopped(paths, session, screenshotFile);
           answerPendingQuestions(session, scenario, autoAnswers);
           // Only the first turn discovers a fresh session from its opening prompt. Every
           // later turn runs in that same session, whose first user message never changes,
@@ -326,6 +516,7 @@ function attemptScenario(input: AttemptInput): {
             ).length;
             if (ends > seenTurnEnds) {
               seenTurnEnds = ends;
+              waitForSettledSession(match.file);
               break;
             }
           }
@@ -338,8 +529,10 @@ function attemptScenario(input: AttemptInput): {
     }
     if (!match) throw new InfraError("no session matched the scenario");
     const matched: MatchResult = match;
+    waitForSubagentsSettled(matched.file);
     session.wait(1000);
-    session.screenshot(screenshotFile);
+    const lastPrompt = scenario.turns.at(-1)?.prompt ?? "";
+    captureVerified(session, screenshotFile, lastPrompt);
     if (!existsSync(matched.file)) throw new InfraError("session log vanished before reading");
     try {
       return {
@@ -362,11 +555,28 @@ function blockedRecord(input: {
   configFile: string;
   recordFile: string;
   screenshotFile: string;
+  sessionFile?: string;
+  sessionId?: string;
   reason: string;
+  /** The attempt start stamp shared with the record and source filenames. */
+  capturedAt: string;
 }): RunRecord {
   const config = readPlaygroundConfig(input.configFile);
   const matrix = environmentMatrix(input.paths.environmentId);
-  const capturedAt = new Date().toISOString();
+  const sessionFile = input.sessionFile;
+  const session = sessionFile
+    ? (() => {
+        try {
+          return sessionFacts(
+            digestSession(sessionFile, input.sessionId ?? "", input.paths.index),
+            sessionFile,
+            [],
+          );
+        } catch {
+          return null;
+        }
+      })()
+    : null;
   return {
     scenarioId: input.scenarioId,
     phase: input.phase,
@@ -378,8 +588,12 @@ function blockedRecord(input: {
       paths: input.paths,
     }),
     target: null,
-    session: null,
-    artifacts: { recordFile: input.recordFile, screenshotFile: input.screenshotFile, observed: [] },
+    session,
+    artifacts: {
+      recordFile: input.recordFile,
+      screenshotFile: input.screenshotFile,
+      observed: [],
+    },
     semanticReview: pendingSemanticReview(),
     mechanicalFailures: [],
     verdict: verdictFor({
@@ -388,33 +602,53 @@ function blockedRecord(input: {
       semanticReview: pendingSemanticReview(),
       blockedReason: input.reason,
     }),
-    capturedAt,
+    batchId: process.env.PLAYGROUND_BATCH_ID,
+    capturedAt: input.capturedAt,
   };
 }
 
 async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   const scenarioId = argValue("--scenario");
-  if ((phase !== "raw" && phase !== "adapted") || !scenarioId) {
+  if (!isPhase(phase) || !scenarioId) {
     throw new Error(
-      "usage: run-case.ts --worker N --scenario ID --phase raw|adapted [--environment base] [--config FILE]",
+      "usage: run-case.ts --worker N --scenario ID --phase raw|adapted --environment ID [--config FILE]",
     );
   }
   const worker = Number(argValue("--worker") ?? "0");
   if (!Number.isInteger(worker) || worker < 0) throw new Error("--worker must be non-negative");
-  const matrix = environmentMatrix(argValue("--environment"));
+  const environmentId = argValue("--environment");
+  if (environmentId === undefined) throw new Error("--environment is required");
+  const matrix = environmentMatrix(environmentId);
   const paths = workerPaths(worker, matrix.id, phase);
   const preparedPhase = existsSync(paths.phaseFile)
     ? readFileSync(paths.phaseFile, "utf8").trim()
     : "";
   if (preparedPhase !== phase)
     throw new Error(`worker is prepared for ${preparedPhase || "nothing"}, not ${phase}`);
-  const scenario = loadScenario(scenarioId);
+  const bundlePath = process.env.PLAYGROUND_SCENARIO_BUNDLE;
+  const scenario = bundlePath
+    ? (() => {
+        const scenarios = JSON.parse(readFileSync(bundlePath, "utf8")) as BehaviorScenario[];
+        const found = scenarios.find((entry) => entry.id === scenarioId);
+        if (!found) throw new Error(`scenario ${scenarioId} is missing from the batch bundle`);
+        return found;
+      })()
+    : (await import("./lib/scenarios.ts")).loadScenario(scenarioId);
+  if (scenario.environmentId !== undefined && scenario.environmentId !== matrix.id) {
+    throw new Error(
+      `scenario ${scenarioId} belongs to ${scenario.environmentId}, not ${matrix.id}`,
+    );
+  }
+  if (scenario.phases !== undefined && !scenario.phases.includes(phase)) {
+    throw new Error(`scenario ${scenarioId} is not allowed in phase ${phase}`);
+  }
   const configFile = argValue("--config") ?? process.env.PLAYGROUND_CONFIG_FILE ?? CONFIG_FILE;
   const config = readPlaygroundConfig(configFile);
   const expectedTarget = readHomePlan(paths);
   const expectedPreset = phase === "raw" ? "standard" : "poteto-mode";
   const workspace = materializeWorkspace(paths, scenario);
+  rmSync(stopRequestFile(paths), { force: true });
   const capturedAt = new Date().toISOString();
   const stamp = capturedAt.replace(/[:.]/g, "-");
   mkdirSync(paths.evidenceDir, { recursive: true });
@@ -431,6 +665,7 @@ async function main(): Promise<void> {
       expectedPreset,
     });
     const session = sessionFacts(outcome.digest, outcome.file, outcome.answers);
+    session.analysis = analyzeSession(session);
     const failures = mechanicalFailures({
       scenario,
       session,
@@ -452,15 +687,18 @@ async function main(): Promise<void> {
         observed: [
           `skillLoads=${session.skillLoads.join(",") || "none"}`,
           `toolCalls=${session.toolCalls.length}`,
+          `warnings=${session.analysis.warnings.length}`,
         ],
       },
       semanticReview,
       mechanicalFailures: failures,
       verdict: verdictFor({ phase, failures, semanticReview }),
+      batchId: process.env.PLAYGROUND_BATCH_ID,
       capturedAt,
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
+    const lastSession = latestSessionFile(paths);
     record = blockedRecord({
       scenarioId,
       phase,
@@ -468,7 +706,10 @@ async function main(): Promise<void> {
       configFile,
       recordFile,
       screenshotFile,
+      sessionFile: reason.includes("external stop") ? lastSession?.file : undefined,
+      sessionId: reason.includes("external stop") ? lastSession?.id : undefined,
       reason,
+      capturedAt,
     });
     if (!(error instanceof InfraError)) {
       record.artifacts.observed.push("scenario execution did not complete");
@@ -478,10 +719,23 @@ async function main(): Promise<void> {
     record,
     Object.values(config.providers).map((provider) => provider.apiKey),
   );
-  writeFileSync(recordFile, `${JSON.stringify(record, null, 2)}\n`);
+  const sourceFile = recordFile.replace(/\.json$/, EVIDENCE_FILES.sourceSuffix);
+  writeFileSync(
+    sourceFile,
+    `${JSON.stringify(
+      {
+        recordFile,
+        screenshotFile,
+        sessionFile: record.session?.sessionFile ?? null,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  writeFileSync(recordFile, `${JSON.stringify(sanitizeRecord(record), null, 2)}\n`);
   console.log(`[run-case] ${scenarioId} ${phase} ${matrix.id} ${record.verdict.status}`);
   console.log(`[run-case] evidence=${recordFile}`);
-  console.log(`[run-case] reports=${REPORT_DIRECTORY}`);
+  console.log(`[run-case] reviews=${reviewSnapshotDirectory(phase, matrix.id)}`);
   process.exitCode =
     record.verdict.status === "verified"
       ? 0
@@ -490,7 +744,9 @@ async function main(): Promise<void> {
         : 1;
 }
 
-main().catch((error: unknown) => {
-  console.error(`[run-case] ERROR: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error: unknown) => {
+    console.error(`[run-case] ERROR: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  });
+}

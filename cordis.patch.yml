@@ -4,7 +4,8 @@
 # `dsh-skill-filesystem` rows expose the generated pstack tree, vendored
 # cursor-team-kit skills, and authored project skills at bundled rank 600.
 # `pstack-models` reports the live route catalogue; `pstack-role-catalog` reports
-# role shapes; `pstack-subagent` delegates one child per selected route. The
+# role routes; `pstack-subagent` starts one child per call with an optional
+# explicit model route. The
 # preset rows below own the child personas and tool compositions. There is no
 # rendering row; charts stay Mermaid text and video rendering is not provided.
 #

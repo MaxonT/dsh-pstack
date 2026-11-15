@@ -66,23 +66,41 @@ export default defineConfig({
         command: "tsc --noEmit -p playground/tsconfig.json",
       },
       generate: {
-        command: "vpx port/generate.mjs",
+        command: "vpx scripts/generate-pstack.mjs --target port",
         cache: false,
       },
       "generate:check": {
-        command: "vpx port/generate.mjs --check",
+        command: "vpx scripts/generate-pstack.mjs --target port --check",
         cache: false,
       },
       "compatibility:check": {
-        command: "vpx port/release-compatibility.ts --check",
+        command: "vpx scripts/release-compatibility.ts --check",
         cache: false,
       },
       "playground:raw-generate": {
-        command: "vpx playground/raw/generate-cli.ts",
+        command: "vpx scripts/generate-pstack.mjs --target raw",
+        cache: false,
+      },
+      "playground:doctor": {
+        command: "vpx playground/scripts/doctor.ts",
         cache: false,
       },
       "playground:prepare": {
         command: "vpx playground/scripts/prepare.ts",
+        cache: false,
+      },
+      "playground:open": {
+        command:
+          "vpx playground/scripts/prepare.ts --phase adapted --environment preview --workers 1",
+        cache: false,
+      },
+      "playground:close": {
+        command: "vpx playground/scripts/stop.ts --phase adapted --environment preview",
+        cache: false,
+      },
+      "playground:reset": {
+        command:
+          "vpx playground/scripts/prepare.ts --phase adapted --environment preview --workers 1 --reset",
         cache: false,
       },
       "playground:bootstrap": {
@@ -97,16 +115,16 @@ export default defineConfig({
         command: "vpx playground/scripts/status.ts",
         cache: false,
       },
+      "playground:stop-task": {
+        command: "vpx playground/scripts/stop-task.ts",
+        cache: false,
+      },
+      "playground:redact": {
+        command: "vpx playground/scripts/redact.ts",
+        cache: false,
+      },
       "playground:run": {
         command: "vpx playground/scripts/run-case.ts",
-        cache: false,
-      },
-      "playground:run-ui": {
-        command: "vpx playground/scripts/run-ui.ts",
-        cache: false,
-      },
-      "playground:run-conflict": {
-        command: "vpx playground/scripts/run-conflict.ts",
         cache: false,
       },
       "playground:run-batch": {
@@ -115,10 +133,6 @@ export default defineConfig({
       },
       "playground:collect": {
         command: "vpx playground/scripts/collect.ts",
-        cache: false,
-      },
-      "playground:review": {
-        command: "vpx playground/scripts/review.ts",
         cache: false,
       },
       "playground:browser": {

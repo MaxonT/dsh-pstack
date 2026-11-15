@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
-import type { Assertion, RunRecord, SessionFacts } from "../playground/types.ts";
+import type { Assertion, BehaviorScenario, RunRecord, SessionFacts } from "../playground/types.ts";
 import {
   mountRawTree,
   profileManifest,
@@ -34,9 +34,6 @@ import {
   publicConfigHash,
   REPOSITORY_ROOT,
 } from "../playground/scripts/lib/run-metadata.ts";
-import { behaviorScenario, exclusions } from "../playground/scenarios/index.ts";
-import { listScenarioIds } from "../playground/scripts/lib/scenarios.ts";
-import { reportFor } from "../playground/scripts/collect.ts";
 import {
   workerPaths,
   phaseWorkersDirectory,
@@ -47,14 +44,29 @@ import {
 const temporary = mkdtempSync(join(tmpdir(), "pstack-execution-test-"));
 afterAll(() => rmSync(temporary, { recursive: true, force: true }));
 
+const testScenario: BehaviorScenario = {
+  id: "capability-test",
+  capability: "capability-test",
+  turns: [{ prompt: "/poteto-help 检查当前工作区。" }],
+  workspace: { files: {} },
+  assertions: [{ kind: "turn-completed" }, { kind: "skill-loaded", skill: "poteto-help" }],
+  rubric: { prompt: "测试宿主。" },
+  uiObservations: [],
+};
+
 function record(phase: "raw" | "adapted", environmentId: string): RunRecord {
-  const scenario = behaviorScenario("poteto-help-smoke");
+  const scenario = testScenario;
   const target = { provider: "provider-a", model: "model-a", effort: "low" };
   const config = {
     testModel: target,
     providers: { "provider-a": { apiKey: "secret-value", models: { "model-a": ["low"] } } },
   };
-  const matrix = { id: environmentId, enabledPluginPackages: [] };
+  const matrix = {
+    id: environmentId,
+    description: "测试环境",
+    kind: "base" as const,
+    enabledPluginPackages: [],
+  };
   return {
     scenarioId: scenario.id,
     phase,
@@ -145,7 +157,7 @@ describe("execution contracts", () => {
   it("compares actual routes, natural language, upstream and public config hashes", () => {
     const raw = record("raw", "base");
     const adapted = record("adapted", "base");
-    expect(assertSameEntry(raw, adapted, behaviorScenario(raw.scenarioId))).toEqual([]);
+    expect(assertSameEntry(raw, adapted, testScenario)).toEqual([]);
     expect(JSON.stringify(raw)).not.toContain("secret-value");
     expect(() =>
       assertSafeRecord({ ...raw, artifacts: { recordFile: "secret-value", observed: [] } }, [
@@ -156,7 +168,7 @@ describe("execution contracts", () => {
       ...adapted,
       target: { ...adapted.target, effort: "high" } as RunRecord["target"],
     };
-    expect(assertSameEntry(raw, wrongRoute, behaviorScenario(raw.scenarioId))).toContain(
+    expect(assertSameEntry(raw, wrongRoute, testScenario)).toContain(
       "raw and adapted actual model routes differ",
     );
   });
@@ -242,6 +254,14 @@ describe("digest granularity", () => {
     expect(digest.userTexts).toEqual(["first prompt", "second prompt"]);
   });
 
+  it("records a user-explicit skill gesture from the injected skill_content", () => {
+    const digest = digestEvents(
+      [userMessage('<skill_content name="poteto-mode">\nskill body\n</skill_content>')],
+      "session-gesture",
+    );
+    expect(digest.skillLoads).toEqual(["poteto-mode#user-gesture"]);
+  });
+
   it("keeps non-user messages out of userTexts", () => {
     const digest = digestEvents(
       [
@@ -296,7 +316,7 @@ describe("tool call argument summaries", () => {
 
   it("keeps the bare tool name when no listed argument is present", () => {
     expect(summarizeToolArguments("job_list", {})).toBe("job_list");
-    expect(summarizeToolArguments("read", "not-json")).toBe("read");
+    expect(() => summarizeToolArguments("read", "not-json")).toThrow("invalid tool arguments");
   });
 
   it("surfaces out-of-workspace reads in the digest for auditing", () => {
@@ -408,7 +428,7 @@ describe("artifact-dir-nonempty assertion", () => {
 
 describe("mechanical failures", () => {
   it("lists every mechanical failure independent of the semantic verdict", () => {
-    const scenario = behaviorScenario("poteto-help-smoke");
+    const scenario = testScenario;
     const target = { provider: "provider-a", model: "model-a", effort: "low" };
     const session: SessionFacts = {
       sessionId: "session",
@@ -501,10 +521,10 @@ const isolationPlan: ProviderPlan = {
 };
 
 function writeFakeRawTree(root: string): void {
-  mkdirSync(join(root, "tree/skills/poteto-mode"), { recursive: true });
+  mkdirSync(join(root, "pstack/skills/poteto-mode"), { recursive: true });
   writeFileSync(join(root, "dsh.md"), "# raw harness adapter\n");
   writeFileSync(
-    join(root, "tree/skills/poteto-mode/SKILL.md"),
+    join(root, "pstack/skills/poteto-mode/SKILL.md"),
     "---\nname: poteto-mode\n---\n\n# Raw poteto mode body\n",
   );
 }
@@ -547,18 +567,19 @@ describe("read isolation from the repository tree", () => {
     writeFakeRawTree(source);
     expect(mountRawTree(paths, source)).toBe(paths.rawMount);
     expect(existsSync(join(paths.rawMount, "dsh.md"))).toBe(true);
-    expect(existsSync(join(paths.rawMount, "tree/skills/poteto-mode/SKILL.md"))).toBe(true);
+    expect(existsSync(join(paths.rawMount, "pstack/skills/poteto-mode/SKILL.md"))).toBe(true);
     expect(() => mountRawTree(paths, join(temporary, "absent"))).toThrow(/raw tree is missing/);
 
     const entries = rawProfileEntries([], paths.rawMount);
-    expect(JSON.stringify(entries)).toContain(join(paths.rawMount, "tree/skills"));
+    expect(JSON.stringify(entries)).toContain(join(paths.rawMount, "pstack/skills"));
     expect(JSON.stringify(entries)).not.toContain(REPOSITORY_ROOT);
     expect(() => rawProfileEntries([], join(temporary, "absent"))).toThrow(/raw mount is missing/);
 
     writeHomePatch(paths, isolationPlan, "raw");
     const patch = readFileSync(join(paths.home, "cordis.patch.yml"), "utf8");
-    expect(patch).toContain(join(paths.rawMount, "tree/skills/poteto-mode/SKILL.md"));
-    expect(patch).toContain(join(paths.rawMount, "dsh.md"));
+    expect(patch).not.toContain("system-prompt");
+    expect(patch).not.toContain(join(paths.rawMount, "pstack/skills/poteto-mode/SKILL.md"));
+    expect(patch).not.toContain(join(paths.rawMount, "dsh.md"));
     expect(patch).not.toContain(REPOSITORY_ROOT);
   });
 
@@ -623,54 +644,5 @@ describe("phase isolation of worker evidence", () => {
       delete process.env.PLAYGROUND_WORKERS_DIR;
       delete process.env.PLAYGROUND_WORKSPACE_ROOT;
     }
-  });
-});
-
-function verifiedAdapted(environmentId: string): RunRecord {
-  return {
-    ...record("adapted", environmentId),
-    verdict: { phase: "adapted", status: "verified" },
-  };
-}
-
-function summaryCounts(markdown: string): Record<string, number> {
-  const match = markdown.match(/```json\n([\s\S]*?)\n```/);
-  if (!match) throw new Error("report is missing its summary json block");
-  return JSON.parse(match[1] ?? "") as Record<string, number>;
-}
-
-function rowVerdict(markdown: string, scenarioId: string): string {
-  const line = markdown.split("\n").find((entry) => entry.startsWith(`| ${scenarioId} |`));
-  if (!line) throw new Error(`report has no row for ${scenarioId}`);
-  return (line.split("|")[4] ?? "").trim();
-}
-
-describe("collect report verdict counting", () => {
-  it("counts an adapted row without a raw comparison as inconclusive, not verified", () => {
-    const adapted = verifiedAdapted("base");
-    const { markdown } = reportFor("adapted", "base", [adapted]);
-    const counts = summaryCounts(markdown);
-    expect(counts.inconclusive).toBe(1);
-    expect(counts.verified).toBe(0);
-    expect(rowVerdict(markdown, adapted.scenarioId)).toBe("inconclusive");
-  });
-
-  it("counts a matched raw comparison as verified", () => {
-    const raw = record("raw", "base");
-    const adapted = verifiedAdapted("base");
-    const { markdown } = reportFor("adapted", "base", [raw, adapted]);
-    const counts = summaryCounts(markdown);
-    expect(counts.verified).toBe(1);
-    expect(counts.inconclusive).toBe(0);
-    expect(rowVerdict(markdown, adapted.scenarioId)).toBe("verified");
-  });
-
-  it("keeps status counts plus unrun and excluded equal to registered plus exclusions", () => {
-    const raw = record("raw", "base");
-    const adapted = verifiedAdapted("base");
-    const counts = summaryCounts(reportFor("adapted", "base", [raw, adapted]).markdown);
-    const { unrun = 0, excluded = 0, ...statuses } = counts;
-    const counted = Object.values(statuses).reduce((total, value) => total + value, 0);
-    expect(counted + unrun + excluded).toBe(listScenarioIds().length + exclusions.length);
   });
 });

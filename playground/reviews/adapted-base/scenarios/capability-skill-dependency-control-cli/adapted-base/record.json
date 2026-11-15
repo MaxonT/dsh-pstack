@@ -1,0 +1,571 @@
+{
+  "scenarioId": "capability-skill-dependency-control-cli",
+  "phase": "adapted",
+  "environment": {
+    "worker": 10,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-3fbeeaef-b3db-4de4-b8de-6e6e3c829484",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": ["control-cli"],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -la"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git log --oneline -20 && git status && git ls-tree -r HEAD"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git status --porcelain; git branch -a; ls -la .git; cat .git/config 2>/dev/null; find . -not -path './.git/*' -type f | head -50"
+      },
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=control-cli"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=command -v dsh; command -v tmux; command -v python3; command -v node; command -v expect"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=dsh --help 2>&1 | head -60; echo \"EXIT=$?\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=dsh --version; echo \"EXIT=$?\"; ls $DSH_HOME/profiles 2>&1; dsh --dump-default-config 2>&1 | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la $DSH_HOME/profiles/playground; dsh --profile playground --dump-config 2>&1 | head -60"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/profiles/playground/cordis.yml; echo ---; cat $DSH_HOME/profiles/playground/cordis.patch.yml; echo ---; cat $DSH_HOME/profiles/playground/package.json; echo ---; cat $DSH_HO"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && S=\"probe-$$\"; tmux new-session -d -s \"$S\" -- dsh --profile playground; sleep 8; tmux capture-pane -pt \"$S\" | tail -40; echo \"---exit check---\"; tmux list-sessions 2>&1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && python3 - <<'PY' import os,pty,select,subprocess,time m,s=pty.openpty() p=subprocess.Popen([\"dsh\",\"--profile\",\"playground\"],stdin=s,stdout=s,stderr=s,close_fds=True) os.close(s"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls /dev/pts; ls -la /dev/ptmx; python3 -c \"import pty;print(pty.openpty())\" 2>&1 | tail -2"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && dsh --profile playground --help 2>&1 | head -60; echo EXIT=$?"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && dsh --help ><TEMP_PATH> 2><TEMP_PATH> echo \"help exit=$?\"; dsh --version ><TEMP_PATH> 2>&1; echo \"version exit=$?\"; cat <TEMP_PATH> dsh --profile playground ><TEMP_PATH> 2><TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && du -sh $DSH_HOME/profiles/playground && ls $DSH_HOME/profiles/playground/node_modules"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && du -sh $DSH_HOME && ls $DSH_HOME"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=mkdir -p <TEMP_PATH> && cp -r $DSH_HOME/profiles/playground <TEMP_PATH> && cp $DSH_HOME/pstack-models.json <TEMP_PATH> 2>/dev/null; ls -R <TEMP_PATH> | head -30; l"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile playground --dump-config 2>&1 | head -40; echo EXIT=${PIPESTATUS[0]}"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> timeout 60 dsh --profile playground < /dev/null > <TEMP_PATH> 2><TEMP_PATH> echo \"EXIT=$?\"; echo \"--- stdout ---\"; head -c 1500 <TEMP_PATH> echo; ech"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && (ss -ltnp 2>/dev/null || netstat -ltnp 2>/dev/null) | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && ss -ltnp 2>/dev/null | grep -E '3080|3090'; ps aux | grep -i dsh | grep -v grep | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> timeout 90 dsh --profile playground --port 3099 --host 127.0.0.1 --no-open ><TEMP_PATH> 2><TEMP_PATH> & sleep 25; echo \"--- stdout ---\"; head -c 800 <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> timeout 120 dsh headless \"say hi\" ><TEMP_PATH> 2><TEMP_PATH> echo \"EXIT=$?\"; echo \"--- out ---\"; head -c 1200 <TEMP_PATH> echo \"--- err ---\"; head -c 80"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> DEEPSEEK_API_KEY=dummy-key timeout 90 dsh headless \"say hi\" ><TEMP_PATH> 2><TEMP_PATH> echo \"EXIT=$?\"; echo \"--- out ---\"; head -c 1500 <TEMP_PATH> e"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile playground --help 2>&1 | head -50"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && TOKEN=$(grep -o 'token=[^ ]*' <TEMP_PATH> | head -1 | cut -d= -f2); echo \"token=$TOKEN\"; curl -s -o /dev/null -w \"root_with_token=%{http_code}\\n\" \"http://127.0.0.1:3099/?token=$"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=env | grep -iE 'api|key|token|workbuddy|magpie|deepseek' | sed 's/=.\\{6\\}.*/=<redacted>/'"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && command -v script; script -qc \"echo hello; tty\" <TEMP_PATH> 2>&1 | head -5; echo \"script exit=$?\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la $DSH_HOME/storages $DSH_HOME/sessions $DSH_HOME/gh-config 2>&1 | head -30; ls $DSH_HOME/profiles"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --dump-default-config --profile web 2>&1 | head -20; echo EXIT=${PIPESTATUS[0]}; ls <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && TOKEN=$(grep -o 'token=[^ ]*' <TEMP_PATH> | cut -d= -f2); curl -s -L -c <TEMP_PATH> -o <TEMP_PATH> -w \"final=%{http_code} url=%{url_effective}\\n\" \"http://127.0.0.1:3099/?token=$T"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && curl -sv \"http://127.0.0.1:3099/\" 2>&1 | head -25"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --dump-config --profile playground 2>&1 | grep -iE 'llm|provider|route|workbuddy|magpie' | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --from-default-profile tui --help 2>&1 | head -20; echo EXIT=${PIPESTATUS[0]}; ls <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la <TEMP_PATH> cat <TEMP_PATH> 2>/dev/null; cat <TEMP_PATH> 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile playground --dump-config 2>&1 | grep -nE 'pstack|magpie|workbuddy|pi-ai|provider' | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> nohup dsh --profile playground --port 3099 --host 127.0.0.1 --no-open ><TEMP_PATH> 2><TEMP_PATH> & echo $! > <TEMP_PATH> sleep 20; cat <TEMP_PATH> TOKEN"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && TOKEN=$(grep -o 'token=[^ ]*' <TEMP_PATH> | cut -d= -f2); curl -sv \"http://127.0.0.1:3099/?token=$TOKEN\" 2>&1 | grep -E '^< |^> |HTTP' | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && TOKEN=$(grep -o 'token=[^ ]*' <TEMP_PATH> | cut -d= -f2); rm -f <TEMP_PATH> curl -s -c <TEMP_PATH> -o /dev/null \"http://127.0.0.1:3099/?token=$TOKEN\"; curl -s -b <TEMP_PATH> -o <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --dump-default-config 2>&1 | grep -inE 'tui|terminal|ink' | head -20; echo ---; ls <HOST_PATH> 2>/dev/null"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> ls <HOST_PATH> | head -30"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile tui --dump-config 2>&1 | head -20; echo EXIT=${PIPESTATUS[0]}"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep devpts /proc/mounts; ls -l /dev/pts 2>&1; python3 -c \" import os try: fd=os.open('/dev/ptmx', os.O_RDWR) print('ptmx ok', fd) except OSError as e: print('ptmx err', e) \"; cat /proc/s"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la <HOST_PATH> python3 -c \" import json;d=json.load(open('<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd $DSH_HOME && find . -maxdepth 3 -name '*.json' -o -maxdepth 3 -name '*cred*' | head -20; ls -la $DSH_HOME/sessions/*/ | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && cp $DSH_HOME/.credentials.yaml <TEMP_PATH> && DSH_HOME=<TEMP_PATH> timeout 120 dsh headless \"reply with exactly: OK\" ><TEMP_PATH> 2><TEMP_PATH> echo \"EXIT=$?\"; echo \"--- "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && python3 -c \" import re s=open('<TEMP_PATH>').read() for line in s.splitlines(): print(re.sub(r'(:\\s*)(.{4}).*', r'\\1\\2****', line)) \" | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml,sys d=yaml.safe_load(open('<TEMP_PATH>')) print(d['refs']['MAGPIE_API_KEY']) \") && DSH_HOME=<TEMP_PATH> MAGPIE_API_KEY=\"$KEY\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml d=yaml.safe_load(open('<TEMP_PATH>')) print(d['refs']['MAGPIE_API_KEY']) \"); DSH_HOME=<TEMP_PATH> MAGPIE_API_KEY=\"$KEY\" timeo"
+      },
+      {
+        "name": "pstack_models",
+        "status": "ok",
+        "argsSummary": "pstack_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile headless --help 2>&1 | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile playground --dump-config 2>&1 | sed -n '1250,1400p'"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile headless --dump-config 2>&1 | grep -n -A12 'id: llm-deepseek-account' | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile playground --dump-config 2>&1 | grep -n -i 'magpie\\|workbuddy\\|defaultModel\\|model:' | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile playground --dump-config 2>&1 | sed -n '45,70p'"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml print(yaml.safe_load(open('<TEMP_PATH>'))['refs']['MAGPIE_API_KEY']) \"); DSH_HOME=<TEMP_PATH> MAGPIE_API_KEY=\"$KEY\" timeout 1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml print(yaml.safe_load(open('<TEMP_PATH>'))['refs']['MAGPIE_API_KEY']) \"); DSH_HOME=<TEMP_PATH> MAGPIE_API_KEY=\"$KEY\" timeout 1"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml print(yaml.safe_load(open('<TEMP_PATH>'))['refs']['MAGPIE_API_KEY']) \"); DSH_HOME=<TEMP_PATH> MAGPIE_API_KEY=\"$KEY\" timeout 2"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rl \"magpie\" <HOST_PATH> 2>/dev/null | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rl \"magpie\" <HOST_PATH> 2>/dev/null | head -20; grep -rl \"magpie\" <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rl \"magpie\" <HOST_PATH> --include='*.ts' --include='*.js' --include='*.json' --include='*.yml' 2>/dev/null | head -20; echo ---; grep -rn \"magpie\" <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile headless --dump-config 2>&1 | grep -n -B2 -A8 'llm-deepseek-account\\|deepseek-account-platform' | head -40"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile headless --dump-config 2>&1 | grep -n 'credentials'"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rl \"workbuddy\" <HOST_PATH> 2>/dev/null | head -10"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=find <TEMP_PATH> -maxdepth 3 | head -30; find $DSH_HOME/profiles/playground/.plugin-manager -maxdepth 3 | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile playground --dump-config 2>&1 | grep -n -A4 'id: credentials'; echo ===; DSH_HOME=<TEMP_PATH> dsh --profile playground --dump-config 2>&1 |"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=find <HOST_PATH> -maxdepth 3 -name '*magpie*' -o -maxdepth 3 -name '*pi-ai*' | head; ls /hom"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> | head -80"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> | grep -iE 'llm|provider|magpie|p"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -rn \"magpie\\|workbuddy\" <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile playground --dump-config 2>&1 | sed -n '78,140p'"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=P=$(find <HOST_PATH> -maxdepth 3 -type d -name 'pi-ai' | head "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=P=<HOST_PATH> grep -rioE '\"[a-z0-9_-]+\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=grep -o \"magpie\" $DSH_HOME/storages/workspace.json | head -3; grep -rn \"magpie\" $DSH_HOME/profiles/playground/ 2>/dev/null | head; grep -rln \"magpie\" $DSH_HOME/ 2>/dev/null | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/cordis.patch.yml"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cp $DSH_HOME/cordis.patch.yml <TEMP_PATH> && env | grep -i magpie; grep -rn \"MAGPIE_KEY\\|MAGPIE_API_KEY\" $DSH_HOME/ 2>/dev/null | grep -v Binary | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml print(yaml.safe_load(open('<TEMP_PATH>'))['refs']['MAGPIE_API_KEY']) \"); DSH_HOME=<TEMP_PATH> MAGPIE_KEY=\"$KEY\" MAGPIE_API_KE"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile headless --dump-config 2>&1 | grep -n -A8 'agent-default-model' | head -20"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml print(yaml.safe_load(open('<TEMP_PATH>'))['refs']['MAGPIE_API_KEY']) \"); DSH_HOME=<TEMP_PATH> MAGPIE_KEY=\"$KEY\" MAGPIE_API_KE"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml print(yaml.safe_load(open('<TEMP_PATH>'))['refs']['MAGPIE_API_KEY']) \"); DSH_HOME=<TEMP_PATH> MAGPIE_KEY=\"$KEY\" MAGPIE_API_KE"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --dump-default-config 2>&1 | grep -c .; DSH_HOME=<TEMP_PATH> dsh --profile acp --dump-config 2>&1 | head -5; echo EXIT=$?"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && DSH_HOME=<TEMP_PATH> dsh --profile acp --help 2>&1 | head -30"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && KEY=$(python3 -c \" import yaml print(yaml.safe_load(open('<TEMP_PATH>'))['refs']['MAGPIE_API_KEY']) \"); printf '%s\\n' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"init"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd /tmp && curl -s -o /dev/null -w \"alive=%{http_code}\\n\" http://127.0.0.1:3099/ ; TOKEN=$(grep -o 'token=[^ ]*' <TEMP_PATH> | cut -d= -f2); rm -f <TEMP_PATH> curl -s -c <TEMP_PATH> -o /dev/nu"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=kill $(cat <TEMP_PATH> 2>/dev/null; sleep 1; ss -ltn 2>/dev/null | grep 3099 || echo \"3099 closed\"; rm -f <TEMP_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pkill -f \"dsh --profile playground --port 3099\" 2>/dev/null; sleep 1; ss -ltn 2>/dev/null | grep 3099 || echo \"3099 closed\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ss -ltn 2>/dev/null | grep 3099 || echo \"3099 closed\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ps aux | grep -i \"3099\" | grep -v grep | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=kill 85208; sleep 2; ss -ltn 2>/dev/null | grep 3099 || echo \"3099 closed\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -ld /dev/pts; id; rm -rf <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> <TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "**结论。** 这台机器上跑不通真正的交互式 TUI，原因是伪终端不可用。可用的替代路径是非交互的 `headless` 与 `acp` 两个 profile，两者都实测跑通、退出码 0。\n\n**环境限制（实测）。**\n- `python3` 的 `pty.openpty()` 报 `OSError: out of pty devices`。\n- `script -qc` 报 `failed to create pseudo-terminal: Permission denied`。\n- `/proc/mounts` 显示 `devpts /dev/pts devpts ro`，且 `/dev/ptmx` 打开报 `EACCES`。\n- `tmux` 建会话报 `create window failed: fork failed: Permission denied`。\n所以 `control-cli` 技能推荐的 tmux 与 PTY 两条路都被沙箱挡死。\n\n**替代做法与结果。**\n- `dsh --profile headless \"reply with exactly: OK\"`。退出码 0，stdout 输出 `OK`，stderr 空。\n- `dsh --profile headless --json \"...\"` 让模型真正调用 `bash` 工具跑 `echo TOOL_OK`。退出码 0，事件流里可见 `tool_call` 记录 `bash`、输入 `echo TOOL_OK`、`tool_result` 返回 `TOOL_OK\\n`，最终 `final` 文本为 `TOOL_OK`。这证明命令行工具、工具调用、模型回路都是通的，不只是打印一段文字。\n- `dsh --profile acp`（stdio 上的 Agent Client Protocol）。退出码 0，`initialize` 返回了 `agentInfo` 与 `agentCapabilities`。`session/new` 报 `Invalid params`，缺 `mcpServers`，属于我的调用参数缺失，不是工具故障。\n- `dsh --profile web --port 3099 --no-open`。服务器起来并打印带 token 的 URL，取 token 换到 cookie 后 `GET /` 返回 200 和真实 HTML。裸请求返回 401，这是它的浏览器信任栅栏，属于预期。\n\n**跑通前必须补的两项。**\n1. `DSH_HOME` 下的 `cordis.patch.yml` 才有 magpie provider 路由，`profiles/playground/cordis.patch.yml` 单独不够。我用了一份 `DSH_HOME` 副本把全局 patch 一起带上才生效。\n2. magpie 密钥从 `$DSH_HOME/.credentials.yaml` 的 `refs.MAGPIE_API_KEY` 读，导出为 `MAGPIE_KEY` 环境变量。缺它时报 `MISSING_CREDENTIAL`。\n\n**踩到的坑。** 默认 profile 起 web server 时 `127.0.0.1:3080` 已被占用，报 `EADDRINUSE`。换到 3099 就好了。\n\n**清理。** 探测用的 3099 进程已停，端口已释放，临时目录 `<TEMP_PATH> 与临时文件已删。仓库工作区只有原有的 `README.md`，我没有改动任何文件。\n\n**给你的一句话。** 想验证交互式 TUI 的话，需要一个允许分配伪终端的环境（放开 `/dev/pts` 与 `/dev/ptmx`），否则就用 `headless --json` 做等价验证，它同样能跑到退出码 0 且工具调用真实发生。",
+    "userText": "帮我验证这个命令行工具真的能用：运行它、看一下输出、确认退出码是 0。这个环境驱动不了交互式命令行的话就说明并给替代做法。",
+    "userTexts": [
+      "帮我验证这个命令行工具真的能用：运行它、看一下输出、确认退出码是 0。这个环境驱动不了交互式命令行的话就说明并给替代做法。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 88,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_models",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "skill",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": ["write file_path=<TEMP_PATH>"],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=control-cli", "toolCalls=94", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:22:36.153Z"
+}

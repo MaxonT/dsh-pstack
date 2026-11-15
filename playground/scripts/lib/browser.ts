@@ -10,12 +10,7 @@ import { dirname, join } from "node:path";
 
 import { REPOSITORY_ROOT } from "./run-metadata.ts";
 
-const BIN = join(
-  REPOSITORY_ROOT,
-  "node_modules",
-  ".bin",
-  process.platform === "win32" ? "agent-browser.cmd" : "agent-browser",
-);
+const BIN = join(REPOSITORY_ROOT, "node_modules", ".bin", "agent-browser");
 
 export function agentBrowserBin(): string {
   return BIN;
@@ -28,7 +23,7 @@ export function chromeExecutable(): string {
   const candidates: string[] = [];
   if (existsSync(root)) {
     for (const name of readdirSync(root)) {
-      const binary = join(root, name, process.platform === "win32" ? "chrome.exe" : "chrome");
+      const binary = join(root, name, "chrome");
       if (existsSync(binary)) candidates.push(binary);
     }
   }
@@ -52,7 +47,8 @@ export interface BrowserSession {
   click(selector: string): string;
   keyboardType(text: string): string;
   press(key: string): string;
-  screenshot(path: string): string;
+  setViewport(width: number, height: number): string;
+  screenshot(path: string, options?: { full?: boolean }): string;
   close(): void;
 }
 
@@ -79,6 +75,78 @@ export function browserEnv(browserDir: string): NodeJS.ProcessEnv {
     XDG_RUNTIME_DIR: socketDir,
     AGENT_BROWSER_SOCKET_DIR: socketDir,
   };
+}
+
+/**
+ * Collapse the left sidebar before taking screenshots. It hides the session list
+ * and account name and widens the conversation area; an already collapsed sidebar
+ * is left alone.
+ */
+export function collapseSidebar(session: BrowserSession): void {
+  const collapsed = session.eval<boolean>(
+    `document.querySelector("[data-sidebar-collapsed]") !== null`,
+  );
+  if (collapsed) return;
+  const clicked = session.eval<boolean>(
+    `(() => {
+      const button = document.querySelector("[data-sidebar-toggle]");
+      if (!button) return false;
+      button.click();
+      return true;
+    })()`,
+  );
+  if (clicked) session.wait(500);
+}
+
+/**
+ * Capture the whole conversation, not just the viewport. DSH uses an inner scroll
+ * container, so Playwright's `--full` only sees the page viewport. Grow the
+ * viewport to the main conversation scroll area, never the workspace sidebar,
+ * capture the full page, then restore the original viewport.
+ */
+export function captureFullPage(session: BrowserSession, path: string): void {
+  const metrics = session.eval<{ width: number; height: number; scrollHeight: number }>(
+    `(() => {
+      const scrollable = (element) => {
+        const style = getComputedStyle(element);
+        return (style.overflowY === "auto" || style.overflowY === "scroll") &&
+          element.clientHeight > 100 &&
+          element.scrollHeight > element.clientHeight + 4;
+      };
+      const main = document.querySelector("main, [role='main'], [data-slot='main'], [class*='mainPanel']");
+      const mainCandidates = main
+        ? [main, ...main.querySelectorAll("*")].filter(scrollable)
+        : [];
+      const pageCandidates = [...document.querySelectorAll("*")].filter((element) => {
+        if (!scrollable(element)) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.left >= window.innerWidth * 0.2 && rect.width >= window.innerWidth * 0.4;
+      });
+      const candidates = (mainCandidates.length > 0 ? mainCandidates : pageCandidates).sort(
+        (left, right) =>
+          right.scrollHeight - right.clientHeight - (left.scrollHeight - left.clientHeight),
+      );
+      const target = candidates[0];
+      return {
+        width: Math.max(window.innerWidth, document.documentElement.scrollWidth || 0),
+        height: window.innerHeight,
+        scrollHeight: Math.max(
+          target?.scrollHeight ?? 0,
+          document.documentElement.scrollHeight || 0,
+          window.innerHeight,
+        ),
+      };
+    })()`,
+  );
+  const width = Math.max(metrics.width, 1024);
+  const height = Math.min(Math.max(metrics.height, metrics.scrollHeight + 200), 16_000);
+  try {
+    session.setViewport(width, height);
+    session.wait(300);
+    session.screenshot(path);
+  } finally {
+    session.setViewport(metrics.width, metrics.height);
+  }
 }
 
 export function createBrowserSession(options: BrowserOptions): BrowserSession {
@@ -114,9 +182,9 @@ export function createBrowserSession(options: BrowserOptions): BrowserSession {
     return (result.stdout ?? "").trim();
   };
 
-  const screenshot = (path: string): string => {
+  const screenshot = (path: string, options?: { full?: boolean }): string => {
     mkdirSync(dirname(path), { recursive: true });
-    return raw(["screenshot", path]);
+    return raw(options?.full ? ["screenshot", "--full", path] : ["screenshot", path]);
   };
 
   return {
@@ -134,6 +202,7 @@ export function createBrowserSession(options: BrowserOptions): BrowserSession {
     click: (selector) => raw(["click", selector]),
     keyboardType: (text) => raw(["keyboard", "type", text]),
     press: (key) => raw(["press", key]),
+    setViewport: (width, height) => raw(["set", "viewport", String(width), String(height)]),
     screenshot,
     close: () => {
       try {

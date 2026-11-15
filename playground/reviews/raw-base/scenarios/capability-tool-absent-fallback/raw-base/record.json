@@ -1,0 +1,100 @@
+{
+  "scenarioId": "capability-tool-absent-fallback",
+  "phase": "raw",
+  "environment": {
+    "worker": 7,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": null,
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-8cfc3d03-893f-4914-a5c9-c6552660d539",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "standard",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la"
+      },
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=**/*{chat,history,session,conversation,transcript,log}*"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "拿不到这个环境里的未保存聊天记录，原因是明确的：\n\n- 工作目录 `<TEMP_PATH> 里只有一个 `README.md`（3 行，内容是\"能力探测\"）和一个 `.git`，没有任何会话、日志、transcript 之类的文件（glob 也搜不到匹配项）。\n- 聊天记录属于宿主 harness 的会话存储，位于工作区之外。按本会话的读取边界，我只能读工作区内的文件和显式挂载的运行时输入（`$DSH_HOME/pstack-models.json`），会话历史不在允许范围内，所以我不能去翻。\n\n我不会去伪造一份\"看起来像\"的记录。\n\n替代办法（任选其一，你指定我再动手）：\n\n1. **你直接粘贴**：把那段对话原文贴到消息里，我帮你整理成 Markdown / JSON / 纯文本等格式导出到工作区。\n2. **浏览器手动导出**：在 Web GUI 右上角菜单里找\"导出对话 / Export\"，通常会下载 `.json` 或 `.md`；下载后把文件放到工作区目录，我再帮你转格式或清洗。\n3. **从 GUI 页面取证**：如果你告诉我想要哪几屏，我可以用受控方式读取当前 GUI 页面（http://127.0.0.1:45911）的可见内容来重建记录——但这需要页面侧有对应入口，且属于当前会话可见范围，未保存草稿未必能取到。\n4. **自己在宿主侧定位**：聊天记录通常在 DSH 宿主的数据目录（类似 `~/.dsh/sessions/<session-id>/`）里，你可以在宿主终端用 `ls ~/.dsh` 查看（这一步在你那边执行，不受我的沙箱限制），找到后把相关文件拷进工作区，我就能处理。\n\n告诉我走哪条路，我继续。",
+    "userText": "把我刚才提到的那份还没保存的聊天记录导出来给我。如果这个环境拿不到聊天记录，就直接说明拿不到、并告诉我有哪种替代办法，不要假造内容。",
+    "userTexts": [
+      "把我刚才提到的那份还没保存的聊天记录导出来给我。如果这个环境拿不到聊天记录，就直接说明拿不到、并告诉我有哪种替代办法，不要假造内容。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=3", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "raw",
+    "status": "unobserved",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "raw-base-20261114141336",
+  "capturedAt": "2026-11-14T06:27:53.301Z"
+}

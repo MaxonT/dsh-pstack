@@ -1,0 +1,128 @@
+{
+  "scenarioId": "capability-file-attachments",
+  "phase": "adapted",
+  "environment": {
+    "worker": 11,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "base",
+      "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
+      "kind": "base",
+      "enabledPluginPackages": []
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-26fcfd57-b316-49bd-b09c-42819377669b",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls docs/ && wc -l docs/spec.md docs/api.md"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=docs/spec.md"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=docs/api.md"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45; ls docs/"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=docs/consistency.md"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "目标：把 `docs/spec.md` 和 `docs/api.md` 交给一个执行者，由它读完这两份文件后写出一份\"两文件是否一致\"的结论，并把结论落盘。\n\n我先读了这两个文件（各 3 行），都只提到 `status` 字段。现在派执行者去独立完成这件事。\n执行者已启动，正在读这两份文件并写 `docs/consistency.md`。等它返回结果我再汇报。\n执行者还在跑。等它完成通知。\n已把两个文件交给一个执行者，它读完后就地写了结论。\n\n**结论。** 一致，但覆盖的信息不足以做字段级逐条比对。两份文档各三行，都只断言同一件事。`docs/spec.md:3` 是「接口返回 status 字段。」，`docs/api.md:3` 是「返回 status 字段。」字段名和语义相同，没有矛盾。\n\n**落盘位置。** 新增 [docs/consistency.md](docs/consistency.md)（39 行）。`docs/spec.md` 和 `docs/api.md` 未改动。\n\n**待澄清项。** 两份文档都没写的，而不是说法互相冲突的部分：`status` 的类型、取值集合、所在层级、其他返回字段、错误分支的返回结构与 HTTP 状态码、接口标识本身。执行者核实过 `docs/` 目录和 `README.md` 没有额外接口描述。\n\n**下一步建议。** 在 `docs/api.md` 补 `status` 类型、取值和示例响应体，让 `docs/spec.md` 只留概述并指向它；点明接口路径与方法；补失败分支约定。需要的话我可以按这个建议改文档。",
+    "userText": "把 docs/spec.md 和 docs/api.md 两个文件交给一个执行者，让它据此写一份两文件的一致性结论。路径直接写在说明里让它自己读。",
+    "userTexts": [
+      "把 docs/spec.md 和 docs/api.md 两个文件交给一个执行者，让它据此写一份两文件的一致性结论。路径直接写在说明里让它自己读。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_list",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=7", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-base-20261114221850",
+  "capturedAt": "2026-11-14T14:18:51.201Z"
+}

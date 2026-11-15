@@ -1,19 +1,25 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
-import { parseRoleConfiguration, readRoleConfiguration, selectRoutes } from "../src/role-config.ts";
-import { parseRoute } from "../src/route.ts";
-import { findRole } from "../src/role-manifest.ts";
+import { parseRoute } from "../src/roles/route.ts";
+import { findRole } from "../src/roles/role-manifest.ts";
+import { parseRoleConfiguration, readRoleConfiguration } from "../src/roles/role-store.ts";
 
 const directories: string[] = [];
 
-function homeWithRoles(text: string | undefined): string {
+function homeWithRoles(document: Record<string, unknown> | undefined): string {
   const directory = mkdtempSync(join(tmpdir(), "pstack-roles-"));
   directories.push(directory);
-  if (text !== undefined) writeFileSync(join(directory, "pstack-models.mdc"), text);
+  if (document !== undefined) {
+    writeFileSync(join(directory, "pstack-models.json"), `${JSON.stringify(document, null, 2)}\n`);
+  }
   return directory;
+}
+
+function jsonPath(directory: string): string {
+  return join(directory, "pstack-models.json");
 }
 
 afterEach(() => {
@@ -21,7 +27,7 @@ afterEach(() => {
     rmSync(directory, { recursive: true, force: true });
 });
 
-describe("role manifest and parser", () => {
+describe("role manifest, parser, and route selection", () => {
   it("keeps commas that belong to a role key", () => {
     expect(findRole("feature, refactoring")?.key).toBe("feature, refactoring");
     expect(findRole("  FEATURE ,  REFACTORING ")?.key).toBe("feature, refactoring");
@@ -47,72 +53,91 @@ describe("role manifest and parser", () => {
     expect(parseRoute("provider/model [high tier]").route).toBeUndefined();
   });
 
-  it("parses a role document and keeps the winning duplicate", () => {
+  it("parses a JSON document into budget and role routes", () => {
     const parsed = parseRoleConfiguration(
-      [
-        "# budget: large (xhigh)",
-        "bug-fix: provider/model [high]",
-        "bug-fix: provider/other [low]",
-        "arena runners: provider/a [high], provider/b [low]",
-      ].join("\n"),
-      "/home/user/.dsh/pstack-models.mdc",
+      JSON.stringify({
+        version: 1,
+        budget: "large (xhigh)",
+        roles: {
+          "bug-fix": ["provider/model [high]"],
+          "arena runners": ["provider/a [high]", "provider/b [low]"],
+        },
+      }),
+      "/home/user/.dsh/pstack-models.json",
     );
     expect(parsed.status).toBe("loaded");
     if (parsed.status !== "loaded") return;
     expect(parsed.budget).toBe("large (xhigh)");
-    expect(parsed.roles.get("bug-fix")?.routes[0]).toMatchObject({ model: "other" });
-    expect(parsed.issues.some((issue) => issue.message.includes("line 3 wins"))).toBe(true);
+    expect(parsed.roles.get("bug-fix")?.routes[0]).toMatchObject({
+      model: "model",
+      effort: "high",
+    });
+    expect(parsed.roles.get("arena runners")?.routes).toHaveLength(2);
+    expect(parsed.issues).toEqual([]);
   });
 
-  it("reports malformed and unknown lines by line number", () => {
-    const parsed = parseRoleConfiguration("bug-fix: nope\nretired role: auto\n", "/x");
-    expect(parsed.status).toBe("loaded");
-    if (parsed.status !== "loaded") return;
-    expect(parsed.issues).toEqual([
-      {
-        line: 1,
-        message:
-          'bug-fix: "nope" is not a route; use `inherit-parent`, `auto`, or `<provider>/<model> [effort]`',
-      },
-      { line: 2, message: 'unknown pstack role "retired role"' },
-    ]);
-  });
-
-  it("distinguishes a missing file from an unreadable path", () => {
-    expect(readRoleConfiguration(join(homeWithRoles(undefined), "pstack-models.mdc")).status).toBe(
-      "missing",
-    );
-    expect(readRoleConfiguration(homeWithRoles(undefined)).status).toBe("unreadable");
-  });
-
-  it("expands automatic panels and selects a list entry", () => {
+  it("reports unknown roles and malformed routes without inventing line numbers", () => {
     const parsed = parseRoleConfiguration(
-      "arena runners: p/a [high], p/b [low]\nswarm workers: p/a [high], p/b [low]\n",
+      JSON.stringify({
+        version: 1,
+        roles: { "bug-fix": ["nope"], "retired role": ["auto"] },
+      }),
       "/x",
     );
     expect(parsed.status).toBe("loaded");
     if (parsed.status !== "loaded") return;
-    const panel = selectRoutes(
-      findRole("arena runners")!,
-      parsed.roles.get("arena runners"),
-      undefined,
+    const messages = parsed.issues.map((issue) => issue.message);
+    expect(messages).toContain(
+      'bug-fix: "nope" is not a route; use `inherit-parent`, `auto`, or `<provider>/<model> [effort]`',
     );
-    expect(panel.mode).toBe("panel");
-    expect(panel.routes).toHaveLength(2);
-    const selected = selectRoutes(findRole("swarm workers")!, parsed.roles.get("swarm workers"), 1);
-    expect(selected.mode).toBe("selected");
-    expect(selected.routes[0]).toMatchObject({ model: "b" });
+    expect(messages).toContain('unknown pstack role "retired role"');
   });
 
-  it("rejects roleIndex on a single role or an automatic panel", () => {
-    const parsed = parseRoleConfiguration("bug-fix: p/a\narena runners: p/a, p/b\n", "/x");
-    expect(parsed.status).toBe("loaded");
-    if (parsed.status !== "loaded") return;
-    expect(() => selectRoutes(findRole("bug-fix")!, parsed.roles.get("bug-fix"), 0)).toThrow(
-      /single route/,
+  it("rejects an unsupported document version", () => {
+    expect(() => parseRoleConfiguration(JSON.stringify({ version: 2, roles: {} }), "/x")).toThrow(
+      /version/,
     );
-    expect(() =>
-      selectRoutes(findRole("arena runners")!, parsed.roles.get("arena runners"), 0),
-    ).toThrow(/automatic panel/);
+    expect(() => parseRoleConfiguration("not json", "/x")).toThrow();
+  });
+
+  it("distinguishes a missing file from an unreadable path", () => {
+    expect(readRoleConfiguration(jsonPath(homeWithRoles(undefined))).status).toBe("missing");
+    expect(readRoleConfiguration(homeWithRoles(undefined)).status).toBe("unreadable");
+  });
+});
+
+describe("legacy role file migration", () => {
+  it("migrates an mdc file to json and removes the mdc when json is missing", () => {
+    const directory = homeWithRoles(undefined);
+    const legacy = join(directory, "pstack-models.mdc");
+    writeFileSync(legacy, "# budget: large (xhigh)\nbug-fix: cpa/model-a [high]\n");
+    const config = readRoleConfiguration(jsonPath(directory));
+    expect(config.status).toBe("loaded");
+    if (config.status !== "loaded") return;
+    expect(config.budget).toBe("large (xhigh)");
+    expect(config.roles.get("bug-fix")?.routes[0]).toMatchObject({ model: "model-a" });
+    expect(existsSync(legacy)).toBe(false);
+    expect(existsSync(jsonPath(directory))).toBe(true);
+    expect(JSON.parse(readFileSync(jsonPath(directory), "utf8"))).toMatchObject({
+      version: 1,
+      budget: "large (xhigh)",
+      roles: { "bug-fix": ["cpa/model-a [high]"] },
+    });
+  });
+
+  it("prefers json and keeps the mdc when both exist", () => {
+    const directory = homeWithRoles({ version: 1, roles: { "bug-fix": ["json/model [low]"] } });
+    const legacy = join(directory, "pstack-models.mdc");
+    writeFileSync(legacy, "bug-fix: mdc/model [high]\n");
+    const config = readRoleConfiguration(jsonPath(directory));
+    expect(config.status).toBe("loaded");
+    if (config.status !== "loaded") return;
+    expect(config.roles.get("bug-fix")?.routes[0]).toMatchObject({ model: "model" });
+    expect(config.roles.get("bug-fix")?.routes[0]).toMatchObject({ provider: "json" });
+    expect(existsSync(legacy)).toBe(true);
+  });
+
+  it("is missing when neither file exists", () => {
+    expect(readRoleConfiguration(jsonPath(homeWithRoles(undefined))).status).toBe("missing");
   });
 });
