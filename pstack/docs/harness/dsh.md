@@ -26,7 +26,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | `environment: "local"` | Omit `cwd`; the child inherits the session directory. |
 | `cloud_base_branch: <b>` | Pass `<b>` as `create_worktree.from`; otherwise tell the child to check out `<b>`. |
 | `run_in_background: true` | Omit. `pstack_subagent` is managed and reports by completion notice. |
-| `resume` | `pstack_send` to the existing child id continues a pstack child; when that tool is absent, use the native `send_message`. Start a new `pstack_subagent` only when it stopped permanently. |
+| `resume` | Use the native `send_message`, addressing the pstack child by the name `list_agents` reports or by its Session id. Start a new `pstack_subagent` only when it stopped permanently. |
 | `file_attachments` | List the real paths in `prompt`; the child reads them with `read`. |
 
 ## Models
@@ -75,13 +75,13 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | Start one subagent with an optional `agent` preset (default `general`), optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. A subagent is not a background job: never pass its id to `job_output`; wait for the completion notice, or use `pstack_agents`/`pstack_send`. |
-| `pstack_agents` | List the calling agent's direct child sessions with their ids, mode, and activity. Use it instead of the native `list_agents` when you need a pstack child id; in an Agent Teams profile the native tool only lists teammates. |
-| `pstack_send` | Continue one pstack child by id. Use it instead of the native `send_message` when the target came from `pstack_subagent`. |
-| `pstack_interrupt` | Stop one pstack child's current turn by id. Use it instead of the native `interrupt_agent` when the target came from `pstack_subagent`. |
+| `pstack_subagent` | Start one subagent with an optional `agent` preset (default `general`) and optional `name`, optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. A subagent is not a background job: never pass its id to `job_output`; wait for the completion notice, or use the native `list_agents`/`send_message`. |
+| `pstack_interrupt` | Stop one pstack child's current turn by its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child. |
 | `pstack_skill` | Load a packaged pstack skill by exact kebab-case name; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
 | `pstack_roles` | Report each pstack role with its configured routes as provider, model, and reasoningEffort values, plus each route's served efforts and default. |
+
+Agent Teams mode is additive. When a session enables it, the session gains four team task tools and a shared task board; `pstack_subagent` children are ordinary subagents in the same tree and appear in `list_agents`.
 
 ## Local replacements
 

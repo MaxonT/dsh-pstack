@@ -5,9 +5,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import type { Agent } from "@deepseek-ai/dsh-agent";
 import {
-  createPstackAgentsTool,
   createPstackInterruptTool,
-  createPstackSendTool,
   createPstackSubagentTool,
   normalizeConfig,
   parseDelegationArgs,
@@ -281,71 +279,9 @@ describe("pstack_subagent arguments and planning", () => {
   });
 });
 
-describe("pstack continuation tools", () => {
+describe("pstack interrupt tool", () => {
   const signal = new AbortController().signal;
   const exec = { agent: parent, signal } as never;
-
-  it("lists only direct children with their ids", async () => {
-    const runtime = fakeRuntime({
-      subagents: {
-        listDescendants: async () => [
-          {
-            kind: "child",
-            id: "child-1",
-            activity: "running",
-            mode: "one-shot",
-            label: "scout",
-            hasChildren: false,
-            parentId: "parent-1",
-            depth: 1,
-          },
-          {
-            kind: "child",
-            id: "grandchild",
-            activity: "inactive",
-            mode: "one-shot",
-            hasChildren: false,
-            parentId: "child-1",
-            depth: 2,
-          },
-          { kind: "diagnostic", id: "bad", reason: "corrupt", parentId: "parent-1", depth: 1 },
-        ],
-      } as unknown as DelegationRuntime["subagents"],
-    });
-    const result = (await createPstackAgentsTool(runtime).execute?.({}, exec)) as {
-      children: Array<{ childId: string; mode: string; activity: string; label?: string }>;
-    };
-    expect(result.children.map((child) => child.childId)).toEqual(["child-1"]);
-    expect(result.children[0]).toMatchObject({
-      childId: "child-1",
-      mode: "one-shot",
-      activity: "running",
-      label: "scout",
-    });
-  });
-
-  it("sends a follow-up to a child id", async () => {
-    const calls: unknown[] = [];
-    const runtime = fakeRuntime({
-      subagents: {
-        sendMessage: async (...callArgs: unknown[]) => {
-          calls.push(callArgs);
-          return "msg-1";
-        },
-      } as unknown as DelegationRuntime["subagents"],
-    });
-    const result = await createPstackSendTool(runtime).execute?.(
-      { childId: "child-1", message: "count the comments" },
-      exec,
-    );
-    expect(result).toEqual({ sent: true, messageId: "msg-1" });
-    expect(calls[0]).toEqual([
-      parent,
-      "child-1",
-      [{ type: "text", text: "count the comments" }],
-      { signal },
-    ]);
-  });
 
   it("interrupts a child under ancestor authority", async () => {
     const calls: unknown[] = [];

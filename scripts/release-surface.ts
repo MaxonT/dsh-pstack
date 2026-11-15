@@ -13,12 +13,7 @@ import { format } from "vite-plus/fmt";
 import { createPstackModelsTool } from "../src/models.ts";
 import { createPstackRolesTool } from "../src/role-catalog.ts";
 import { createPstackSkillTool } from "../src/skill.ts";
-import {
-  createPstackAgentsTool,
-  createPstackInterruptTool,
-  createPstackSendTool,
-  createPstackSubagentTool,
-} from "../src/subagent.ts";
+import { createPstackInterruptTool, createPstackSubagentTool } from "../src/subagent.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SURFACE_PATH = join(ROOT, "port", "surface.json");
@@ -38,8 +33,6 @@ export interface Surface {
 export function buildSurface(): Surface {
   const definitions: ToolDefinition[] = [
     createPstackSubagentTool(STUB),
-    createPstackAgentsTool(STUB),
-    createPstackSendTool(STUB),
     createPstackInterruptTool(STUB),
     createPstackModelsTool(STUB),
     createPstackRolesTool("/nonexistent-dsh-home"),

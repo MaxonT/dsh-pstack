@@ -360,6 +360,7 @@ export function buildProfile(
   paths: WorkerPaths,
   phase: Phase,
   enabledPluginPackages: string[] = phase === "adapted" ? ["dsh-pstack"] : [],
+  teamMode = false,
 ): void {
   const directory = profileDirectory(paths);
   rmSync(directory, { recursive: true, force: true });
@@ -372,6 +373,9 @@ export function buildProfile(
     (yamlLoad(readFileSync(join(PROFILE_TEMPLATE_DIR, "cordis.patch.yml"), "utf8")) as unknown[]) ??
     [];
   const patch = phase === "raw" ? rawProfileEntries(entries, paths.rawMount) : entries;
+  if (teamMode) {
+    (patch as unknown[]).push({ id: "agent-team", config: { defaultEnabled: true } });
+  }
   writeFileSync(join(directory, "cordis.patch.yml"), yamlDump(patch, { lineWidth: 120 }));
   const manifest = profileManifest(phase, enabledPluginPackages, dshVersion());
   if (phase === "adapted" && !enabledPluginPackages.includes("dsh-pstack")) {

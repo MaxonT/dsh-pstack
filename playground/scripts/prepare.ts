@@ -125,7 +125,7 @@ async function main(): Promise<void> {
     if (reset) resetHome(worker);
     else mkdirSync(worker.home, { recursive: true });
     if (phase === "raw") mountRawTree(worker);
-    buildProfile(worker, phase, enabledPackages);
+    buildProfile(worker, phase, enabledPackages, matrix.teamMode === true);
     writeFileSync(worker.phaseFile, `${phase}\n`);
     copyCredentials(worker, config.credentialsFile);
     writeHomePatch(worker, plan, phase);

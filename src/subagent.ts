@@ -30,9 +30,7 @@ export const inject = ["tools", "subagents", "llm", "workingDirectory"];
 
 export const TOOL_NAME = "pstack_subagent";
 
-/** pstack's own continuation controls, named apart from the native `*_agent` tools. */
-export const AGENTS_TOOL_NAME = "pstack_agents";
-export const SEND_TOOL_NAME = "pstack_send";
+/** pstack's own interruption control, named apart from the disabled native `interrupt_agent`. */
 export const INTERRUPT_TOOL_NAME = "pstack_interrupt";
 
 /** Default subagent backend when the row does not name one. */
@@ -62,6 +60,7 @@ export interface DelegationArgs {
   readonly description: string;
   readonly prompt: string;
   readonly agent: AgentKind;
+  readonly name: string | null;
   readonly provider: string | null;
   readonly model: string | null;
   readonly reasoningEffort: string | null;
@@ -77,6 +76,7 @@ export interface DelegationPlan {
   readonly agent: AgentKind;
   readonly prompt: string;
   readonly routeLabel: string;
+  readonly name?: string;
   readonly agentOptions?: AgentOptions;
   readonly agentPreset?: string;
   readonly cwd?: string;
@@ -135,6 +135,7 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
     "description",
     "prompt",
     "agent",
+    "name",
     "provider",
     "model",
     "reasoningEffort",
@@ -192,6 +193,11 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
     throw new Error("cwd must be a non-empty string or null");
   }
 
+  const name = record["name"] ?? null;
+  if (name !== null && (typeof name !== "string" || name.trim() === "")) {
+    throw new Error("name must be a non-empty string or null");
+  }
+
   const maxDepth = record["maxDepth"];
   if (maxDepth !== undefined && maxDepth !== null && !isDepth(maxDepth)) {
     throw new Error("maxDepth must be a positive safe integer or null");
@@ -201,6 +207,7 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
     description: descriptionText.trim(),
     prompt: prompt.trim(),
     agent: agent as AgentKind,
+    name: typeof name === "string" ? name.trim() : null,
     provider: typeof provider === "string" ? provider.trim() : null,
     model: typeof model === "string" ? model.trim() : null,
     reasoningEffort: typeof reasoningEffort === "string" ? reasoningEffort.trim() : null,
@@ -233,6 +240,7 @@ export function planDelegation(
     routeLabel: formatRoute(args.provider, args.model, effort),
     ...(agentOptions === undefined ? {} : { agentOptions }),
     ...(agentPreset === undefined ? {} : { agentPreset }),
+    ...(args.name === null ? {} : { name: args.name }),
     ...(args.cwd === null ? {} : { cwd: args.cwd }),
     ...(depth === undefined ? {} : { maxDepth: depth }),
   };
@@ -265,6 +273,7 @@ export async function startChild(
     prompt: [{ type: "text", text: plan.prompt }],
     parent,
     ...(plan.agentPreset === undefined ? {} : { agentPreset: plan.agentPreset }),
+    ...(plan.name === undefined ? {} : { name: plan.name }),
     ...(cwd === undefined ? {} : { cwd }),
     ...(plan.agentOptions === undefined ? {} : { agentOptions: plan.agentOptions }),
     ...(plan.maxDepth === undefined ? {} : { maxDepth: plan.maxDepth }),
@@ -292,8 +301,6 @@ export function apply(ctx: Context, rawConfig?: unknown): void {
     potetoModeSkillPath: POTETO_MODE_SKILL_PATH,
   };
   ctx.tools.register(createPstackSubagentTool(runtime, config));
-  ctx.tools.register(createPstackAgentsTool(runtime));
-  ctx.tools.register(createPstackSendTool(runtime));
   ctx.tools.register(createPstackInterruptTool(runtime));
 }
 
@@ -313,6 +320,11 @@ export function createPstackSubagentTool(
           type: "string",
           description:
             "Optional short 3-5 word label for the child; derived from the prompt when omitted.",
+        },
+        name: {
+          type: ["string", "null"],
+          description:
+            "Optional subagent name, unique among the parent's children; lets list_agents and send_message address it by name.",
         },
         prompt: {
           type: "string",
@@ -368,81 +380,6 @@ export function createPstackSubagentTool(
   };
 }
 
-/** Build the pstack-owned child listing tool. Exported for tests. */
-export function createPstackAgentsTool(runtime: DelegationRuntime): ToolDefinition {
-  return {
-    name: AGENTS_TOOL_NAME,
-    description: AGENTS_TOOL_DESCRIPTION,
-    parameters: { type: "object", additionalProperties: false, properties: {}, required: [] },
-    output: {
-      schema: AGENTS_OUTPUT_SCHEMA,
-      render: (_args, value) => [
-        { type: "text", text: renderAgents(value as unknown as AgentsResult) },
-      ],
-    },
-    isConcurrencySafe: () => true,
-    async execute(_rawArgs, exec: ToolRunContext) {
-      if (exec.agent === undefined) throw new Error("pstack_agents requires a calling Agent");
-      const rows = await runtime.subagents.listDescendants(exec.agent.id, exec.signal);
-      const children = rows.flatMap((row) =>
-        row.kind === "child" && row.depth === 1
-          ? [
-              {
-                childId: row.id,
-                mode: row.mode,
-                activity: row.activity,
-                ...(row.label === undefined ? {} : { label: row.label }),
-                hasChildren: row.hasChildren,
-              },
-            ]
-          : [],
-      );
-      return { children };
-    },
-  };
-}
-
-/** Build the pstack-owned continuation tool. Exported for tests. */
-export function createPstackSendTool(runtime: DelegationRuntime): ToolDefinition {
-  return {
-    name: SEND_TOOL_NAME,
-    description: SEND_TOOL_DESCRIPTION,
-    parameters: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        childId: {
-          type: "string",
-          description: "The pstack child id returned by pstack_subagent.",
-        },
-        message: { type: "string", description: "The follow-up message to deliver to that child." },
-      },
-      required: ["childId", "message"],
-    },
-    output: {
-      schema: SEND_OUTPUT_SCHEMA,
-      render: (_args, value) => [
-        { type: "text", text: renderSend(value as unknown as SendResult) },
-      ],
-    },
-    isConcurrencySafe: () => true,
-    async execute(rawArgs, exec: ToolRunContext) {
-      if (exec.agent === undefined) throw new Error("pstack_send requires a calling Agent");
-      const { childId, message } = parseControlArgs(rawArgs, ["childId", "message"]) as {
-        childId: string;
-        message: string;
-      };
-      const messageId = await runtime.subagents.sendMessage(
-        exec.agent,
-        asChildSessionId(childId),
-        textContent(message),
-        { signal: exec.signal },
-      );
-      return { sent: true, messageId };
-    },
-  };
-}
-
 /** Build the pstack-owned interrupt tool. Exported for tests. */
 export function createPstackInterruptTool(runtime: DelegationRuntime): ToolDefinition {
   return {
@@ -478,71 +415,15 @@ export function createPstackInterruptTool(runtime: DelegationRuntime): ToolDefin
   };
 }
 
-interface AgentRow {
-  childId: string;
-  mode: string;
-  activity: string;
-  label?: string;
-  hasChildren?: boolean;
-}
-interface AgentsResult {
-  children: AgentRow[];
-}
-interface SendResult {
-  sent: boolean;
-  messageId: string;
-}
 interface InterruptResult {
   interrupted: boolean;
 }
 
-const AGENTS_TOOL_DESCRIPTION = [
-  "List the direct child sessions of the calling agent, including pstack_subagent children.",
-  "",
-  "Use this instead of the native `list_agents` when you need a pstack child id. In an Agent Teams profile the native `list_agents` only returns teammates and hides pstack children.",
-].join("\n");
-
-const SEND_TOOL_DESCRIPTION = [
-  "Deliver a follow-up message to one direct child by its pstack child id.",
-  "",
-  "Use this instead of the native `send_message` when the target was started by `pstack_subagent`. The child id from `pstack_subagent` or `pstack_agents` is the address.",
-].join("\n");
-
 const INTERRUPT_TOOL_DESCRIPTION = [
-  "Stop the current turn of one direct child by its pstack child id.",
+  "Stop the current turn of one direct child agent by its pstack child id.",
   "",
-  "Use this instead of the native `interrupt_agent` when the target was started by `pstack_subagent`. The child id from `pstack_subagent` or `pstack_agents` is the address.",
+  "The child id comes from `pstack_subagent`. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child.",
 ].join("\n");
-
-const AGENTS_OUTPUT_SCHEMA: JsonSchemaNode = {
-  type: "object",
-  additionalProperties: false,
-  required: ["children"],
-  properties: {
-    children: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["childId", "mode", "activity"],
-        properties: {
-          childId: { type: "string" },
-          mode: { type: "string" },
-          activity: { type: "string" },
-          label: { type: "string" },
-          hasChildren: { type: "boolean" },
-        },
-      },
-    },
-  },
-};
-
-const SEND_OUTPUT_SCHEMA: JsonSchemaNode = {
-  type: "object",
-  additionalProperties: false,
-  required: ["sent", "messageId"],
-  properties: { sent: { type: "boolean" }, messageId: { type: "string" } },
-};
 
 const INTERRUPT_OUTPUT_SCHEMA: JsonSchemaNode = {
   type: "object",
@@ -550,20 +431,6 @@ const INTERRUPT_OUTPUT_SCHEMA: JsonSchemaNode = {
   required: ["interrupted"],
   properties: { interrupted: { type: "boolean" } },
 };
-
-function renderAgents(result: AgentsResult): string {
-  if (result.children.length === 0) return "no direct children";
-  return result.children
-    .map(
-      (child) =>
-        `child ${child.childId}: mode=${child.mode} activity=${child.activity}${child.label === undefined ? "" : ` label=${child.label}`}${child.hasChildren === true ? " hasChildren" : ""}`,
-    )
-    .join("\n");
-}
-
-function renderSend(result: SendResult): string {
-  return `sent message ${result.messageId} to the child`;
-}
 
 function renderInterrupt(result: InterruptResult): string {
   return result.interrupted ? "interrupt admitted to the child" : "interrupt not admitted";
@@ -589,15 +456,10 @@ function parseControlArgs(raw: unknown, keys: readonly string[]): Record<string,
   return parsed;
 }
 
-type ChildSessionId = Parameters<SubagentRuntime["sendMessage"]>[1];
-type SendContent = Parameters<SubagentRuntime["sendMessage"]>[2];
+type ChildSessionId = Parameters<SubagentRuntime["interrupt"]>[0];
 
 function asChildSessionId(value: string): ChildSessionId {
   return value as ChildSessionId;
-}
-
-function textContent(text: string): SendContent {
-  return [{ type: "text", text }] as SendContent;
 }
 
 const TOOL_DESCRIPTION = [

@@ -22,7 +22,7 @@
     <tr>
       <td align="center"><strong>58</strong><br /><sub>pstack 技能</sub></td>
       <td align="center"><strong>23</strong><br /><sub>playbook</sub></td>
-      <td align="center"><strong>7</strong><br /><sub>插件工具</sub></td>
+      <td align="center"><strong>5</strong><br /><sub>插件工具</sub></td>
       <td align="center"><strong>5</strong><br /><sub>agent 预设</sub></td>
       <td align="center"><strong>5</strong><br /><sub>维护脚本</sub></td>
     </tr>
@@ -122,9 +122,7 @@
 | 工具 | 作用 |
 |---|---|
 | `pstack_subagent` | 用 agent 预设启动一个子代理，可用 provider、model 和 reasoningEffort 覆盖路由。 |
-| `pstack_agents` | 列出调用方的直接子会话及其 id、mode 和 activity。需要 pstack 子代理 id 时用它。Agent Teams 环境下原生 `list_agents` 只列队友。 |
-| `pstack_send` | 按 id 继续一个 pstack 子代理。目标是 `pstack_subagent` 启动的子代理时，用它替代原生 `send_message`。 |
-| `pstack_interrupt` | 按 id 中断一个 pstack 子代理当前回合。目标是 `pstack_subagent` 启动的子代理时，用它替代原生 `interrupt_agent`。 |
+| `pstack_interrupt` | 按会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是中断通道。 |
 | `pstack_skill` | 按精确名称加载随包 pstack 技能，并读取技能目录内相对路径的参考或 playbook。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning effort。 |
 | `pstack_roles` | 报告每个角色已配置的路由，以 provider、model 和 reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。 |
@@ -193,7 +191,7 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 - **场景驱动。** 能力覆盖来自 `playground/scenarios/capability-inventory.json`，这份派生清单从 pstack 使用与 `raw/dsh.md` 维护。技能与 playbook 是被消费方，不按文件数量预设覆盖。
 - **语义审核。** 技能能加载，只证明它可被触达。每个场景单独记录 `supported`、`gap` 或 `inconclusive` 结论，并附审核者与理由。adapted 运行记录 `verified`、`not-verified` 或 `inconclusive`。
 - **adapted 复验。** 审核结论驱动 [port/dsh.zh.md](./port/dsh.zh.md)。用 `vp run build` 重建适配包，再重跑同一批场景，确认映射后的行为。
-- **环境矩阵。** 能力探针默认在 `base` 运行。`render` 是渲染对照环境。`agent-team` 是独立的冲突环境，只在明确请求 pstack 冲突探针时运行。
+- **环境矩阵。** 能力探针默认在 `base` 运行。`render` 是渲染对照环境。`agent-team` 是 team-on 环境，用于验证开启 Agent Teams 后的 pstack 委派。
 
 ## ⚠️ 仍存在的缺口
 

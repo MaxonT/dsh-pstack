@@ -25,8 +25,9 @@ export const environments: readonly EnvironmentMatrix[] = [
   {
     id: "agent-team",
     description:
-      "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
-    kind: "conflict",
-    enabledPluginPackages: ["@deepseek-ai/dsh-experimental-agent-team-profile"],
+      "Team-on 环境：开启 Agent Teams，验证 pstack 委派、任务板、消息与中断在团队模式下可用。",
+    kind: "capability",
+    enabledPluginPackages: [],
+    teamMode: true,
   },
 ];

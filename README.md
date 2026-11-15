@@ -22,7 +22,7 @@
     <tr>
       <td align="center"><strong>58</strong><br /><sub>pstack skills</sub></td>
       <td align="center"><strong>23</strong><br /><sub>playbooks</sub></td>
-      <td align="center"><strong>7</strong><br /><sub>plugin tools</sub></td>
+      <td align="center"><strong>5</strong><br /><sub>plugin tools</sub></td>
       <td align="center"><strong>5</strong><br /><sub>agent presets</sub></td>
       <td align="center"><strong>5</strong><br /><sub>maintenance scripts</sub></td>
     </tr>
@@ -122,9 +122,7 @@ Use pstack skills to start workflows directly from a Session.
 | Tool | Function |
 |---|---|
 | `pstack_subagent` | Starts one subagent with an agent preset, optionally overriding its route with provider, model, and reasoningEffort. |
-| `pstack_agents` | Lists the calling agent's direct child sessions with their ids, mode, and activity. Use it to get a pstack child id. In an Agent Teams profile the native `list_agents` lists only teammates. |
-| `pstack_send` | Continues a pstack child by id. Use it instead of the native `send_message` for children started by `pstack_subagent`. |
-| `pstack_interrupt` | Stops a pstack child's current turn by id. Use it instead of the native `interrupt_agent` for children started by `pstack_subagent`. |
+| `pstack_interrupt` | Stops a pstack child's current turn by its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path. |
 | `pstack_skill` | Loads a packaged pstack skill by exact name, plus a reference or playbook at a path relative to the skill directory. |
 | `pstack_models` | Lists the providers, models, and reasoning efforts this deployment serves. |
 | `pstack_roles` | Reports each role's configured routes as provider, model, and reasoningEffort values, with each route's served efforts and default. |
@@ -193,7 +191,7 @@ Real DeepSeek Harness Web sessions test the port. They do not compare text with 
 - **Capability-driven runs.** Coverage comes from `playground/scenarios/capability-inventory.json`, a derived list maintained from pstack usage and `raw/dsh.md`. Skill and playbook files are consumers, not per-file test requirements.
 - **Semantic review.** A skill that loads only proves it was reachable. Each scenario records a separate verdict (`supported`, `gap`, or `inconclusive`) with a reviewer and a reason. The adapted run records `verified`, `not-verified`, or `inconclusive`.
 - **Adapted re-check.** Review findings drive [port/dsh.md](./port/dsh.md). Rebuild the adapted package with `vp run build`, then rerun the same scenarios to confirm the mapped behavior.
-- **Environment matrix.** Capability probes run in `base` by default. `render` is the rendering comparison environment. `agent-team` is a separate conflict environment for an explicitly requested pstack conflict probe.
+- **Environment matrix.** Capability probes run in `base` by default. `render` is the rendering comparison environment. `agent-team` is the Team-on environment that verifies pstack delegation with Agent Teams enabled.
 
 ## ⚠️ Remaining gaps
 

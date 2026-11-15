@@ -1,15 +1,6 @@
 {
   "tools": [
     {
-      "name": "pstack_agents",
-      "parameters": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {},
-        "required": []
-      }
-    },
-    {
       "name": "pstack_interrupt",
       "parameters": {
         "type": "object",
@@ -45,24 +36,6 @@
       }
     },
     {
-      "name": "pstack_send",
-      "parameters": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "childId": {
-            "type": "string",
-            "description": "The pstack child id returned by pstack_subagent."
-          },
-          "message": {
-            "type": "string",
-            "description": "The follow-up message to deliver to that child."
-          }
-        },
-        "required": ["childId", "message"]
-      }
-    },
-    {
       "name": "pstack_skill",
       "parameters": {
         "type": "object",
@@ -89,6 +62,10 @@
           "description": {
             "type": "string",
             "description": "Optional short 3-5 word label for the child; derived from the prompt when omitted."
+          },
+          "name": {
+            "type": ["string", "null"],
+            "description": "Optional subagent name, unique among the parent's children; lets list_agents and send_message address it by name."
           },
           "prompt": {
             "type": "string",
