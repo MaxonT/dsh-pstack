@@ -2,8 +2,8 @@
   "scenarioId": "capability-model-route",
   "phase": "raw",
   "environment": {
-    "worker": 7,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,7 +20,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-8c7bdbd3-faa3-4443-9ba9-1464bc9d01cd",
+    "sessionId": "session-8411d709-cb05-4ae6-91ed-ad5b721f1ac1",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
@@ -32,20 +32,56 @@
         "argsSummary": "list_subagent_models"
       },
       {
-        "name": "bash",
+        "name": "working_directory",
         "status": "ok",
-        "argsSummary": "bash command=pwd; ls -la; echo ---; cat $DSH_HOME/pstack-models.json 2>/dev/null"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cat README.md; echo ---; git log --oneline -20; echo ---; git status"
+        "argsSummary": "working_directory"
       },
       {
         "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
         "status": "error",
-        "argsSummary": "list_subagent_models",
-        "errorText": "Error: child LLM route \"magpie/magpie\" is not allowed for this Session"
+        "argsSummary": "bash command=ls -la; find . -type f | head -50",
+        "errorText": "Error: invalid arguments: missing required property \"description\""
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la . && find . -type f -not -path '*/.git/*' | head -50"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=README.md"
+      },
+      {
+        "name": "read",
+        "status": "error",
+        "argsSummary": "read file_path=<HOST_PATH>",
+        "errorText": "Error: cannot read \"<HOST_PATH>\": not found"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=echo \"$DSH_HOME\"; ls \"$DSH_HOME\" 2>/dev/null | head -30"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=git log --oneline -20; git status"
       },
       {
         "name": "list_subagent_models",
@@ -55,37 +91,26 @@
       {
         "name": "subagent",
         "status": "ok",
-        "argsSummary": "subagent"
+        "argsSummary": "subagent name=route-probe"
       },
       {
-        "name": "job_list",
+        "name": "wait_agent",
         "status": "ok",
-        "argsSummary": "job_list"
-      },
-      {
-        "name": "list_agents",
-        "status": "ok",
-        "argsSummary": "list_agents"
+        "argsSummary": "wait_agent"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls -la; git log --oneline; git status --short"
+        "argsSummary": "bash command=ls -la; wc -l ROUTE.md 2>/dev/null"
       },
       {
-        "name": "present",
-        "status": "error",
-        "argsSummary": "present",
-        "errorText": "Error: Cannot present capability-model-route/CAPABILITY-REPORT.md: file not found. Check the path, create the file if needed, and retry."
-      },
-      {
-        "name": "present",
+        "name": "read",
         "status": "ok",
-        "argsSummary": "present"
+        "argsSummary": "read file_path=ROUTE.md"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "**路由决策（明确化）**\n\n- 可用 provider 只有 `magpie`；该 provider 下**只有一个**子模型路由可用：`magpie/workbuddy/minimax-m3.1-flash`（即当前会话自身模型，匿名模型）。\n- 探测 `magpie/magpie` 被拒绝（not allowed for this Session）；`pstack-models.json` 中列出的 `magpie/workbuddy/deepseek-v4.1-flash [low]` 在本 Session 的子模型注册表里**不可用**，因此不存在更强的替代路由。\n- 因此子任务实际使用：**`magpie/workbuddy/minimax-m3.1-flash`，推理档 `high`**（该路由可用的最高档）。\n\n已按此路由派发子任务（子代理 id `5e2985a7-984e-444a-9e3e-a3f8c8176b9d`），在工作区内做环境与能力探测并输出 `CAPABILITY-REPORT.md`。子代理仍在运行，完成后我会汇总结果。\n\n--- turn 2 ---\n\n**路由决策（最终明确）**\n\n- 可用 provider 仅 `magpie`，其下**唯一**注册的子模型路由为 `magpie/workbuddy/minimax-m3.1-flash`。\n- `magpie/magpie` 被拒绝；`pstack-models.json` 里的 `magpie/workbuddy/deepseek-v4.1-flash [low]` 在本 Session 注册表中不存在 → **没有更强的可用路由**。\n- 实际使用的路由与档位：**`magpie/workbuddy/minimax-m3.1-flash` + 推理档 `high`**（该路由可用最高档）。\n\n**子任务结果**（子代理 `5e2985a7…`，模型同上）\n\n已生成报告 [CAPABILITY-REPORT.md](capability-model-route/CAPABILITY-REPORT.md)（236 行：Environment / Verified capabilities / Limitations / Recommended usage / Cleanup）。\n\n验证通过（附实测证据）：bash 退出码忠实传播（2 / 124 / 0）、python3/node/git 可用、write→read→edit往返校验一致、grep/glob 命中准确、`web_fetch https://example.com` HTTP 200、curl 出网 200、`git add -A` + 本地提交成功且无 remote、后台任务 `job_output(wait=true)` 返回 exit 0。\n\n实测限制与风险：深度上限为 1，无法再委派（子任务改为直接执行）；写 `/etc` 被沙箱拒绝且审批禁用（未请求越权）；**沙箱实际边界比声明更宽——写工作区上一级 `<TEMP_PATH> 竟然成功**，探针文件已即时删除，因此\"只在工作区内写\"是自我约束而非强制；`web_fetch` 失败时无重试、无部分内容，需用 `curl -w '%{http_code}'` 交叉验证；Web GUI 返回 401（未读取凭据）。工作区本身是空脚手架，无可跑的项目构建/测试目标。\n\n工作区状态：README.md 未改动，[probe.txt](capability-model-route/probe.txt) 作为证据保留并已本地提交（`2a9905a`），报告文件 `CAPABILITY-REPORT.md` 当前未跟踪——需要我提交它吗？\n子任务已完成并收尾。\n\n**实际路由（明确）**\n- 唯一可用 provider `magpie` 下只有 `magpie/workbuddy/minimax-m3.1-flash` 一条注册路由；`magpie/magpie` 被拒；`pstack-models.json` 所列 `magpie/workbuddy/deepseek-v4.1-flash [low]` 在本 Session不可用 → **没有更强的可用路由**。\n- 实际使用：**`magpie/workbuddy/minimax-m3.1-flash`，推理档 `high`**（该路由最高档）。\n\n**产出**：[CAPABILITY-REPORT.md](<TEMP_PATH>\n\n关键实测结论：\n- 可用：bash 退出码忠实传播（2/124/0）、Python 3.14.4 / Node v26.13.0 / git 2.53.0、write→read→edit 往返一致、grep/glob 准确、`web_fetch` 与 curl 出网均 200、本地 git 提交成功且无 remote、后台任务 `job_output(wait=true)` 返回 exit 0。\n- 限制：深度上限 1（无法再委派，子任务已直接执行）；`/etc` 写入被沙箱拒绝且审批禁用；**沙箱实际边界比声明宽——写工作区上一级 `<TEMP_PATH> 成功**，探针文件已即时删除，故\"只在工作区内写\"属自我约束；`web_fetch` 失败无重试、需 curl 交叉验证状态码；Web GUI 返回 401（未用凭据）。\n\n工作区现状：README.md 未改动，`probe.txt` 作为证据保留并已本地提交（`2a9905a`），报告文件仍未跟踪。需要提交它的话说一声。",
+    "assistantText": "已完成能力探测并落地结论。\n\n**实际可用路由（探测结果）**\n- 本会话只有 **1 条**子代理路由：`magpie/workbuddy/minimax-m3.1-flash`（匿名模型）\n- 推理档：`off` / `low` / `high`（默认）/ `max` — 无 `medium`、无 `xhigh`\n- 角色文件声明的 `magpie/workbuddy/deepseek-v4.1-flash` **本会话不可用**（未授权），影响 feature/bug-fix/perf-issue/how explorer/why investigators/reflect tooling 以及 5 个面板 role 的首项\n- 参数必须拆成 `provider` + `model` + `reasoning_effort`，整条路由塞进 `model` 会被拼成 `magpie/magpie/...`\n\n**选定的路由**：判断类任务用 `magpie/workbuddy/minimax-m3.1-flash` + `reasoning_effort=max` — 这是当前会话唯一可用路由，也是可达的最高档，没有更强的备选可选。\n\n**分工建议**（已写入 [ROUTE.md](ROUTE.md)：判断/评审 → max；疑难实现/hillclimb → max；常规实现 → high；汇总撰写 → high；探索 → low；机械执行 → off）\n\n注意：`pstack-models.json` 是只读运行时输入，本次只读未改。若要让角色文件真正生效，需要有写权限的一方把其中不可用的 deepseek 路由改写为 `magpie/workbuddy/minimax-m3.1-flash`。",
     "userText": "这个子任务请用当前可用模型里最适合判断的模型和它可用的最高推理档来跑，把实际选择的路由明确下来再交给执行者；如果当前没有更强的可用路由，也说明你实际用了什么。",
     "userTexts": [
       "这个子任务请用当前可用模型里最适合判断的模型和它可用的最高推理档来跑，把实际选择的路由明确下来再交给执行者；如果当前没有更强的可用路由，也说明你实际用了什么。"
@@ -95,41 +120,25 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 3,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "job_list",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "list_agents",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "list_subagent_models",
-          "attempts": 3,
+          "attempts": 5,
           "failures": 1,
-          "firstAttemptStatus": "ok",
+          "firstAttemptStatus": "error",
           "finalStatus": "ok",
           "recovered": true
         },
         {
-          "name": "present",
-          "attempts": 2,
+          "name": "list_subagent_models",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 4,
           "failures": 1,
-          "firstAttemptStatus": "error",
+          "firstAttemptStatus": "ok",
           "finalStatus": "ok",
           "recovered": true
         },
@@ -140,19 +149,35 @@
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
           "recovered": false
+        },
+        {
+          "name": "wait_agent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "working_directory",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
       "artifacts": [],
       "warnings": [
-        "list_subagent_models needed 3 attempts with 1 failures",
-        "present needed 2 attempts with 1 failures"
+        "bash needed 5 attempts with 1 failures",
+        "read needed 4 attempts with 1 failures"
       ]
     }
   },
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=11", "warnings=2"]
+    "observed": ["skillLoads=none", "toolCalls=16", "warnings=2"]
   },
   "semanticReview": {
     "status": "pending",
@@ -164,6 +189,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:14:58.149Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:09:56.846Z"
 }

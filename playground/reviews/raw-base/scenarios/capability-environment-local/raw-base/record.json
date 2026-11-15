@@ -2,8 +2,8 @@
   "scenarioId": "capability-environment-local",
   "phase": "raw",
   "environment": {
-    "worker": 7,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,12 +20,17 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-d19d8f23-37a1-43da-824b-60c594e6019d",
+    "sessionId": "session-c1e6dfcc-492e-44f3-9609-0439c98df40c",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
+      {
+        "name": "glob",
+        "status": "ok",
+        "argsSummary": "glob pattern=README*"
+      },
       {
         "name": "read",
         "status": "ok",
@@ -33,12 +38,20 @@
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "README 的标题是：**本地执行探测**（`# 本地执行探测`）。",
+    "assistantText": "标题是：**本地执行探测**（README.md 第 1 行的一级标题 `# 本地执行探测`）。",
     "userText": "在当前这个工作区里直接读一下 README，把标题告诉我。",
     "userTexts": ["在当前这个工作区里直接读一下 README，把标题告诉我。"],
     "autoAnswers": [],
     "analysis": {
       "tools": [
+        {
+          "name": "glob",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
         {
           "name": "read",
           "attempts": 1,
@@ -55,7 +68,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=1", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=2", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -67,6 +80,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:13:36.713Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:07:06.145Z"
 }

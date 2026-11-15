@@ -2,8 +2,8 @@
   "scenarioId": "capability-render-generated-image",
   "phase": "raw",
   "environment": {
-    "worker": 11,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,117 +20,160 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-b56a17aa-8ce6-4536-98f9-eae4f3b46554",
+    "sessionId": "session-865c1b6c-80be-42e1-be3d-58e1370b4116",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
-    "skillLoads": [],
+    "skillLoads": ["dsh-doc"],
     "toolCalls": [
       {
         "name": "bash",
-        "status": "error",
-        "argsSummary": "bash command=ls -la; ls <TEMP_PATH>",
-        "errorText": "Error: invalid arguments: missing required property \"description\""
-      },
-      {
-        "name": "bash",
-        "status": "error",
-        "argsSummary": "bash command=which python3 dot node; python3 -c \"import matplotlib; print(matplotlib.__version__)\" 2>&1 | tail -1",
-        "errorText": "Error: invalid arguments: missing required property \"description\""
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; ls skills 2>/dev/null"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=pwd; ls -la"
+        "argsSummary": "bash command=python3 -c \"import PIL; print(PIL.__version__)\"; python3 -c \"import cairosvg\" 2>&1 | tail -1; which rsvg-convert inkscape convert"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=which python3 dot node convert; python3 -c \"import matplotlib; print(matplotlib.__version__)\" 2>&1 | tail -1"
+        "argsSummary": "bash command=cat README.md; echo ---; ls ~/.vite-plus/packages/@deepseek-ai/dsh/*/lib/node_modules/@deepseek-ai/dsh/ 2>/dev/null | head -50"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=python3 -c \"import PIL; print('pil',PIL.__version__)\" 2>&1|tail -1; python3 -c \"import cairosvg;print('cairosvg')\" 2>&1|tail -1; which rsvg-convert inkscape chromium chromium-browser goog"
+        "argsSummary": "bash command=pip install pillow 2>&1 | tail -2; python3 -c \"import PIL;print(PIL.__version__)\""
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cat README.md; git log --oneline -3"
+        "argsSummary": "bash command=cd <HOST_PATH> && ls src && grep -ril \"generate.*image\\|image.*generat\" src --include=*.ts -l | head -20"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd /tmp && timeout 60 npm view sharp version 2>&1 | tail -3; timeout 60 pip download pillow -d <TEMP_PATH> 2>&1 | tail -3"
+        "argsSummary": "bash command=pip install --break-system-packages pillow 2>&1 | tail -2; python3 -c \"import PIL;print(PIL.__version__)\""
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=pip install pillow 2>&1 | tail -2; fc-list 2>/dev/null | grep -iE \"cjk|noto|wqy|hand\" | head -20; ls /usr/share/fonts 2>&1"
+        "argsSummary": "bash command=pip install --break-system-packages --target ./pylibs pillow 2>&1 | tail -2; PYTHONPATH=./pylibs python3 -c \"import PIL;print(PIL.__version__)\""
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=fc-list :lang=zh 2>/dev/null | head; ls /usr/share/fonts/truetype/ ; ls /usr/share/fonts/opentype/ 2>/dev/null"
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -ril \"image\" src lib --include=*.ts | head -20; ls lib"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=pip install --break-system-packages pillow 2>&1 | tail -2"
+        "argsSummary": "bash command=cd <HOST_PATH> && ls docs && grep -ril \"入口\" docs | head"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=pip install --target <TEMP_PATH> pillow 2>&1 | tail -2; PYTHONPATH=<TEMP_PATH> python3 -c \"import PIL;print(PIL.__version__)\""
+        "argsSummary": "bash command=fc-list 2>/dev/null | grep -iE \"hand|script|chinese|cjk|wqy|noto\" | head -20; ls /usr/share/fonts/"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd /tmp && timeout 60 curl -sL -o zmx.ttf \"https://github.com/google/fonts/raw/main/ofl/zhi mang xing/ZhiMangXing-Regular.ttf\" -w \"%{http_code} %{size_download}\\n\" ; timeout 60 curl -sL -"
+        "argsSummary": "bash command=fc-list :lang=zh 2>/dev/null | head -10; ls /usr/share/fonts/truetype/"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd /tmp && timeout 60 curl -sL -o zmx.ttf \"https://github.com/google/fonts/raw/main/ofl/zhimangxing/ZhiMangXing-Regular.ttf\" -w \"%{http_code} %{size_download}\\n\"; ls -la <TEMP_PATH>"
+        "argsSummary": "bash command=cd <HOST_PATH> && head -80 architecture.zh.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && head -60 api-gateway.zh.md; echo ====; head -50 tool-execution-pipeline.zh.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && head -60 capability-seams.zh.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && sed -n '80,200p' architecture.zh.md"
+      },
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=dsh-doc"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=fc-list | grep -iE \"comic|hand|marker|chalk|architect|caveat|patrick\" | head; fc-list : family | sort -u | head -50"
       },
       {
         "name": "write",
         "status": "ok",
-        "argsSummary": "write file_path=<TEMP_PATH>"
+        "argsSummary": "write file_path=<HOST_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && PYTHONPATH=<TEMP_PATH> python3 draw.py"
+        "argsSummary": "bash command=cd <HOST_PATH> && PYTHONPATH=./pylibs python3 draw.py"
       },
       {
-        "name": "read_image",
+        "name": "edit",
         "status": "ok",
-        "argsSummary": "read_image file_path=<TEMP_PATH>"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'EOF' import re s=open('draw.py').read() s=s.replace('W, H = 1600, 950','W, H = 1800,"
-      },
-      {
-        "name": "read_image",
-        "status": "ok",
-        "argsSummary": "read_image file_path=<TEMP_PATH>"
+        "argsSummary": "edit file_path=<HOST_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && python3 - <<'EOF' s=open('draw.py').read() s=s.replace(''' label(b[\"cx\"] + b[\"w\"] / 2 - 40, b[\"cy"
+        "argsSummary": "bash command=cd <HOST_PATH> && PYTHONPATH=./pylibs python3 draw.py"
       },
       {
         "name": "read_image",
         "status": "ok",
-        "argsSummary": "read_image file_path=<TEMP_PATH>"
+        "argsSummary": "read_image file_path=<HOST_PATH>"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && PYTHONPATH=./pylibs python3 draw.py"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && python3 - <<'EOF' import re s=open('draw.py').read() s"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<HOST_PATH>"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "已生成白板手绘风格的示意图（真实 PNG 图片，非文字/表格）：\n\n![请求经过三个部件的手绘示意图](request-flow-whiteboard.png)\n\n图中说明：\n- 客户端发起请求 → **部件一 入口网关**（鉴权限流、解析 URL、找到下游）\n- 蓝色箭头：请求流向 → **部件二 业务服务**（执行核心逻辑、查库调下游、组装响应）→ **部件三 数据存储**（读写数据、返回结果集、事务提交）\n- 红色箭头：响应原路返回，最后回到客户端\n\n文件：[request-flow-whiteboard.png](request-flow-whiteboard.png)（生成脚本：[draw.py](draw.py)）",
+    "assistantText": "我先看下 DSH 文档里请求链路的关键部件，然后生成手绘风格图片。\n没有现成手绘字体/转换器，我用 Pillow 手写“抖动线条”模拟白板手绘。\n图有几处文字重叠和溢出，我调整布局重画。\n布局干净了。交付：\n图已真实生成（PNG，1600×980，手绘抖动线条 + 纸质白板底 + 斜排文字），不是文字或表格替代。\n\n![请求流程手绘示意图](request-flow-sketch.png)\n\n三个部件的职责划分：\n1. **入口层**（蓝）：Web 客户端 / SDK → `ctx.connection` 认证连接 → JSON-RPC → API Gateway `@Remote` 路由。只管“怎么进来”。\n2. **编排层**（橙）：AgentLoop 的轮次/步骤，组装提示词与工具 schema，`agent/*` 瀑布事件。只管“做什么”。\n3. **执行层**（绿）：`ctx.llm` 模型适配器、`tools` 流水线 pre/execute/post、`ctx.fs`/`ctx.shell` 提供方。只管“真的做”。\n\n返回路径画成实线（session 事件流 / assistant-stream 增量）和绿色虚线（结果回写会话日志 → UI 渲染卡片），底部标注三段都是可替换的 seam。\n\n来源：`request-flow-sketch.png`，绘制脚本 `draw.py`（Pillow，逐段抖动路径模拟手绘）。",
     "userText": "用白板手绘风格给我画一张示意图，说明请求从入口到返回经过的三个部件。要真的生成图片，不要拿文字或表格代替。",
     "userTexts": [
       "用白板手绘风格给我画一张示意图，说明请求从入口到返回经过的三个部件。要真的生成图片，不要拿文字或表格代替。"
@@ -140,11 +183,35 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 16,
-          "failures": 2,
-          "firstAttemptStatus": "error",
+          "attempts": 20,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
           "finalStatus": "ok",
-          "recovered": true
+          "recovered": false
+        },
+        {
+          "name": "edit",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         },
         {
           "name": "read_image",
@@ -155,22 +222,34 @@
           "recovered": false
         },
         {
-          "name": "write",
+          "name": "skill",
           "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "write",
+          "attempts": 2,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
           "recovered": false
         }
       ],
-      "artifacts": ["write file_path=<TEMP_PATH>"],
-      "warnings": ["bash needed 16 attempts with 2 failures"]
+      "artifacts": [
+        "write file_path=<HOST_PATH>",
+        "edit file_path=<HOST_PATH>",
+        "write file_path=<HOST_PATH>"
+      ],
+      "warnings": []
     }
   },
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=20", "warnings=1"]
+    "observed": ["skillLoads=dsh-doc", "toolCalls=29", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -182,6 +261,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:16:47.080Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:15:36.289Z"
 }

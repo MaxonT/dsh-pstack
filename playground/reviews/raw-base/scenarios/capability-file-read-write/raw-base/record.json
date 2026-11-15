@@ -2,8 +2,8 @@
   "scenarioId": "capability-file-read-write",
   "phase": "raw",
   "environment": {
-    "worker": 7,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,7 +20,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-e3359939-4fd8-4be8-b09b-6853dd840626",
+    "sessionId": "session-6b09966f-33d5-4110-99a6-b4b3b36f55df",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
@@ -38,7 +38,7 @@
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "摘要已写入 [outputs/summary.md](outputs/summary.md)：notes.md 的三条要点——先验证再交付、改动尽量小、结论要有证据。",
+    "assistantText": "已完成。[docs/notes.md](docs/notes.md) 的三点（先验证再交付、改动尽量小、结论要有证据）已整理写入 [outputs/summary.md](outputs/summary.md)。",
     "userText": "读一下 docs/notes.md，把里面列出的要点整理成一段简短摘要，写到 outputs/summary.md 里。",
     "userTexts": [
       "读一下 docs/notes.md，把里面列出的要点整理成一段简短摘要，写到 outputs/summary.md 里。"
@@ -82,6 +82,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:14:17.366Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:09:09.622Z"
 }

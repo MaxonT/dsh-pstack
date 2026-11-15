@@ -2,8 +2,8 @@
   "scenarioId": "capability-readonly-true",
   "phase": "raw",
   "environment": {
-    "worker": 2,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,20 +20,30 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-a6b17819-525d-4af0-a265-101e04675ebf",
+    "sessionId": "session-c33049ff-eb91-4346-90a1-eb5753db360e",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
       {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls -la && find src -type f 2>/dev/null | head -50"
+      },
+      {
         "name": "subagent",
         "status": "ok",
         "argsSummary": "subagent"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "I'll delegate this to a read-only subagent.\nI've dispatched a read-only explorer to walk the `src` directory. I'll report back once it returns.\n\n--- turn 2 ---\n\n`src` 目录很小，只有两个文件：\n\n**1. [src/a.ts](src/a.ts)**\n- 用途：示例/占位用的极简模块。\n- 内容（全文一行）：`export const a = 1;`\n- 导出：`a`（数字，值为 1）。无导入、无函数、无类、无类型。\n\n**2. [src/b.ts](src/b.ts)**\n- 用途：示例/占位用的极简模块。\n- 内容（全文一行）：`export const b = 2;`\n- 导出：`b`（数字，值为 2）。无导入、无函数、无类、无类型。\n\n没有子目录，也没有其他类型的文件（无 index、配置、测试或资源文件）。整个过程中只做了读取，没有修改任何文件。\n探查者已结束工作，结果如上：`src` 目录仅含 [src/a.ts](src/a.ts)（导出常量 `a = 1`）和 [src/b.ts](src/b.ts)（导出常量 `b = 2`），均为一行占位模块，无子目录。全程只读，未修改任何文件。",
+    "assistantText": "探查者（只读）已完成，未修改任何文件。\n\n`src/` 目录只有两个文件：\n\n| 文件 | 职责 |\n|---|---|\n| [src/a.ts](src/a.ts) | 占位模块，导出常量 `a = 1`，无任何逻辑或依赖 |\n| [src/b.ts](src/b.ts) | 占位模块，导出常量 `b = 2`，无任何逻辑或依赖 |\n\n两个文件都是单行、最小化的 TypeScript 示例导出，目录内无子目录。\n探查者已结束，无需后续工作。结果如上：`src/a.ts` 和 `src/b.ts` 均为单行占位模块，分别导出 `a = 1` 与 `b = 2`，全程只读、未做任何修改。",
     "userText": "让一个只读的探查者读一遍 src 目录，告诉我每个文件负责什么。它只负责读，不要修改任何文件。",
     "userTexts": [
       "让一个只读的探查者读一遍 src 目录，告诉我每个文件负责什么。它只负责读，不要修改任何文件。"
@@ -42,7 +52,23 @@
     "analysis": {
       "tools": [
         {
+          "name": "bash",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
           "name": "subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "wait_agent",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -57,7 +83,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=1", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=3", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -69,6 +95,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:16:37.247Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:14:33.467Z"
 }

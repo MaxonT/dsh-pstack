@@ -2,8 +2,8 @@
   "scenarioId": "capability-render-screenshot",
   "phase": "raw",
   "environment": {
-    "worker": 3,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,86 +20,202 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-6e4f357f-73d4-4724-bfaf-479bf05129f2",
+    "sessionId": "session-9790c475-c5d0-41fe-a4fa-a994bf951f82",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
-    "skillLoads": [],
+    "skillLoads": ["dsh-doc"],
     "toolCalls": [
       {
         "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=ls -la; find . -type f -not -path \"./node_modules/*\" -not -path \"./.git/*\" | head -50"
+        "status": "error",
+        "argsSummary": "bash command=ls -la; find . -type f -not -path '*/node_modules/*' -not -path '*/.git/*' | head -100",
+        "errorText": "Error: invalid arguments: missing required property \"description\""
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cat README.md; echo ---; cat src/widget.tsx; echo ---; git log --oneline -5"
+        "argsSummary": "bash command=find . -type f -not -path '*/node_modules/*' -not -path '*/.git/*' | head -100; echo ---; ls -la"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=src/widget.tsx"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=README.md"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=node -v; npm -v; python3 -V; ls ~/.cache/ms-playwright 2>/dev/null; which chromium chromium-browser google-chrome 2>/dev/null; npm ls -g --depth=0 2>/dev/null"
+        "argsSummary": "bash command=node -v; pnpm -v; which chromium chromium-browser google-chrome 2>/dev/null; ls ~/.cache/ms-playwright 2>/dev/null; npm ls -g --depth=0 2>/dev/null"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls <HOST_PATH> 2>/dev/null; find <HOST_PATH> -maxdepth 6 -iname \"*chrom*\" -o"
+        "argsSummary": "bash command=ls /root/.cache 2>/dev/null; ls <HOST_PATH> 2>/dev/null; ls /usr/bin | grep -iE 'chrom|firefox|webkit' ; npm view playwright version 2>&1 | head -3"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls /usr/bin | grep -iE \"chrom|firefox|webkit|wkhtml|rsvg|convert|magick\" ; echo \"--\"; ls /opt 2>/dev/null"
+        "argsSummary": "bash command=cd /tmp && npm view playwright version 2>&1 | tail -2; ls <HOST_PATH> 2>/dev/null; find / -maxdepth 6 -name 'headless_shell' -o -maxdepth 6 -name 'chrome' -type f"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd /tmp && timeout 30 npm view playwright version 2>&1 | tail -3"
+        "argsSummary": "bash command=ls <TEMP_PATH> cat <TEMP_PATH> 2>/dev/null; ls <TEMP_PATH> 2>/dev/null | head"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd /tmp && timeout 60 npm view playwright version --cache <TEMP_PATH> 2>&1 | head -20"
+        "argsSummary": "bash command=ls <TEMP_PATH> | tr '\\n' ' '; find / -maxdepth 7 -type d -name 'react-dom' 2>/dev/null | head; find / -maxdepth 7 -type d -name 'esbuild' 2>/dev/null | head -5"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd /tmp && mkdir -p shot && cd shot && timeout 600 npm i playwright@1.65.1 --cache <TEMP_PATH> --no-audit --no-fund 2>&1 | tail -5"
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && npm install --no-audit --no-fund react react-dom esbuild "
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && timeout 900 npx playwright install chromium 2>&1 | tail -10"
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && pnpm add -D react react-dom esbuild typescript 2>&1 | tai"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && PLAYWRIGHT_BROWSERS_PATH=<TEMP_PATH> timeout 900 npx playwright install chromium 2>&1 | tail -10"
+        "argsSummary": "bash command=cd <TEMP_PATH> && pnpm add react react-dom esbuild 2>&1 | tail -5"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls <TEMP_PATH> cd <TEMP_PATH> && timeout 600 npm i react react-dom esbuild --cache <TEMP_PATH> --no-audit --no-fund 2>&1 | tail -3"
+        "argsSummary": "bash command=mkdir -p <HOST_PATH> && cd <HOST_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && ls node_modules/@esbuild 2>/dev/null; ./node_modules/.bin/esbuild --version 2>&1 | tail -2"
+        "argsSummary": "bash command=cd <HOST_PATH> && npm install --no-audit --no-fund --cache <TEMP_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && mkdir -p app && cp <TEMP_PATH> app/ && cat > app/entry.tsx <<'EOF' import { createRoot } f"
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && git log --oneline -5; git show --stat HEAD | head -20"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && cat > shot.mjs <<'EOF' import { chromium } from 'playwright'; import { fileURLToPath } from 'url'; import path from 'path'; const out = process.argv[2]; const browser = aw"
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && ls node_modules/.bin && ls node_modules/esbuild/bi"
+      },
+      {
+        "name": "skill",
+        "status": "ok",
+        "argsSummary": "skill name=dsh-doc"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && npm install --no-audit --no-fund --cache <TEMP_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && cat > entry.tsx <<'EOF' import { createRoot } from"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && node -e \"console.log(require('playwright/package.j"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && cat > index.html <<'EOF' <!doctype html><html><hea"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && TMPDIR=/tmp node shot.cjs ../widget-screenshot.png"
       },
       {
         "name": "read_image",
         "status": "ok",
-        "argsSummary": "read_image file_path=<TEMP_PATH>"
+        "argsSummary": "read_image file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && cat > dbg.cjs <<'EOF' const { chromium } = require"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && curl -sI http://127.0.0.1:8123/bundle.js | head -3"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && ./node_modules/.bin/esbuild entry.tsx --bundle --o"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && find node_modules -name package.json -path '*react"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && ./node_modules/.bin/esbuild entry.tsx --bundle --o"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && ./node_modules/.bin/esbuild entry.tsx --bundle --o"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && cp src/widget.tsx .build/widget.tsx && cd .build && cat >"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && ./node_modules/.bin/esbuild entry.tsx --bundle --o"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && cat > index.html <<'EOF' <!doctype html><html><hea"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd \"<HOST_PATH>\" && TMPDIR=/tmp node shot.cjs ../widget-screenshot.png"
+      },
+      {
+        "name": "read_image",
+        "status": "ok",
+        "argsSummary": "read_image file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pkill -f \"http.server 8123\"; echo done"
       },
       {
         "name": "present",
@@ -108,7 +224,7 @@
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "这是组件真实渲染后的整页截图（Playwright/Chromium 无头浏览器实际渲染，非源码示意图）：\n\n![Widget 渲染截图](screenshots/widget.png)\n\n组件 `src/widget.tsx` 实际内容只有一行：`export const Widget = () => <button>保存</button>;`，所以渲染结果就是一个居中的「保存」按钮，其余为空白页面。截图按 1280×800 视口、2 倍设备像素比拍摄（输出 2560×1600）。\n\n文件位置：[<TEMP_PATH>\n\n渲染环境说明：环境内无现成浏览器，我用 Playwright 1.65.1 + Chromium（浏览器二进制装在 `<TEMP_PATH> `~/.cache` 不可写），配合 esbuild 打包 React 后用 `file://` 打开渲染。如果你想要更贴近产品环境的样式（品牌色、圆角、字体），告诉我样式规范，我改后重截。\n截图已生成并附上。要点是：它确实是真实渲染结果而非源码图——用无头 Chromium 加载打包后的页面整页拍摄。",
+    "assistantText": "这是真实浏览器渲染出来的整页截图（Chromium headless，800×400 视口，2x 像素密度），不是源码或路径。\n\n![Widget 渲染截图](<HOST_PATH>\n\n过程说明：\n- 组件源码 [src/widget.tsx](src/widget.tsx) 内容为 `<button>保存</button>`，我用 esbuild 打包 React 19 + react-dom 到本地静态页，用 Playwright + Chromium 实际加载渲染后整页截图，结果就是一个原生样式的「保存」按钮。\n- 页面中出现的按钮为浏览器默认样式，因为组件本身没有定义任何样式；若要在 DSH 客户端里呈现，需要遵循其主题 token 与 slot 规范。\n- 截图文件：[widget-screenshot.png](widget-screenshot.png)\n\n补充说明：这是独立渲染验证，不是运行中的 DSH 插件页面（该组件尚未注册到任何 slot），因此反映的是组件自身输出，不含宿主主题。",
     "userText": "这个组件的当前样子我想直接看到，给我一张它真实渲染出来的整页截图，别只发源码或路径。",
     "userTexts": [
       "这个组件的当前样子我想直接看到，给我一张它真实渲染出来的整页截图，别只发源码或路径。"
@@ -118,11 +234,11 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 14,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
+          "attempts": 30,
+          "failures": 1,
+          "firstAttemptStatus": "error",
           "finalStatus": "ok",
-          "recovered": false
+          "recovered": true
         },
         {
           "name": "present",
@@ -133,7 +249,31 @@
           "recovered": false
         },
         {
+          "name": "read",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
           "name": "read_image",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "skill",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "write",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -141,14 +281,14 @@
           "recovered": false
         }
       ],
-      "artifacts": [],
-      "warnings": []
+      "artifacts": ["write file_path=<HOST_PATH>"],
+      "warnings": ["bash needed 30 attempts with 1 failures"]
     }
   },
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=16", "warnings=0"]
+    "observed": ["skillLoads=dsh-doc", "toolCalls=39", "warnings=1"]
   },
   "semanticReview": {
     "status": "pending",
@@ -160,6 +300,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:17:19.192Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:18:36.487Z"
 }

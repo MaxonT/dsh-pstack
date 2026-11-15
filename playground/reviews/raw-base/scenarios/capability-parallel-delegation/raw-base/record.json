@@ -2,8 +2,8 @@
   "scenarioId": "capability-parallel-delegation",
   "phase": "raw",
   "environment": {
-    "worker": 11,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,7 +20,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-716224c5-44fa-4277-b1d8-56a57cb1bca6",
+    "sessionId": "session-3972646b-74a9-4778-a745-cbb3d7000a6d",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
@@ -29,36 +29,51 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls -la; ls -la src 2>/dev/null"
+        "argsSummary": "bash command=ls -R . | head -50 && echo \"---\" && wc -l src/*.ts"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=src/a.ts"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=src/b.ts"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=src/c.ts"
       },
       {
         "name": "subagent",
         "status": "ok",
-        "argsSummary": "subagent"
+        "argsSummary": "subagent name=worker-a"
       },
       {
         "name": "subagent",
         "status": "ok",
-        "argsSummary": "subagent"
+        "argsSummary": "subagent name=worker-b"
       },
       {
         "name": "subagent",
         "status": "ok",
-        "argsSummary": "subagent"
+        "argsSummary": "subagent name=worker-c"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
       },
       {
         "name": "list_agents",
         "status": "ok",
         "argsSummary": "list_agents"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=sleep 20; echo done"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "三个执行者已并行完成各自模块的研读，结果如下：\n\n| 模块 | 职责（一句话） |\n| --- | --- |\n| [src/a.ts](src/a.ts) | 最小化模块，唯一职责是定义并导出数值常量 `a`（值为 1），无函数、类或副作用 |\n| [src/b.ts](src/b.ts) | 占位模块，仅导出数值常量 `b`（值为 2），除该具名导出外无其他行为 |\n| [src/c.ts](src/c.ts) | 占位模块，仅导出数值常量 `c`（值为 3），没有其他逻辑 |\n\n三个模块相互独立，各自只导出一个数字常量。",
+    "assistantText": "I'll first look at the modules, then delegate each to its own subagent.\nNow I'll delegate each module to its own executor, all in parallel.\n三个执行者已并行完成，汇总如下：\n\n| 模块 | 一句话职责 | 导出值 |\n|---|---|---|\n| [src/a.ts](src/a.ts:1) | 该模块的唯一职责是导出一个常量 `a`。 | `a = 1` |\n| [src/b.ts](src/b.ts:1) | 该模块的唯一职责是导出一个常量 `b`。 | `b = 2` |\n| [src/c.ts](src/c.ts:1) | 该模块的唯一职责是导出一个常量 `c`（无其他逻辑）。 | `c = 3` |\n\n三个模块彼此独立、互不引用，各自由一个执行者单独查看后回报；结果已合并为上表。",
     "userText": "把三个互相独立的模块 src/a.ts、src/b.ts、src/c.ts 分给三个执行者同时各看一个，每人报该模块的一句话职责，最后合成一张表给我。",
     "userTexts": [
       "把三个互相独立的模块 src/a.ts、src/b.ts、src/c.ts 分给三个执行者同时各看一个，每人报该模块的一句话职责，最后合成一张表给我。"
@@ -68,7 +83,7 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 2,
+          "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -83,8 +98,24 @@
           "recovered": false
         },
         {
+          "name": "read",
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
           "name": "subagent",
           "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "wait_agent",
+          "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -98,7 +129,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=6", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=9", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -110,6 +141,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:15:39.643Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:13:11.185Z"
 }

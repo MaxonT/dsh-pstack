@@ -2,8 +2,8 @@
   "scenarioId": "capability-resume",
   "phase": "raw",
   "environment": {
-    "worker": 6,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,7 +20,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-446dfb0c-73ad-4c1a-b83a-33cc52640544",
+    "sessionId": "session-e8112fa9-d0d9-4e9d-a99a-9c8a6aa6d906",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
@@ -29,12 +29,17 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls src 2>&1 | head -20; echo \"---\"; pwd"
+        "argsSummary": "bash command=ls -la; ls src 2>/dev/null | head -50"
       },
       {
         "name": "subagent",
         "status": "ok",
-        "argsSummary": "subagent"
+        "argsSummary": "subagent name=counter"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
       },
       {
         "name": "send_message",
@@ -42,13 +47,13 @@
         "argsSummary": "send_message"
       },
       {
-        "name": "send_message",
+        "name": "wait_agent",
         "status": "ok",
-        "argsSummary": "send_message"
+        "argsSummary": "wait_agent"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "已派出执行者统计 `src` 文件数，等它回报后我会让同一个执行者继续做加注释行数的任务。\n\n--- turn 2 ---\n\n已让同一个执行者继续做第二步（把文件数 2 加上注释行数），等它回报结果。\n\n--- turn 3 ---\n\n同一个执行者完成了两步：\n\n- **文件数**（src 递归全部文件）：2（`src/a.ts`、`src/b.ts`）\n- **注释行数**：2（每个文件各 1 行 `//` 整行注释，块注释 `/* */` 为 0）\n- **合计**：2 + 2 = **4**\n\n第二步是在同一个执行者的上下文里续做的，沿用了它已统计出的数字 2，没有另起执行者重头再来。\n任务已结束，结果如上：合计 **4**（2 个文件 + 2 行注释）。执行者已停止，无需后续动作。",
+    "assistantText": "我已派出一个执行者（counter）去统计 src 的文件数，等它报完后会把「加上注释行数」的任务交回同一个执行者继续。\n执行者报告文件数为 2。现在把续作任务交回同一个执行者。\n同一个执行者（counter）完成了续作，未重新计数。\n\n**结果：4**\n\n- src 文件数：2（`src/a.ts`、`src/b.ts`）\n- 注释行数：2（a.ts 1 行 `// one`，b.ts 1 行 `// two`）\n- 合计：2 + 2 = **4**\n任务已完成，无需进一步操作。\n\n最终答案：**4**（文件数 2 + 注释行数 2），由同一执行者分两轮接力完成——第一轮统计 src 文件数并报回，第二轮在其结果基础上累加注释行数，未重新查找执行者。",
     "userText": "先让一个执行者统计 src 里的文件数。等它报完后，让同一个执行者接着把刚才那个数字加上注释行数，不要重新找一个执行者从头再来。",
     "userTexts": [
       "先让一个执行者统计 src 里的文件数。等它报完后，让同一个执行者接着把刚才那个数字加上注释行数，不要重新找一个执行者从头再来。"
@@ -66,7 +71,7 @@
         },
         {
           "name": "send_message",
-          "attempts": 2,
+          "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -75,6 +80,14 @@
         {
           "name": "subagent",
           "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "wait_agent",
+          "attempts": 2,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -88,7 +101,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=4", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=5", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -100,6 +113,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:17:43.742Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:21:53.056Z"
 }

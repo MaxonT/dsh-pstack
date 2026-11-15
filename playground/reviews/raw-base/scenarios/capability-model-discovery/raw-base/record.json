@@ -2,8 +2,8 @@
   "scenarioId": "capability-model-discovery",
   "phase": "raw",
   "environment": {
-    "worker": 11,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 0,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,7 +20,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-9b3a69d0-769b-4ccb-9652-105cc170401d",
+    "sessionId": "session-761bb1a6-1c35-4237-abfc-736cfd2f8ea7",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
@@ -34,60 +34,222 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cat \"${DSH_HOME}/pstack-models.json\" 2>/dev/null || echo \"NOT_FOUND $DSH_HOME\""
+        "argsSummary": "bash command=cat \"${DSH_HOME:-$HOME/.dsh}/pstack-models.json\" 2>/dev/null | head -200"
       },
       {
         "name": "list_subagent_models",
         "status": "ok",
         "argsSummary": "list_subagent_models"
-      },
-      {
-        "name": "list_subagent_models",
-        "status": "error",
-        "argsSummary": "list_subagent_models",
-        "errorText": "Error: child LLM route \"magpie/magpie/workbuddy/minimax-m3.1-flash\" is not allowed for this Session"
-      },
-      {
-        "name": "list_subagent_models",
-        "status": "error",
-        "argsSummary": "list_subagent_models",
-        "errorText": "Error: LLM provider \"magpie/workbuddy\" is not allowed for this Session"
-      },
-      {
-        "name": "list_subagent_models",
-        "status": "error",
-        "argsSummary": "list_subagent_models",
-        "errorText": "Error: LLM provider \"magpie/workbuddy\" is not allowed for this Session"
-      },
-      {
-        "name": "list_subagent_models",
-        "status": "ok",
-        "argsSummary": "list_subagent_models"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=ls -la \"${DSH_HOME}\" 2>/dev/null | head -50; echo ---; ls \"${DSH_HOME}\"/*.json 2>/dev/null"
-      },
-      {
-        "name": "list_subagent_models",
-        "status": "ok",
-        "argsSummary": "list_subagent_models"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=ls \"${DSH_HOME}/profiles\"; find \"${DSH_HOME}/profiles\" -name '*.json' -o -name '*.yaml' | head -20"
       },
       {
         "name": "list_subagent_models",
         "status": "error",
         "argsSummary": "list_subagent_models",
         "errorText": "Error: child LLM route \"magpie/workbuddy/deepseek-v4.1-flash\" is not allowed for this Session"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: child LLM route \"magpie/magpie\" is not allowed for this Session"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "error",
+        "argsSummary": "list_subagent_models",
+        "errorText": "Error: `model` requires `provider`"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls -la; echo ---; find . -maxdepth 3 -not -path '*/.git/*' | head -100"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=README.md"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "error",
+        "argsSummary": "subagent",
+        "errorText": "Error: child LLM `reasoning_effort` requires both `provider` and `model`; supply both or omit all three fields"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "send_message",
+        "status": "ok",
+        "argsSummary": "send_message"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "job_kill",
+        "status": "error",
+        "argsSummary": "job_kill",
+        "errorText": "Error: unknown job agent-1"
+      },
+      {
+        "name": "subagent",
+        "status": "error",
+        "argsSummary": "subagent",
+        "errorText": "Error: child LLM route \"magpie/workbuddy/deepseek-v4.1-flash\" is not allowed for this Session; without a recorded model-selection policy, explicit selection is limited to the parent route"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "subagent",
+        "status": "ok",
+        "argsSummary": "subagent"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "send_message",
+        "status": "ok",
+        "argsSummary": "send_message"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "write",
+        "status": "ok",
+        "argsSummary": "write file_path=capability-report.md"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "I'll check the available models and reasoning levels before doing anything.\n## 本会话可用能力清单\n\n**子代理 / LLM 路由**（`list_subagent_models` 实际探测结果）：\n\n| Provider | Model | 说明 |\n|---|---|---|\n| `magpie` | `workbuddy/minimax-m3.1-flash` | 当前会话正在使用的模型 |\n\n**推理档位（reasoning efforts）**——仅上述模型支持：\n\n| 档位 | 名称 |\n|---|---|\n| `off` | Off |\n| `low` | Low |\n| `high` | High（默认） |\n| `max` | Max |\n\n**不可用**：`magpie/workbuddy/deepseek-v4.1-flash`（在 `pstack-models.json` 中被大量角色引用），探测返回 `child LLM route ... is not allowed for this Session`。`magpie/workbuddy` 作为 provider、裸 `magpie` 作为 model 也都不合法（provider/model 必须是 `magpie` + `workbuddy/<model>`）。\n\n**当前 pstack 角色映射**（`$DSH_HOME/pstack-models.json`，仅供参考，其中 deepseek 条目在本会话无效）：\n- `low` 档（deepseek）：feature/refactoring、bug-fix、perf-issue、how explorer、why investigators、reflect tooling、arena runners、swarm workers、architect runners\n- `high` 档（minimax）：hillclimb、judgment and prose、hardest tasks、how explainer、why synthesizer、reflect judgment/synthesizer、arena cross-judge pool、interrogate reviewers\n\n**要点**：本会话只有 minimax-m3.1-flash 一条真实可用路由；若 pstack 需要按角色差异化推理强度，`low`/`high`/`max` 都可选，但 deepseek 那条线在此会话跑不起来。\n\n需要我接着按 `setup-pstack` 技能把这个会话可用的角色映射写成生效规则吗？",
+    "assistantText": "I'll check what models are actually available in this session.\nOnly one route is actually permitted. Let me check the workspace for the task at hand.\n探测完成，报告写在 [capability-report.md](capability-report.md)。\n\n## 本会话真正可用的清单\n\n**唯一允许的路由：`magpie/workbuddy/minimax-m3.1-flash`**\n\n四个推理档位全部实测通过（每个档位各起一个子代理做真实派发）：\n\n| 档位 | 实测 |\n|---|---|\n| `off` | ✅ agent-4 |\n| `low` | ✅ agent-3 |\n| `high`（模型默认） | ✅ agent-5 |\n| `max` | ✅ agent-2，出站头确认 `reasoningEffort:\"max\"`，0 错误 |\n\n**被拒绝的：**\n- `magpie/workbuddy/deepseek-v4.1-flash` → `child LLM route ... is not allowed for this Session`\n- `magpie/magpie` → 非法组合\n\n原因是本会话存在模型选择 allowlist，显式选模型时只能继承父路由。\n\n## 两个需要注意的点\n\n1. **`pstack-models.json` 与本会话冲突**：该文件里约一半角色（feature/refactoring、bug-fix、perf-issue、how explorer、why investigators、reflect tooling、arena runners、swarm workers、architect runners）指向 `deepseek-v4.1-flash`，在本会话内会因 allowlist 拒绝而失败，必须回退到父路由 minimax。该文件在 `$DSH_HOME`，属于只读运行时输入，我不能改；修正需宿主扩展 allowlist。\n\n2. **网关 ≠ 会话**：网关 11 个模型中 4 个 `qoder-cn/*` 全部超时；其余 7 个在网关层可用（工具调用、图片输入、1M上下文、128K 输出均正常），但会话只放行其中一个。另外 `minimax-m3.1-flash` 的图片类问题会把答案写进 `reasoning_content` 而非 `content`，DSH 只读 content 时会取到空。\n\n`list_subagent_models` 不带参数时返回的 `magpie — magpie` 那一行是 provider 列表，不是可用的模型 id，容易误读。\n\n要我接着做什么？比如按本会话实际能力把 pstack 的角色配置改写成一份可用的本地副本。",
     "userText": "先查出这个会话里现在真正可用的模型和推理档位有哪些，列一份清单给我，然后再动手。",
     "userTexts": [
       "先查出这个会话里现在真正可用的模型和推理档位有哪些，列一份清单给我，然后再动手。"
@@ -97,7 +259,31 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 3,
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_kill",
+          "attempts": 1,
+          "failures": 1,
+          "firstAttemptStatus": "error",
+          "finalStatus": "error",
+          "recovered": false
+        },
+        {
+          "name": "job_list",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "list_agents",
+          "attempts": 8,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -105,21 +291,72 @@
         },
         {
           "name": "list_subagent_models",
-          "attempts": 8,
-          "failures": 4,
+          "attempts": 6,
+          "failures": 3,
           "firstAttemptStatus": "ok",
           "finalStatus": "error",
           "recovered": false
+        },
+        {
+          "name": "present",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "send_message",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "subagent",
+          "attempts": 7,
+          "failures": 2,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": true
+        },
+        {
+          "name": "wait_agent",
+          "attempts": 13,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "write",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
-      "artifacts": [],
-      "warnings": ["list_subagent_models needed 8 attempts with 4 failures"]
+      "artifacts": ["write file_path=capability-report.md"],
+      "warnings": [
+        "list_subagent_models needed 6 attempts with 3 failures",
+        "subagent needed 7 attempts with 2 failures"
+      ]
     }
   },
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=11", "warnings=1"]
+    "observed": ["skillLoads=none", "toolCalls=43", "warnings=2"]
   },
   "semanticReview": {
     "status": "pending",
@@ -131,6 +368,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:14:44.077Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:09:55.762Z"
 }

@@ -2,8 +2,8 @@
   "scenarioId": "capability-file-attachments",
   "phase": "raw",
   "environment": {
-    "worker": 11,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 1,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,25 +20,30 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-18bc35cd-f91f-4883-9b70-9924ead9bfb1",
+    "sessionId": "session-97d1b966-c45a-459b-ade3-dd0fe8b32cf6",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
       {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd && ls docs/"
+      },
+      {
         "name": "subagent",
         "status": "ok",
         "argsSummary": "subagent"
       },
       {
-        "name": "read",
+        "name": "wait_agent",
         "status": "ok",
-        "argsSummary": "read file_path=docs/consistency-report.md"
+        "argsSummary": "wait_agent"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "已派出执行者读取 docs/spec.md 与 docs/api.md，产出 docs/consistency-report.md。完成后我会汇报要点。\n\n--- turn 2 ---\n\n执行者已完成，结论在<docs/consistency-report.md>。\n\n核心结论：两份文件各只有 3 行（标题 + 一句「返回 status 字段」），**不存在互相矛盾型冲突**，全部是信息不足型缺陷。返回字段与术语一致；端点、参数、错误码、状态机两文一致地缺失。严重项：① 文档整体不成立（无可实现契约，阻塞）；② `status` 的类型与取值枚举未定义（高）；③ 无端点/方法/参数、④ 无错误码表、⑤ 无状态机语义（中）；⑥ 标题与体量不匹配且「接口 vs API」用词漂移、⑦ 无示例与版本约定（低）。修订方向是先把 spec.md 定位为语义/状态机/术语、api.md 定位为路径/schema/错误码/示例，再优先补 `status` 契约。\n执行者任务已结束，无需再跟进。结论文件已就绪：[docs/consistency-report.md](docs/consistency-report.md)。",
+    "assistantText": "已派出执行者读取并对照这两份文档。\n执行者已完成对照，结论如下（只读分析，未修改任何文件）：\n\n## 两文件一致性结论\n\n**文件实况**：`docs/spec.md` 与 `docs/api.md` 各3 行，仅一条规范性语句（第 3 行）：\n- spec.md：「接口返回 status 字段。」\n- api.md：「返回 status 字段。」\n\n### 逐维度对照\n| 维度 | spec.md | api.md | 结论 |\n|---|---|---|---|\n| 字段名 | `status` | `status` | ✅ 一致 |\n| 类型/默认值/枚举/必填性/错误码/端点 | 未说明 | 未说明 | ⚠️ 双方共同缺失 |\n| 参数语义 | 限定主语为「接口」 | 省略主语 | ✅ 语义等价 |\n\n### 差异明细\n1. **主语缺失**（docs/api.md:3）— spec 限定「接口返回」，api 省略主语。**次要**。\n2. **规范维度整体缺失**（docs/spec.md:3 与 docs/api.md:3）— 两文件均未给出 `status` 的类型、取值集合、是否必填、返回层级与错误码。**重要**（双向缺失，非矛盾），导致规范不可直接实现/测试。\n3. **文档标题与 capability 主题不符**（README.md:1「附件探测」 vs 两文档正文无附件相关描述）— **次要**，属覆盖缺口。\n\n### 单侧缺失\n- spec 独有：仅「接口」这一主体限定，无其他实质条目。\n- api 独有：无，未引入任何 spec 未覆盖的字段或端点。\n\n### 总体结论\n两文件在**实质规范上一致**——唯一条目逐字对应，无字段名、类型、枚举、必填性、错误码、端点或参数语义上的矛盾，也无单侧独有内容。但一致性仅停留在「同名一句话」层面，属于**文档完备性问题**而非互相冲突。\n\n**修复优先级**：\n1. 重要 — 两文件同时补齐 `status` 的类型、取值枚举、必填性、所在层级及失败场景错误码。\n2. 次要 — docs/api.md:3 补回主语「接口」。\n3. 次要 — 若该 capability 确为「附件探测」，两份文档均需补充探测对象与探测结果字段。",
     "userText": "把 docs/spec.md 和 docs/api.md 两个文件交给一个执行者，让它据此写一份两文件的一致性结论。路径直接写在说明里让它自己读。",
     "userTexts": [
       "把 docs/spec.md 和 docs/api.md 两个文件交给一个执行者，让它据此写一份两文件的一致性结论。路径直接写在说明里让它自己读。"
@@ -47,7 +52,7 @@
     "analysis": {
       "tools": [
         {
-          "name": "read",
+          "name": "bash",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -56,6 +61,14 @@
         },
         {
           "name": "subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "wait_agent",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -70,7 +83,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=2", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=3", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -82,6 +95,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:13:36.767Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:08:01.356Z"
 }

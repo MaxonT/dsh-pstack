@@ -2,8 +2,8 @@
   "scenarioId": "capability-readonly-false",
   "phase": "raw",
   "environment": {
-    "worker": 6,
-    "dshVersion": "0.2.2-rc.1",
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.2",
     "adaptedVersion": null,
     "matrix": {
       "id": "base",
@@ -20,7 +20,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-65807f59-cb1b-4d16-ac52-a367196d8de0",
+    "sessionId": "session-6018b1e3-ca77-42e8-9fb1-1f7f3ed089b5",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "standard",
@@ -29,22 +29,12 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=pwd && ls -la && cat src/a.ts 2>/dev/null"
+        "argsSummary": "bash command=pwd && ls -la && echo \"---\" && cat src/a.ts"
       },
       {
         "name": "subagent",
         "status": "ok",
-        "argsSummary": "subagent"
-      },
-      {
-        "name": "job_list",
-        "status": "ok",
-        "argsSummary": "job_list"
-      },
-      {
-        "name": "read",
-        "status": "ok",
-        "argsSummary": "read file_path=src/a.ts"
+        "argsSummary": "subagent name=executor"
       },
       {
         "name": "list_agents",
@@ -52,13 +42,18 @@
         "argsSummary": "list_agents"
       },
       {
-        "name": "bash",
+        "name": "wait_agent",
         "status": "ok",
-        "argsSummary": "bash command=sleep 20; cat src/a.ts"
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "已完成。\n\n执行者把 [src/a.ts](src/a.ts) 里的常量从 1 改成了 2，文件现在的内容是：\n\n```ts\nexport const a = 2;\n```",
+    "assistantText": "Waiting for the executor to finish.\n执行者已完成改动，我已复核文件内容。\n\n- 文件：[src/a.ts](src/a.ts)\n- 改动：`export const a = 1;` → `export const a = 2;`",
     "userText": "让一个执行者把 src/a.ts 里的常量值从 1 改成 2，改完把结果告诉我。",
     "userTexts": ["让一个执行者把 src/a.ts 里的常量值从 1 改成 2，改完把结果告诉我。"],
     "autoAnswers": [],
@@ -66,14 +61,6 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 2,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "job_list",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -103,6 +90,14 @@
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
           "recovered": false
+        },
+        {
+          "name": "wait_agent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
         }
       ],
       "artifacts": [],
@@ -112,7 +107,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=6", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=5", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -124,6 +119,6 @@
     "status": "unobserved",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "raw-base-20261114141336",
-  "capturedAt": "2026-11-14T06:16:35.346Z"
+  "batchId": "raw-base-20261115180550",
+  "capturedAt": "2026-11-15T10:14:21.216Z"
 }
