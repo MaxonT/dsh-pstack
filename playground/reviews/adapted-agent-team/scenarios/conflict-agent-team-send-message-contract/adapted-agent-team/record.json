@@ -1,0 +1,154 @@
+{
+  "scenarioId": "conflict-agent-team-send-message-contract",
+  "phase": "adapted",
+  "environment": {
+    "worker": 2,
+    "dshVersion": "0.2.2-rc.1",
+    "adaptedVersion": "0.3.1",
+    "matrix": {
+      "id": "agent-team",
+      "description": "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
+      "kind": "conflict",
+      "enabledPluginPackages": ["@deepseek-ai/dsh-experimental-agent-team-profile"]
+    },
+    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "configHash": "c87343579fb4d5124a9bfc74336dfb027c7410c15f3a7508c6d1b74234dd921c"
+  },
+  "target": {
+    "provider": "magpie",
+    "model": "workbuddy/minimax-m3.1-flash",
+    "effort": "low"
+  },
+  "session": {
+    "sessionId": "session-ee6924d5-2fcc-49c3-a57f-128b81f909d5",
+    "sessionFile": "session.jsonl.zstd",
+    "workspacePath": "<WORKSPACE>",
+    "agentPreset": "poteto-mode",
+    "skillLoads": [],
+    "toolCalls": [
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls; ls src 2>/dev/null | head -30"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent"
+      },
+      {
+        "name": "job_list",
+        "status": "ok",
+        "argsSummary": "job_list"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 30"
+      },
+      {
+        "name": "pstack_send",
+        "status": "ok",
+        "argsSummary": "pstack_send"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=sleep 45"
+      },
+      {
+        "name": "pstack_agents",
+        "status": "ok",
+        "argsSummary": "pstack_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat src/a.ts src/b.ts"
+      }
+    ],
+    "turnEndReason": "completed",
+    "assistantText": "I'll spawn one child to count files in `src`, then continue that same child for the comment-line count.\n\n**Your goal.** Verify that a single `pstack_subagent` execution can be continued in place, so the file count and the comment-line count come from the same executor rather than two fresh children. The change I expect: none to your code. This is a harness-contract check only.\nNow continuing the same child.\n**Result.** The contract holds. The same executor handled both counts.\n\n**What ran.**\n1. `pstack_subagent` started child `c493a9c7-6d4c-43dd-b9de-0c790dc6c24a` (agent `general`, route inherited from parent). It counted 2 files under `src/`: `src/a.ts` and `src/b.ts`.\n2. `pstack_send` to that same child id continued it. It reported 2 comment lines total, 1 per file.\n\n**Proof it was one executor, not two.** `pstack_agents` lists exactly one child for this session, the same id, in `continuable` mode. No second child was ever started. I independently confirmed the file contents: each file is one line with a single trailing comment, so 2 files and 2 comment lines.\n\n**What it means for you.** `pstack_send` resumes an existing child's state rather than respawning, so context established in the first turn is available in the second. That is the mechanism to use when you want one delegated agent to hold state across steps.\n\n**One caveat.** The child reported `inactive` after finishing, which means it is resumable but not currently running. A continuation starts a fresh turn in that session, not a continuous process.\n\nNo files were modified.",
+    "userText": "用 pstack_subagent 起一个子代理，先让它数 src 里的文件数。然后让它接着数注释行数，确认是同一个执行者续跑，不是新起一个。",
+    "userTexts": [
+      "用 pstack_subagent 起一个子代理，先让它数 src 里的文件数。然后让它接着数注释行数，确认是同一个执行者续跑，不是新起一个。"
+    ],
+    "autoAnswers": [],
+    "analysis": {
+      "tools": [
+        {
+          "name": "bash",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "job_list",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_agents",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_send",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_subagent",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "read",
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        }
+      ],
+      "artifacts": [],
+      "warnings": []
+    }
+  },
+  "artifacts": {
+    "recordFile": "record.json",
+    "screenshotFile": "screenshot.png",
+    "observed": ["skillLoads=none", "toolCalls=9", "warnings=0"]
+  },
+  "semanticReview": {
+    "status": "pending",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "mechanicalFailures": [],
+  "verdict": {
+    "phase": "adapted",
+    "status": "inconclusive",
+    "reason": "No reviewer has compared the observed effect with the scenario rubric."
+  },
+  "batchId": "adapted-agent-team-20261115085926",
+  "capturedAt": "2026-11-15T00:59:26.355Z"
+}
