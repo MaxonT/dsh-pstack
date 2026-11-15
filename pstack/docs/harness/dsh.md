@@ -26,7 +26,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | `environment: "local"` | Omit `cwd`; the child inherits the session directory. |
 | `cloud_base_branch: <b>` | Pass `<b>` as `create_worktree.from`; otherwise tell the child to check out `<b>`. |
 | `run_in_background: true` | Omit. `pstack_subagent` is managed and reports by completion notice. |
-| `resume` | `send_message` to the existing child id continues it; start a new `pstack_subagent` only when it stopped permanently. |
+| `resume` | `pstack_send` to the existing child id continues a pstack child; when that tool is absent, use the native `send_message`. Start a new `pstack_subagent` only when it stopped permanently. |
 | `file_attachments` | List the real paths in `prompt`; the child reads them with `read`. |
 
 ## Models
@@ -76,6 +76,9 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 | Tool | Purpose |
 | --- | --- |
 | `pstack_subagent` | Start one subagent with an optional `agent` preset (default `general`), optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. A subagent is not a background job: never pass its id to `job_output`; wait for the completion notice, or use `list_agents`/`send_message`. |
+| `pstack_agents` | List the calling agent's direct child sessions with their ids, mode, and activity. Use it instead of the native `list_agents` when you need a pstack child id; in an Agent Teams profile the native tool only lists teammates. |
+| `pstack_send` | Continue one pstack child by id. Use it instead of the native `send_message` when the target came from `pstack_subagent`. |
+| `pstack_interrupt` | Stop one pstack child's current turn by id. Use it instead of the native `interrupt_agent` when the target came from `pstack_subagent`. |
 | `pstack_skill` | Load a packaged pstack skill by exact kebab-case name; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
 | `pstack_roles` | Report each pstack role and its configured routes as structured provider, model, and effort values. |

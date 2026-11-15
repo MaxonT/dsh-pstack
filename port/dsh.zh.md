@@ -26,7 +26,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | `environment: "local"` | 省略 `cwd`；子智能体继承会话目录。 |
 | `cloud_base_branch: <b>` | 作为 `create_worktree.from` 传入；否则让子智能体先 checkout `<b>`。 |
 | `run_in_background: true` | 省略。`pstack_subagent` 由托管执行并通过完成通知返回。 |
-| `resume` | 用 `send_message` 发给已有子智能体 id 继续；只有永久停止时才新建 `pstack_subagent`。 |
+| `resume` | 用 `pstack_send` 按已有子智能体 id 继续 pstack 子代理；该工具不存在时用原生 `send_message`。只有永久停止时才新建 `pstack_subagent`。 |
 | `file_attachments` | 在 `prompt` 中列出真实路径，子智能体用 `read` 读取。 |
 
 ## Models
@@ -76,6 +76,9 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | Tool | Purpose |
 | --- | --- |
 | `pstack_subagent` | 用可选 `agent` preset（默认 `general`）启动一个子智能体，可用 `provider`、`model`、`reasoningEffort` 覆盖路由；完成时发通知。子智能体不是后台 job：不要把它 id 传给 `job_output`；等完成通知，或用 `list_agents`/`send_message`。 |
+| `pstack_agents` | 列出调用方的直接子会话及其 id、mode、activity。需要 pstack 子代理 id 时用它，不要用原生 `list_agents`；Agent Teams 环境下原生工具只列 teammate。 |
+| `pstack_send` | 按 id 继续一个 pstack 子代理。目标来自 `pstack_subagent` 时用它，不要用原生 `send_message`。 |
+| `pstack_interrupt` | 按 id 中断一个 pstack 子代理当前回合。目标来自 `pstack_subagent` 时用它，不要用原生 `interrupt_agent`。 |
 | `pstack_skill` | 按精确 kebab-case 名称加载随包 pstack 技能；`resource` 读取参考或 playbook。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
 | `pstack_roles` | 报告每个 pstack 角色及其已配置路由，路由以结构化的 provider、model 和 effort 给出。 |
