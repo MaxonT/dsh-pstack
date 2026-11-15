@@ -39,28 +39,30 @@ export interface SystemPromptHost {
 
 const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
 
+/** A skill body line that only makes sense when a delegate reads the file itself. */
+const DELEGATE_ONLY = /^Bundled skills live at .*\r?\n?/m;
+
 /**
  * Build the persistent section from a skill file, the DSH adapter path, and the
  * name of the root preset that mounts it.
  *
- * The leading YAML frontmatter is stripped, and `interpolate: false` keeps any
- * literal `{{...}}` in the skill body from being resolved as a prompt variable.
+ * The leading YAML frontmatter is stripped, the delegate-only path line is dropped,
+ * and `interpolate: false` keeps any literal `{{...}}` in the skill body from being
+ * resolved as a prompt variable.
  */
 export function createPotetoModeSection(
   skillPath: string = POTETO_MODE_SKILL_PATH,
   harnessDocPath: string = HARNESS_DOC_PATH,
   presetLabel: string = "poteto-mode",
 ): PromptSectionLike {
-  const body = readFileSync(skillPath, "utf8").replace(FRONTMATTER, "");
+  const body = readFileSync(skillPath, "utf8").replace(FRONTMATTER, "").replace(DELEGATE_ONLY, "");
   const skillDirectory = dirname(skillPath);
   const text = [
-    `You are running in the persistent pstack \`${presetLabel}\` root preset. The full \`poteto-mode\` skill below stays in this system prompt for every turn of the session.`,
+    `You are running in the persistent pstack \`${presetLabel}\` root preset. The full \`poteto-mode\` skill below stays in this system prompt for every turn. Do not load it again with \`skill\` or \`pstack_skill\`, and do not re-read SKILL.md. Open only the leaf principle, playbook, and reference files it names, under the skill directory below, when the skill tells you to.`,
     "",
     `- Skill file: ${skillPath}`,
     `- Skill directory: ${skillDirectory}`,
     `- DSH adapter: ${harnessDocPath}`,
-    "",
-    `Read the DSH adapter at ${harnessDocPath} once per session before you follow this skill.`,
     "",
     body.replace(/^\n+/, ""),
   ].join("\n");
