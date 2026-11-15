@@ -45,6 +45,7 @@ export function environmentMatrix(id: string): RunEnvironment["matrix"] {
     ...(matrix.versionExemptions === undefined
       ? {}
       : { versionExemptions: [...matrix.versionExemptions] }),
+    ...(matrix.teamMode === undefined ? {} : { teamMode: matrix.teamMode }),
   };
 }
 
