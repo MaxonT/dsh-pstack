@@ -121,7 +121,7 @@ Use pstack skills to start workflows directly from a Session.
 
 | Tool | Function |
 |---|---|
-| `pstack_subagent` | Starts one subagent with an agent preset, optionally overriding its route with provider, model, and reasoningEffort. |
+| `pstack_subagent` | Starts one subagent with an agent preset, optionally overriding its route with provider, model, and reasoning_effort. |
 | `pstack_interrupt` | Stops a pstack child's current turn by its name from `list_agents` or its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path. |
 | `pstack_skill` | Loads a packaged pstack skill by exact name, plus a reference or playbook at a path relative to the skill directory. |
 | `pstack_models` | Lists the providers, models, and reasoning efforts this deployment serves. |

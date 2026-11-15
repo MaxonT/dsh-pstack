@@ -61,15 +61,15 @@
         "properties": {
           "description": {
             "type": "string",
-            "description": "Optional short 3-5 word label for the child; derived from the prompt when omitted."
+            "description": "A short 3-5 word description of the delegated task, for display."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "The complete, self-contained task for the subagent. It does not share this conversation's context, so include everything it needs."
           },
           "name": {
             "type": ["string", "null"],
             "description": "Optional subagent name, unique among the parent's children; lets list_agents and send_message address it by name."
-          },
-          "prompt": {
-            "type": "string",
-            "description": "The complete, self-contained brief. The child does not see this conversation."
           },
           "agent": {
             "type": "string",
@@ -84,9 +84,9 @@
             "type": ["string", "null"],
             "description": "Optional model id; pass together with `provider` to override the child route, or omit both to inherit the parent route."
           },
-          "reasoningEffort": {
+          "reasoning_effort": {
             "type": ["string", "null"],
-            "description": "Optional advertised reasoning-effort token; omit to keep the route's default effort."
+            "description": "Optional advertised reasoning-effort token; requires `provider` and `model`; omit to keep the route's default effort."
           },
           "cwd": {
             "type": ["string", "null"],
@@ -95,10 +95,10 @@
           "maxDepth": {
             "type": ["integer", "null"],
             "minimum": 1,
-            "description": "Optional delegation-depth cap. Omit or null to use the configured row and Host cap; explicit values must be at least 1 and cannot exceed that cap."
+            "description": "Optional delegation-depth cap. Omit or null to use the configured row and Host cap."
           }
         },
-        "required": ["prompt"]
+        "required": ["description", "prompt"]
       }
     }
   ]

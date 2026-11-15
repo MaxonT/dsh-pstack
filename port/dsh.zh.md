@@ -8,7 +8,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent`。一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它。传 `provider`、`model` 和可选 `reasoningEffort` 覆盖路由，或全部省略以继承父路由。`pstack_models` 把每个 model id 列在对应 provider 标题下：把标题里的 provider id 传给 `provider`、把列出的 id 传给 `model`，不要传组合后的 `provider/model` 路由。 |
+| `Task` | `pstack_subagent`。一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它。传 `provider`、`model` 和可选 `reasoning_effort` 覆盖路由，或全部省略以继承父路由。`pstack_models` 把每个 model id 列在对应 provider 标题下：把标题里的 provider id 传给 `provider`、把列出的 id 传给 `model`，不要传组合后的 `provider/model` 路由。 |
 | `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体有人工回答者；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
 | Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case 名称加载随包 pstack 技能。用 `resource` 读取 `SKILL.md` 旁的文件；用户 `/name` 直接加载技能。内置帮助技能是 `poteto-help`；读 playbook 用 `name: "poteto-mode"` 加 `resource: "playbooks/<name>.md"`。 |
@@ -75,7 +75,7 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | 用可选 `agent` preset（默认 `general`）和可选 `name` 启动一个子智能体，可用 `provider`、`model`、`reasoningEffort` 覆盖路由；完成时发通知。子智能体不是后台 job：不要把它 id 传给 `job_output`；等完成通知，或用原生 `list_agents`/`send_message`。 |
+| `pstack_subagent` | 用可选 `agent` preset（默认 `general`）和可选 `name` 启动一个子智能体，可用 `provider`、`model`、`reasoning_effort` 覆盖路由；完成时发通知。子智能体不是后台 job：不要把它 id 传给 `job_output`；等完成通知，或用原生 `list_agents`/`send_message`。 |
 | `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是 pstack 子代理的中断通道。 |
 | `pstack_skill` | 按精确 kebab-case 名称加载随包 pstack 技能；`resource` 读取参考或 playbook。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
