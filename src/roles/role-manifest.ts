@@ -10,7 +10,7 @@
 export const ROLE_SHAPES = ["single", "list"] as const;
 export type RoleShape = (typeof ROLE_SHAPES)[number];
 
-/** One role accepted by `pstack_subagent`'s role manifest. */
+/** One role in the pstack role manifest, keyed and shaped for the role file and `pstack_roles`. */
 export interface RoleSpec {
   /** Exact key as written in the role file. Commas belong to the key. */
   readonly key: string;

@@ -48,7 +48,7 @@ Agent Teams 在成员 scope 注册的 `list_agents`、`send_message`、`interrup
 - 类型：plugin（已修）
 - 能力类别：environment
 - 影响场景：全部 agent-team probe
-- 证据：[env.ts](../../../scripts/lib/env.ts)
+- 证据：[env.ts](../../scripts/lib/env.ts)
 - 现象：安装 `0.1.5-alpha.2`，`spawn_teammate` 报 `this.ctx.subagents.startContinuable is not a function`。
 - 根因：npm `latest` 指向老版本，匹配 dsh 的 `0.2.2-rc.1` 在 `next` 标签下。
 - 建议动作：`@deepseek-ai/*` 依赖改用 `dshVersion()`。

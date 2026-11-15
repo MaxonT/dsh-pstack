@@ -204,7 +204,7 @@
 - 类型：plugin（验证工具）
 - 能力类别：delegation
 - 影响场景：`capability-skill-dependency-loop`
-- 证据：[run-case.ts](../../../scripts/run-case.ts)
+- 证据：[run-case.ts](../../scripts/run-case.ts)
 - 现象：`collect` 报 `missing evidence source file`；blocked 记录 `capturedAt` 用新时间，与文件名/证据时间戳不一致。
 - 根因：`blockedRecord` 里重新取 `new Date()` 作为 `capturedAt`。
 - 与当前阶段 dsh.md 的关系：不涉及 dsh.md。

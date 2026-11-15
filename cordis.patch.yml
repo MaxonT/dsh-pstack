@@ -2,7 +2,7 @@
 #
 # `pstack-skill` registers the trusted hidden-skill loader. The three
 # `dsh-skill-filesystem` rows expose the generated pstack tree, vendored
-# cursor-team-kit skills, and authored project skills at bundled rank 600.
+# cursor-team-kit skills, and authored project skills as bundled skills.
 # `pstack-models` reports the live route catalogue; `pstack-role-catalog` reports
 # role routes; `pstack-subagent` starts one child per call with an optional
 # explicit model route. The

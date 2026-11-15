@@ -75,7 +75,7 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | 用可选 `agent` preset（默认 `general`）启动一个子智能体，可用 `provider`、`model`、`reasoningEffort` 覆盖路由；完成时发通知。子智能体不是后台 job：不要把它 id 传给 `job_output`；等完成通知，或用 `list_agents`/`send_message`。 |
+| `pstack_subagent` | 用可选 `agent` preset（默认 `general`）启动一个子智能体，可用 `provider`、`model`、`reasoningEffort` 覆盖路由；完成时发通知。子智能体不是后台 job：不要把它 id 传给 `job_output`；等完成通知，或用 `pstack_agents`/`pstack_send`。 |
 | `pstack_agents` | 列出调用方的直接子会话及其 id、mode、activity。需要 pstack 子代理 id 时用它，不要用原生 `list_agents`；Agent Teams 环境下原生工具只列 teammate。 |
 | `pstack_send` | 按 id 继续一个 pstack 子代理。目标来自 `pstack_subagent` 时用它，不要用原生 `send_message`。 |
 | `pstack_interrupt` | 按 id 中断一个 pstack 子代理当前回合。目标来自 `pstack_subagent` 时用它，不要用原生 `interrupt_agent`。 |
