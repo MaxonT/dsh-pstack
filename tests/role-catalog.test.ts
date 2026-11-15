@@ -115,6 +115,22 @@ describe("pstack_roles", () => {
     expect(routes).toEqual([{ provider: "p", model: "gone", served: false, efforts: [] }]);
   });
 
+  it("surfaces a provider discovery error on a configured route", () => {
+    const entries = new Map([
+      ["swarm workers", { routes: [{ kind: "route" as const, provider: "p", model: "a" }] }],
+    ]);
+    const catalogue: CatalogueResult = {
+      providers: [{ provider: "p", name: "P", models: [], error: "adapter went away" }],
+      truncated: false,
+    };
+    const routes = annotateRoleCapabilities(roleCapabilities(entries), catalogue).find(
+      (role) => role.role === "swarm workers",
+    )?.routes;
+    expect(routes).toEqual([
+      { provider: "p", model: "a", served: false, efforts: [], error: "adapter went away" },
+    ]);
+  });
+
   it("returns every role through the tool", async () => {
     const home = mkdtempSync(join(tmpdir(), "pstack-roles-"));
     try {

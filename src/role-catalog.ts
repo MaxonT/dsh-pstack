@@ -222,6 +222,9 @@ function usageFor(spec: RoleSpec, configured: boolean): string {
 function annotateRoute(route: RoleRoute, catalogue: CatalogueResult): RoleRoute {
   if (route.inherit) return route;
   const provider = catalogue.providers.find((entry) => entry.provider === route.provider);
+  if (provider?.error !== undefined) {
+    return { ...route, served: false, efforts: [], error: provider.error };
+  }
   const model = provider?.models.find((entry) => entry.id === route.model);
   if (model === undefined) return { ...route, served: false, efforts: [] };
   return {
