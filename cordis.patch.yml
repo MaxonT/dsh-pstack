@@ -38,7 +38,7 @@
         bundledSkillDir: !!js process.getBuiltinModule('node:path').join(process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(baseUrl).resolve('dsh-pstack/package.json')), 'dist/skills/authored')
     - id: pstack-models
       name: dsh-pstack/models
-    - id: pstack-roles
+    - id: pstack-role-service
       name: dsh-pstack/role-service
     - id: pstack-role-catalog
       name: dsh-pstack/role-catalog

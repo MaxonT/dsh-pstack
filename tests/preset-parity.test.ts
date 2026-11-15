@@ -149,7 +149,7 @@ describe("poteto-mode preset parity", () => {
     // The pstack tools live once at the bundle level, not inside each root preset.
     expect(PATCH).toContain("    - id: pstack-subagent");
     expect(PATCH).toContain("    - id: pstack-models");
-    expect(PATCH).toContain("    - id: pstack-roles");
+    expect(PATCH).toContain("    - id: pstack-role-service");
     for (const source of [poteto, creator]) {
       expect(source).not.toContain("id: pstack-subagent");
       expect(source).not.toContain("id: pstack-skill");
