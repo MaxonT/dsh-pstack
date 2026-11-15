@@ -314,7 +314,13 @@ export function profileManifest(
   const dependencies = Object.fromEntries(
     enabledPluginPackages.map((name) => [
       name,
-      name === "dsh-pstack" ? `link:${REPOSITORY_ROOT}` : "*",
+      name === "dsh-pstack"
+        ? `link:${REPOSITORY_ROOT}`
+        : // Experimental DSH packages share the dsh version. A bare "*" resolves the older
+          // `latest` tag, which no longer matches the dsh runtime API.
+          name.startsWith("@deepseek-ai/")
+          ? dshVersion()
+          : "*",
     ]),
   );
   const bundles = ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-web-app", ...enabledPluginPackages];
