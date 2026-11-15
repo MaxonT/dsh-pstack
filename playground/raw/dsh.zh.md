@@ -8,7 +8,7 @@ pstack 技能使用 Cursor 名称。在 DSH 中，每个会话读一次本文件
 
 | Cursor | DSH |
 | --- | --- |
-| `Task` | `subagent` 启动一个全新子代理并立即返回它的 id；`subagent_fork` 改为让子代理继承当前对话。把任务写进 `prompt`，把标签写进 `description`，把目录写进 `cwd`；没有原生参数的 Cursor 字段见“子代理字段”。 |
+| `Task` | `subagent` 启动一个全新子代理并立即返回它的名称；`subagent_fork` 改为让子代理继承当前对话。把任务写进 `prompt`，把标签写进 `description`，把目录写进 `cwd`；没有原生参数的 Cursor 字段见“子代理字段”。 |
 | `AskQuestion` | `ask_user_question` 接收一组 `questions`，每项含选项和自由输入。`selected` 为空且没有 `custom` 表示用户跳过，超时是 `pending`，不是跳过。子代理不能提问，所以它把问题留在结果里；工具不存在时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，且没有 `skipped` 状态。把跳过的步骤保留为 `skip: <reason> - <step>` 并把状态标为 `completed`。 |
 | Run another pstack skill (`/name` or "the **name** skill") | `skill` 按精确名称加载目录中的技能。带 `disable-model-invocation: true` 的技能对 `skill` 隐藏，所以用 `read` 读取 `<pstack>/skills/<name>/SKILL.md`；用户 `/name` 手势会直接注入技能，不要再调用 `skill`。 |
@@ -25,8 +25,8 @@ pstack 技能使用 Cursor 名称。在 DSH 中，每个会话读一次本文件
 | `environment: "cloud"` | 没有云代理。有 `create_worktree` 这类独立检出工具时，把它的检出目录作为 `cwd`；否则写跳过行。 |
 | `environment: "local"` | 省略 `cwd`；子代理继承会话目录。 |
 | `cloud_base_branch: <b>` | 没有这个字段。把 `<b>` 作为 `create_worktree.from` 传入；否则告诉子代理先 checkout `<b>`。 |
-| `run_in_background: true` | 省略。`subagent` 立即返回并在完成时通知；没有后台开关。 |
-| `resume` | `send_message` 按 `agent_id` 继续子代理；运行中的子代理在下一步收到消息，空闲的会恢复。只有它永久停止时才新建 `subagent`。 |
+| `run_in_background: true` | 省略。`subagent` 立即返回它的名称并在完成时通知；没有后台开关。 |
+| `resume` | `send_message` 按 `agent` 继续子代理，值取 `list_agents` 里的名称或它的会话 id；运行中的子代理在下一步收到消息，空闲的会恢复。`interrupt_agent` 也用同一个 `agent`，但内置 preset 禁用了它，这种情况下视为无法中断。只有它永久停止时才新建 `subagent`。 |
 | `file_attachments` | 没有这个字段。把真实路径列在 `prompt` 里；子代理用 `read` 读取它们。 |
 
 ## 模型

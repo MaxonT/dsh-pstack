@@ -8,7 +8,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DSH |
 | --- | --- |
-| `Task` | `subagent` starts a fresh child and returns its id at once; `subagent_fork` seeds the child with the conversation instead. Put the task in `prompt`, the label in `description`, and the directory in `cwd`; Subagent fields covers the Cursor fields with no native argument. |
+| `Task` | `subagent` starts a fresh child and returns its name at once; `subagent_fork` seeds the child with the conversation instead. Put the task in `prompt`, the label in `description`, and the directory in `cwd`; Subagent fields covers the Cursor fields with no native argument. |
 | `AskQuestion` | `ask_user_question` takes a `questions` array of options and free input. An empty `selected` with no `custom` means the user skipped, and a timeout is `pending`, not skipped. A live child cannot ask, so it keeps the question in its result; ask in plain text when the tool is absent. |
 | Open a todolist | `todo_write` replaces the whole list and has no `skipped` status. Keep a skipped step visible as `skip: <reason> - <step>` and mark it `completed`. |
 | Run another pstack skill (`/name` or "the **name** skill") | `skill` loads a catalog skill by exact name. A skill with `disable-model-invocation: true` is hidden from `skill`, so `read` `<pstack>/skills/<name>/SKILL.md`; a user `/name` gesture injects the skill directly, so do not call `skill` again. |
@@ -25,8 +25,8 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | `environment: "cloud"` | No cloud agents. When a worktree tool such as `create_worktree` is available, pass its checkout as `cwd`; otherwise skip with the line. |
 | `environment: "local"` | Omit `cwd`; the child inherits the session directory. |
 | `cloud_base_branch: <b>` | No such field. Pass `<b>` as `create_worktree.from`; otherwise tell the child to check out `<b>` first. |
-| `run_in_background: true` | Omit. `subagent` returns immediately and notifies on completion; there is no background flag. |
-| `resume` | `send_message` continues the child by `agent_id`; a running child takes the message at its next step and an idle one resumes. Spawn a new `subagent` only when it stopped permanently. |
+| `run_in_background: true` | Omit. `subagent` returns its name immediately and notifies on completion; there is no background flag. |
+| `resume` | `send_message` continues the child by `agent`, its name from `list_agents` or its Session id; a running child takes the message at its next step and an idle one resumes. `interrupt_agent` takes the same `agent`, but built-in presets disable it, so treat interruption as unavailable there. Spawn a new `subagent` only when it stopped permanently. |
 | `file_attachments` | No such field. List the real paths in `prompt`; the child reads them with `read`. |
 
 ## Models
