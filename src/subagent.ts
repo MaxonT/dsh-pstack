@@ -247,10 +247,7 @@ export async function startChild(
 ): Promise<ChildRecord> {
   const provider = runtime.subagents.getProvider(plan.backend);
   if (provider === undefined) {
-    const available = runtime.subagents.list();
-    throw new Error(
-      `subagent provider "${plan.backend}" is not registered; available providers: ${available.length === 0 ? "(none)" : available.join(", ")}`,
-    );
+    throw new Error(`subagent provider "${plan.backend}" is not registered`);
   }
 
   assertCapabilities(provider.capabilities, plan);
@@ -263,16 +260,14 @@ export async function startChild(
   const activation = await runtime.subagents.startActivation({
     provider: plan.backend,
     label: plan.label,
-    request: {
-      prompt: [{ type: "text", text: plan.prompt }],
-      parent,
-      ...(plan.agentPreset === undefined ? {} : { agentPreset: plan.agentPreset }),
-      ...(cwd === undefined ? {} : { cwd }),
-      ...(plan.agentOptions === undefined ? {} : { agentOptions: plan.agentOptions }),
-      ...(plan.maxDepth === undefined ? {} : { maxDepth: plan.maxDepth }),
-    },
     signal,
     delivery: "parent",
+    prompt: [{ type: "text", text: plan.prompt }],
+    parent,
+    ...(plan.agentPreset === undefined ? {} : { agentPreset: plan.agentPreset }),
+    ...(cwd === undefined ? {} : { cwd }),
+    ...(plan.agentOptions === undefined ? {} : { agentOptions: plan.agentOptions }),
+    ...(plan.maxDepth === undefined ? {} : { maxDepth: plan.maxDepth }),
   });
   return recordFor(plan, activation);
 }

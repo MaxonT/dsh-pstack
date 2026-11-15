@@ -185,7 +185,7 @@ describe("pstack_subagent arguments and planning", () => {
 
   it("resolves a relative cwd against the session directory", async () => {
     const directory = tempDir();
-    const starts: { request?: { cwd?: string } }[] = [];
+    const starts: { cwd?: string }[] = [];
     const runtime = fakeRuntime({
       workingDirectory: {
         ensure: async () => directory,
@@ -199,7 +199,7 @@ describe("pstack_subagent arguments and planning", () => {
         list: () => ["spawn"],
         resolveMaxDepth: () => 2,
         startActivation: async (spec: unknown) => {
-          starts.push(spec as { request?: { cwd?: string } });
+          starts.push(spec as { cwd?: string });
           return { childId: "child-1" };
         },
       } as unknown as DelegationRuntime["subagents"],
@@ -210,7 +210,7 @@ describe("pstack_subagent arguments and planning", () => {
       runtime,
       new AbortController().signal,
     );
-    expect(starts[0]?.request?.cwd).toBe(directory);
+    expect(starts[0]?.cwd).toBe(directory);
   });
 
   it("rejects a depth above the configured cap", () => {
