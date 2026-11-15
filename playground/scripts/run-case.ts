@@ -109,23 +109,35 @@ function eventText(event: SessionEvent): string {
  */
 function activeSubagents(file: string): number {
   const events = readSessionEvents(file);
-  const ids = new Set<string>();
+  // rc.2 addresses children by name and its completion notice reads
+  // "Background subagent <name>". Older runtimes used the Session id. Track both
+  // handles per cataloged child and accept a finish notice that carries either.
+  const handles = new Map<string, Set<string>>();
   const finished = new Set<string>();
   for (const event of events) {
     if (event.type === "subagent/catalog") {
-      const childId = (event.data as { childId?: unknown } | undefined)?.childId;
-      if (typeof childId === "string") ids.add(childId);
+      const data = event.data as { childId?: unknown; name?: unknown } | undefined;
+      const childId = typeof data?.childId === "string" ? data.childId : undefined;
+      if (childId === undefined) continue;
+      const set = handles.get(childId) ?? new Set<string>();
+      set.add(childId);
+      if (typeof data?.name === "string" && data.name !== "") set.add(data.name);
+      handles.set(childId, set);
       continue;
     }
     if (event.type !== "user/message") continue;
     const text = eventText(event);
-    for (const id of ids) {
-      if (text.includes(`Background subagent ${id}`) && /finished|was stopped/.test(text)) {
-        finished.add(id);
+    for (const [childId, names] of handles) {
+      if (finished.has(childId)) continue;
+      for (const handle of names) {
+        if (text.includes(`Background subagent ${handle}`) && /finished|was stopped/.test(text)) {
+          finished.add(childId);
+          break;
+        }
       }
     }
   }
-  return ids.size - finished.size;
+  return handles.size - finished.size;
 }
 
 function waitForSubagentsSettled(file: string): void {
