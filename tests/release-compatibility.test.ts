@@ -150,7 +150,8 @@ describe("release compatibility metadata", () => {
     }
     for (const file of ["README.md", "README.zh.md"]) {
       const text = readFileSync(join(ROOT, file), "utf8");
-      expect(text).toContain("`0.3.2`、`0.4.1`");
+      const separator = file === "README.md" ? ", " : "、";
+      expect(text).toContain(`\`0.3.2\`${separator}\`0.4.1\``);
       expect(text).toContain(LEGACY_KEY);
       expect(text).toContain(file === "README.md" ? "Keep this English tail." : "保留这段中文。");
     }

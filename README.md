@@ -24,7 +24,7 @@
       <td align="center"><strong>23</strong><br /><sub>playbooks</sub></td>
       <td align="center"><strong>7</strong><br /><sub>plugin tools</sub></td>
       <td align="center"><strong>5</strong><br /><sub>agent presets</sub></td>
-      <td align="center"><strong>5</strong><br /><sub>bundled scripts</sub></td>
+      <td align="center"><strong>5</strong><br /><sub>maintenance scripts</sub></td>
     </tr>
   </table>
 
@@ -47,7 +47,7 @@
 The [runtime mapping](./port/dsh.md) maps each Cursor feature to DeepSeek Harness. Real DSH Web sessions test the port, and [Port verification](#-port-verification) explains how.
 
 > [!IMPORTANT]
-> Requires DSH `>=0.2.2-rc.1` and Node.js `>=24.21.1`. See each bundled script's help for the runtime it needs.
+> Requires DSH `>=0.2.2-rc.1` and Node.js `>=24.21.1`. See each script's help for the runtime it needs.
 
 <a id="quick-start"></a>
 
@@ -233,7 +233,7 @@ Choose a release by its declared DSH range. Within each compatibility range, eve
 <!-- compatibility-keys: ["dsh-0.2.2-rc.1+port-v1","dsh-0.2.1-rc.5+legacy-v1","dsh-0.2.0-0.3.0+legacy-v1"] -->
 | DSH version | dsh-pstack release | Included pstack version |
 |---|---|---|
-| `>=0.2.2-rc.1` | `0.3.1`、`0.4.0` | `0.15.36` |
+| `>=0.2.2-rc.1` | `0.3.1`, `0.4.0` | `0.15.36` |
 | `>=0.2.1-rc.5` | `0.2.2` | `0.15.36` |
 | `>=0.2.0 < 0.3.0` | `0.1.0` | `0.15.29` |
 

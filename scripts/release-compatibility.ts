@@ -147,8 +147,8 @@ function serializeKeys(keys: string[]): string {
   return `<!-- compatibility-keys: ${JSON.stringify(keys)} -->`;
 }
 
-function serializeRow(row: CompatibilityRow): string {
-  return `| ${row.dshRange} | ${row.releases.join("、")} | ${row.pstackVersion} |`;
+function serializeRow(row: CompatibilityRow, separator: string): string {
+  return `| ${row.dshRange} | ${row.releases.join(separator)} | ${row.pstackVersion} |`;
 }
 
 function parseTable(
@@ -188,6 +188,7 @@ function updateReadme(path: string, heading: string, metadata: ReleaseMetadata, 
   const end = sectionEnd < 0 ? text.length : sectionEnd;
   const section = text.slice(start, end);
   const lines = section.split("\n");
+  const separator = path.includes(".zh.") ? "、" : ", ";
   const headerIndex = lines.findIndex((line) => line.startsWith("| DSH"));
   if (headerIndex < 0 || !/^\|[-| :]+\|$/.test(lines[headerIndex + 1]?.trim() ?? "")) {
     throw new Error(`${path} lacks a compatibility table header`);
@@ -200,7 +201,7 @@ function updateReadme(path: string, heading: string, metadata: ReleaseMetadata, 
     serializeKeys(updated.keys),
     lines[headerIndex],
     lines[headerIndex + 1],
-    ...updated.rows.map(serializeRow),
+    ...updated.rows.map((row) => serializeRow(row, separator)),
   ];
   const before = lines.slice(0, headerIndex - 1).join("\n");
   const after = lines.slice(dataEnd).join("\n").replace(/^\n*/, "\n\n");

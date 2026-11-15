@@ -24,7 +24,7 @@
       <td align="center"><strong>23</strong><br /><sub>playbook</sub></td>
       <td align="center"><strong>7</strong><br /><sub>插件工具</sub></td>
       <td align="center"><strong>5</strong><br /><sub>agent 预设</sub></td>
-      <td align="center"><strong>5</strong><br /><sub>随包脚本</sub></td>
+      <td align="center"><strong>5</strong><br /><sub>维护脚本</sub></td>
     </tr>
   </table>
 
@@ -47,7 +47,7 @@
 [运行时映射](./port/dsh.zh.md)给出每项 Cursor 能力到 DeepSeek Harness 的对应关系。移植由真实 DSH Web 会话验证，不靠比对文本，具体做法见[移植如何验证](#-移植如何验证)。
 
 > [!IMPORTANT]
-> 要求 DSH `>=0.2.2-rc.1`、Node.js `>=24.21.1`。部分随包脚本需要额外运行时，见对应脚本自身的帮助信息。
+> 要求 DSH `>=0.2.2-rc.1`、Node.js `>=24.21.1`。部分脚本需要额外运行时，见对应脚本自身的帮助信息。
 
 <a id="quick-start"></a>
 
