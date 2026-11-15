@@ -31,6 +31,7 @@
 2. 生成后运行 `vp run generate:check` 检查生成树。
 3. 用 `vpx scripts/generate-pstack.mjs --target port` 生成根 `pstack/`；加 `--check` 检查漂移。
 4. 破坏性适配同时更新 `package.json` 的 DSH 范围、`baseline.json` 的兼容键和各本地化 README 的兼容表。
+5. 发布说明由 `scripts/release-notes.ts` 从 `port/dsh.md`、`port/surface.json`、`port/baseline.json` 的产物差异和 `changes/` 手写注记生成，不再来自提交历史；注记格式见 `changes/README.md`。
 
 ## 边界
 
