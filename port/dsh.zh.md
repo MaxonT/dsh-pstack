@@ -33,7 +33,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `claude-<family>-<version>-<effort>[-fast]` | 不要传 Cursor slug。用 `pstack_roles` 读角色的 `provider`、`model`、`reasoningEffort`，以及该路由的可用 `efforts` 和默认档位。要改档位时从路由的 `efforts` 里另选一个，不要猜。`pstack_models` 只用于 setup 时发现已提供路由，或校验某条路由是否存在。去掉 `-fast`；DSH 没有速度参数。 |
+| `claude-<family>-<version>-<effort>[-fast]` | 不要传 Cursor slug。用 `pstack_roles` 读角色的 `provider`、`model`、`reasoningEffort` 和可用 `efforts`，改档位时从 `efforts` 里选；`pstack_models` 只用于 setup 或校验路由。去掉 `-fast`；DSH 没有速度参数。 |
 | A `grok-*`、`gpt-*` 或其他非 Claude slug | 选最接近的已公布路由，或省略 `provider` 和 `model` 让子智能体继承父路由，并说明这一点。 |
 | `auto` 或 `inherit-parent` | 省略 `provider` 和 `model`；子智能体继承父路由。 |
 | pstack 角色文件 | `$DSH_HOME/pstack-models.json`。用 `pstack_roles` 把角色映射到路由；`pstack_subagent` 不解析它。文件缺失时没有已配置路由，子智能体继承父路由。 |

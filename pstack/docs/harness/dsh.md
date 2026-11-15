@@ -33,7 +33,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `claude-<family>-<version>-<effort>[-fast]` | Do not pass a Cursor slug. Read `pstack_roles` for a role's `provider`, `model`, and `reasoningEffort`, plus that route's served `efforts` and default. To change the effort, pick another value from the route's `efforts` instead of guessing. Use `pstack_models` only to detect served routes during setup or to verify one exists. Drop `-fast`; DSH has no speed parameter. |
+| `claude-<family>-<version>-<effort>[-fast]` | Do not pass a Cursor slug. Read `pstack_roles` for the role's `provider`, `model`, `reasoningEffort`, and served `efforts`, then pick a value from `efforts` when changing effort; use `pstack_models` only for setup or to verify a route. Drop `-fast`; DSH has no speed parameter. |
 | A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route, or omit `provider` and `model` so the child inherits the parent route, and say so. |
 | `auto` or `inherit-parent` | Omit `provider` and `model`; the child inherits the parent route. |
 | The pstack role file | `$DSH_HOME/pstack-models.json`. Read `pstack_roles` to map a role to its route; `pstack_subagent` does not parse it. A missing file leaves no configured route, so the child inherits the parent route. |
