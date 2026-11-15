@@ -4,7 +4,8 @@
 // This never fails the build. It is a PR / release-time helper, not part of CI,
 // so historical commits without notes do not create noise.
 import { execFileSync } from "node:child_process";
-import { dirname, resolve } from "node:path";
+import { rmSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
@@ -27,14 +28,40 @@ function lines(text: string): string[] {
     .filter((line) => line !== "");
 }
 
+function addedNotes(base: string): string[] {
+  try {
+    return lines(
+      git(["diff", "--name-only", "--diff-filter=A", `${base}...HEAD`, "--", "changes"]),
+    ).filter((path) => path.endsWith(".md") && path !== "changes/README.md");
+  } catch {
+    return [];
+  }
+}
+
 export function main(argv: readonly string[] = process.argv.slice(2)): number {
   const { values } = parseArgs({
     args: [...argv],
-    options: { check: { type: "boolean" }, base: { type: "string" } },
+    options: { check: { type: "boolean" }, clean: { type: "boolean" }, base: { type: "string" } },
     allowPositionals: false,
   });
+  if (values.clean === true) {
+    const base = values.base;
+    if (base === undefined) {
+      console.error("--base <ref> is required with --clean.");
+      return 0;
+    }
+    const notes = addedNotes(base);
+    if (notes.length === 0) {
+      console.log(`No changes/ notes were added since ${base}.`);
+      return 0;
+    }
+    for (const path of notes) rmSync(join(ROOT, path), { force: true });
+    console.log(`Deleted ${notes.length} released changes/ note(s): ${notes.join(", ")}`);
+    console.log("Stage and commit the deletions (e.g. git add -A changes).");
+    return 0;
+  }
   if (values.check !== true) {
-    console.log("Nothing to do; pass --check --base <ref>.");
+    console.log("Nothing to do; pass --check or --clean with --base <ref>.");
     return 0;
   }
   const base = values.base;

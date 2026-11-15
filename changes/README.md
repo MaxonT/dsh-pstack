@@ -12,6 +12,6 @@
 
 ## 生命周期
 
-- 发布时 `scripts/release-notes.ts` 读取本目录除 `README.md` 外的所有 `.md`，拼接为发布说明的“用户可见变化”。
-- 发布后脚本打印这些注记的待删除列表，但**不自动删除**。维护者在下次发布前手动清理。
+- 发布时 `scripts/release-notes.ts` 只聚合上一个 tag 之后新增的 `.md`（排除 `README.md`），历史注记不会被重复使用。
+- 发布后可运行 `vp run changes:clean -- --base <上一个 tag>` 删除这些已发布注记，再提交删除；脚本不自动删除或提交。
 - 缺注记不阻塞发布。`scripts/changes.ts --check` 与 `scripts/release-notes.ts` 会在用户可见文件有改动却没有注记时给出软提醒。

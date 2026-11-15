@@ -258,11 +258,25 @@ export function diffBaseline(
   return lines;
 }
 
-function readChanges(): { files: string[]; body: string } {
+function readChanges(base: string | undefined): { files: string[]; body: string } {
   if (!existsSync(CHANGES_DIR)) return { files: [], body: "" };
-  const files = readdirSync(CHANGES_DIR)
+  let files = readdirSync(CHANGES_DIR)
     .filter((name) => name.endsWith(".md") && name !== "README.md")
     .sort();
+  if (base !== undefined) {
+    try {
+      const added = new Set(
+        git(["diff", "--name-only", "--diff-filter=A", `${base}...HEAD`, "--", "changes"])
+          .split("\n")
+          .map((path) => path.trim())
+          .filter((path) => path.startsWith("changes/") && path.endsWith(".md"))
+          .map((path) => path.slice("changes/".length)),
+      );
+      files = files.filter((name) => added.has(name));
+    } catch {
+      // A missing base ref falls back to every pending note.
+    }
+  }
   const body = files
     .map((name) => readFileSync(join(CHANGES_DIR, name), "utf8").trim())
     .filter((text) => text !== "")
@@ -301,7 +315,7 @@ function userVisibleSection(
 }
 
 function buildNotes(base: string, verbose = false): string {
-  const changes = readChanges();
+  const changes = readChanges(base);
   const sections: string[] = [];
   const visible = userVisibleSection(base, changes.files, changes.body);
   if (visible !== undefined) sections.push(visible);
@@ -335,8 +349,8 @@ function buildNotes(base: string, verbose = false): string {
   return `${sections.join("\n\n")}\n`;
 }
 
-function reportPendingChanges(): void {
-  const { files } = readChanges();
+function reportPendingChanges(base: string): void {
+  const { files } = readChanges(base);
   if (files.length === 0) {
     console.error("changes/ 下没有待删除的注记。");
     return;
@@ -367,7 +381,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
     writeFileSync(resolve(values.output), notes);
     console.log(`Wrote release notes for ${base} to ${values.output}.`);
   }
-  reportPendingChanges();
+  reportPendingChanges(base);
   return 0;
 }
 

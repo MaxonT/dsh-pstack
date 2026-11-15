@@ -57,7 +57,8 @@
     "changes:check": "vpx scripts/changes.ts --check",
     "prerelease": "vp run ci",
     "release": "bumpp",
-    "prepublishOnly": "vp run ci"
+    "prepublishOnly": "vp run ci",
+    "changes:clean": "vpx scripts/changes.ts --clean"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "catalog:runtime"

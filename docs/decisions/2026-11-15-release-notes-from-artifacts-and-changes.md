@@ -15,7 +15,7 @@ Review: 2026-11-15
 采用 B+C 混合自动方案。
 
 - B 产物差异：`scripts/release-notes.ts` 对比上一个 git tag 与工作区，自动生成“适配行为变化”“工具接口变化”“兼容基线变化”三节。适配行为来自 `port/dsh.md` 的表格行级 diff，按 `##` 分节、每行第一列的 Cursor 项为 key，输出新增、删除和改动条目。工具接口来自 `port/surface.json` 的参数增删改，缺失时说明首次引入；该文件由 `scripts/release-surface.ts` 用工具工厂导出稳定的公开工具清单。兼容基线来自 `port/baseline.json` 的 compatibilityKey、DSH 范围和 pstackCommit。
-- C changes 注记：用户可见变更在 `changes/` 下写一条 `<date>-<slug>.md`，发布时由脚本聚合到“用户可见变化”一节，写清是什么、为什么和迁移提示。格式见 `changes/README.md`。
+- C changes 注记：用户可见变更在 `changes/` 下写一条 `<date>-<slug>.md`，发布时由脚本聚合到“用户可见变化”一节，写清是什么、为什么和迁移提示。格式见 `changes/README.md`。发布说明只取上一个 tag 之后新增的注记，历史注记不重复使用；发布后可运行 `changes:clean --base <prev-tag>` 删除已发布注记并自行提交，脚本不自动删除或提交。
 - 发布工作流删除 `changelogithub` 步骤，在 npm publish 之后计算上一个 tag 并运行 `scripts/release-notes.ts`，用 `gh release create` 或 `gh release edit` 创建或更新 GitHub Release。
 - 缺注记采用软提醒：`scripts/changes.ts --check` 与 `scripts/release-notes.ts` 会在用户可见文件有改动却没有 `changes/` 注记时打印提示，但不阻塞发布，`changes:check` 也不加入 `ci`。
 
@@ -33,5 +33,5 @@ Review: 2026-11-15
 
 - 发布说明的正文来自脚本，不再来自提交历史；`changelogithub` 依赖被移除。
 - `port/surface.json` 成为受版本管理的产物，工具 schema 改动会在发布说明里显式出现，`surface:check` 加入 `ci` 防止漂移。
-- `changes/` 注记发布后由脚本打印待删除列表但不自动删除，由维护者手动清理。
+- `changes/` 注记发布后由维护者用 `changes:clean --base <prev-tag>` 删除并提交，脚本不自动删除；发布说明只聚合上一个 tag 之后新增的注记，历史注记不会重复出现。
 - 缺注记只是提示；`changes:check` 是 PR 与发布辅助命令，不进 `ci`，避免历史提交噪音。
