@@ -1,0 +1,128 @@
+{
+  "tools": [
+    {
+      "name": "pstack_agents",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {},
+        "required": []
+      }
+    },
+    {
+      "name": "pstack_interrupt",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "childId": {
+            "type": "string",
+            "description": "The pstack child id returned by pstack_subagent."
+          }
+        },
+        "required": ["childId"]
+      }
+    },
+    {
+      "name": "pstack_models",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "A registered provider id or display name; omit for every provider."
+          }
+        }
+      }
+    },
+    {
+      "name": "pstack_roles",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
+    },
+    {
+      "name": "pstack_send",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "childId": {
+            "type": "string",
+            "description": "The pstack child id returned by pstack_subagent."
+          },
+          "message": {
+            "type": "string",
+            "description": "The follow-up message to deliver to that child."
+          }
+        },
+        "required": ["childId", "message"]
+      }
+    },
+    {
+      "name": "pstack_skill",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Exact kebab-case skill name, such as `how` or `principle-prove-it-works`."
+          },
+          "resource": {
+            "type": "string",
+            "description": "Optional path relative to the skill directory."
+          }
+        },
+        "required": ["name"]
+      }
+    },
+    {
+      "name": "pstack_subagent",
+      "parameters": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Optional short 3-5 word label for the child; derived from the prompt when omitted."
+          },
+          "prompt": {
+            "type": "string",
+            "description": "The complete, self-contained brief. The child does not see this conversation."
+          },
+          "agent": {
+            "type": "string",
+            "enum": ["poteto-agent", "comment-sicko", "readonly", "general"],
+            "description": "Optional child preset; defaults to \"general\". \"poteto-agent\" for pstack implementation, \"comment-sicko\" for comment review, \"readonly\" for a sandbox-enforced read-only researcher."
+          },
+          "provider": {
+            "type": ["string", "null"],
+            "description": "Optional model provider; pass together with `model` to override the child route, or omit both to inherit the parent route."
+          },
+          "model": {
+            "type": ["string", "null"],
+            "description": "Optional model id; pass together with `provider` to override the child route, or omit both to inherit the parent route."
+          },
+          "reasoningEffort": {
+            "type": ["string", "null"],
+            "description": "Optional advertised reasoning-effort token; omit to keep the route's default effort."
+          },
+          "cwd": {
+            "type": ["string", "null"],
+            "description": "Optional initial child working directory; omit to inherit the session directory."
+          },
+          "maxDepth": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "description": "Optional delegation-depth cap. Omit or null to use the configured row and Host cap; explicit values must be at least 1 and cannot exceed that cap."
+          }
+        },
+        "required": ["prompt"]
+      }
+    }
+  ]
+}
