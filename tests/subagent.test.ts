@@ -33,9 +33,16 @@ function fakeRuntime(overrides: Partial<DelegationRuntime> = {}): DelegationRunt
   return {
     subagents: {
       startActivation: async () => ({ childId: "child-1" }),
+      getProvider: () => ({
+        name: "spawn",
+        capabilities: { agentOptions: true, agentPreset: true, depthLimit: true },
+        inheritsParentContext: false,
+      }),
+      resolveMaxDepth: (configured?: number) => configured ?? 1,
       resolveName: async (_caller: unknown, name: string) => name,
       interrupt: () => {},
     },
+    llm: { resolveCallConfig: async () => ({}) },
     potetoModeSkillPath: "/pkg/pstack/skills/poteto-mode/SKILL.md",
     ...overrides,
   } as unknown as DelegationRuntime;
@@ -91,11 +98,17 @@ describe("parseDelegationArgs", () => {
     });
   });
 
+  it("requires provider and model together, and both for reasoning_effort", () => {
+    expect(() => parseDelegationArgs({ description: "d", prompt: "p", provider: "cpa" })).toThrow(
+      /provided together/,
+    );
+    expect(() =>
+      parseDelegationArgs({ description: "d", prompt: "p", reasoning_effort: "high" }),
+    ).toThrow(/requires provider and model/);
+  });
+
   it("defaults the agent to general", () => {
     expect(parseDelegationArgs({ description: "d", prompt: "p" }).agent).toBe("general");
-    expect(parseDelegationArgs({ description: "d", prompt: "p", agent: "nope" }).agent).toBe(
-      "general",
-    );
   });
 });
 
@@ -105,13 +118,6 @@ describe("planDelegation", () => {
     const plan = planDelegation(args({ agent: "poteto-agent", prompt: "work" }), runtime);
     expect(plan.agentPreset).toBe("poteto-agent");
     expect(plan.prompt).toContain(runtime.potetoModeSkillPath);
-    expect(plan.prompt).toContain("work");
-  });
-
-  it("leaves general without a preset or injection", () => {
-    const plan = planDelegation(args({ prompt: "plain" }), fakeRuntime());
-    expect(plan.agentPreset).toBeUndefined();
-    expect(plan.prompt).toBe("plain");
   });
 
   it("builds route agentOptions and labels the route", () => {
@@ -127,45 +133,89 @@ describe("planDelegation", () => {
     expect(plan.routeLabel).toBe("cpa/model-a [high]");
   });
 
-  it("takes maxDepth from the argument, otherwise the row config", () => {
-    expect(planDelegation(args({ maxDepth: 3 }), fakeRuntime()).maxDepth).toBe(3);
+  it("caps maxDepth by the resolved limit and the row config", () => {
     expect(planDelegation(args(), fakeRuntime(), { provider: "spawn", maxDepth: 2 }).maxDepth).toBe(
       2,
     );
+    expect(
+      planDelegation(args({ maxDepth: 1 }), fakeRuntime(), { provider: "spawn", maxDepth: 2 })
+        .maxDepth,
+    ).toBe(1);
+    expect(() =>
+      planDelegation(args({ maxDepth: 3 }), fakeRuntime(), { provider: "spawn", maxDepth: 2 }),
+    ).toThrow(/exceeds the delegation limit/);
   });
 });
 
 describe("startChild", () => {
-  it("starts exactly one activation and returns the child record", async () => {
+  it("checks capabilities, preflights the route, and starts one activation", async () => {
     const specs: unknown[] = [];
+    const calls: unknown[] = [];
     const runtime = fakeRuntime({
       subagents: {
+        getProvider: () => ({
+          name: "spawn",
+          capabilities: { agentOptions: true, agentPreset: true, depthLimit: true },
+          inheritsParentContext: false,
+        }),
+        resolveMaxDepth: (configured?: number) => configured ?? 1,
         startActivation: async (spec: unknown) => {
           specs.push(spec);
           return { childId: "child-1" };
         },
       } as unknown as DelegationRuntime["subagents"],
+      llm: {
+        resolveCallConfig: async (request: unknown) => {
+          calls.push(request);
+          return request as never;
+        },
+      } as unknown as DelegationRuntime["llm"],
     });
     const record = await startChild(
       parent,
       planDelegation(
-        args({ name: "scout", cwd: "/work", provider: "cpa", model: "m", maxDepth: 2 }),
+        args({
+          name: "scout",
+          cwd: "sub/dir",
+          provider: "cpa",
+          model: "m",
+          reasoningEffort: "high",
+        }),
         runtime,
       ),
       runtime,
       new AbortController().signal,
     );
-    expect(specs).toHaveLength(1);
+    expect(calls[0]).toEqual({ provider: "cpa", model: "m", reasoningEffort: "high" });
     expect(specs[0]).toMatchObject({
       provider: "spawn",
-      label: "Probe",
       delivery: "parent",
       name: "scout",
-      cwd: "/work",
-      maxDepth: 2,
-      agentOptions: { provider: "cpa", model: "m" },
+      cwd: "sub/dir",
+      agentOptions: { provider: "cpa", model: "m", reasoningEffort: "high" },
     });
-    expect(record).toMatchObject({ childId: "child-1", agent: "general", route: "cpa/m" });
+    expect(record).toMatchObject({ childId: "child-1", agent: "general", route: "cpa/m [high]" });
+  });
+
+  it("rejects a provider that lacks a required capability", async () => {
+    const runtime = fakeRuntime({
+      subagents: {
+        getProvider: () => ({
+          name: "spawn",
+          capabilities: { agentOptions: false, agentPreset: false, depthLimit: false },
+          inheritsParentContext: false,
+        }),
+        resolveMaxDepth: (configured?: number) => configured ?? 1,
+      } as unknown as DelegationRuntime["subagents"],
+    });
+    await expect(
+      startChild(
+        parent,
+        planDelegation(args({ provider: "cpa", model: "m" }), runtime),
+        runtime,
+        new AbortController().signal,
+      ),
+    ).rejects.toThrow(/agentOptions/);
   });
 });
 

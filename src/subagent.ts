@@ -10,15 +10,19 @@
 
 import type { Agent, AgentOptions } from "@deepseek-ai/dsh-agent";
 import type { Context } from "@deepseek-ai/cordis";
-import type { ReasoningEffortId } from "@deepseek-ai/dsh-llm";
-import type { SubagentActivation, SubagentRuntime } from "@deepseek-ai/dsh-subagent";
+import type { LlmRuntime, ReasoningEffortId } from "@deepseek-ai/dsh-llm";
+import type {
+  SubagentActivation,
+  SubagentCapabilities,
+  SubagentRuntime,
+} from "@deepseek-ai/dsh-subagent";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
 import { POTETO_MODE_SKILL_PATH } from "./lib/paths.ts";
 
 export const name = "pstack-subagent";
 
-export const inject = ["tools", "subagents"];
+export const inject = ["tools", "subagents", "llm"];
 
 export const TOOL_NAME = "pstack_subagent";
 
@@ -84,6 +88,7 @@ export interface ChildRecord {
 /** The live services one delegation reads. */
 export interface DelegationRuntime {
   readonly subagents: SubagentRuntime;
+  readonly llm: LlmRuntime;
   readonly potetoModeSkillPath: string;
 }
 
@@ -125,14 +130,23 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
       ? (agentValue as AgentKind)
       : "general";
   const maxDepth = record["maxDepth"];
+  const provider = stringArg(record["provider"]);
+  const model = stringArg(record["model"]);
+  const reasoningEffort = stringArg(record["reasoning_effort"]);
+  if ((provider === null) !== (model === null)) {
+    throw new Error("provider and model must be provided together, or both omitted");
+  }
+  if (reasoningEffort !== null && (provider === null || model === null)) {
+    throw new Error("reasoning_effort requires provider and model");
+  }
   return {
     description,
     prompt,
     agent,
     name: stringArg(record["name"]),
-    provider: stringArg(record["provider"]),
-    model: stringArg(record["model"]),
-    reasoningEffort: stringArg(record["reasoning_effort"]),
+    provider,
+    model,
+    reasoningEffort,
     cwd: stringArg(record["cwd"]),
     maxDepth: typeof maxDepth === "number" ? maxDepth : null,
   };
@@ -149,7 +163,11 @@ export function planDelegation(
     args.agent === "poteto-agent"
       ? injectPotetoModePath(args.prompt, runtime.potetoModeSkillPath)
       : args.prompt;
-  const maxDepth = args.maxDepth ?? config.maxDepth;
+  const limit = runtime.subagents.resolveMaxDepth(config.maxDepth);
+  const maxDepth = args.maxDepth ?? limit;
+  if (maxDepth !== undefined && limit !== undefined && maxDepth > limit) {
+    throw new Error(`maxDepth ${maxDepth} exceeds the delegation limit of ${limit}`);
+  }
   const effort = args.reasoningEffort ?? undefined;
   const agentOptions = buildAgentOptions(args.provider, args.model, effort);
 
@@ -174,6 +192,13 @@ export async function startChild(
   runtime: DelegationRuntime,
   signal: AbortSignal,
 ): Promise<ChildRecord> {
+  const provider = runtime.subagents.getProvider(plan.backend);
+  if (provider === undefined) {
+    throw new Error(`subagent provider "${plan.backend}" is not registered`);
+  }
+  assertCapabilities(provider.capabilities, plan);
+  await preflightRoute(runtime.llm, plan, signal);
+
   const activation = await runtime.subagents.startActivation({
     provider: plan.backend,
     label: plan.label,
@@ -205,6 +230,7 @@ export function apply(ctx: Context, rawConfig?: unknown): void {
   const config = normalizeConfig(rawConfig);
   const runtime: DelegationRuntime = {
     subagents: ctx.subagents,
+    llm: ctx.llm,
     potetoModeSkillPath: POTETO_MODE_SKILL_PATH,
   };
   ctx.tools.register(createPstackSubagentTool(runtime, config));
@@ -434,4 +460,35 @@ function injectPotetoModePath(task: string, path: string): string {
     "",
     task,
   ].join("\n");
+}
+
+function assertCapabilities(capabilities: SubagentCapabilities, plan: DelegationPlan): void {
+  const missing = [
+    ...(plan.agentOptions !== undefined && !capabilities.agentOptions ? ["agentOptions"] : []),
+    ...(plan.agentPreset !== undefined && !capabilities.agentPreset ? ["agentPreset"] : []),
+    ...(plan.maxDepth !== undefined && !capabilities.depthLimit ? ["maxDepth"] : []),
+  ];
+  if (missing.length > 0) {
+    throw new Error(`subagent provider does not support ${missing.join(", ")}`);
+  }
+}
+
+async function preflightRoute(
+  llm: LlmRuntime,
+  plan: DelegationPlan,
+  signal: AbortSignal,
+): Promise<void> {
+  const options = plan.agentOptions;
+  if (options === undefined || options.provider === undefined || options.model === undefined)
+    return;
+  await llm.resolveCallConfig(
+    {
+      provider: options.provider,
+      model: options.model,
+      ...(options.reasoningEffort === undefined
+        ? {}
+        : { reasoningEffort: options.reasoningEffort }),
+    },
+    signal,
+  );
 }
