@@ -59,6 +59,18 @@ describe("createPotetoModeSection", () => {
     expect(section.text).toContain(harnessDocPath);
     expect(section.text).not.toContain("disable-model-invocation: true");
   });
+
+  it("names the preset label it is given", () => {
+    const { skillPath, directory } = temporarySkill();
+    const section = createPotetoModeSection(
+      skillPath,
+      join(directory, "dsh.md"),
+      "poteto-mode-creator",
+    );
+
+    expect(section.text).toContain("persistent pstack `poteto-mode-creator` root preset");
+    expect(section.text).not.toContain("persistent pstack `poteto-mode` root preset");
+  });
 });
 
 describe("poteto-mode root preset", () => {
@@ -99,6 +111,7 @@ describe("poteto-mode creator root preset", () => {
     expect(block).toContain("id: tool-cordis");
     expect(block).toContain("customSkillDirs");
     expect(block).toContain("@deepseek-ai/dsh-agent-preset");
+    expect(block).toContain("presetLabel: poteto-mode-creator");
     expect(block).toContain("id: tool-subagent-control");
     expect(block).not.toMatch(/^\s+- id: tool-subagent$/m);
     expect(block).not.toMatch(/^\s+- id: tool-subagent-fork$/m);

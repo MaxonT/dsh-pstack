@@ -289,6 +289,8 @@
             disabled: !!js "!ctx.get('profileContext')"
           - id: poteto-mode-section
             name: dsh-pstack/poteto-mode
+            config:
+              presetLabel: poteto-mode-creator
 
     - id: preset-poteto-agent
       name: "dsh-pstack/preset"

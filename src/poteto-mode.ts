@@ -40,7 +40,8 @@ export interface SystemPromptHost {
 const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
 
 /**
- * Build the persistent section from a skill file and the DSH adapter path.
+ * Build the persistent section from a skill file, the DSH adapter path, and the
+ * name of the root preset that mounts it.
  *
  * The leading YAML frontmatter is stripped, and `interpolate: false` keeps any
  * literal `{{...}}` in the skill body from being resolved as a prompt variable.
@@ -48,11 +49,12 @@ const FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
 export function createPotetoModeSection(
   skillPath: string = POTETO_MODE_SKILL_PATH,
   harnessDocPath: string = HARNESS_DOC_PATH,
+  presetLabel: string = "poteto-mode",
 ): PromptSectionLike {
   const body = readFileSync(skillPath, "utf8").replace(FRONTMATTER, "");
   const skillDirectory = dirname(skillPath);
   const text = [
-    "You are running in the persistent pstack `poteto-mode` root preset. The full `poteto-mode` skill below stays in this system prompt for every turn of the session.",
+    `You are running in the persistent pstack \`${presetLabel}\` root preset. The full \`poteto-mode\` skill below stays in this system prompt for every turn of the session.`,
     "",
     `- Skill file: ${skillPath}`,
     `- Skill directory: ${skillDirectory}`,
@@ -69,10 +71,15 @@ export function createPotetoModeSection(
 export interface PotetoModeSectionPaths {
   readonly skillPath?: string;
   readonly harnessDocPath?: string;
+  readonly presetLabel?: string;
 }
 
 export function apply(ctx: Context, paths?: PotetoModeSectionPaths): void {
   const host = ctx as unknown as SystemPromptHost;
-  const section = createPotetoModeSection(paths?.skillPath, paths?.harnessDocPath);
+  const section = createPotetoModeSection(
+    paths?.skillPath,
+    paths?.harnessDocPath,
+    paths?.presetLabel,
+  );
   ctx.effect(() => host.systemPrompt.section(section), "pstack.poteto-mode.section()");
 }
