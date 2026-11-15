@@ -1,10 +1,10 @@
 # 决策：全项目类型优先，减少防御代码与类型转换
 
-Status: proposed
+Status: accepted
 Date: 2026-11-13
 Scope: src/**, playground/**, tests/**, scripts/**, tsconfig.json, playground/tsconfig.json, docs/decisions/**
-Implemented-by: -
-Review: 2026-11-13
+Implemented-by: commit:f613f24
+Review: 2026-11-15
 
 ## 背景
 

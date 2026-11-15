@@ -1,10 +1,10 @@
 # 决策：以 capability 驱动验证覆盖
 
-Status: proposed
+Status: accepted
 Date: 2026-11-13
 Scope: playground/**, docs/decisions/**
-Implemented-by: -
-Review: 2026-11-13
+Implemented-by: commit:99e6036
+Review: 2026-11-15
 
 ## 背景
 

@@ -1,9 +1,9 @@
 # 决策：发布说明由产物差异与 changes 注记生成
 
-Status: proposed
+Status: accepted
 Date: 2026-11-15
 Scope: .github/workflows/release.yml, scripts/**, changes/**, package.json, port/surface.json, docs/decisions/**
-Implemented-by: -
+Implemented-by: commit:858b589
 Review: 2026-11-15
 
 ## 背景

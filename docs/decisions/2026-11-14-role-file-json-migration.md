@@ -1,10 +1,10 @@
 # 决策：角色文件从 mdc 行格式迁移为 pstack-models.json
 
-Status: proposed
+Status: accepted
 Date: 2026-11-14
 Scope: src/**, docs/architecture.md, docs/glossary.md, port/dsh.md, port/dsh.zh.md, README.md, README.zh.md, tests/**
-Implemented-by: -
-Review: 2026-11-14
+Implemented-by: commit:50eb307
+Review: 2026-11-15
 
 ## 背景
 
