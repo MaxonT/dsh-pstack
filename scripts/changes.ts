@@ -60,7 +60,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
   let notes: string[] = [];
   try {
     notes = lines(git(["diff", "--name-only", "--diff-filter=A", range, "--", "changes"])).filter(
-      (path) => path.endsWith(".md"),
+      (path) => path.endsWith(".md") && path !== "changes/README.md",
     );
   } catch {
     notes = [];
