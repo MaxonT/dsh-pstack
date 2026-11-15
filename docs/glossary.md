@@ -38,7 +38,7 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 
 ## Playground（验证场）
 
-`playground/` 的真实 DSH Web 会话验证环境。它运行 raw/adapted 能力 probe，收集 RunRecord、SessionEvidence 和评审快照，为 port 和 src 提供缺口与结论。
+`playground/` 的真实 DSH Web 会话验证环境。它运行 raw/adapted 能力 probe，收集 RunRecord、SessionAnalysis 和评审快照，为 port 和 src 提供缺口与结论。
 
 ## Raw 与 Adapted
 

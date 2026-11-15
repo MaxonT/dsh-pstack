@@ -42,7 +42,7 @@ playground 真实会话验证
 | 技能加载 | `src/skill.ts`、`src/lib/paths.ts` | 实现 `pstack_skill`，按名称加载技能及目录内资源；集中定义发布包内资源路径。 |
 | 模型目录 | `src/models.ts`、`src/models/catalogue.ts` | 实现 `pstack_models`，读取实时 LLM adapter 目录，保留单 provider 或 model 的发现错误；共享 catalogue 类型、schema 与 wire 解析。 |
 | 角色清单 | `src/roles/role-manifest.ts`、`src/role-catalog.ts` | 定义角色 key 与 shape；实现只读的 `pstack_roles`，按角色报告配置好的 provider/model/effort 路由。 |
-| 子代理委派 | `src/subagent.ts` | 实现 `pstack_subagent` 薄包装：一次调用只启动一个子代理，只有 `prompt` 必填；`provider`/`model`/`reasoningEffort` 覆盖子代理路由，省略则继承父路由；完成参数、能力和模型预检后调用 `ctx.subagents.startActivation`。 |
+| 子代理委派 | `src/subagent.ts` | 实现 `pstack_subagent` 薄包装：一次调用只启动一个子代理，只有 `prompt` 必填；`provider`/`model`/`reasoningEffort` 覆盖子代理路由，省略则继承父路由；完成参数、能力和模型预检后调用 `ctx.subagents.startActivation`。同一模块还注册 `pstack_agents`、`pstack_send`、`pstack_interrupt`，用于列出、续聊和中断 pstack 子代理。 |
 | 角色文件 | `src/roles/role-store.ts`、`src/roles/route.ts`、`src/roles/budget.ts`、`src/roles/role-editor.ts`、`src/compat/legacy-role-file.ts` | 读写 `$DSH_HOME/pstack-models.json` 这份 typed JSON 文档，以共享 Route 语法保存每个角色的路由；旧 `.mdc` 行格式只在首次读取时由 `compat/` 迁移。按预算把目标推理档位映射到具体模型并原子保存。 |
 | 角色 Remote 边界 | `src/roles/role-wire.ts`、`src/roles/role-remote.ts`、`src/role-service.ts` | 定义并严格校验传输结构；共享 Typert 描述符；在 Host 暴露状态、目录、保存和预算应用方法。 |
 | 根与子代理 preset | `src/preset.ts`、`src/presets/preset-copy.ts`、`src/poteto-mode.ts`、`src/readonly.ts` | 注册本地化 preset，向根会话注入常驻 `poteto-mode` 内容，并为只读子代理设置沙箱策略。 |
@@ -50,9 +50,9 @@ playground 真实会话验证
 | 角色与插件页面 | `src/client/pages/RoleSettingsPage.tsx`、`src/client/pages/RecommendedPluginsPage.tsx`、`src/client/components/RoleCard.tsx`、`src/client/components/BudgetDialog.tsx` | 编辑角色草稿并展示保存结果；按预算批量预览并应用推理档位；展示关联插件及其变更结果。 |
 | Client 支撑 | `src/client/components/`（`ui.tsx`、`icons.tsx`、`styles.ts`、`toast.tsx`、`message.ts`、`focus-trap.ts`）、`src/client/roles/`（`role-copy.ts`、`role-draft.ts`、`role-selectors.ts`）、`src/client/locales/` | 提供本插件的 UI 组件、样式、共享提示、焦点陷阱、翻译、角色草稿和选择器文案。 |
 | 移植与生成 | `scripts/generate-pstack.mjs`、`port/dsh.md`、`port/dsh.zh.md`、`playground/raw/`（`dsh.md`、`dsh.zh.md`、`dsh-evidence.md`）、`playground/scenarios/` | 从固定上游生成根 `pstack/` 和 `playground/raw/pstack/`；按 `playground/docs/raw.md` 的规则维护 DSH 适配文档，并在 `playground/scenarios/capability-inventory.json` 和 `playground/scenarios/capabilities/` 维护能力探针。 |
-| 发布元数据 | `scripts/release-compatibility.ts`、`bump.config.ts` | 按显式兼容键同步各本地化 README 的版本表；每个 `x.y` 保留最新 `z`，新兼容键新增行，并把对应本地化 README 加入发布提交。 |
+| 发布元数据与发布说明 | `scripts/release-compatibility.ts`、`scripts/release-notes.ts`、`scripts/release-surface.ts`、`scripts/changes.ts`、`bump.config.ts` | 按显式兼容键同步各本地化 README 的版本表；每个 `x.y` 保留最新 `z`，新兼容键新增行，并把对应本地化 README 加入发布提交。发布说明由 `release-notes.ts` 从 `port/dsh.md`、`port/surface.json`、`port/baseline.json` 的产物差异与 `changes/` 注记生成；`release-surface.ts` 维护 `port/surface.json`，`changes.ts` 提供缺注记软提醒。 |
 | 构建与打包 | `vite.config.ts`、`package.json` | 分别构建 Host 与浏览器 Client；导出 Host 模块，复制生成树和技能资源。 |
-| 自动化验证 | `tests/`、`playground/scripts/`（doctor、raw-generate、prepare、bootstrap、run、run-batch、collect、review、status、stop、browser） | 运行单元和 DOM 交互测试；在真实 DSH playground 中运行 capability probes，收集 RunRecord、SessionAnalysis 和当前评审快照。 |
+| 自动化验证 | `tests/`、`playground/scripts/`（doctor、prepare、bootstrap、run-case、run-batch、collect、redact、status、stop、stop-task、browser） | 运行单元和 DOM 交互测试；在真实 DSH playground 中运行 capability probes，收集 RunRecord、SessionAnalysis 和当前评审快照。 |
 
 ## 依赖方向
 
