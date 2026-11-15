@@ -389,12 +389,12 @@ export function createPstackInterruptTool(runtime: DelegationRuntime): ToolDefin
       type: "object",
       additionalProperties: false,
       properties: {
-        childId: {
+        agent: {
           type: "string",
-          description: "The pstack child id returned by pstack_subagent.",
+          description: "The child agent to stop: its name from `list_agents` or its Session id.",
         },
       },
-      required: ["childId"],
+      required: ["agent"],
     },
     output: {
       schema: INTERRUPT_OUTPUT_SCHEMA,
@@ -405,11 +405,9 @@ export function createPstackInterruptTool(runtime: DelegationRuntime): ToolDefin
     isConcurrencySafe: () => true,
     async execute(rawArgs, exec: ToolRunContext) {
       if (exec.agent === undefined) throw new Error("pstack_interrupt requires a calling Agent");
-      const { childId } = parseControlArgs(rawArgs, ["childId"]) as { childId: string };
-      runtime.subagents.interrupt(asChildSessionId(childId), {
-        kind: "ancestor",
-        agent: exec.agent,
-      });
+      const { agent } = parseControlArgs(rawArgs, ["agent"]) as { agent: string };
+      const targetId = await runtime.subagents.resolveName(exec.agent, agent, exec.signal);
+      runtime.subagents.interrupt(targetId, { kind: "ancestor", agent: exec.agent });
       return { interrupted: true };
     },
   };
@@ -420,9 +418,9 @@ interface InterruptResult {
 }
 
 const INTERRUPT_TOOL_DESCRIPTION = [
-  "Stop the current turn of one direct child agent by its pstack child id.",
+  "Stop the current turn of one child agent, addressed by its name from `list_agents` or its Session id.",
   "",
-  "The child id comes from `pstack_subagent`. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child.",
+  "Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child.",
 ].join("\n");
 
 const INTERRUPT_OUTPUT_SCHEMA: JsonSchemaNode = {
@@ -454,12 +452,6 @@ function parseControlArgs(raw: unknown, keys: readonly string[]): Record<string,
     parsed[key] = value.trim();
   }
   return parsed;
-}
-
-type ChildSessionId = Parameters<SubagentRuntime["interrupt"]>[0];
-
-function asChildSessionId(value: string): ChildSessionId {
-  return value as ChildSessionId;
 }
 
 const TOOL_DESCRIPTION = [

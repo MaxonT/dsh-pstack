@@ -50,6 +50,7 @@ function fakeRuntime(overrides: Partial<DelegationRuntime> = {}): DelegationRunt
       }),
       list: () => ["spawn"],
       resolveMaxDepth: () => 2,
+      resolveName: async (_caller: unknown, name: string) => name as never,
       startActivation: async () => ({ childId: "child-1" }),
     },
     llm: { resolveCallConfig: async () => ({}) },
@@ -283,23 +284,31 @@ describe("pstack interrupt tool", () => {
   const signal = new AbortController().signal;
   const exec = { agent: parent, signal } as never;
 
-  it("interrupts a child under ancestor authority", async () => {
+  it("resolves a child name or Session id before interrupting under ancestor authority", async () => {
     const calls: unknown[] = [];
     const runtime = fakeRuntime({
       subagents: {
+        resolveName: async (_caller: unknown, name: string) =>
+          (name === "src-reader" ? "child-1" : name) as never,
         interrupt: (...callArgs: unknown[]) => {
           calls.push(callArgs);
         },
       } as unknown as DelegationRuntime["subagents"],
     });
-    const result = await createPstackInterruptTool(runtime).execute?.({ childId: "child-1" }, exec);
-    expect(result).toEqual({ interrupted: true });
+    const byName = await createPstackInterruptTool(runtime).execute?.(
+      { agent: "src-reader" },
+      exec,
+    );
+    expect(byName).toEqual({ interrupted: true });
     expect(calls[0]).toEqual(["child-1", { kind: "ancestor", agent: parent }]);
+    const byId = await createPstackInterruptTool(runtime).execute?.({ agent: "session-9" }, exec);
+    expect(byId).toEqual({ interrupted: true });
+    expect(calls[1]).toEqual(["session-9", { kind: "ancestor", agent: parent }]);
   });
 
-  it("rejects an empty child id before touching the runtime", async () => {
+  it("rejects an empty agent before touching the runtime", async () => {
     await expect(
-      createPstackInterruptTool(fakeRuntime()).execute?.({ childId: " " }, exec),
+      createPstackInterruptTool(fakeRuntime()).execute?.({ agent: " " }, exec),
     ).rejects.toThrow(/non-empty string/);
   });
 });

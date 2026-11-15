@@ -76,7 +76,7 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 | Tool | Purpose |
 | --- | --- |
 | `pstack_subagent` | Start one subagent with an optional `agent` preset (default `general`) and optional `name`, optionally overriding its route with `provider`, `model`, and `reasoningEffort`; completion arrives as a notice. A subagent is not a background job: never pass its id to `job_output`; wait for the completion notice, or use the native `list_agents`/`send_message`. |
-| `pstack_interrupt` | Stop one pstack child's current turn by its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child. |
+| `pstack_interrupt` | Stop one pstack child's current turn by its name from `list_agents` or its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child. |
 | `pstack_skill` | Load a packaged pstack skill by exact kebab-case name; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
 | `pstack_roles` | Report each pstack role with its configured routes as provider, model, and reasoningEffort values, plus each route's served efforts and default. |

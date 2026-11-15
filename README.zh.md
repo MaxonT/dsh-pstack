@@ -122,7 +122,7 @@
 | 工具 | 作用 |
 |---|---|
 | `pstack_subagent` | 用 agent 预设启动一个子代理，可用 provider、model 和 reasoningEffort 覆盖路由。 |
-| `pstack_interrupt` | 按会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是中断通道。 |
+| `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是中断通道。 |
 | `pstack_skill` | 按精确名称加载随包 pstack 技能，并读取技能目录内相对路径的参考或 playbook。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning effort。 |
 | `pstack_roles` | 报告每个角色已配置的路由，以 provider、model 和 reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。 |

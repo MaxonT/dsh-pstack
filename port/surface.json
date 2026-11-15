@@ -6,12 +6,12 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "childId": {
+          "agent": {
             "type": "string",
-            "description": "The pstack child id returned by pstack_subagent."
+            "description": "The child agent to stop: its name from `list_agents` or its Session id."
           }
         },
-        "required": ["childId"]
+        "required": ["agent"]
       }
     },
     {
