@@ -8,7 +8,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent`。一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它。传 `provider`、`model` 和可选 `reasoningEffort` 覆盖路由，或全部省略以继承父路由。路由字符串按第一个 `/` 拆分：第一段是 `provider`，其余是 `model`，`model` 自身可含 `/`（例如 `magpie/workbuddy/minimax-m3.1-flash [high]` 拆成 provider `magpie`、model `workbuddy/minimax-m3.1-flash`、effort `high`）。`model` 原样传递；丢掉其内部前缀会导致路由预检失败。 |
+| `Task` | `pstack_subagent`。一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它。传 `provider`、`model` 和可选 `reasoningEffort` 覆盖路由，或全部省略以继承父路由。`model` 按 `pstack_models` 报告的原样传递。 |
 | `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体有人工回答者；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
 | Run another pstack skill (`/name` 或 "the **name** skill") | `pstack_skill` 按精确 kebab-case 名称加载随包 pstack 技能。用 `resource` 读取 `SKILL.md` 旁的文件；用户 `/name` 直接加载技能。内置帮助技能是 `poteto-help`；读 playbook 用 `name: "poteto-mode"` 加 `resource: "playbooks/<name>.md"`。 |
