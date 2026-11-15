@@ -9,7 +9,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
-import { USER_VISIBLE_PATHS } from "./lib/release-paths.ts";
+import { isUserVisiblePath } from "./lib/release-paths.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -77,9 +77,7 @@ export function main(argv: readonly string[] = process.argv.slice(2)): number {
     console.error(`Cannot diff ${range}.`);
     return 0;
   }
-  const visible = changed.filter((path) =>
-    (USER_VISIBLE_PATHS as readonly string[]).includes(path),
-  );
+  const visible = changed.filter(isUserVisiblePath);
   if (visible.length === 0) {
     console.log(`No user-visible file changed since ${base}.`);
     return 0;

@@ -14,7 +14,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
-import { USER_VISIBLE_PATHS } from "./lib/release-paths.ts";
+import { isUserVisiblePath } from "./lib/release-paths.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CHANGES_DIR = join(ROOT, "changes");
@@ -294,7 +294,7 @@ function changedUserVisible(base: string): string[] {
   } catch {
     return [];
   }
-  return changed.filter((path) => (USER_VISIBLE_PATHS as readonly string[]).includes(path));
+  return changed.filter(isUserVisiblePath);
 }
 
 function userVisibleSection(
