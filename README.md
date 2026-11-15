@@ -183,14 +183,14 @@ For browser verification, pick one provider:
 
 Enable packages through **Plugins → Add plugin**, then restart the profile when required. Most packages ship with DSH. `@deepseek-ai/dsh-cua-bundle` installs on demand. All except the MCP client are experimental.
 
-Steps that depend on a disabled plugin report skipped or blocked, never passed. See the [DSH adaptation guide](./pstack/docs/harness/dsh.md) for setup and fallbacks.
+Steps that depend on a disabled plugin report skipped or blocked, never passed. See the [DSH adaptation guide](./port/dsh.md) for setup and fallbacks.
 
 ## 🧪 Port verification
 
 Real DeepSeek Harness Web sessions test the port. They do not compare text with upstream. [playground/docs/workflow.md](./playground/docs/workflow.md) documents the full procedure.
 
 - **Raw baseline.** The generator copies upstream pstack into `playground/raw/pstack` and installs nothing else. `playground/raw/dsh.md` states each upstream capability as one of three cases: native in DSH, provided only by an official optional plugin, or absent. The generator copies that document and rewrites link references only, so the upstream wording stays intact.
-- **Capability-driven runs.** Capability probes are generated from pstack usage and `raw/dsh.md` at authoring time. The repository does not predefine a capability list. Skill and playbook files are consumers, not per-file test requirements.
+- **Capability-driven runs.** Coverage comes from `playground/scenarios/capability-inventory.json`, a derived list maintained from pstack usage and `raw/dsh.md`. Skill and playbook files are consumers, not per-file test requirements.
 - **Semantic review.** A skill that loads only proves it was reachable. Each scenario records a separate verdict (`supported`, `gap`, or `inconclusive`) with a reviewer and a reason. The adapted run records `verified`, `not-verified`, or `inconclusive`.
 - **Adapted re-check.** Review findings drive [port/dsh.md](./port/dsh.md). Rebuild the adapted package with `vp run build`, then rerun the same scenarios to confirm the mapped behavior.
 - **Environment matrix.** Capability probes run in `base` by default. `render` is the rendering comparison environment. `agent-team` is a separate conflict environment for an explicitly requested pstack conflict probe.
@@ -216,7 +216,7 @@ These limits remain even with every optional plugin that can run alongside pstac
 <details>
 <summary><strong>Expand for questions and answers</strong></summary>
 
-1. **Agent preset names stay in English**
+1. **Preset names show in English**
 
    Set the language to Chinese in **Settings → General → Language**, then restart DSH. If the row already shows Chinese, select it again. That saves the preference that preset names use when the host starts.
 
