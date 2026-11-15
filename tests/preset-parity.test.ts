@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 
 const ROOT = process.cwd();
-const BASELINE = join(ROOT, "tests", "fixtures", "dsh-0.2.2-rc.1");
+const BASELINE = join(ROOT, "tests", "fixtures", "dsh-0.2.2-rc.2");
 const PATCH = readFileSync(join(ROOT, "cordis.patch.yml"), "utf8");
 
 interface PluginRow {
