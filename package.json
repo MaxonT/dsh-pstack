@@ -56,7 +56,7 @@
     "release:notes": "vpx scripts/release-notes.ts",
     "changes:check": "vpx scripts/changes.ts --check",
     "prerelease": "vp run ci",
-    "release": "bumpp",
+    "release": "bash scripts/release.sh",
     "prepublishOnly": "vp run ci",
     "changes:clean": "vpx scripts/changes.ts --clean"
   },

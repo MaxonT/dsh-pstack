@@ -13,5 +13,5 @@
 ## 生命周期
 
 - 发布时 `scripts/release-notes.ts` 只聚合上一个 tag 之后新增的 `.md`（排除 `README.md`），历史注记不会被重复使用。
-- 发布后可运行 `vp run changes:clean -- --base <上一个 tag>` 删除这些已发布注记，再提交删除；脚本不自动删除或提交。
+- 标准发布用 `vp run release`：bumpp 打完 tag 后，脚本自动删除本次发布消费的注记并提交、推送；tag 本身仍保留注记，不影响发布说明生成。手动发布时可运行 `vp run changes:clean -- --base <上一个 tag>` 删除并自行提交。
 - 缺注记不阻塞发布。`scripts/changes.ts --check` 与 `scripts/release-notes.ts` 会在用户可见文件有改动却没有注记时给出软提醒。

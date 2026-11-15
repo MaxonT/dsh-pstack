@@ -68,7 +68,7 @@ function readWorkspace(relative: string): string | undefined {
 
 function previousTag(): string | undefined {
   const head = git(["rev-parse", "HEAD"]).trim();
-  const tags = git(["tag", "--sort=-v:refname"])
+  const tags = git(["tag", "--list", "v[0-9]*", "--sort=-v:refname"])
     .split("\n")
     .map((tag) => tag.trim())
     .filter((tag) => tag !== "");

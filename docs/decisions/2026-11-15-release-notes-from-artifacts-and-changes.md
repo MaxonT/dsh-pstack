@@ -33,5 +33,5 @@ Review: 2026-11-15
 
 - 发布说明的正文来自脚本，不再来自提交历史；`changelogithub` 依赖被移除。
 - `port/surface.json` 成为受版本管理的产物，工具 schema 改动会在发布说明里显式出现，`surface:check` 加入 `ci` 防止漂移。
-- `changes/` 注记发布后由维护者用 `changes:clean --base <prev-tag>` 删除并提交，脚本不自动删除；发布说明只聚合上一个 tag 之后新增的注记，历史注记不会重复出现。
+- `changes/` 注记由 `vp run release` 在 bumpp 打完 tag 后自动删除本次发布消费的注记并提交、推送；tag 本身仍保留注记，因此发布说明能读到。手动发布可用 `changes:clean --base <prev-tag>` 删除并自行提交。发布说明只聚合上一个 tag 之后新增的注记，历史注记不会重复出现。
 - 缺注记只是提示；`changes:check` 是 PR 与发布辅助命令，不进 `ci`，避免历史提交噪音。
