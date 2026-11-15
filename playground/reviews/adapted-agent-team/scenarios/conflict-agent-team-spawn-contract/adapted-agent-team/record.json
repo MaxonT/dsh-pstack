@@ -2,17 +2,18 @@
   "scenarioId": "conflict-agent-team-spawn-contract",
   "phase": "adapted",
   "environment": {
-    "worker": 3,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.3.1",
+    "worker": 0,
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "agent-team",
-      "description": "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
-      "kind": "conflict",
-      "enabledPluginPackages": ["@deepseek-ai/dsh-experimental-agent-team-profile"]
+      "description": "Team-on 环境：开启 Agent Teams，验证 pstack 委派、任务板、消息与中断在团队模式下可用。",
+      "kind": "capability",
+      "enabledPluginPackages": [],
+      "teamMode": true
     },
     "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
-    "configHash": "c87343579fb4d5124a9bfc74336dfb027c7410c15f3a7508c6d1b74234dd921c"
+    "configHash": "168a469d592f6d916d78eacf692972d51700d232db22ecac2557bc82a4912bb4"
   },
   "target": {
     "provider": "magpie",
@@ -20,36 +21,66 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-8dcb2782-bcd3-4c64-9578-24eb7cea74c8",
+    "sessionId": "session-4cdcdab7-0e62-4b9f-9771-3665f73cda93",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "poteto-mode",
     "skillLoads": [],
     "toolCalls": [
       {
-        "name": "bash",
+        "name": "glob",
         "status": "ok",
-        "argsSummary": "bash command=ls -la; wc -w README.md; wc -l README.md"
+        "argsSummary": "glob pattern=**/README*"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
       },
       {
         "name": "pstack_subagent",
         "status": "ok",
-        "argsSummary": "pstack_subagent"
+        "argsSummary": "pstack_subagent name=wordcount"
       },
       {
-        "name": "spawn_teammate",
+        "name": "bash",
         "status": "ok",
-        "argsSummary": "spawn_teammate name=helper"
+        "argsSummary": "bash command=wc -w README.md; wc -l README.md; ls"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls ~/.vite-plus/packages/@deepseek-ai/dsh/*/lib/node_modules/@deepseek-ai/dsh/ 2>/dev/null; echo ---; grep -rl \"spawn_teammate\" ~/.vite-plus/packages/@deepseek-ai/dsh/*/lib/node_modules/@"
       },
       {
         "name": "read",
         "status": "ok",
-        "argsSummary": "read file_path=<TEMP_PATH>"
+        "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
-        "name": "wait_agent",
+        "name": "bash",
         "status": "ok",
-        "argsSummary": "wait_agent"
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rn \"spawn_teammate\" src lib --include=*.ts --includ"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rn \"spawnTeammate\\|spawn_teammate\" src 2>/dev/null "
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && grep -rno \"spawn_teammate\" lib src 2>/dev/null | head -20"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent name=helper"
       },
       {
         "name": "wait_agent",
@@ -63,7 +94,7 @@
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "两种派发方式都跑完了。\n\n**标识与结果**\n\n| 派发方式 | 标识 | 结果 |\n|---|---|---|\n| `pstack_subagent` | child id `d9d227bc-6ca7-4820-ae65-0267c4f2e906`，route `inherit-parent`，agent `poteto-agent` | 5 个词（`wc -w README.md`） |\n| `spawn_teammate` | target `helper`，role `teammate`，model `workbuddy/minimax-m3.1-flash` | 5 行（`wc -l README.md`，并用 read 工具复核） |\n\n**结果差异**\n\n数字本身没有冲突。子代理数的是词数 5，teammate 数的是行数 5。两者数值相同只是巧合，因为这份 README 每行恰好只有一个空白分隔的词块：标题 `# conflict-agent-team-spawn-contract` 占两个词（`#` 单独算一个），后面三行中文各自算一个词，合计 5。我本地直接跑 `wc -w` 和 `wc -l` 也都是 5，可以确认两边报的都是真实结果，不是巧合或幻觉。\n\n标识形态上的差异比较实质。`pstack_subagent` 返回的是一次性 child id，跑完即终止。`spawn_teammate` 返回的是一个持久的 team member 名 `helper`，完成后处于 inactive 状态，后续可以再给它派活。它在完成后仍列在 `list_agents` 里，而子代理不在成员表中。\n\n一点需要注意的地方：`helper` 报的行数依赖文件末尾有换行符。如果最后一行没有换行符，`wc -l` 会少算一行。这次文件末尾有换行，两种方法才一致。",
+    "assistantText": "Your goal: run the same README stats job two different ways and compare how the two dispatch mechanisms identify themselves and report back. I'll start one via `pstack_subagent` and look for a `spawn_teammate` route for the second.\n`spawn_teammate` does not exist in this harness version (DSH 0.2.2-rc.2 removed it; the only mentions are in the upgrade guide). I'll spawn the closest equivalent named `helper` and report the gap.\n你的目标是让同一个 README 统计任务跑在两种派发机制上，再对比两边的标识和结果差异。这个我做到了一半：`pstack_subagent` 那一路正常，`spawn_teammate` 那一路在这个 harness 里不存在。\n\n**标识**\n\n| 派发方式 | 标识 | 名字 | 状态 |\n|---|---|---|---|\n| `pstack_subagent`（词数） | `19532691-5db1-4fe4-a615-d3b9ee4c0a57` | `wordcount` | inactive，完成 |\n| `pstack_subagent`（行数，替代 `spawn_teammate`） | `091be8f5-87e4-4487-a1af-10cfe28474e1` | `helper` | inactive，完成 |\n\n两个标识都是 UUID，都以 `kind: child` 的形式挂在 `lead` 之下，`list_agents` 里都能按名字直接寻址。\n\n**结果**\n\n- 词数：`README.md` 共 5 个空白分隔词（`wc -w`）。文件里有中文行，`wc -w` 只按空白切分，所以中文短句各算一个词。\n- 行数：`README.md` 共 5 行（`wc -l`）。\n\n两者测的是同一个文件，数值本身不冲突，只是量纲不同。\n\n**差异**\n\n唯一实质差异就是派发机制本身。两次都走 `pstack_subagent`，只是改了名字和任务，所以标识格式、层级深度、回收方式完全一致。除非拿到真正的 `spawn_teammate`，否则这个对比无法在两种机制之间成立。\n\n**为什么没有 `spawn_teammate`**\n\n当前 DSH 是 0.2.2-rc.2，这个版本已经把 `spawn_teammate` 以及 Team 作用域的 `send_message` / `list_agents` / `interrupt_agent` 移除了。源码里 `lib` 和 `src` 都搜不到这个名字，唯一出现的地方是升级指南 [guide.md](<<HOST_PATH> `subagent({ description, prompt })` 取代，并把收件人标识从 `name` 换成 Session id。\n\n所以我把 `helper` 这个名字和「数行数」的任务交给了 `pstack_subagent`，让它在能力上等价于你想要的那个 teammate，同时保住了一个叫 `helper` 的可寻址成员。\n\n**维护者视角**\n\n如果你要在这套 harness 上做后续对比，得接受 Team 专属工具不再可用这个前提。名字是可选标签，真正的身份只有 Session id 和 UUID。要复刻原实验，可以直接用 `pstack_subagent` 加不同 `name` 参数，这已经是当前的等价物了。",
     "userText": "先分别用两种派发方式各起一个执行者：用 pstack_subagent 起一个子代理统计 README 的字数，再用 spawn_teammate 起一个叫 helper 的 teammate 统计 README 的行数。两边都跑完后，把它们返回的标识和结果差异列给我。",
     "userTexts": [
       "先分别用两种派发方式各起一个执行者：用 pstack_subagent 起一个子代理统计 README 的字数，再用 spawn_teammate 起一个叫 helper 的 teammate 统计 README 的行数。两边都跑完后，把它们返回的标识和结果差异列给我。"
@@ -73,6 +104,14 @@
       "tools": [
         {
           "name": "bash",
+          "attempts": 5,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "glob",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -81,7 +120,7 @@
         },
         {
           "name": "list_agents",
-          "attempts": 1,
+          "attempts": 2,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -89,7 +128,7 @@
         },
         {
           "name": "pstack_subagent",
-          "attempts": 1,
+          "attempts": 2,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -97,15 +136,7 @@
         },
         {
           "name": "read",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "spawn_teammate",
-          "attempts": 1,
+          "attempts": 2,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -113,7 +144,7 @@
         },
         {
           "name": "wait_agent",
-          "attempts": 2,
+          "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -127,7 +158,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=7", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=13", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -139,6 +170,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-agent-team-20261115085926",
-  "capturedAt": "2026-11-15T00:59:26.373Z"
+  "batchId": "adapted-agent-team-20261115200516",
+  "capturedAt": "2026-11-15T12:08:18.299Z"
 }

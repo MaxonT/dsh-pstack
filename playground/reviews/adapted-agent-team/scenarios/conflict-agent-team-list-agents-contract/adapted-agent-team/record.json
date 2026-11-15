@@ -2,17 +2,18 @@
   "scenarioId": "conflict-agent-team-list-agents-contract",
   "phase": "adapted",
   "environment": {
-    "worker": 1,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.3.1",
+    "worker": 0,
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "agent-team",
-      "description": "用于验证 pstack 与 Agent Teams 插件是否冲突，重点看诱导性派发口令下两套子代理工具的互操作；只有明确指定的冲突 probe 使用。",
-      "kind": "conflict",
-      "enabledPluginPackages": ["@deepseek-ai/dsh-experimental-agent-team-profile"]
+      "description": "Team-on 环境：开启 Agent Teams，验证 pstack 委派、任务板、消息与中断在团队模式下可用。",
+      "kind": "capability",
+      "enabledPluginPackages": [],
+      "teamMode": true
     },
     "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
-    "configHash": "c87343579fb4d5124a9bfc74336dfb027c7410c15f3a7508c6d1b74234dd921c"
+    "configHash": "168a469d592f6d916d78eacf692972d51700d232db22ecac2557bc82a4912bb4"
   },
   "target": {
     "provider": "magpie",
@@ -20,7 +21,7 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-2c78b112-dc9c-4aec-b141-d969d206fe05",
+    "sessionId": "session-e7bfd252-2201-4afd-8de0-c007a0b876cb",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
     "agentPreset": "poteto-mode",
@@ -29,12 +30,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=pwd && ls && ls src 2>/dev/null | head -50"
-      },
-      {
-        "name": "list_agents",
-        "status": "ok",
-        "argsSummary": "list_agents"
+        "argsSummary": "bash command=ls src 2>/dev/null | head -50; pwd"
       },
       {
         "name": "pstack_subagent",
@@ -42,18 +38,13 @@
         "argsSummary": "pstack_subagent"
       },
       {
-        "name": "pstack_agents",
+        "name": "list_agents",
         "status": "ok",
-        "argsSummary": "pstack_agents"
-      },
-      {
-        "name": "read",
-        "status": "ok",
-        "argsSummary": "read file_path=<HOST_PATH>"
+        "argsSummary": "list_agents"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "我先说结论：你的目标是让一个子代理去读 `src` 目录，然后我把这个子代理的 id 和状态报给你。\n\n**使用的工具。** 我用的是 `pstack_subagent`（不是原生的 `spawn_teammate` 或 `list_agents`）来起子代理，用 `pstack_agents` 来查这个 pstack 子代理的 id 和活动状态。按 DSH harness 适配文档，原生 `list_agents` 在 Agent Teams profile 下只列队友，不列 pstack 子代理，所以查子代理必须走 `pstack_agents`。\n\n**子代理 id。** `18768c32-6497-4335-ae49-2cc0f059f35b`\n\n**当前状态。** `mode=continuable`，`activity=running`，label 是 \"Read src directory\"。agent preset 是 `poteto-agent`，路由继承父级（`inherit-parent`），maxDepth 2。\n\n**顺带确认的事实。** 工作区里 `src` 目录只有两个文件，`a.ts` 和 `b.ts`。子代理已被要求只读不改。\n\n子代理完成时会以完成通知回来，届时它的摘要会直接附上。\n\n--- turn 2 ---\n\n子代理已完成，结果如下。\n\n**子代理 id。** `18768c32-6497-4335-ae49-2cc0f059f35b`\n\n**最终状态。** 已完成，不再接收工作，除非我用 `pstack_send` 继续给它派活。启动时它处于 `mode=continuable`、`activity=running`。\n\n**使用的工具。** `pstack_subagent` 起代理（preset `poteto-agent`，路由继承父级），`pstack_agents` 查 id 与状态。\n\n**它读到的内容。**\n- [src/a.ts](<src/a.ts>) 一行，导出常量 `a`，值为 `1`。\n- [src/b.ts](<src/b.ts>) 一行，导出常量 `b`，值为 `2`。\n\n两个文件都是最小占位模块，没有 import、函数或类型。整个过程只读，没有改动任何文件。",
+    "assistantText": "目标：派一个子代理读取 `src` 目录，并回报它的 id 与状态。\n\n**已做的事。** 我用 `pstack_subagent` 起了子代理（preset `readonly`，路由 `inherit-parent`），任务是列出并读取 `src/` 下的文件并做摘要。\n\n**子代理信息。** id 为 `b12e9ba2-0f09-4e55-8876-c7cdd9c84c5d`，名字 `agent-1`，当前状态 running。`list_agents` 显示子代理树里还有一条 `agent-1 [running] — Read src directory`，状态一致。\n\n**使用的工具。** `pstack_subagent` 发起子代理，`list_agents` 查状态，`bash` 只用于我自己确认 `src` 下有 `a.ts` 和 `b.ts`。\n\n我本地看到 `src` 只有两个文件，子代理正在读它们。等它返回摘要后我再汇报。\n\n--- turn 2 ---\n\n子代理已完成。\n\n**结果。** `src/` 下只有两个文件，都是极简 TypeScript 模块。\n\n- `src/a.ts` 导出一个常量 `a`，值为 `1`。\n- `src/b.ts` 导出一个常量 `b`，值为 `2`。\n\n没有 import、函数或逻辑代码。\n\n**子代理信息。** id `b12e9ba2-0f09-4e55-8876-c7cdd9c84c5d`，名字 `agent-1`，现在已结束（finished），不会再继续工作，除非我再给它派活。\n\n**使用的工具。** `pstack_subagent` 发起子代理，`list_agents` 查询状态，`bash` 仅用于我自己核对 `src` 目录内容。子代理的结论与我自己的 `ls` 一致，两边都说得通，没有分歧。",
     "userText": "用 pstack_subagent 起一个子代理读一下 src 目录。然后查看你派出的这个 pstack 子代理，把它的 id 和当前状态报给我，并说明你用的是哪个工具。",
     "userTexts": [
       "用 pstack_subagent 起一个子代理读一下 src 目录。然后查看你派出的这个 pstack 子代理，把它的 id 和当前状态报给我，并说明你用的是哪个工具。"
@@ -78,23 +69,7 @@
           "recovered": false
         },
         {
-          "name": "pstack_agents",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
           "name": "pstack_subagent",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "read",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -109,7 +84,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=5", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=3", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -121,6 +96,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-agent-team-20261115085926",
-  "capturedAt": "2026-11-15T00:59:26.356Z"
+  "batchId": "adapted-agent-team-20261115200516",
+  "capturedAt": "2026-11-15T12:06:11.258Z"
 }
