@@ -34,7 +34,7 @@ export class PstackRolesService extends TypertRemoteService {
     this.ctx.typert.register(pstackRolesHostContribution);
   }
 
-  /** Current path, status, values, and per-line issues. */
+  /** Current path, status, values, and per-role issues. */
   status(): RoleFileSnapshot {
     return snapshotFromConfiguration(readRoleConfiguration(roleFilePath()));
   }

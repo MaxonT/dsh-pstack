@@ -82,7 +82,6 @@ export interface BudgetRolePlan {
 
 export interface BudgetPlan {
   readonly tier: BudgetTier;
-  readonly scope: BudgetScope;
   readonly budget: string;
   readonly rows: readonly BudgetRolePlan[];
 }
@@ -154,7 +153,6 @@ export function planBudget(
   const rows = roles.map((role) => planRole(role, request, defaultModel, catalogue));
   return {
     tier: request.tier,
-    scope: request.scope,
     budget: budgetValueFor(request.tier),
     rows,
   };
