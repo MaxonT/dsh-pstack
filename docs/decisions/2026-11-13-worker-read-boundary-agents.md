@@ -2,7 +2,7 @@
 
 Status: accepted
 Date: 2026-11-13
-Scope: playground/scripts/lib/env.ts, playground/scripts/prepare.ts, playground/scripts/run-case.ts, playground/scenarios/playbooks/hillclimb.ts, playground/AGENTS.md, playground/docs/workspace-session.md
+Scope: playground/scripts/lib/env.ts, playground/scripts/prepare.ts, playground/scripts/run-case.ts, playground/scenarios/capabilities/, playground/AGENTS.md, playground/docs/worker.md
 Implemented-by: commit:7d7ba2f
 Review: 2026-11-13
 

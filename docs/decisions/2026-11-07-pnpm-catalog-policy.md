@@ -12,7 +12,7 @@ Review: 2026-11-08
 
 同时 `catalogMode` 原为 `prefer`：pnpm 在 catalog 版本与请求版本不兼容时会回退为直接版本号并只给出警告。这样依赖声明可以绕过 catalog，分类和版本唯一性都失去保证。用户明确要求「所有依赖都需要基于 pnpm catalog 并分类后再安装，不要装在 `catalog:` 中」，目标是让安装命令本身产生正确结果，而不是依赖事后人工清理。
 
-约束是：根 `pstack/` 只由 `port/generate.mjs` 写入，其中上游脚本的 `package.json` 使用 Bun 与 `bun.lock`，保留直接版本号且不属于 pnpm workspace importer；不能为了统一规则改写生成树，也不能把生成树纳入 workspace packages。
+约束是：根 `pstack/` 只由 `scripts/generate-pstack.mjs` 写入，其中上游脚本的 `package.json` 使用 Bun 与 `bun.lock`，保留直接版本号且不属于 pnpm workspace importer；不能为了统一规则改写生成树，也不能把生成树纳入 workspace packages。
 
 ## 决策
 
