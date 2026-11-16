@@ -45,7 +45,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 - Detect: write each real route as a structured `{ provider, model, effort? }` object. If nothing is detectable, ask the user to paste the routes.
 - Defaults: map each found route; use `inherit-parent` or `auto` for an unserved route. Apply the selected budget to the closest advertised effort and say what was chosen.
-- Write: write a `roles` object of route-object arrays and an optional `budget`. Overwrite the whole file so a rerun is idempotent; a missing role inherits the parent route.
+- Write: write `version: 2` with a `roles` object of route-object arrays and an optional `budget`. Overwrite the whole file so a rerun is idempotent; a missing role inherits the parent route.
 
 ## Paths
 

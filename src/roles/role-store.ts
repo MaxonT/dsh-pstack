@@ -3,25 +3,22 @@
  *
  * Two views of one file live here. The semantic view (`RoleConfiguration`)
  * parses each route into a `Route` and reports issues for the settings page and
- * the delegator. The editable view (`RoleFileDocument`) keeps the raw route
- * strings so a save that touches one role leaves every other role byte-for-byte
- * intact. A legacy `.mdc` beside a missing `.json` is migrated once, then
- * removed; a missing file means every role inherits the parent route, while an
- * unreadable file fails loudly instead of behaving like a fresh install.
+ * the delegator. The editable view (`RoleFileDocument`) keeps the structured
+ * routes so a save round-trips them unchanged. Both views handle only the
+ * current schema version; `compat/legacy-role-file` upgrades a legacy `.mdc` or
+ * an older JSON version in place before this module reads the file. A missing
+ * file means every role inherits the parent route, while an unreadable file
+ * fails loudly instead of behaving like a fresh install.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 
-import { migrateLegacyRoleFile, parseLegacyRoute } from "../compat/legacy-role-file.ts";
+import { upgradeRoleFile, type RoleFileDocumentLike } from "../compat/legacy-role-file.ts";
 import { writeFileAtomically } from "../lib/atomic-write.ts";
-import {
-  LEGACY_PSTACK_MODELS_FILENAME,
-  PSTACK_MODELS_FILENAME,
-  findRole,
-} from "./role-manifest.ts";
-import { parseRouteEntry, validateRoleRouteShape, type ParsedRoute, type Route } from "./route.ts";
+import { PSTACK_MODELS_FILENAME, findRole } from "./role-manifest.ts";
+import { parseRouteEntry, validateRoleRouteShape, type Route } from "./route.ts";
 
 export type { Route } from "./route.ts";
 
@@ -64,11 +61,6 @@ export function modelsFilePath(dshHome: string): string {
   return join(dshHome, PSTACK_MODELS_FILENAME);
 }
 
-/** The legacy line-format path beside a JSON role file. */
-export function legacyModelsFilePath(jsonPath: string): string {
-  return join(dirname(jsonPath), LEGACY_PSTACK_MODELS_FILENAME);
-}
-
 /** Resolve `$DSH_HOME`: environment first, then `~/.dsh`. */
 export function resolveDshHome(
   env: Readonly<Record<string, string | undefined>> = process.env,
@@ -90,15 +82,14 @@ export function emptyRoleDocument(): RoleFileDocument {
   return { version: ROLE_FILE_VERSION, roles: {} };
 }
 
-/** Read the version, budget, and roles map shared by both parsers. */
+/** Read the version, budget, and roles map. Only the current version is accepted. */
 function readRoleDocumentShape(text: string): {
-  version: 1 | 2;
   budget?: string;
   rawRoles: Record<string, unknown>;
 } {
   const raw = parseJsonObject(text);
   const version = raw["version"];
-  if (version !== 1 && version !== 2) {
+  if (version !== ROLE_FILE_VERSION) {
     throw new Error(`unsupported role file version ${JSON.stringify(raw["version"])}`);
   }
   const budget = raw["budget"];
@@ -110,7 +101,6 @@ function readRoleDocumentShape(text: string): {
     throw new Error("the role file roles must be an object");
   }
   return {
-    version,
     ...(budget === undefined ? {} : { budget }),
     rawRoles: rawRoles as Record<string, unknown>,
   };
@@ -118,17 +108,14 @@ function readRoleDocumentShape(text: string): {
 
 /** Parse the JSON document shape used for editing. Throws on an invalid shape. */
 export function parseRoleDocument(text: string): RoleFileDocument {
-  const { version, budget, rawRoles } = readRoleDocumentShape(text);
+  const { budget, rawRoles } = readRoleDocumentShape(text);
   const roles: Record<string, readonly Route[]> = {};
   for (const [key, value] of Object.entries(rawRoles)) {
     if (!Array.isArray(value)) {
       throw new Error(`role ${JSON.stringify(key)} routes must be an array of route entries`);
     }
     roles[key] = value.map((entry) => {
-      if (version === 2 && typeof entry === "string") {
-        throw new Error(`role ${JSON.stringify(key)}: version 2 routes must be route objects`);
-      }
-      const parsed = routeFromEntry(entry);
+      const parsed = parseRouteEntry(entry);
       if (parsed.route === undefined) {
         throw new Error(`role ${JSON.stringify(key)}: ${parsed.issue}`);
       }
@@ -139,7 +126,7 @@ export function parseRoleDocument(text: string): RoleFileDocument {
 }
 
 /** Render an editable role document as stable, pretty-printed JSON. */
-export function serializeRoleDocument(document: RoleFileDocument): string {
+export function serializeRoleDocument(document: RoleFileDocumentLike): string {
   const roles: Record<string, readonly Route[]> = {};
   for (const [key, routes] of Object.entries(document.roles)) roles[key] = [...routes];
   return `${JSON.stringify(
@@ -155,7 +142,7 @@ export function serializeRoleDocument(document: RoleFileDocument): string {
 
 /** Parse a JSON role file into its semantic view. Throws only on an invalid top-level shape. */
 export function parseRoleConfiguration(text: string, path: string): RoleConfiguration {
-  const { version, budget, rawRoles } = readRoleDocumentShape(text);
+  const { budget, rawRoles } = readRoleDocumentShape(text);
 
   const roles = new Map<string, RoleEntry>();
   const issues: RoleFileIssue[] = [];
@@ -176,11 +163,7 @@ export function parseRoleConfiguration(text: string, path: string): RoleConfigur
     const routes: Route[] = [];
     const entryIssues: string[] = [];
     rawValue.forEach((entry, index) => {
-      if (version === 2 && typeof entry === "string") {
-        entryIssues.push(`entry ${index + 1} must be a route object in version 2`);
-        return;
-      }
-      const parsed = routeFromEntry(entry);
+      const parsed = parseRouteEntry(entry);
       if (parsed.route === undefined) entryIssues.push(`entry ${index + 1} ${parsed.issue}`);
       else routes.push(parsed.route);
     });
@@ -204,34 +187,21 @@ export function parseRoleConfiguration(text: string, path: string): RoleConfigur
   };
 }
 
-/** Read the role file without throwing. A legacy `.mdc` is migrated on first read. */
+/** Read the role file without throwing. Legacy shapes are upgraded first. */
 export function readRoleConfiguration(path: string): RoleConfiguration {
-  let text: string;
-  try {
-    text = readFileSync(path, "utf8");
-  } catch (error) {
-    if (!isMissingFile(error)) {
-      return { status: "unreadable", path, reason: describeError(error) };
-    }
-    const legacy = legacyModelsFilePath(path);
-    if (!existsSync(legacy)) return { status: "missing", path };
-    try {
-      migrateLegacyRoleFile(legacy, path, serializeRoleDocument);
-      return parseRoleConfiguration(readFileSync(path, "utf8"), path);
-    } catch (migrationError) {
-      return { status: "unreadable", path, reason: describeError(migrationError) };
-    }
+  const upgrade = upgradeRoleFile(path, {
+    currentVersion: ROLE_FILE_VERSION,
+    serialize: serializeRoleDocument,
+  });
+  if (upgrade.status === "missing") return { status: "missing", path };
+  if (upgrade.status === "unreadable") {
+    return { status: "unreadable", path, reason: upgrade.reason };
   }
   try {
-    return parseRoleConfiguration(text, path);
+    return parseRoleConfiguration(readFileSync(path, "utf8"), path);
   } catch (error) {
     return { status: "unreadable", path, reason: describeError(error) };
   }
-}
-
-/** One route entry: a structured object, or a legacy string token. */
-function routeFromEntry(entry: unknown): ParsedRoute {
-  return typeof entry === "string" ? parseLegacyRoute(entry) : parseRouteEntry(entry);
 }
 
 /** Atomically write an editable role document. */
@@ -245,12 +215,6 @@ function parseJsonObject(text: string): Record<string, unknown> {
     throw new Error("the role file must be a JSON object");
   }
   return raw as Record<string, unknown>;
-}
-
-function isMissingFile(error: unknown): boolean {
-  return (
-    typeof error === "object" && error !== null && (error as { code?: unknown }).code === "ENOENT"
-  );
 }
 
 function describeError(error: unknown): string {

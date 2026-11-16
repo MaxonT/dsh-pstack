@@ -45,7 +45,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 - Detect：把每条真实路由写成结构化对象 `{ provider, model, effort? }`。检测不到时请用户粘贴路由。
 - Defaults：映射找到的路由；不可用路由用 `inherit-parent` 或 `auto`。把选定预算映射到最接近的可用 effort，并说明选择。
-- Write：写 `roles` 对象，值为路由对象数组，另加可选 `budget`。覆盖整个文件，保证重跑幂等；缺失角色继承父路由。
+- Write：写 `version: 2`，`roles` 对象值为路由对象数组，另加可选 `budget`。覆盖整个文件，保证重跑幂等；缺失角色继承父路由。
 
 ## Paths
 

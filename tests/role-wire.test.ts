@@ -69,9 +69,11 @@ describe("role wire parsers", () => {
     const produced = snapshotFromConfiguration(
       parseRoleConfiguration(
         JSON.stringify({
-          version: 1,
+          version: 2,
           budget: "large (xhigh)",
-          roles: { "bug-fix": ["cpa/model-a [high]"] },
+          roles: {
+            "bug-fix": [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
+          },
         }),
         snapshot.path,
       ),

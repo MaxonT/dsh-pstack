@@ -56,11 +56,14 @@ describe("role manifest, parser, and route selection", () => {
   it("parses a JSON document into budget and role routes", () => {
     const parsed = parseRoleConfiguration(
       JSON.stringify({
-        version: 1,
+        version: 2,
         budget: "large (xhigh)",
         roles: {
-          "bug-fix": ["provider/model [high]"],
-          "arena runners": ["provider/a [high]", "provider/b [low]"],
+          "bug-fix": [{ kind: "route", provider: "provider", model: "model", effort: "high" }],
+          "arena runners": [
+            { kind: "route", provider: "provider", model: "a", effort: "high" },
+            { kind: "route", provider: "provider", model: "b", effort: "low" },
+          ],
         },
       }),
       "/home/user/.dsh/pstack-models.json",
@@ -79,17 +82,15 @@ describe("role manifest, parser, and route selection", () => {
   it("reports unknown roles and malformed routes without inventing line numbers", () => {
     const parsed = parseRoleConfiguration(
       JSON.stringify({
-        version: 1,
-        roles: { "bug-fix": ["nope"], "retired role": ["auto"] },
+        version: 2,
+        roles: { "bug-fix": [{ kind: "route", provider: "" }], "retired role": [] },
       }),
       "/x",
     );
     expect(parsed.status).toBe("loaded");
     if (parsed.status !== "loaded") return;
     const messages = parsed.issues.map((issue) => issue.message);
-    expect(messages).toContain(
-      'bug-fix: entry 1 "nope" is not a route; use `inherit-parent`, `auto`, or `<provider>/<model> [effort]`',
-    );
+    expect(messages).toContain("bug-fix: entry 1 provider must be a non-empty string");
     expect(messages).toContain('unknown pstack role "retired role"');
   });
 
@@ -137,6 +138,20 @@ describe("legacy role file migration", () => {
     expect(config.roles.get("bug-fix")?.routes[0]).toMatchObject({ model: "model" });
     expect(config.roles.get("bug-fix")?.routes[0]).toMatchObject({ provider: "json" });
     expect(existsSync(legacy)).toBe(true);
+  });
+
+  it("upgrades a version 1 JSON document in place before reading", () => {
+    const directory = homeWithRoles({ version: 1, roles: { "bug-fix": ["cpa/model-a [high]"] } });
+    const config = readRoleConfiguration(jsonPath(directory));
+    expect(config.status).toBe("loaded");
+    const raw = JSON.parse(readFileSync(jsonPath(directory), "utf8")) as {
+      version: number;
+      roles: Record<string, unknown>;
+    };
+    expect(raw.version).toBe(2);
+    expect(raw.roles["bug-fix"]).toEqual([
+      { kind: "route", provider: "cpa", model: "model-a", effort: "high" },
+    ]);
   });
 
   it("is missing when neither file exists", () => {

@@ -13,13 +13,14 @@ import {
   validateSaveRequest,
 } from "../src/roles/role-editor.ts";
 import { parseSaveRoleRequest } from "../src/roles/role-wire.ts";
+import { parseLegacyRoute } from "../src/compat/legacy-role-file.ts";
 import type { Route } from "../src/roles/route.ts";
 import type { CatalogueResult } from "../src/models.ts";
 
 const directories: string[] = [];
 
 interface SeededDocument {
-  readonly version?: 1;
+  readonly version?: 1 | 2;
   readonly budget?: string;
   readonly roles: Record<string, Array<string | Route>>;
 }
@@ -28,9 +29,10 @@ function tempHome(document: SeededDocument | undefined): string {
   const directory = mkdtempSync(join(tmpdir(), "pstack-editor-"));
   directories.push(directory);
   if (document !== undefined) {
+    const { version = 1, ...rest } = document;
     writeFileSync(
       join(directory, "pstack-models.json"),
-      `${JSON.stringify({ version: 1, ...document }, null, 2)}\n`,
+      `${JSON.stringify({ version, ...rest }, null, 2)}\n`,
     );
   }
   return directory;
@@ -66,7 +68,23 @@ function readDoc(path: string): {
 }
 
 function writeDoc(path: string, document: unknown): void {
-  writeFileSync(path, `${JSON.stringify(document, null, 2)}\n`);
+  const doc = document as {
+    version: number;
+    budget?: string;
+    roles?: Record<string, Array<string | Route>>;
+  };
+  const roles =
+    doc.roles === undefined
+      ? undefined
+      : Object.fromEntries(
+          Object.entries(doc.roles).map(([key, routes]) => [
+            key,
+            routes.map((route) =>
+              typeof route === "string" ? parseLegacyRoute(route).route : route,
+            ),
+          ]),
+        );
+  writeFileSync(path, `${JSON.stringify({ ...doc, roles }, null, 2)}\n`);
 }
 
 afterEach(() => {
@@ -298,7 +316,7 @@ describe("role editor", () => {
   });
 
   it("returns a refused save for provider and model discovery failures", async () => {
-    const home = tempHome({ roles: {} });
+    const home = tempHome({ version: 2, roles: {} });
     const path = pathOf(home);
     const original = readFileSync(path, "utf8");
     const failures = [
@@ -384,6 +402,7 @@ describe("role editor", () => {
 
   it("refuses a budget when a configured route model is missing", async () => {
     const home = tempHome({
+      version: 2,
       roles: {
         "bug-fix": [{ kind: "route", provider: "ghost", model: "model", effort: "low" }],
       },

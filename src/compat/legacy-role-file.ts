@@ -1,17 +1,23 @@
 /**
- * Legacy `pstack-models.mdc` parser and migration into `pstack-models.json`.
+ * Legacy role-file compatibility: `.mdc` line format and `version: 1` string routes.
  *
- * The line format is no longer a production model. It survives only so a
- * `$DSH_HOME` that still holds the old `.mdc` file can be migrated once, then
- * have the `.mdc` removed. Production reads the typed JSON document instead.
+ * Every legacy shape is detected, upgraded to the current version, and written
+ * once before the normal reader runs. Deleting this directory drops all legacy
+ * support in one place.
  */
 
-import { readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
-import { findRole } from "../roles/role-manifest.ts";
-import { INHERIT_ALIASES, type InheritAlias } from "../roles/role-manifest.ts";
 import {
+  LEGACY_PSTACK_MODELS_FILENAME,
+  findRole,
+  INHERIT_ALIASES,
+  type InheritAlias,
+} from "../roles/role-manifest.ts";
+import {
+  parseRouteEntry,
   validateRoleRouteShape,
   validateRouteParts,
   type ParsedRoute,
@@ -141,36 +147,119 @@ export function parseLegacyRoleFileText(text: string): LegacyRoleFile {
   return { ...(budget === undefined ? {} : { budget }), roles, issues };
 }
 
-/** A document shape the typed store's serializer knows how to render. */
-export interface LegacyMigrationDocument {
-  readonly version: 1;
+/** The document shape the current serializer accepts. */
+export interface RoleFileDocumentLike {
+  readonly version: number;
   readonly budget?: string;
   readonly roles: Record<string, readonly Route[]>;
 }
 
+/** Options for {@link upgradeRoleFile}. */
+export interface UpgradeRoleFileOptions {
+  readonly currentVersion: number;
+  readonly serialize: (document: RoleFileDocumentLike) => string;
+}
+
+/** Result of checking and upgrading one role file in place. */
+export type RoleFileUpgrade =
+  | { readonly status: "current" }
+  | { readonly status: "migrated" }
+  | { readonly status: "missing" }
+  | { readonly status: "unreadable"; readonly reason: string };
+
 /**
- * Read `mdcPath`, render it as JSON through `serialize`, write `jsonPath`
- * atomically, then delete the legacy file. Any failure throws so the caller can
- * report an unreadable role file instead of silently treating it as missing.
+ * Detect the on-disk role file and upgrade it to the current version before the
+ * normal reader runs: a legacy `.mdc` becomes the JSON file and is removed, and a
+ * `version: 1` JSON document is rewritten with structured routes. The JSON path
+ * always ends up holding the current version, or the result reports why not.
  */
-export function migrateLegacyRoleFile(
-  mdcPath: string,
+export function upgradeRoleFile(
   jsonPath: string,
-  serialize: (document: LegacyMigrationDocument) => string,
-): void {
-  const text = readFileSync(mdcPath, "utf8");
-  const parsed = parseLegacyRoleFileText(text);
-  const roles: Record<string, readonly Route[]> = {};
-  for (const [key, routes] of parsed.roles) {
-    roles[key] = [...routes];
+  options: UpgradeRoleFileOptions,
+): RoleFileUpgrade {
+  if (!existsSync(jsonPath)) {
+    const mdcPath = join(dirname(jsonPath), LEGACY_PSTACK_MODELS_FILENAME);
+    if (!existsSync(mdcPath)) return { status: "missing" };
+    try {
+      const parsed = parseLegacyRoleFileText(readFileSync(mdcPath, "utf8"));
+      if (parsed.issues.length > 0) {
+        return { status: "unreadable", reason: parsed.issues[0]!.message };
+      }
+      const roles: Record<string, readonly Route[]> = {};
+      for (const [key, routes] of parsed.roles) roles[key] = [...routes];
+      writeFileAtomically(
+        jsonPath,
+        options.serialize({
+          version: options.currentVersion,
+          ...(parsed.budget === undefined ? {} : { budget: parsed.budget }),
+          roles,
+        }),
+      );
+      rmSync(mdcPath, { force: true });
+      return { status: "migrated" };
+    } catch (error) {
+      return { status: "unreadable", reason: describeError(error) };
+    }
   }
-  writeFileAtomically(
-    jsonPath,
-    serialize({
-      version: 1,
-      ...(parsed.budget === undefined ? {} : { budget: parsed.budget }),
-      roles,
-    }),
-  );
-  rmSync(mdcPath, { force: true });
+
+  let raw: unknown;
+  try {
+    raw = JSON.parse(readFileSync(jsonPath, "utf8"));
+  } catch (error) {
+    return { status: "unreadable", reason: describeError(error) };
+  }
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return { status: "unreadable", reason: "the role file must be a JSON object" };
+  }
+  const record = raw as Record<string, unknown>;
+  const version = record["version"];
+  if (version === options.currentVersion) return { status: "current" };
+  if (version !== 1) {
+    return {
+      status: "unreadable",
+      reason: `unsupported role file version ${JSON.stringify(version)}`,
+    };
+  }
+  try {
+    const roles = upgradeVersionOneRoles(record["roles"]);
+    const budget = record["budget"];
+    if (budget !== undefined && typeof budget !== "string") {
+      return { status: "unreadable", reason: "the role file budget must be a string" };
+    }
+    writeFileAtomically(
+      jsonPath,
+      options.serialize({
+        version: options.currentVersion,
+        ...(budget === undefined ? {} : { budget }),
+        roles,
+      }),
+    );
+    return { status: "migrated" };
+  } catch (error) {
+    return { status: "unreadable", reason: describeError(error) };
+  }
+}
+
+/** Convert a `version: 1` roles map with string routes into structured routes. */
+function upgradeVersionOneRoles(raw: unknown): Record<string, readonly Route[]> {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    throw new Error("the role file roles must be an object");
+  }
+  const roles: Record<string, readonly Route[]> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (!Array.isArray(value)) {
+      throw new Error(`role ${JSON.stringify(key)} routes must be an array`);
+    }
+    roles[key] = value.map((entry) => {
+      const parsed = typeof entry === "string" ? parseLegacyRoute(entry) : parseRouteEntry(entry);
+      if (parsed.route === undefined)
+        throw new Error(`role ${JSON.stringify(key)}: ${parsed.issue}`);
+      return parsed.route;
+    });
+  }
+  return roles;
+}
+
+function describeError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
