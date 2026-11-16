@@ -354,7 +354,7 @@ describe("role editor", () => {
   it("leaves the file byte-identical when the budget is a no-op", async () => {
     const original = `${JSON.stringify(
       {
-        version: 1,
+        version: 2,
         budget: "large (xhigh)",
         roles: {
           "bug-fix": [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],

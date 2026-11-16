@@ -208,14 +208,22 @@ export function writeWorkerInstructions(paths: WorkerPaths): void {
 
 export function writeRoleFile(paths: WorkerPaths, config: PlaygroundConfig): void {
   mkdirSync(paths.home, { recursive: true });
-  const roles: Record<string, string[]> = {};
+  const roles: Record<
+    string,
+    Array<{ kind: "route"; provider: string; model: string; effort?: string }>
+  > = {};
   for (const [role, value] of Object.entries(config.roleModels ?? {})) {
     const routes = Array.isArray(value) ? value : [value];
-    roles[role] = routes.map((route) => `${route.provider}/${route.model} [${route.effort}]`);
+    roles[role] = routes.map((route) => ({
+      kind: "route",
+      provider: route.provider,
+      model: route.model,
+      ...(route.effort === undefined ? {} : { effort: route.effort }),
+    }));
   }
   writeFileSync(
     join(paths.home, "pstack-models.json"),
-    `${JSON.stringify({ version: 1, roles }, null, 2)}\n`,
+    `${JSON.stringify({ version: 2, roles }, null, 2)}\n`,
   );
 }
 

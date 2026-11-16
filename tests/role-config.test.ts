@@ -94,7 +94,7 @@ describe("role manifest, parser, and route selection", () => {
   });
 
   it("rejects an unsupported document version", () => {
-    expect(() => parseRoleConfiguration(JSON.stringify({ version: 2, roles: {} }), "/x")).toThrow(
+    expect(() => parseRoleConfiguration(JSON.stringify({ version: 3, roles: {} }), "/x")).toThrow(
       /version/,
     );
     expect(() => parseRoleConfiguration("not json", "/x")).toThrow();
@@ -119,7 +119,7 @@ describe("legacy role file migration", () => {
     expect(existsSync(legacy)).toBe(false);
     expect(existsSync(jsonPath(directory))).toBe(true);
     expect(JSON.parse(readFileSync(jsonPath(directory), "utf8"))).toMatchObject({
-      version: 1,
+      version: 2,
       budget: "large (xhigh)",
       roles: {
         "bug-fix": [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],

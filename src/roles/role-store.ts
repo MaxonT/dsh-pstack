@@ -55,9 +55,12 @@ export type RoleConfiguration =
       readonly issues: readonly RoleFileIssue[];
     };
 
+/** The current role-file schema version. Version 1 stored provider/model strings. */
+export const ROLE_FILE_VERSION = 2;
+
 /** The editable JSON shape: version, optional budget, structured routes per role. */
 export interface RoleFileDocument {
-  readonly version: 1;
+  readonly version: 1 | 2;
   readonly budget?: string;
   readonly roles: Record<string, readonly Route[]>;
 }
@@ -90,16 +93,18 @@ export function resolveDshHome(
 
 /** An empty document for the first save on a missing home. */
 export function emptyRoleDocument(): RoleFileDocument {
-  return { version: 1, roles: {} };
+  return { version: ROLE_FILE_VERSION, roles: {} };
 }
 
 /** Read the version, budget, and roles map shared by both parsers. */
 function readRoleDocumentShape(text: string): {
+  version: 1 | 2;
   budget?: string;
   rawRoles: Record<string, unknown>;
 } {
   const raw = parseJsonObject(text);
-  if (raw["version"] !== 1) {
+  const version = raw["version"];
+  if (version !== 1 && version !== 2) {
     throw new Error(`unsupported role file version ${JSON.stringify(raw["version"])}`);
   }
   const budget = raw["budget"];
@@ -111,6 +116,7 @@ function readRoleDocumentShape(text: string): {
     throw new Error("the role file roles must be an object");
   }
   return {
+    version,
     ...(budget === undefined ? {} : { budget }),
     rawRoles: rawRoles as Record<string, unknown>,
   };
@@ -118,13 +124,16 @@ function readRoleDocumentShape(text: string): {
 
 /** Parse the JSON document shape used for editing. Throws on an invalid shape. */
 export function parseRoleDocument(text: string): RoleFileDocument {
-  const { budget, rawRoles } = readRoleDocumentShape(text);
+  const { version, budget, rawRoles } = readRoleDocumentShape(text);
   const roles: Record<string, readonly Route[]> = {};
   for (const [key, value] of Object.entries(rawRoles)) {
     if (!Array.isArray(value)) {
       throw new Error(`role ${JSON.stringify(key)} routes must be an array of route entries`);
     }
     roles[key] = value.map((entry) => {
+      if (version === 2 && typeof entry === "string") {
+        throw new Error(`role ${JSON.stringify(key)}: version 2 routes must be route objects`);
+      }
       const parsed = routeFromEntry(entry);
       if (parsed.route === undefined) {
         throw new Error(`role ${JSON.stringify(key)}: ${parsed.issue}`);
@@ -132,7 +141,7 @@ export function parseRoleDocument(text: string): RoleFileDocument {
       return parsed.route;
     });
   }
-  return { version: 1, ...(budget === undefined ? {} : { budget }), roles };
+  return { version: ROLE_FILE_VERSION, ...(budget === undefined ? {} : { budget }), roles };
 }
 
 /** Render an editable role document as stable, pretty-printed JSON. */
@@ -141,7 +150,7 @@ export function serializeRoleDocument(document: RoleFileDocument): string {
   for (const [key, routes] of Object.entries(document.roles)) roles[key] = [...routes];
   return `${JSON.stringify(
     {
-      version: 1,
+      version: ROLE_FILE_VERSION,
       ...(document.budget === undefined ? {} : { budget: document.budget }),
       roles,
     },
@@ -152,7 +161,7 @@ export function serializeRoleDocument(document: RoleFileDocument): string {
 
 /** Parse a JSON role file into its semantic view. Throws only on an invalid top-level shape. */
 export function parseRoleConfiguration(text: string, path: string): RoleConfiguration {
-  const { budget, rawRoles } = readRoleDocumentShape(text);
+  const { version, budget, rawRoles } = readRoleDocumentShape(text);
 
   const roles = new Map<string, RoleEntry>();
   const issues: RoleFileIssue[] = [];
@@ -173,6 +182,10 @@ export function parseRoleConfiguration(text: string, path: string): RoleConfigur
     const routes: Route[] = [];
     const entryIssues: string[] = [];
     rawValue.forEach((entry, index) => {
+      if (version === 2 && typeof entry === "string") {
+        entryIssues.push(`entry ${index + 1} must be a route object in version 2`);
+        return;
+      }
       const parsed = routeFromEntry(entry);
       if (parsed.route === undefined) entryIssues.push(`entry ${index + 1} ${parsed.issue}`);
       else routes.push(parsed.route);

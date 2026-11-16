@@ -45,7 +45,7 @@ DSH has no rules directory and never reads `.mdc` files as session rules. The ps
 
 - Detect. Use `list_subagent_models` and write each served route as `<provider>/<model> <effort>`. If nothing is detectable, ask the user to paste the routes; never write an unconfirmed one.
 - Defaults. Map a served slug to its route; an unserved slug becomes `inherit-parent`.
-- Write. Write `$DSH_HOME/pstack-models.json` with `version: 1`, an optional `budget`, and a `roles` object of route-string arrays. Overwrite the whole file; a missing role inherits the parent route.
+- Write. Write `$DSH_HOME/pstack-models.json` with `version: 2`, an optional `budget`, and a `roles` object of route-object arrays. Overwrite the whole file; a missing role inherits the parent route.
 
 ## Paths
 

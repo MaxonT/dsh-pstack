@@ -25,6 +25,7 @@ import {
   parseRoleConfiguration,
   parseRoleDocument,
   readRoleConfiguration,
+  ROLE_FILE_VERSION,
   serializeRoleDocument,
   writeRoleDocument,
   type RoleConfiguration,
@@ -220,7 +221,7 @@ export async function saveRoleConfiguration(
   if (nextRoutes.length === 0) delete roles[key];
   else roles[key] = [...nextRoutes];
   const updated: RoleFileDocument = {
-    version: 1,
+    version: ROLE_FILE_VERSION,
     ...(document.budget === undefined ? {} : { budget: document.budget }),
     roles,
   };
@@ -311,7 +312,7 @@ export async function saveBudgetConfiguration(
       if (row.routes.length === 0) delete roles[row.key];
       else roles[row.key] = [...row.routes];
     }
-    const updated: RoleFileDocument = { version: 1, budget: plan.budget, roles };
+    const updated: RoleFileDocument = { version: ROLE_FILE_VERSION, budget: plan.budget, roles };
     const next = serializeRoleDocument(updated);
     if (current.status === "loaded" && next === text) {
       return { ok: true, snapshot: snapshotFromConfiguration(current) };
