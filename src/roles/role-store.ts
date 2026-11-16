@@ -5,7 +5,7 @@
  * parses each route into a `Route` and reports issues for the settings page and
  * the delegator. The editable view (`RoleFileDocument`) keeps the structured
  * routes so a save round-trips them unchanged. Both views handle only the
- * current schema version; `compat/legacy-role-file` upgrades a legacy `.mdc` or
+ * current schema version; `compat/upgrade-role-file` upgrades a legacy `.mdc` or
  * an older JSON version in place before this module reads the file. A missing
  * file means every role inherits the parent route, while an unreadable file
  * fails loudly instead of behaving like a fresh install.
@@ -15,7 +15,7 @@ import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { upgradeRoleFile, type RoleFileDocumentLike } from "../compat/legacy-role-file.ts";
+import { upgradeRoleFile, type RoleFileDocumentLike } from "../compat/upgrade-role-file.ts";
 import { writeFileAtomically } from "../lib/atomic-write.ts";
 import { PSTACK_MODELS_FILENAME, findRole } from "./role-manifest.ts";
 import { parseRouteEntry, validateRoleRouteShape, type Route } from "./route.ts";

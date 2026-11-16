@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
-import { parseLegacyRoute as parseRoute } from "../src/compat/legacy-role-file.ts";
+import { parseLegacyRoute as parseRoute } from "../src/compat/legacy-route.ts";
 import { findRole } from "../src/roles/role-manifest.ts";
 import { parseRoleConfiguration, readRoleConfiguration } from "../src/roles/role-store.ts";
 

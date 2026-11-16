@@ -13,7 +13,7 @@ import {
   validateSaveRequest,
 } from "../src/roles/role-editor.ts";
 import { parseSaveRoleRequest } from "../src/roles/role-wire.ts";
-import { parseLegacyRoute } from "../src/compat/legacy-role-file.ts";
+import { parseLegacyRoute } from "../src/compat/legacy-route.ts";
 import type { Route } from "../src/roles/route.ts";
 import type { CatalogueResult } from "../src/models.ts";
 
