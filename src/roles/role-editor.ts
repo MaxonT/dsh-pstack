@@ -36,7 +36,6 @@ import {
   type BudgetApplyResult,
   type RoleFileSnapshot,
   type RoleView,
-  type RouteView,
   type SaveRoleRequest,
   type SaveRoleResult,
 } from "./role-wire.ts";
@@ -80,18 +79,8 @@ function roleView(key: string, shape: "single" | "list", entry: RoleEntry | unde
     key,
     shape,
     configured: entry !== undefined,
-    routes: entry === undefined ? [] : entry.routes.map(routeView),
+    routes: entry === undefined ? [] : [...entry.routes],
     issues: entry === undefined ? [] : [...entry.issues],
-  };
-}
-
-function routeView(route: Route): RouteView {
-  if (route.kind === "inherit") return { kind: "inherit", alias: route.alias };
-  return {
-    kind: "route",
-    provider: route.provider,
-    model: route.model,
-    ...(route.effort === undefined ? {} : { effort: route.effort }),
   };
 }
 

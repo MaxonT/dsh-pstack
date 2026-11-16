@@ -93,8 +93,11 @@ export function emptyRoleDocument(): RoleFileDocument {
   return { version: 1, roles: {} };
 }
 
-/** Parse the JSON document shape used for editing. Throws on an invalid shape. */
-export function parseRoleDocument(text: string): RoleFileDocument {
+/** Read the version, budget, and roles map shared by both parsers. */
+function readRoleDocumentShape(text: string): {
+  budget?: string;
+  rawRoles: Record<string, unknown>;
+} {
   const raw = parseJsonObject(text);
   if (raw["version"] !== 1) {
     throw new Error(`unsupported role file version ${JSON.stringify(raw["version"])}`);
@@ -107,8 +110,17 @@ export function parseRoleDocument(text: string): RoleFileDocument {
   if (typeof rawRoles !== "object" || rawRoles === null || Array.isArray(rawRoles)) {
     throw new Error("the role file roles must be an object");
   }
+  return {
+    ...(budget === undefined ? {} : { budget }),
+    rawRoles: rawRoles as Record<string, unknown>,
+  };
+}
+
+/** Parse the JSON document shape used for editing. Throws on an invalid shape. */
+export function parseRoleDocument(text: string): RoleFileDocument {
+  const { budget, rawRoles } = readRoleDocumentShape(text);
   const roles: Record<string, readonly Route[]> = {};
-  for (const [key, value] of Object.entries(rawRoles as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(rawRoles)) {
     if (!Array.isArray(value)) {
       throw new Error(`role ${JSON.stringify(key)} routes must be an array of route entries`);
     }
@@ -140,22 +152,11 @@ export function serializeRoleDocument(document: RoleFileDocument): string {
 
 /** Parse a JSON role file into its semantic view. Throws only on an invalid top-level shape. */
 export function parseRoleConfiguration(text: string, path: string): RoleConfiguration {
-  const raw = parseJsonObject(text);
-  if (raw["version"] !== 1) {
-    throw new Error(`unsupported role file version ${JSON.stringify(raw["version"])}`);
-  }
-  const budget = raw["budget"];
-  if (budget !== undefined && typeof budget !== "string") {
-    throw new Error("the role file budget must be a string when present");
-  }
-  const rawRoles = raw["roles"] ?? {};
-  if (typeof rawRoles !== "object" || rawRoles === null || Array.isArray(rawRoles)) {
-    throw new Error("the role file roles must be an object");
-  }
+  const { budget, rawRoles } = readRoleDocumentShape(text);
 
   const roles = new Map<string, RoleEntry>();
   const issues: RoleFileIssue[] = [];
-  for (const [rawKey, rawValue] of Object.entries(rawRoles as Record<string, unknown>)) {
+  for (const [rawKey, rawValue] of Object.entries(rawRoles)) {
     const spec = findRole(rawKey);
     if (spec === undefined) {
       issues.push({ message: `unknown pstack role ${JSON.stringify(rawKey)}` });
