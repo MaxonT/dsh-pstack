@@ -8,7 +8,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent`. One call starts one subagent; fan out by calling it once per child in one message. Pass `provider`, `model`, and an optional `reasoning_effort` to override the route, or omit all three to inherit the parent route. `pstack_models` lists each model id on its own line under a provider heading: pass the heading's provider id as `provider` and the listed id as `model`, never the combined `provider/model` route. |
+| `Task` | `pstack_subagent` starts one subagent per call; fan out by calling it once per child in one message, passing `description` and `prompt`. Pass `provider`, `model`, and an optional `reasoning_effort` to override the route, or omit all three to inherit the parent route. `pstack_models` lists each model id on its own line under a provider heading: pass the heading's provider id as `provider` and the listed id as `model`, never the combined `provider/model` route. |
 | `AskQuestion` | `ask_user_question` takes a batch of questions with options and free input. Only a live root agent has a human answerer; a delegated child keeps its questions in its result. Ask in plain text when the tool is absent. |
 | Open a todolist | `todo_write` replaces the whole list and has no `skipped` status. Keep a skipped step visible as `skip: <reason> - <step>` in `content` and mark it `completed`. |
 | Run another pstack skill (`/name` or "the **name** skill") | `pstack_skill` loads a packaged pstack skill by exact kebab-case `name`. Pass `resource` to read a file beside its `SKILL.md`; a user `/name` loads the skill directly. The built-in help skill is `poteto-help`; read a playbook with `name: "poteto-mode"` and `resource: "playbooks/<name>.md"`. |
@@ -33,7 +33,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `claude-<family>-<version>-<effort>[-fast]` | Do not pass a Cursor slug. Read `pstack_roles` for the role's `provider`, `model`, `reasoningEffort`, and served `efforts`, then pick a value from `efforts` when changing effort; use `pstack_models` only for setup or to verify a route. Drop `-fast`; DSH has no speed parameter. |
+| `claude-<family>-<version>-<effort>[-fast]` | Do not pass a Cursor slug. Read `pstack_roles` for the role's `provider`, `model`, `reasoningEffort`, and served `efforts`, then pass them as `provider`, `model`, and `reasoning_effort` when changing effort; use `pstack_models` only for setup or to verify a route. Drop `-fast`; DSH has no speed parameter. |
 | A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route, or omit `provider` and `model` so the child inherits the parent route, and say so. |
 | `auto` or `inherit-parent` | Omit `provider` and `model`; the child inherits the parent route. |
 | The pstack role file | `$DSH_HOME/pstack-models.json`. Read `pstack_roles` to map a role to its route; `pstack_subagent` does not parse it. A missing file leaves no configured route, so the child inherits the parent route. |
@@ -75,11 +75,11 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | Start one subagent with an optional `agent` preset (default `general`) and optional `name`, optionally overriding its route with `provider`, `model`, and `reasoning_effort`; completion arrives as a notice. A subagent is not a background job: never pass its id to `job_output`; wait for the completion notice, or use the native `list_agents`/`send_message`. |
+| `pstack_subagent` | Start one subagent. Requires `description` and `prompt`; optional `agent` preset (default `general`), `name`, `cwd`, `maxDepth`, and a route override with `provider`, `model`, and `reasoning_effort`. Completion arrives as a notice. A subagent is not a background job: never pass its id to `job_output`; wait for the completion notice, or use the native `list_agents`/`send_message`. |
 | `pstack_interrupt` | Stop one pstack child's current turn by its name from `list_agents` or its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child. |
 | `pstack_skill` | Load a packaged pstack skill by exact kebab-case name; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
-| `pstack_roles` | Report each pstack role with its configured routes as provider, model, and reasoningEffort values, plus each route's served efforts and default. |
+| `pstack_roles` | Report each pstack role with its configured routes as provider, model, and reasoningEffort values, plus each route's served efforts and default. Pass them to `pstack_subagent` as `provider`, `model`, and `reasoning_effort`. |
 
 Agent Teams mode is additive. When a session enables it, the session gains four team task tools and a shared task board; `pstack_subagent` children are ordinary subagents in the same tree and appear in `list_agents`.
 
