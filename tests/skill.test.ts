@@ -52,6 +52,16 @@ describe("pstack_skill", () => {
     expect(rendered).toContain("Load referenced resources only as needed.");
   });
 
+  it("refuses a hidden skill from a non-pstack provider", async () => {
+    const hiddenVendored: SkillDefinition = { ...temporarySkill(), provider: "pstack-vendored" };
+    const skills = {
+      get: async (name: string) => (name === "how" ? hiddenVendored : undefined),
+    } as unknown as SkillRegistry;
+    await expect(createPstackSkillTool(skills).execute({ name: "how" }, exec)).rejects.toThrow(
+      /not available for model invocation/,
+    );
+  });
+
   it("rejects an invalid skill name before querying the registry", async () => {
     const tool = createPstackSkillTool({
       get: async () => {

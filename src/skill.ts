@@ -7,6 +7,7 @@
  */
 
 import type { Context } from "@deepseek-ai/cordis";
+import { isModelInvocable, isSkillName } from "@deepseek-ai/dsh-skill";
 import type { SkillRegistry, SkillResourceBase } from "@deepseek-ai/dsh-skill";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
@@ -16,7 +17,8 @@ export const inject = ["skills", "tools"];
 
 export const TOOL_NAME = "pstack_skill";
 
-const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/** The bundled pstack skill provider whose hidden skills this loader may reveal. */
+const PSTACK_SKILL_PROVIDER = "pstack";
 
 export interface LoadSkillResult {
   readonly name: string;
@@ -137,17 +139,23 @@ export function createPstackSkillTool(skills: SkillRegistry): ToolDefinition {
       if (typeof rawArgs !== "object" || rawArgs === null || Array.isArray(rawArgs)) {
         throw new Error("pstack_skill takes an object argument");
       }
-      const args = rawArgs as Record<string, unknown>;
-      const skillName = args["name"];
-      if (typeof skillName !== "string" || !SKILL_NAME.test(skillName)) {
+      const skillName = (rawArgs as Record<string, unknown>)["name"];
+      if (typeof skillName !== "string" || !isSkillName(skillName)) {
         throw new Error(`invalid skill name "${String(skillName)}"`);
       }
-      const definition = await skills.get(skillName, {
+      const lookup = {
         signal: exec.signal,
         ...(exec.agent === undefined ? {} : { scope: exec.agent }),
-      });
-      if (definition === undefined) {
+      };
+      const summary = await skills.get(skillName, lookup);
+      if (summary === undefined) {
         throw new Error(`skill "${skillName}" is unknown or no longer available`);
+      }
+      const definition = summary;
+      // Mirror the native skill loader, but also reveal the hidden bundled pstack skills:
+      // only the `pstack` provider is allowed, not the vendored or authored providers.
+      if (!isModelInvocable(definition) && definition.provider !== PSTACK_SKILL_PROVIDER) {
+        throw new Error(`skill "${skillName}" is not available for model invocation`);
       }
       const result: LoadSkillResult = {
         name: definition.name,
