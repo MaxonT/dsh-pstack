@@ -5,11 +5,14 @@ import { dirname, join } from "node:path";
 import { Service } from "@deepseek-ai/cordis";
 import type { Context } from "@deepseek-ai/cordis";
 import type { Agent } from "@deepseek-ai/dsh-agent";
+import type { SessionId } from "@deepseek-ai/dsh-session";
 import { createUserMessage } from "@deepseek-ai/dsh-llm";
+import type {} from "@deepseek-ai/dsh-agent-instructions";
 import type { ProjectionHandle } from "@deepseek-ai/dsh-session-projection";
 import { renderSkillContent } from "@deepseek-ai/dsh-skill";
 import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
 import type {} from "@deepseek-ai/dsh-tools";
+import type {} from "@deepseek-ai/dsh-system-prompt";
 import type {} from "@deepseek-ai/dsh-typert-registry";
 
 import { potetoProjectionDefinition, type PotetoProjectionState } from "./poteto-projection.ts";
@@ -34,8 +37,9 @@ function readDefaultEnabled(): boolean {
       potetoDefault?: unknown;
     };
     return parsed.potetoDefault === true;
-  } catch {
-    return false;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+    throw error;
   }
 }
 
@@ -49,7 +53,7 @@ function writeDefaultEnabled(enabled: boolean): void {
 export class PotetoModeService extends TypertRemoteService {
   static inject = ["agents", "skills", "sessions", "sessionProjections", "systemPrompt", "typert"];
 
-  private readonly lastUserMessage = new Map<string, string>();
+  private readonly lastUserMessage = new WeakMap<Agent, string>();
   private readonly lifts = new WeakMap<Agent, () => void>();
   private defaultEnabled = false;
   private sectionText = "";
@@ -70,23 +74,14 @@ export class PotetoModeService extends TypertRemoteService {
       renderSkillContent(skill),
     ].join("\n");
 
-    const host = this.ctx as unknown as {
-      systemPrompt: {
-        section(section: {
-          name: string;
-          order: number;
-          interpolate?: boolean;
-          text: (context: { agent: Agent }) => string;
-        }): () => void;
-      };
-    };
     this.ctx.effect(
       () =>
-        host.systemPrompt.section({
+        this.ctx.systemPrompt.section({
           name: SECTION_NAME,
           order: SECTION_ORDER,
           interpolate: false,
-          text: ({ agent }) => (this.isEnabledFor(agent) ? this.sectionText : ""),
+          text: ({ agent }) =>
+            agent !== undefined && this.isEnabledFor(agent) ? this.sectionText : "",
         }),
       "pstack.poteto-toggle.section()",
     );
@@ -104,33 +99,24 @@ export class PotetoModeService extends TypertRemoteService {
       () =>
         this.ctx.on(
           "agent/pre-step",
-          (async (
-            input: {
-              agent: Agent;
-              messages: readonly {
-                id?: string;
-                source?: { kind?: string };
-              }[];
-            },
-            next: () => Promise<{ kind: string; messages?: readonly unknown[] }>,
-          ) => {
+          async ({ agent, messages }, next) => {
             const decision = await next();
             if (decision.kind === "reject") return decision;
-            if (!this.isEnabledFor(input.agent)) return decision;
-            this.ensureNativeToolsRestricted(input.agent);
-            const users = input.messages.filter((message) => message.source?.kind === "user");
+            if (!this.isEnabledFor(agent)) return decision;
+            this.ensureNativeToolsRestricted(agent);
+            const users = messages.filter((message) => message.source.kind === "user");
             const latest = users[users.length - 1];
-            if (latest?.id === undefined) return decision;
-            if (this.lastUserMessage.get(input.agent.id) === latest.id) return decision;
-            this.lastUserMessage.set(input.agent.id, latest.id);
+            if (latest === undefined) return decision;
+            if (this.lastUserMessage.get(agent) === latest.id) return decision;
+            this.lastUserMessage.set(agent, latest.id);
             const injection = createUserMessage({
               content: [{ type: "text", text: REMINDER }],
-              source: { kind: "agent-instructions", form: "instructions", changes: [] } as never,
+              source: { kind: "agent-instructions", form: "instructions", changes: [] },
             });
-            return { ...decision, messages: [...(decision.messages ?? []), injection] };
-          }) as never,
+            return { ...decision, messages: [...decision.messages, injection] };
+          },
           { prepend: true },
-        ) as never,
+        ),
       "pstack.poteto-toggle.pre-step",
     );
   }
@@ -142,7 +128,7 @@ export class PotetoModeService extends TypertRemoteService {
 
   /** Read the saved switch for one Session id. */
   status(sessionId: string): { enabled: boolean } {
-    const agent = this.ctx.agents.get(sessionId as never);
+    const agent = this.ctx.agents.get(sessionId as SessionId);
     return { enabled: agent === undefined ? this.defaultEnabled : this.isEnabledFor(agent) };
   }
 
@@ -166,11 +152,13 @@ export class PotetoModeService extends TypertRemoteService {
     signal?: AbortSignal,
   ): Promise<{ enabled: boolean }> {
     signal?.throwIfAborted();
-    const agent = this.ctx.agents.get(sessionId as never);
+    const agent = this.ctx.agents.get(sessionId as SessionId);
     if (agent === undefined) throw new Error(`session ${sessionId} is not live`);
     if (this.isEnabledFor(agent) !== enabled) {
       agent.session.append("poteto/mode", { enabled });
-      await this.ctx.sessions.flush(agent.session);
+      if (!(await this.ctx.sessions.flush(agent.session))) {
+        throw new Error(`poteto mode for session ${sessionId} was not persisted`);
+      }
     }
     if (enabled) this.ensureNativeToolsRestricted(agent);
     else this.clearNativeToolsRestriction(agent);
@@ -179,11 +167,11 @@ export class PotetoModeService extends TypertRemoteService {
 
   private ensureNativeToolsRestricted(agent: Agent): void {
     if (this.lifts.has(agent)) return;
-    try {
-      this.lifts.set(agent, agent.ctx.tools.restrict({ deny: ["subagent", "subagent_fork"] }));
-    } catch {
-      // Tool restriction is best effort; prompt injection remains active.
-    }
+    const names = ["subagent", "subagent_fork"].filter(
+      (name) => agent.ctx.tools.get(name, agent) !== undefined,
+    );
+    if (names.length === 0) return;
+    this.lifts.set(agent, agent.ctx.tools.restrict({ deny: names }));
   }
 
   private clearNativeToolsRestriction(agent: Agent): void {

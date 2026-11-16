@@ -26,10 +26,14 @@ catalogs:
   types:
     "@types/node": ^24.1.0
     "@deepseek-ai/dsh-agent": 0.2.2-rc.2
+    "@deepseek-ai/dsh-agent-instructions": 0.2.2-rc.2
     "@deepseek-ai/dsh-agent-preset-registry": 0.2.2-rc.2
     "@deepseek-ai/dsh-api-gateway": 0.2.2-rc.2
     "@deepseek-ai/dsh-api-remotes": 0.2.2-rc.2
     "@deepseek-ai/dsh-client-locale": 0.2.2-rc.2
+    "@deepseek-ai/dsh-client-shortcuts": 0.2.2-rc.2
+    "@deepseek-ai/dsh-client-ui-conversation": 0.2.2-rc.2
+    "@deepseek-ai/dsh-client-ui-model-selection": 0.2.2-rc.2
     "@deepseek-ai/dsh-client-ui-plugin-manager": 0.2.2-rc.2
     "@deepseek-ai/dsh-client-ui-renderer": 0.2.2-rc.2
     "@deepseek-ai/dsh-client-ui-settings": 0.2.2-rc.2
@@ -41,6 +45,7 @@ catalogs:
     "@deepseek-ai/dsh-session-projection": 0.2.2-rc.2
     "@deepseek-ai/dsh-skill": 0.2.2-rc.2
     "@deepseek-ai/dsh-subagent": 0.2.2-rc.2
+    "@deepseek-ai/dsh-system-prompt": 0.2.2-rc.2
     "@deepseek-ai/dsh-tools": 0.2.2-rc.2
     "@deepseek-ai/dsh-typert-registry": 0.2.2-rc.2
     "@deepseek-ai/dsh-working-directory": 0.2.2-rc.2
