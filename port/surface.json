@@ -67,10 +67,10 @@
             "type": ["string", "null"],
             "description": "Optional subagent name, unique among the parent's children; lets list_agents and send_message address it by name."
           },
-          "agent": {
+          "agent_preset": {
             "type": "string",
             "enum": ["poteto-agent", "comment-sicko", "readonly", "general"],
-            "description": "Optional child preset; defaults to \"general\". \"poteto-agent\" for pstack implementation, \"comment-sicko\" for comment review, \"readonly\" for a sandbox-enforced read-only researcher."
+            "description": "Optional child agent preset; defaults to \"general\". \"poteto-agent\" for pstack implementation, \"comment-sicko\" for comment review, \"readonly\" for a sandbox-enforced read-only researcher."
           },
           "provider": {
             "type": ["string", "null"],

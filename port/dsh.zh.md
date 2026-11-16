@@ -18,10 +18,10 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `subagent_type: generalPurpose` | `agent: "general"`（默认值）加入父 preset 并继承其工具。 |
-| `poteto-agent`, `comment-sicko` | `agent: "poteto-agent"` 或 `agent: "comment-sicko"`。它们是 agent preset，不是 `subagent_type` 值。 |
-| `readonly: true` | `agent: "readonly"` 给子智能体只读沙箱。需要写入时用 `general`。 |
-| `readonly: false` | `agent: "general"`。 |
+| `subagent_type: generalPurpose` | `agent_preset: "general"`（默认值）加入父 preset 并继承其工具。 |
+| `poteto-agent`, `comment-sicko` | `agent_preset: "poteto-agent"` 或 `agent_preset: "comment-sicko"`。它们是 agent preset，不是 `subagent_type` 值。 |
+| `readonly: true` | `agent_preset: "readonly"` 给子智能体只读沙箱。需要写入时用 `general`。 |
+| `readonly: false` | `agent_preset: "general"`。 |
 | `environment: "cloud"` | 没有云代理。可用时用 `create_worktree`，把 checkout 作为 `cwd`；否则按规则跳过。 |
 | `environment: "local"` | 省略 `cwd`；子智能体继承会话目录。 |
 | `cloud_base_branch: <b>` | 作为 `create_worktree.from` 传入；否则让子智能体先 checkout `<b>`。 |
@@ -75,7 +75,7 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | 启动一个子智能体。必填 `description` 和 `prompt`；可选 `agent` preset（默认 `general`）、`name`、`cwd`、`maxDepth`，以及用 `provider`、`model`、`reasoning_effort` 覆盖路由。完成时发通知。子智能体不是后台 job：不要把它 id 传给 `job_output`；等完成通知，或用原生 `list_agents`/`send_message`。 |
+| `pstack_subagent` | 启动一个子智能体。必填 `description` 和 `prompt`；可选 `agent_preset`（默认 `general`）、`name`、`cwd`、`maxDepth`，以及用 `provider`、`model`、`reasoning_effort` 覆盖路由。返回 `{kind:"activation", name}`。完成时发通知。子智能体不是后台 job：不要把它的名称传给 `job_output`；等完成通知，或用原生 `list_agents`/`send_message`。 |
 | `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是 pstack 子代理的中断通道。 |
 | `pstack_skill` | 按精确 kebab-case 名称加载随包 pstack 技能；`resource` 读取参考或 playbook。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |

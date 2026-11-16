@@ -11,11 +11,7 @@
 import type { Agent, AgentOptions } from "@deepseek-ai/dsh-agent";
 import type { Context } from "@deepseek-ai/cordis";
 import type { LlmRuntime, ReasoningEffortId } from "@deepseek-ai/dsh-llm";
-import type {
-  SubagentActivation,
-  SubagentCapabilities,
-  SubagentRuntime,
-} from "@deepseek-ai/dsh-subagent";
+import type { SubagentCapabilities, SubagentRuntime } from "@deepseek-ai/dsh-subagent";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
 import { POTETO_MODE_SKILL_PATH } from "./lib/paths.ts";
@@ -69,7 +65,6 @@ export interface DelegationPlan {
   readonly label: string;
   readonly agent: AgentKind;
   readonly prompt: string;
-  readonly routeLabel: string;
   readonly name?: string;
   readonly agentOptions?: AgentOptions;
   readonly agentPreset?: string;
@@ -77,12 +72,10 @@ export interface DelegationPlan {
   readonly maxDepth?: number;
 }
 
-export interface ChildRecord {
-  readonly childId: string;
-  readonly agent: string;
-  readonly route: string;
-  readonly effort?: string;
-  readonly maxDepth?: number;
+/** The native subagent tool's activation result. */
+export interface ActivationResult {
+  readonly kind: "activation";
+  readonly name: string;
 }
 
 /** The live services one delegation reads. */
@@ -124,7 +117,7 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
   if (prompt === null) throw new Error("prompt is required");
   const description = stringArg(record["description"]);
   if (description === null) throw new Error("description is required");
-  const agentValue = record["agent"];
+  const agentValue = record["agent_preset"];
   let agent: AgentKind = "general";
   if (agentValue !== undefined && agentValue !== null) {
     if (
@@ -195,7 +188,6 @@ export function planDelegation(
     label: args.description,
     agent: args.agent,
     prompt,
-    routeLabel: formatRoute(args.provider, args.model, effort),
     ...(agentOptions === undefined ? {} : { agentOptions }),
     ...(agentPreset === undefined ? {} : { agentPreset }),
     ...(args.name === null ? {} : { name: args.name }),
@@ -210,7 +202,7 @@ export async function startChild(
   plan: DelegationPlan,
   runtime: DelegationRuntime,
   signal: AbortSignal,
-): Promise<ChildRecord> {
+): Promise<ActivationResult> {
   const provider = runtime.subagents.getProvider(plan.backend);
   if (provider === undefined) {
     throw new Error(`subagent provider "${plan.backend}" is not registered`);
@@ -231,7 +223,7 @@ export async function startChild(
     ...(plan.agentOptions === undefined ? {} : { agentOptions: plan.agentOptions }),
     ...(plan.maxDepth === undefined ? {} : { maxDepth: plan.maxDepth }),
   });
-  return recordFor(plan, activation);
+  return { kind: "activation", name: activation.name };
 }
 
 /** Complete delegation: plan and start one child. */
@@ -241,7 +233,7 @@ export async function delegate(
   runtime: DelegationRuntime,
   config: PstackSubagentConfig,
   signal: AbortSignal,
-): Promise<ChildRecord> {
+): Promise<ActivationResult> {
   return startChild(parent, planDelegation(args, runtime, config), runtime, signal);
 }
 
@@ -282,11 +274,11 @@ export function createPstackSubagentTool(
           description:
             "Optional subagent name, unique among the parent's children; lets list_agents and send_message address it by name.",
         },
-        agent: {
+        agent_preset: {
           type: "string",
           enum: [...AGENT_KINDS],
           description:
-            'Optional child preset; defaults to "general". "poteto-agent" for pstack implementation, "comment-sicko" for comment review, "readonly" for a sandbox-enforced read-only researcher.',
+            'Optional child agent preset; defaults to "general". "poteto-agent" for pstack implementation, "comment-sicko" for comment review, "readonly" for a sandbox-enforced read-only researcher.',
         },
         provider: {
           type: ["string", "null"],
@@ -320,7 +312,7 @@ export function createPstackSubagentTool(
     output: {
       schema: OUTPUT_SCHEMA,
       render: (_args, value) => [
-        { type: "text", text: renderDelegation(value as unknown as ChildRecord) },
+        { type: "text", text: renderDelegation(value as unknown as ActivationResult) },
       ],
     },
     isConcurrencySafe: () => true,
@@ -412,31 +404,25 @@ const TOOL_DESCRIPTION = [
   "",
   "One call starts one child. Fan out by calling this tool several times in one message; each call is independent.",
   "",
-  "`agent` picks a DSH agent preset: `poteto-agent` mounts the pstack implementation delegate and receives the absolute path of the poteto-mode instructions; `comment-sicko` mounts the comment reviewer; `readonly` mounts a read-only research preset with the sandbox policy set to read-only; `general` joins the parent preset.",
+  "`agent_preset` picks a DSH agent preset: `poteto-agent` mounts the pstack implementation delegate and receives the absolute path of the poteto-mode instructions; `comment-sicko` mounts the comment reviewer; `readonly` mounts a read-only research preset with the sandbox policy set to read-only; `general` joins the parent preset.",
   "",
   "Omit `cwd` to inherit the session directory. Omit `maxDepth` to use the configured row and Host delegation cap.",
   "",
-  "Returns the started child id and route. Results arrive as a completion notice; do not poll.",
+  "Returns the started subagent name. Results arrive as a completion notice; do not poll.",
 ].join("\n");
 
 const OUTPUT_SCHEMA: JsonSchemaNode = {
   type: "object",
   additionalProperties: false,
   properties: {
-    childId: { type: "string" },
-    agent: { type: "string" },
-    route: { type: "string" },
-    effort: { type: "string" },
-    maxDepth: { type: "integer" },
+    kind: { type: "string", const: "activation" },
+    name: { type: "string" },
   },
-  required: ["childId", "agent", "route"],
+  required: ["kind", "name"],
 };
 
-function renderDelegation(child: ChildRecord): string {
-  return [
-    `started child ${child.childId}: agent=${child.agent} route=${child.route}${child.effort === undefined ? "" : ` effort=${child.effort}`}${child.maxDepth === undefined ? "" : ` maxDepth=${child.maxDepth}`}`,
-    "The result arrives as a completion notice; do not poll for it.",
-  ].join("\n");
+function renderDelegation(result: ActivationResult): string {
+  return `started subagent ${result.name}`;
 }
 
 function buildAgentOptions(
@@ -449,23 +435,6 @@ function buildAgentOptions(
     return { provider, model, ...effortOption };
   }
   return effort === undefined ? undefined : effortOption;
-}
-
-function formatRoute(provider: string | null, model: string | null, effort?: string): string {
-  const base = provider !== null && model !== null ? `${provider}/${model}` : "inherit-parent";
-  return effort === undefined ? base : `${base} [${effort}]`;
-}
-
-function recordFor(plan: DelegationPlan, activation: SubagentActivation): ChildRecord {
-  return {
-    childId: activation.childId,
-    agent: plan.agent,
-    route: plan.routeLabel,
-    ...(plan.agentOptions?.reasoningEffort === undefined
-      ? {}
-      : { effort: plan.agentOptions.reasoningEffort }),
-    ...(plan.maxDepth === undefined ? {} : { maxDepth: plan.maxDepth }),
-  };
 }
 
 function injectPotetoModePath(task: string, path: string): string {

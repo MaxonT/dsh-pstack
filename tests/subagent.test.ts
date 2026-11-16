@@ -32,7 +32,7 @@ function args(overrides: Partial<DelegationArgs> = {}): DelegationArgs {
 function fakeRuntime(overrides: Partial<DelegationRuntime> = {}): DelegationRuntime {
   return {
     subagents: {
-      startActivation: async () => ({ childId: "child-1" }),
+      startActivation: async () => ({ childId: "child-1", name: "agent-1" }),
       getProvider: () => ({
         name: "spawn",
         capabilities: { agentOptions: true, agentPreset: true, depthLimit: true },
@@ -77,7 +77,7 @@ describe("parseDelegationArgs", () => {
       parseDelegationArgs({
         description: "d",
         prompt: "p",
-        agent: "readonly",
+        agent_preset: "readonly",
         name: "scout",
         provider: "cpa",
         model: "m",
@@ -112,9 +112,9 @@ describe("parseDelegationArgs", () => {
   });
 
   it("rejects an unknown agent preset", () => {
-    expect(() => parseDelegationArgs({ description: "d", prompt: "p", agent: "nope" })).toThrow(
-      /unknown agent preset/,
-    );
+    expect(() =>
+      parseDelegationArgs({ description: "d", prompt: "p", agent_preset: "nope" }),
+    ).toThrow(/unknown agent preset/);
   });
 
   it("rejects a maxDepth that is not a positive safe integer", () => {
@@ -152,7 +152,6 @@ describe("planDelegation", () => {
       model: "model-a",
       reasoningEffort: "high",
     });
-    expect(plan.routeLabel).toBe("cpa/model-a [high]");
   });
 
   it("caps maxDepth by the resolved limit and the row config", () => {
@@ -183,7 +182,7 @@ describe("startChild", () => {
         resolveMaxDepth: (configured?: number) => configured ?? 1,
         startActivation: async (spec: unknown) => {
           specs.push(spec);
-          return { childId: "child-1" };
+          return { childId: "child-1", name: "agent-1" };
         },
       } as unknown as DelegationRuntime["subagents"],
       llm: {
@@ -216,7 +215,7 @@ describe("startChild", () => {
       cwd: "sub/dir",
       agentOptions: { provider: "cpa", model: "m", reasoningEffort: "high" },
     });
-    expect(record).toMatchObject({ childId: "child-1", agent: "general", route: "cpa/m [high]" });
+    expect(record).toEqual({ kind: "activation", name: "agent-1" });
   });
 
   it("rejects a provider that lacks a required capability", async () => {

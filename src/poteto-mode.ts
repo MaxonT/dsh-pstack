@@ -60,6 +60,11 @@ export function createPotetoModeSection(
   const text = [
     `You are running in the persistent pstack \`${presetLabel}\` root preset. The full \`poteto-mode\` skill below stays in this system prompt for every turn. Do not load it again with \`skill\` or \`pstack_skill\`, and do not re-read SKILL.md. Open only the leaf principle, playbook, and reference files it names, under the skill directory below, when the skill tells you to.`,
     "",
+    "DSH tool mapping for this preset:",
+    "- `pstack_subagent` replaces Task. Pass `agent_preset` such as `poteto-agent` or `comment-sicko`, not `subagent_type`.",
+    "- Omit `run_in_background`. Each `pstack_subagent` call is managed and reports by completion notice.",
+    "- Use the native `list_agents` and `send_message` for tree discovery and follow-up.",
+    "",
     `- Skill file: ${skillPath}`,
     `- Skill directory: ${skillDirectory}`,
     `- DSH adapter: ${harnessDocPath}`,

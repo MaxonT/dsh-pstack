@@ -18,10 +18,10 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `subagent_type: generalPurpose` | `agent: "general"` (the default) joins the parent preset and inherits its tools. |
-| `poteto-agent`, `comment-sicko` | `agent: "poteto-agent"` or `agent: "comment-sicko"`. These are agent presets, not `subagent_type` values. |
-| `readonly: true` | `agent: "readonly"` gives the child a read-only sandbox. Use `general` when the child must write. |
-| `readonly: false` | `agent: "general"`. |
+| `subagent_type: generalPurpose` | `agent_preset: "general"` (the default) joins the parent preset and inherits its tools. |
+| `poteto-agent`, `comment-sicko` | `agent_preset: "poteto-agent"` or `agent_preset: "comment-sicko"`. These are agent presets, not `subagent_type` values. |
+| `readonly: true` | `agent_preset: "readonly"` gives the child a read-only sandbox. Use `general` when the child must write. |
+| `readonly: false` | `agent_preset: "general"`. |
 | `environment: "cloud"` | No cloud agents. Use `create_worktree` when available and pass its checkout as `cwd`; otherwise skip with the line. |
 | `environment: "local"` | Omit `cwd`; the child inherits the session directory. |
 | `cloud_base_branch: <b>` | Pass `<b>` as `create_worktree.from`; otherwise tell the child to check out `<b>`. |
@@ -75,7 +75,7 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 
 | Tool | Purpose |
 | --- | --- |
-| `pstack_subagent` | Start one subagent. Requires `description` and `prompt`; optional `agent` preset (default `general`), `name`, `cwd`, `maxDepth`, and a route override with `provider`, `model`, and `reasoning_effort`. Completion arrives as a notice. A subagent is not a background job: never pass its id to `job_output`; wait for the completion notice, or use the native `list_agents`/`send_message`. |
+| `pstack_subagent` | Start one subagent. Requires `description` and `prompt`; optional `agent_preset` (default `general`), `name`, `cwd`, `maxDepth`, and a route override with `provider`, `model`, and `reasoning_effort`. Returns `{kind:"activation", name}`. Completion arrives as a notice. A subagent is not a background job: never pass its name to `job_output`; wait for the completion notice, or use the native `list_agents`/`send_message`. |
 | `pstack_interrupt` | Stop one pstack child's current turn by its name from `list_agents` or its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child. |
 | `pstack_skill` | Load a packaged pstack skill by exact kebab-case name; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
