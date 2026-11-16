@@ -43,7 +43,7 @@ playground 真实会话验证
 | 模型目录 | `src/models.ts`、`src/models/catalogue.ts` | 实现 `pstack_models`，读取实时 LLM adapter 目录，保留单 provider 或 model 的发现错误；共享 catalogue 类型、schema 与 wire 解析。 |
 | 角色清单 | `src/roles/role-manifest.ts`、`src/role-catalog.ts` | 定义角色 key 与 shape；实现只读的 `pstack_roles`，按角色报告配置好的 provider/model/effort 路由，并附实时目录中该路由的可用 efforts 与默认档位。 |
 | 子代理委派 | `src/subagent.ts` | 实现 `pstack_subagent` 薄包装：一次调用只启动一个子代理，`description` 和 `prompt` 必填，支持可选 `agent` preset、`name`、`cwd`、`maxDepth`；`provider`/`model`/`reasoning_effort` 转成 `agentOptions`，省略则继承父路由；做能力校验与路由预检后调用 `ctx.subagents.startActivation`。同一模块还注册 `pstack_interrupt`，用于按名称或会话 id 中断 pstack 子代理；列出与续聊改用原生 `list_agents`、`send_message`。 |
-| 角色文件 | `src/roles/role-store.ts`、`src/roles/route.ts`、`src/roles/budget.ts`、`src/roles/role-editor.ts`、`src/compat/legacy-role-file.ts` | 读写 `$DSH_HOME/pstack-models.json` 这份 typed JSON 文档，以共享 Route 语法保存每个角色的路由；旧 `.mdc` 行格式只在首次读取时由 `compat/` 迁移。按预算把目标推理档位映射到具体模型并原子保存。 |
+| 角色文件 | `src/roles/role-store.ts`、`src/roles/route.ts`、`src/roles/budget.ts`、`src/roles/role-editor.ts`、`src/compat/legacy-role-file.ts` | 读写 `$DSH_HOME/pstack-models.json` 这份 typed JSON 文档，每个角色保存结构化 Route 对象数组；旧 `.mdc` 行格式在首次读取时由 `compat/` 迁移，旧的字符串 JSON 路由兼容读取并在下次保存时写成结构化对象。按预算把目标推理档位映射到具体模型并原子保存。 |
 | 角色 Remote 边界 | `src/roles/role-wire.ts`、`src/roles/role-remote.ts`、`src/role-service.ts` | 定义并严格校验传输结构；共享 Typert 描述符；在 Host 暴露状态、目录、保存和预算应用方法。 |
 | 根与子代理 preset | `src/preset.ts`、`src/presets/preset-copy.ts`、`src/poteto-mode.ts`、`src/readonly.ts` | 注册本地化 preset，向根会话注入常驻 `poteto-mode` 内容，并为只读子代理设置沙箱策略。 |
 | Client 入口与对话框 | `src/client/index.ts`、`src/client/pages/PstackConfigDialog.tsx` | 挂载 Remote 描述符、注册 locale 和插件详情动作；管理配置对话框、页签和未保存草稿。 |

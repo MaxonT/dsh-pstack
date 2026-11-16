@@ -13,6 +13,7 @@ import {
   validateSaveRequest,
 } from "../src/roles/role-editor.ts";
 import { parseSaveRoleRequest } from "../src/roles/role-wire.ts";
+import { renderRouteValue, type Route } from "../src/roles/route.ts";
 import type { CatalogueResult } from "../src/models.ts";
 
 const directories: string[] = [];
@@ -20,7 +21,7 @@ const directories: string[] = [];
 interface SeededDocument {
   readonly version?: 1;
   readonly budget?: string;
-  readonly roles: Record<string, string[]>;
+  readonly roles: Record<string, Array<string | Route>>;
 }
 
 function tempHome(document: SeededDocument | undefined): string {
@@ -44,11 +45,18 @@ function readDoc(path: string): {
   budget?: string;
   roles: Record<string, string[]>;
 } {
-  return JSON.parse(readFileSync(path, "utf8")) as {
+  const raw = JSON.parse(readFileSync(path, "utf8")) as {
     version: number;
     budget?: string;
-    roles: Record<string, string[]>;
+    roles: Record<string, Array<string | Route>>;
   };
+  const roles: Record<string, string[]> = {};
+  for (const [key, routes] of Object.entries(raw.roles)) {
+    roles[key] = routes.map((route) =>
+      typeof route === "string" ? route : renderRouteValue([route]),
+    );
+  }
+  return { version: raw.version, budget: raw.budget, roles };
 }
 
 function writeDoc(path: string, document: unknown): void {
@@ -67,8 +75,8 @@ const catalogue: CatalogueResult = {
       provider: "cpa",
       name: "CPA",
       models: [
-        { route: "cpa/model-a", id: "model-a", name: "Model A", efforts: ["low", "high"] },
-        { route: "cpa/model-b", id: "model-b", name: "Model B", efforts: ["low", "high"] },
+        { provider: "cpa", id: "model-a", name: "Model A", efforts: ["low", "high"] },
+        { provider: "cpa", id: "model-b", name: "Model B", efforts: ["low", "high"] },
       ],
     },
   ],
@@ -345,7 +353,13 @@ describe("role editor", () => {
 
   it("leaves the file byte-identical when the budget is a no-op", async () => {
     const original = `${JSON.stringify(
-      { version: 1, budget: "large (xhigh)", roles: { "bug-fix": ["cpa/model-a [high]"] } },
+      {
+        version: 1,
+        budget: "large (xhigh)",
+        roles: {
+          "bug-fix": [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
+        },
+      },
       null,
       2,
     )}\n`;
@@ -363,7 +377,11 @@ describe("role editor", () => {
   });
 
   it("refuses a budget when a configured route model is missing", async () => {
-    const home = tempHome({ roles: { "bug-fix": ["ghost/model [low]"] } });
+    const home = tempHome({
+      roles: {
+        "bug-fix": [{ kind: "route", provider: "ghost", model: "model", effort: "low" }],
+      },
+    });
     const path = pathOf(home);
     const original = readFileSync(path, "utf8");
     const result = await saveBudgetConfiguration(
@@ -438,16 +456,19 @@ describe("role editor", () => {
     expect(readDoc(path).roles["bug-fix"]).toEqual(["cpa/model-a [low]"]);
   });
 
-  it("leaves a role with a parse issue untouched during a budget apply", async () => {
-    const home = tempHome({ roles: { "bug-fix": ["cpa/model-a [low], bad token"] } });
+  it("refuses a budget when a role entry is malformed and leaves the file untouched", async () => {
+    const home = tempHome({
+      roles: { "bug-fix": [{ kind: "route", model: "model-a" } as unknown as Route] },
+    });
     const path = pathOf(home);
+    const original = readFileSync(path, "utf8");
     const result = await saveBudgetConfiguration(
       path,
       { tier: "large", scope: "concrete" },
       llm,
       new AbortController().signal,
     );
-    if (!result.ok) throw new Error(result.reason);
-    expect(readDoc(path).roles["bug-fix"]).toEqual(["cpa/model-a [low], bad token"]);
+    expect(result.ok).toBe(false);
+    expect(readFileSync(path, "utf8")).toBe(original);
   });
 });

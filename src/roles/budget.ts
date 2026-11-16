@@ -327,17 +327,10 @@ function findCatalogueModel(
 }
 
 function routeFor(model: ModelEntry, effort: string | undefined): Route {
-  const route = splitRoute(model.route);
   return {
     kind: "route",
-    provider: route.provider,
+    provider: model.provider,
     model: model.id,
     ...(effort === undefined ? {} : { effort }),
   };
-}
-
-function splitRoute(route: string): { provider: string; model: string } {
-  const slash = route.indexOf("/");
-  if (slash <= 0) throw new Error(`invalid model route "${route}"`);
-  return { provider: route.slice(0, slash), model: route.slice(slash + 1) };
 }

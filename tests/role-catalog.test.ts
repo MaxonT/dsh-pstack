@@ -79,7 +79,7 @@ describe("pstack_roles", () => {
           name: "P",
           models: [
             {
-              route: "p/a",
+              provider: "p",
               id: "a",
               name: "A",
               efforts: ["low", "high"],

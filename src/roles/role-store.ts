@@ -21,7 +21,13 @@ import {
   PSTACK_MODELS_FILENAME,
   findRole,
 } from "./role-manifest.ts";
-import { parseRoute, renderRouteValue, validateRoleRouteShape, type Route } from "./route.ts";
+import {
+  parseRoute,
+  parseRouteEntry,
+  validateRoleRouteShape,
+  type ParsedRoute,
+  type Route,
+} from "./route.ts";
 
 export type { Route } from "./route.ts";
 
@@ -49,11 +55,11 @@ export type RoleConfiguration =
       readonly issues: readonly RoleFileIssue[];
     };
 
-/** The editable JSON shape: version, optional budget, raw route strings per role. */
+/** The editable JSON shape: version, optional budget, structured routes per role. */
 export interface RoleFileDocument {
   readonly version: 1;
   readonly budget?: string;
-  readonly roles: Record<string, readonly string[]>;
+  readonly roles: Record<string, readonly Route[]>;
 }
 
 /** Absolute role-file path for one DSH home. */
@@ -101,19 +107,25 @@ export function parseRoleDocument(text: string): RoleFileDocument {
   if (typeof rawRoles !== "object" || rawRoles === null || Array.isArray(rawRoles)) {
     throw new Error("the role file roles must be an object");
   }
-  const roles: Record<string, readonly string[]> = {};
+  const roles: Record<string, readonly Route[]> = {};
   for (const [key, value] of Object.entries(rawRoles as Record<string, unknown>)) {
-    if (!Array.isArray(value) || value.some((entry) => typeof entry !== "string")) {
-      throw new Error(`role ${JSON.stringify(key)} routes must be an array of strings`);
+    if (!Array.isArray(value)) {
+      throw new Error(`role ${JSON.stringify(key)} routes must be an array of route entries`);
     }
-    roles[key] = [...(value as string[])];
+    roles[key] = value.map((entry) => {
+      const parsed = routeFromEntry(entry);
+      if (parsed.route === undefined) {
+        throw new Error(`role ${JSON.stringify(key)}: ${parsed.issue}`);
+      }
+      return parsed.route;
+    });
   }
   return { version: 1, ...(budget === undefined ? {} : { budget }), roles };
 }
 
 /** Render an editable role document as stable, pretty-printed JSON. */
 export function serializeRoleDocument(document: RoleFileDocument): string {
-  const roles: Record<string, string[]> = {};
+  const roles: Record<string, readonly Route[]> = {};
   for (const [key, routes] of Object.entries(document.roles)) roles[key] = [...routes];
   return `${JSON.stringify(
     {
@@ -150,7 +162,7 @@ export function parseRoleConfiguration(text: string, path: string): RoleConfigur
       continue;
     }
     if (!Array.isArray(rawValue)) {
-      issues.push({ message: `${spec.key}: routes must be an array of route strings` });
+      issues.push({ message: `${spec.key}: routes must be an array of route entries` });
       continue;
     }
     if (rawValue.length === 0) {
@@ -159,13 +171,9 @@ export function parseRoleConfiguration(text: string, path: string): RoleConfigur
     }
     const routes: Route[] = [];
     const entryIssues: string[] = [];
-    rawValue.forEach((token, index) => {
-      if (typeof token !== "string") {
-        entryIssues.push(`entry ${index + 1} is not a route string`);
-        return;
-      }
-      const parsed = parseRoute(token);
-      if (parsed.route === undefined) entryIssues.push(parsed.issue);
+    rawValue.forEach((entry, index) => {
+      const parsed = routeFromEntry(entry);
+      if (parsed.route === undefined) entryIssues.push(`entry ${index + 1} ${parsed.issue}`);
       else routes.push(parsed.route);
     });
     const shapeIssue = validateRoleRouteShape(spec, routes);
@@ -213,14 +221,14 @@ export function readRoleConfiguration(path: string): RoleConfiguration {
   }
 }
 
+/** One route entry: a structured object, or a legacy string token. */
+function routeFromEntry(entry: unknown): ParsedRoute {
+  return typeof entry === "string" ? parseRoute(entry) : parseRouteEntry(entry);
+}
+
 /** Atomically write an editable role document. */
 export function writeRoleDocument(path: string, document: RoleFileDocument): void {
   writeFileAtomically(path, serializeRoleDocument(document));
-}
-
-/** The raw route strings for one parsed route, in file grammar. */
-export function renderRoutes(routes: readonly Route[]): readonly string[] {
-  return routes.map((route) => renderRouteValue([route]));
 }
 
 function parseJsonObject(text: string): Record<string, unknown> {

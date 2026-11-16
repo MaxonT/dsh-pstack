@@ -88,7 +88,7 @@ describe("role manifest, parser, and route selection", () => {
     if (parsed.status !== "loaded") return;
     const messages = parsed.issues.map((issue) => issue.message);
     expect(messages).toContain(
-      'bug-fix: "nope" is not a route; use `inherit-parent`, `auto`, or `<provider>/<model> [effort]`',
+      'bug-fix: entry 1 "nope" is not a route; use `inherit-parent`, `auto`, or `<provider>/<model> [effort]`',
     );
     expect(messages).toContain('unknown pstack role "retired role"');
   });
@@ -121,7 +121,9 @@ describe("legacy role file migration", () => {
     expect(JSON.parse(readFileSync(jsonPath(directory), "utf8"))).toMatchObject({
       version: 1,
       budget: "large (xhigh)",
-      roles: { "bug-fix": ["cpa/model-a [high]"] },
+      roles: {
+        "bug-fix": [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
+      },
     });
   });
 

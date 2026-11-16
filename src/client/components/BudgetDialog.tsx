@@ -120,7 +120,7 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
   const routeChanged =
     plan.plan?.rows.some(
       (row) =>
-        row.status !== "skipped" && renderRouteValue(row.routes) !== renderRouteValue(row.previous),
+        row.status !== "skipped" && JSON.stringify(row.routes) !== JSON.stringify(row.previous),
     ) ?? false;
   const budgetChanged =
     plan.plan !== undefined && snapshot.budget !== budgetValueFor(plan.plan.tier);

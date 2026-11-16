@@ -37,15 +37,15 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route, or omit `provider` and `model` so the child inherits the parent route, and say so. |
 | `auto` or `inherit-parent` | Omit `provider` and `model`; the child inherits the parent route. |
 | The pstack role file | `$DSH_HOME/pstack-models.json`. Read `pstack_roles` to map a role to its route; `pstack_subagent` does not parse it. A missing file leaves no configured route, so the child inherits the parent route. |
-| A role value such as `<model> <effort>` | Write `provider/model [effort]`; a role holds an array of these route strings. Split at the first `/`: `provider` is the first segment and the rest, which may contain `/`, is `model`. |
+| A role value such as `<model> <effort>` | Write a structured route object `{ kind: "route", provider, model, effort? }`; a role holds an array of these, or `{ kind: "inherit", alias }` for `auto` or `inherit-parent`. Read `provider`, `model`, and `effort` from `pstack_models` or `pstack_roles`; never join or split a `provider/model` string. |
 
 ## setup-pstack
 
 `setup-pstack` writes the role file the calling agent reads to choose a route. Use `pstack_models` to discover the live provider, model, and effort routes; do not infer them from Cursor slugs.
 
-- Detect: write each real route as `provider/model [effort]`. If nothing is detectable, ask the user to paste the routes.
+- Detect: write each real route as a structured `{ provider, model, effort? }` object. If nothing is detectable, ask the user to paste the routes.
 - Defaults: map each found route; use `inherit-parent` or `auto` for an unserved route. Apply the selected budget to the closest advertised effort and say what was chosen.
-- Write: write a `roles` object of route arrays and an optional `budget`. Overwrite the whole file so a rerun is idempotent; a missing role inherits the parent route.
+- Write: write a `roles` object of route-object arrays and an optional `budget`. Overwrite the whole file so a rerun is idempotent; a missing role inherits the parent route.
 
 ## Paths
 

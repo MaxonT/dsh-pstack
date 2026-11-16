@@ -18,7 +18,7 @@ const validCatalogue: CatalogueResult = {
     {
       provider: "cpa",
       name: "CPA",
-      models: [{ route: "cpa/model-a", id: "model-a", name: "Model A", efforts: ["high"] }],
+      models: [{ provider: "cpa", id: "model-a", name: "Model A", efforts: ["high"] }],
     },
   ],
   truncated: false,
@@ -154,7 +154,7 @@ describe("role wire parsers", () => {
             name: "CPA",
             models: [
               {
-                route: "cpa/model-a",
+                provider: "cpa",
                 id: "model-a",
                 name: "Model A",
                 efforts: ["low", "high"],

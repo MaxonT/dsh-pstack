@@ -1,3 +1,4 @@
 - pstack now targets DeepSeek Harness `0.2.2-rc.2` and later. Upgrade DSH before upgrading dsh-pstack.
 - `pstack_agents` and `pstack_send` are removed. List pstack children with the native `list_agents` and continue them with the native `send_message`, addressing a child by its name or Session id.
 - `pstack_subagent` accepts an optional `name`, and Agent Teams mode is supported. When a session enables Agent Teams, pstack children are ordinary team members that appear in `list_agents`. Interrupt a pstack child with `pstack_interrupt`, by its name or Session id.
+- Role routes in `$DSH_HOME/pstack-models.json` are now structured objects `{ provider, model, effort? }` instead of `provider/model` strings. Existing string routes still load and rewrite on the next save.

@@ -10,12 +10,7 @@ import { readFileSync, rmSync } from "node:fs";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
 import { findRole } from "../roles/role-manifest.ts";
-import {
-  parseRouteValue,
-  renderRouteValue,
-  validateRoleRouteShape,
-  type Route,
-} from "../roles/route.ts";
+import { parseRouteValue, validateRoleRouteShape, type Route } from "../roles/route.ts";
 
 /** One file-level problem found while parsing the legacy line format. */
 export interface LegacyRoleFileIssue {
@@ -87,7 +82,7 @@ export function parseLegacyRoleFileText(text: string): LegacyRoleFile {
 export interface LegacyMigrationDocument {
   readonly version: 1;
   readonly budget?: string;
-  readonly roles: Record<string, readonly string[]>;
+  readonly roles: Record<string, readonly Route[]>;
 }
 
 /**
@@ -102,9 +97,9 @@ export function migrateLegacyRoleFile(
 ): void {
   const text = readFileSync(mdcPath, "utf8");
   const parsed = parseLegacyRoleFileText(text);
-  const roles: Record<string, readonly string[]> = {};
+  const roles: Record<string, readonly Route[]> = {};
   for (const [key, routes] of parsed.roles) {
-    roles[key] = routes.map((route) => renderRouteValue([route]));
+    roles[key] = [...routes];
   }
   writeFileAtomically(
     jsonPath,

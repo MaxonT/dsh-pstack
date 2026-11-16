@@ -5,7 +5,7 @@ import type { JsonSchemaNode } from "@deepseek-ai/dsh-tools";
 import { WireTypeError } from "../lib/wire-error.ts";
 
 export interface ModelEntry {
-  readonly route: string;
+  readonly provider: string;
   readonly id: string;
   readonly name: string;
   readonly description?: string;
@@ -48,7 +48,7 @@ export const CATALOGUE_OUTPUT_SCHEMA: JsonSchemaNode = {
               type: "object",
               additionalProperties: false,
               properties: {
-                route: { type: "string" },
+                provider: { type: "string" },
                 id: { type: "string" },
                 name: { type: "string" },
                 description: { type: "string" },
@@ -131,11 +131,11 @@ export function parseCatalogueResult(value: unknown): CatalogueResult {
           const modelPath = `${path}.models[${modelIndex}]`;
           const item = parseRecord(model, modelPath);
           if (
-            typeof item["route"] !== "string" ||
+            typeof item["provider"] !== "string" ||
             typeof item["id"] !== "string" ||
             typeof item["name"] !== "string"
           ) {
-            throw new WireTypeError(modelPath, "route, id, and name strings");
+            throw new WireTypeError(modelPath, "provider, id, and name strings");
           }
           const efforts = item["efforts"];
           if (!Array.isArray(efforts) || efforts.some((effort) => typeof effort !== "string")) {
@@ -147,7 +147,7 @@ export function parseCatalogueResult(value: unknown): CatalogueResult {
           const defaultEffort = optionalString(item, "defaultEffort", modelPath);
           const modelError = optionalString(item, "error", modelPath);
           return {
-            route: item["route"],
+            provider: item["provider"],
             id: item["id"],
             name: item["name"],
             ...(description === undefined ? {} : { description }),

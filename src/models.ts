@@ -74,7 +74,7 @@ export async function collectCatalogue(
       } catch (error) {
         if (signal.aborted) throw error;
         entries.push({
-          route: `${provider.id}/${model.id}`,
+          provider: provider.id,
           id: model.id,
           name: model.name,
           ...(model.description === undefined ? {} : { description: model.description }),
@@ -127,7 +127,7 @@ export function renderCatalogue(result: CatalogueResult): string {
 
 function entryFor(provider: string, info: LlmResolvedModelInfo): ModelEntry {
   return {
-    route: `${provider}/${info.id}`,
+    provider,
     id: info.id,
     name: info.name,
     ...(info.description === undefined ? {} : { description: info.description }),

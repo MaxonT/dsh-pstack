@@ -18,6 +18,50 @@ export interface ParsedRoute {
   readonly issue: string;
 }
 
+/** Validate one structured route entry (the role-file and wire shape). */
+export function parseRouteEntry(value: unknown): ParsedRoute {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return { issue: "the route entry is not an object" };
+  }
+  const record = value as Record<string, unknown>;
+  if (record["kind"] === "inherit") {
+    const alias = record["alias"] ?? "inherit-parent";
+    if (typeof alias !== "string" || !(INHERIT_ALIASES as readonly string[]).includes(alias)) {
+      return { issue: 'a route entry with kind "inherit" needs alias "inherit-parent" or "auto"' };
+    }
+    return { route: { kind: "inherit", alias: alias as InheritAlias }, issue: "" };
+  }
+  if (record["kind"] !== "route") {
+    return { issue: 'a route entry needs kind "route" or "inherit"' };
+  }
+  const provider = record["provider"];
+  const model = record["model"];
+  const effort = record["effort"];
+  if (typeof provider !== "string" || provider.trim() === "") {
+    return { issue: "provider must be a non-empty string" };
+  }
+  if (typeof model !== "string" || model.trim() === "") {
+    return { issue: "model must be a non-empty string" };
+  }
+  if (effort !== undefined && (typeof effort !== "string" || effort.trim() === "")) {
+    return { issue: "effort must be a non-empty string when present" };
+  }
+  const providerValue = provider.trim();
+  const modelValue = model.trim();
+  const effortValue = typeof effort === "string" ? effort.trim() : undefined;
+  const problem = validateRouteParts(providerValue, modelValue, effortValue);
+  if (problem !== undefined) return { issue: problem };
+  return {
+    route: {
+      kind: "route",
+      provider: providerValue,
+      model: modelValue,
+      ...(effortValue === undefined ? {} : { effort: effortValue }),
+    },
+    issue: "",
+  };
+}
+
 /** Parse one route token. */
 export function parseRoute(raw: string): ParsedRoute {
   const value = raw.trim();

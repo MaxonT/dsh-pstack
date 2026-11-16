@@ -25,7 +25,6 @@ import {
   parseRoleConfiguration,
   parseRoleDocument,
   readRoleConfiguration,
-  renderRoutes,
   serializeRoleDocument,
   writeRoleDocument,
   type RoleConfiguration,
@@ -230,7 +229,7 @@ export async function saveRoleConfiguration(
 
   const roles = { ...document.roles };
   if (nextRoutes.length === 0) delete roles[key];
-  else roles[key] = renderRoutes(nextRoutes);
+  else roles[key] = [...nextRoutes];
   const updated: RoleFileDocument = {
     version: 1,
     ...(document.budget === undefined ? {} : { budget: document.budget }),
@@ -321,7 +320,7 @@ export async function saveBudgetConfiguration(
       if (row.status === "skipped") continue;
       if (routeSignature(row.routes) === routeSignature(row.previous)) continue;
       if (row.routes.length === 0) delete roles[row.key];
-      else roles[row.key] = renderRoutes(row.routes);
+      else roles[row.key] = [...row.routes];
     }
     const updated: RoleFileDocument = { version: 1, budget: plan.budget, roles };
     const next = serializeRoleDocument(updated);
