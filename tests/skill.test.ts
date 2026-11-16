@@ -52,13 +52,17 @@ describe("pstack_skill", () => {
     expect(rendered).toContain("Load referenced resources only as needed.");
   });
 
-  it("refuses a hidden skill from a non-pstack provider", async () => {
-    const hiddenVendored: SkillDefinition = { ...temporarySkill(), provider: "pstack-vendored" };
+  it("refuses a non-pstack skill and points to the skill tool", async () => {
+    const vendored: SkillDefinition = {
+      ...temporarySkill(),
+      provider: "pstack-vendored",
+      invocation: { modelInvocable: true, userInvocable: true },
+    };
     const skills = {
-      get: async (name: string) => (name === "how" ? hiddenVendored : undefined),
+      get: async (name: string) => (name === "how" ? vendored : undefined),
     } as unknown as SkillRegistry;
     await expect(createPstackSkillTool(skills).execute({ name: "how" }, exec)).rejects.toThrow(
-      /not available for model invocation/,
+      /only loads bundled pstack skills/,
     );
   });
 

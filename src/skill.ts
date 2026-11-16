@@ -7,7 +7,7 @@
  */
 
 import type { Context } from "@deepseek-ai/cordis";
-import { isModelInvocable, isSkillName } from "@deepseek-ai/dsh-skill";
+import { isSkillName } from "@deepseek-ai/dsh-skill";
 import type { SkillRegistry, SkillResourceBase } from "@deepseek-ai/dsh-skill";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
@@ -152,10 +152,12 @@ export function createPstackSkillTool(skills: SkillRegistry): ToolDefinition {
         throw new Error(`skill "${skillName}" is unknown or no longer available`);
       }
       const definition = summary;
-      // Mirror the native skill loader, but also reveal the hidden bundled pstack skills:
-      // only the `pstack` provider is allowed, not the vendored or authored providers.
-      if (!isModelInvocable(definition) && definition.provider !== PSTACK_SKILL_PROVIDER) {
-        throw new Error(`skill "${skillName}" is not available for model invocation`);
+      // The native skill tool loads every catalog skill, including third-party ones.
+      // This tool reaches only the hidden bundled pstack skills.
+      if (definition.provider !== PSTACK_SKILL_PROVIDER) {
+        throw new Error(
+          `pstack_skill only loads bundled pstack skills; use the skill tool for "${skillName}"`,
+        );
       }
       const result: LoadSkillResult = {
         name: definition.name,
