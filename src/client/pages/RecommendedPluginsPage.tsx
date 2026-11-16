@@ -19,7 +19,7 @@ import {
 } from "../components/icons.tsx";
 import { ensurePstackStyles } from "../components/styles.ts";
 import { messageOf } from "../components/message.ts";
-import { Toast, type ToastMessage } from "../components/toast.tsx";
+import { showToast } from "../components/toast.tsx";
 import { Button, IconButton, Spinner, Status, Switch, type StatusTone } from "../components/ui.tsx";
 import type { PstackTranslations, PluginsKey } from "../locales/index.ts";
 
@@ -123,7 +123,6 @@ export function RecommendedPluginsView(props: {
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState<string | undefined>();
   const [messages, setMessages] = useState<Record<string, PluginNotice>>({});
-  const [toast, setToast] = useState<ToastMessage | undefined>();
   const { api, translations } = props;
   const t = translations.plugins;
   const common = translations.common;
@@ -168,7 +167,6 @@ export function RecommendedPluginsView(props: {
   const toggle = async (bundle: BundleInfo): Promise<void> => {
     if (api === undefined) return;
     setBusy(bundle.name);
-    setToast(undefined);
     setMessages((current) => {
       const next = { ...current };
       delete next[bundle.name];
@@ -204,7 +202,6 @@ export function RecommendedPluginsView(props: {
       );
     if (targets.length === 0) return;
     setBusy(ALL);
-    setToast(undefined);
     let settled = 0;
     let restarts = 0;
     let unsettled = 0;
@@ -220,7 +217,7 @@ export function RecommendedPluginsView(props: {
     }
     await load();
     setBusy(undefined);
-    setToast(
+    showToast(
       unsettled > 0
         ? { tone: "error", text: t("enableAllPartial", { settled, restarts, unsettled }) }
         : restarts > 0
@@ -279,7 +276,6 @@ export function RecommendedPluginsView(props: {
           <span>{error}</span>
         </div>
       )}
-      <Toast message={toast} />
       <div className="pstack-plugin-groups">
         {PLUGIN_GROUPS.map((group) => {
           const enabledInGroup = group.plugins.filter(

@@ -8,6 +8,7 @@ import {
   Switch,
   Tooltip,
 } from "@deepseek-ai/dsh-client-ui-primitives";
+import { showToast } from "./toast.tsx";
 
 const STYLE_ID = "pstack-poteto-row-style";
 const ROW_CSS = `
@@ -40,7 +41,9 @@ export interface PotetoModeToggleInjected {
   readonly sessionId: string;
   readonly readMode: () => Promise<boolean>;
   readonly selectMode: (enabled: boolean) => Promise<string | null>;
-  readonly t: (key: "label" | "description" | "failed" | "enabledLabel") => string;
+  readonly t: (
+    key: "label" | "description" | "failed" | "enabledLabel" | "enabledNotice" | "disabledNotice",
+  ) => string;
 }
 
 function ensureStyle(): void {
@@ -85,6 +88,10 @@ export function PotetoModeToggle(props: PotetoModeToggleInjected): ReactElement 
           window.dispatchEvent(
             new CustomEvent(POTETO_MODE_EVENT, { detail: { sessionId, enabled: next } }),
           );
+          showToast({
+            tone: next ? "success" : "neutral",
+            text: t(next ? "enabledNotice" : "disabledNotice"),
+          });
         }
       })
       .finally(() => setPending(false));

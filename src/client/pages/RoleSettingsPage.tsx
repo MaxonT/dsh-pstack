@@ -32,7 +32,7 @@ import {
 } from "../roles/role-draft.ts";
 import { routeIsIncomplete, routeIsInvalid } from "../roles/role-selectors.ts";
 import { ensurePstackStyles } from "../components/styles.ts";
-import { Toast, type ToastMessage } from "../components/toast.tsx";
+import { showToast } from "../components/toast.tsx";
 import {
   Button,
   IconButton,
@@ -65,9 +65,7 @@ export function RoleSettingsView(props: {
   const [drafts, setDrafts] = useState<DraftMap>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
-  const [refreshMessage, setRefreshMessage] = useState<ToastMessage | undefined>();
   const [bulkBusy, setBulkBusy] = useState<"save" | undefined>();
-  const [bulkMessage, setBulkMessage] = useState<ToastMessage | undefined>();
   const [budgetOpen, setBudgetOpen] = useState(false);
   const abortRef = useRef<AbortController | undefined>(undefined);
 
@@ -84,8 +82,6 @@ export function RoleSettingsView(props: {
     abortRef.current = controller;
     setLoading(true);
     setError(undefined);
-    setRefreshMessage(undefined);
-    setBulkMessage(undefined);
     try {
       const [nextSnapshot, nextCatalogue] = await Promise.all([
         api.status(),
@@ -97,7 +93,7 @@ export function RoleSettingsView(props: {
       if (controller.signal.aborted) return;
       const message = t("rolesLoadFailed", { message: messageOf(reason) });
       if (snapshot === undefined) setError(message);
-      else setRefreshMessage({ tone: "error", text: message });
+      else showToast({ tone: "error", text: message });
     } finally {
       setLoading(false);
     }
@@ -153,7 +149,6 @@ export function RoleSettingsView(props: {
   const fileStatus = statusPresentation(snapshot, t);
 
   const updateRoutes = (key: string, routes: RouteView[]): void => {
-    setBulkMessage(undefined);
     setDrafts((current) => {
       const draft = current[key];
       if (draft === undefined) return current;
@@ -162,7 +157,6 @@ export function RoleSettingsView(props: {
   };
 
   const clearRole = (key: string): void => {
-    setBulkMessage(undefined);
     setDrafts((current) => {
       const draft = current[key];
       if (draft === undefined) return current;
@@ -181,7 +175,6 @@ export function RoleSettingsView(props: {
   };
 
   const resetRole = (key: string): void => {
-    setBulkMessage(undefined);
     setDrafts((current) => {
       const draft = current[key];
       if (draft === undefined) return current;
@@ -216,11 +209,9 @@ export function RoleSettingsView(props: {
         }),
       ),
     );
-    setBulkMessage(undefined);
   };
 
   const clearAll = (): void => {
-    setBulkMessage(undefined);
     setDrafts((current) =>
       Object.fromEntries(
         snapshot.roles.map((role) => {
@@ -318,7 +309,6 @@ export function RoleSettingsView(props: {
     if (dirtyCount === 0 || bulkBusy !== undefined || anyBusy || anyIncomplete || anyInvalid)
       return;
     setBulkBusy("save");
-    setBulkMessage(undefined);
     let saved = 0;
     let failed = 0;
     for (const key of dirtyKeys) {
@@ -326,7 +316,7 @@ export function RoleSettingsView(props: {
       else failed += 1;
     }
     setBulkBusy(undefined);
-    setBulkMessage(
+    showToast(
       failed === 0
         ? { tone: "success", text: t("saveAllDone", { count: saved }) }
         : { tone: "error", text: t("saveAllPartial", { count: saved, failed }) },
@@ -342,7 +332,7 @@ export function RoleSettingsView(props: {
   const onBudgetApplied = (next: RoleFileSnapshot): void => {
     applySnapshot(next);
     setBudgetOpen(false);
-    setBulkMessage({
+    showToast({
       tone: "success",
       text: t("budgetDone", { budget: budgetLabel(next.budget, t) }),
     });
@@ -451,7 +441,6 @@ export function RoleSettingsView(props: {
           signal={abortRef.current?.signal}
         />
       ) : null}
-      <Toast message={refreshMessage} />
       {snapshot.reason === undefined ? null : (
         <div className="pstack-notice" data-tone="error">
           <IconAlert size={14} />
@@ -474,7 +463,6 @@ export function RoleSettingsView(props: {
           </ul>
         </div>
       )}
-      <Toast message={bulkMessage} />
       <div className="pstack-role-list">
         {snapshot.roles.map((role) => (
           <RoleCard

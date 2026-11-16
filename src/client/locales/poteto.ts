@@ -8,6 +8,9 @@ const en = {
   defaultLabel: "Default for new sessions",
   defaultDescription: "New sessions start with the Poteto workflow enabled.",
   defaultFailed: "Could not save the default: {message}",
+  shortcutLabel: "Toggle Poteto workflow",
+  enabledNotice: "Poteto workflow enabled",
+  disabledNotice: "Poteto workflow disabled",
 } as const;
 
 const zh = {
@@ -18,6 +21,9 @@ const zh = {
   defaultLabel: "新会话默认开启",
   defaultDescription: "新建会话默认开启 Poteto 工作流。",
   defaultFailed: "保存默认值失败：{message}",
+  shortcutLabel: "切换 Poteto 工作流",
+  enabledNotice: "Poteto 工作流已开启",
+  disabledNotice: "Poteto 工作流已关闭",
 } as const satisfies Record<keyof typeof en, string>;
 
 export type PotetoKey = keyof typeof en;
