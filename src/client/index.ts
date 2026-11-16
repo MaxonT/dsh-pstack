@@ -3,6 +3,9 @@
 import type { Context } from "@deepseek-ai/cordis";
 import type { ClientRemote, RemoteResult } from "@deepseek-ai/dsh-api-remotes/client";
 import type {} from "@deepseek-ai/dsh-client-locale/client";
+import type {} from "@deepseek-ai/dsh-client-ui-conversation/client";
+import type {} from "@deepseek-ai/dsh-client-ui-model-selection/client";
+import type { ShortcutCommand, ShortcutCommandId } from "@deepseek-ai/dsh-client-shortcuts/client";
 import type {} from "@deepseek-ai/dsh-client-ui-renderer/client";
 import type {} from "@deepseek-ai/dsh-client-ui-settings/client";
 import type {} from "@deepseek-ai/dsh-client-ui-slots";
@@ -13,7 +16,7 @@ import { type PstackPotetoModeNamespace } from "../poteto-toggle-remote.ts";
 import { createPstackConfigAction } from "./pages/PstackConfigDialog.tsx";
 import { PotetoModeToggle, POTETO_MODE_EVENT } from "./components/PotetoModeToggle.tsx";
 import { PotetoModeBadge } from "./components/PotetoModeBadge.tsx";
-import { showToast } from "./components/toast.tsx";
+import { showToast } from "./lib/toast.ts";
 import { NS, catalogs } from "./locales/index.ts";
 import type { PluginManagerApi } from "./pages/RecommendedPluginsPage.tsx";
 import type { RoleSettingsApi } from "./pages/RoleSettingsPage.tsx";
@@ -67,9 +70,9 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
   let potetoApi: PstackPotetoModeNamespace["pstackPotetoMode"] | undefined;
   const potetoSettingsApi: PotetoSettingsApi = {
     readDefault: async () => {
-      if (potetoApi === undefined) return false;
+      if (potetoApi === undefined) throw new Error("poteto mode is not available yet");
       const result = await potetoApi.getDefault();
-      return result.ok ? result.value.enabled : false;
+      return unwrap(result).enabled;
     },
     writeDefault: async (enabled) => {
       if (potetoApi === undefined) return "poteto mode is not available yet";
@@ -79,14 +82,23 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
   };
 
   const togglePoteto = async (sessionId: string): Promise<void> => {
-    if (potetoApi === undefined) return;
+    const t = ctx.locale.bind(NS.poteto);
+    if (potetoApi === undefined) {
+      showToast({ tone: "error", text: t("failed", { message: "not available" }) });
+      return;
+    }
     const current = await potetoApi.status(sessionId);
-    if (!current.ok) return;
+    if (!current.ok) {
+      showToast({ tone: "error", text: t("failed", { message: current.error.message }) });
+      return;
+    }
     const enabled = !current.value.enabled;
     const result = await potetoApi.setEnabled(sessionId, enabled);
-    if (!result.ok) return;
+    if (!result.ok) {
+      showToast({ tone: "error", text: t("failed", { message: result.error.message }) });
+      return;
+    }
     window.dispatchEvent(new CustomEvent(POTETO_MODE_EVENT, { detail: { sessionId, enabled } }));
-    const t = ctx.locale.bind(NS.poteto);
     showToast({
       tone: enabled ? "success" : "neutral",
       text: t(enabled ? "enabledNotice" : "disabledNotice"),
@@ -94,36 +106,27 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
   };
 
   ctx.inject(["shortcuts"], (scope: Context) => {
-    const shortcuts = (
-      scope as unknown as {
-        shortcuts?: { register(command: unknown): () => void };
-      }
-    ).shortcuts;
-    if (shortcuts === undefined) return;
-    ctx.effect(
-      () =>
-        shortcuts.register({
-          id: "pstack.poteto.toggle" as never,
-          label: () => ctx.locale.bind(NS.poteto)("shortcutLabel"),
-          aliases: ["poteto", "poteto workflow"],
-          defaults: {},
-          regions: ["page", "editable", "terminal"],
-          modals: [],
-          resolve: ({ target, modal }: { target: Element | null; modal: string | null }) => {
-            if (modal !== null || target === null) return { status: "pass" as const };
-            const occurrence = target.closest<HTMLElement>("[data-conversation-session]");
-            const sessionId = occurrence?.dataset.conversationSession;
-            if (sessionId === undefined) return { status: "pass" as const };
-            return {
-              status: "handled" as const,
-              run: () => {
-                void togglePoteto(sessionId);
-              },
-            };
+    const command: ShortcutCommand = {
+      id: "pstack.poteto.toggle" as ShortcutCommandId,
+      label: () => ctx.locale.bind(NS.poteto)("shortcutLabel"),
+      aliases: ["poteto", "poteto workflow"],
+      defaults: {},
+      regions: ["page", "editable", "terminal"],
+      modals: [],
+      resolve: ({ target, modal }) => {
+        if (modal !== null || target === null) return { status: "pass" };
+        const occurrence = target.closest<HTMLElement>("[data-conversation-session]");
+        const sessionId = occurrence?.dataset.conversationSession;
+        if (sessionId === undefined) return { status: "pass" };
+        return {
+          status: "handled",
+          run: () => {
+            void togglePoteto(sessionId);
           },
-        }),
-      "pstack.poteto.shortcut",
-    );
+        };
+      },
+    };
+    ctx.effect(() => scope.shortcuts.register(command), "pstack.poteto.shortcut");
   });
 
   // `$mount` above installs the namespace, so its dependency is declared only now.
@@ -177,29 +180,28 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
       return result.ok ? null : result.error.message;
     },
   });
-  for (const slot of ["conversation.input.model.options"]) {
-    ctx.slots.inject(slot as never, () =>
-      ctx.slots.register(
-        {
-          name: slot as never,
-          id: "pstack-poteto-mode",
-          locale: NS.poteto,
-          inject: (sessionId: string) => injectProps(sessionId),
-        } as never,
-        PotetoModeToggle as never,
-      ),
-    );
-  }
-  ctx.slots.inject("conversation.session.header.actions" as never, () =>
+  const modelOptionsSlot = "conversation.input.model.options" as const;
+  ctx.slots.inject(modelOptionsSlot, () =>
     ctx.slots.register(
       {
-        name: "conversation.session.header.actions" as never,
+        name: modelOptionsSlot,
+        id: "pstack-poteto-mode",
+        locale: NS.poteto,
+        inject: (sessionId: string) => injectProps(sessionId),
+      },
+      PotetoModeToggle,
+    ),
+  );
+  ctx.slots.inject("conversation.session.header.actions", () =>
+    ctx.slots.register(
+      {
+        name: "conversation.session.header.actions",
         id: "pstack-poteto-badge",
         order: -5,
         locale: NS.poteto,
         inject: (sessionId: string) => injectProps(sessionId),
-      } as never,
-      PotetoModeBadge as never,
+      },
+      PotetoModeBadge,
     ),
   );
 

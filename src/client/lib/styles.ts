@@ -1,114 +1,44 @@
 /** Stylesheet for the pstack client dialog and its pages. */
 
 const CSS = `
-.pstack-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.pstack-mask {
-  position: absolute;
-  inset: var(--dsh-frame-chrome-top, 0px) 0 0;
-  border: 0;
-  background: var(--dsw-alias-bg-mask-1);
-  backdrop-filter: var(--dsw-mask-blur);
-  cursor: default;
-}
-.pstack-panel {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
-  width: 800px;
+.pstack-config-modal {
+  gap: 0;
+  width: min(800px, 100%);
   max-width: calc(100vw - 48px);
   height: min(800px, calc(100vh - 2 * max(24px, var(--dsh-frame-overlay-top, 24px))));
-  border-radius: var(--dsw-radius-panel);
-  overflow: hidden;
-  background: var(--dsw-alias-bg-layer-2);
-  color: var(--dsw-alias-label-primary);
-  box-shadow: var(--dsw-elevation-prominent);
 }
-.pstack-panel:focus {
-  outline: none;
+.pstack-config-content {
+  flex: 1;
+  min-height: 0;
 }
-.pstack-header {
+.pstack-config-content > div:first-child {
+  padding-bottom: 0;
+}
+.pstack-config-content > div:last-child {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 22px 16px 8px 24px;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 8px;
+  padding: 0;
 }
-.pstack-title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 24px;
+.pstack-status {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+}
+.pstack-status-compact {
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 16px;
 }
 .pstack-tabs-row {
-  padding: 6px 24px 0;
-}
-.pstack-segmented {
-  position: relative;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 2px;
-  padding: 4px;
-  border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-.pstack-segmented-indicator {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: calc(
-    (100% - 8px - 2px * (var(--pstack-segment-count) - 1)) / var(--pstack-segment-count)
-  );
-  height: calc(100% - 8px);
-  border-radius: var(--dsw-radius-sm);
-  background: var(--dsw-alias-bg-layer-1);
-  box-shadow: var(--dsw-elevation-soft);
-  transform: translate(calc(var(--pstack-segment-index) * (100% + 2px)));
-  transition: transform 0.16s ease;
-  pointer-events: none;
-}
-.pstack-segment {
-  position: relative;
-  z-index: 1;
-  box-sizing: border-box;
-  height: 30px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: var(--dsw-radius-sm);
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 20px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color 0.12s ease;
-}
-.pstack-segment[aria-selected="true"] {
-  color: var(--dsw-alias-label-primary);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 6px;
-}
-.pstack-segment:hover:not(:disabled) {
-  color: var(--dsw-alias-label-primary);
-}
-.pstack-segment:focus-visible {
-  outline: none;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
+  padding: 0 24px 8px;
 }
 .pstack-body {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   padding: 16px 24px 24px;
@@ -117,7 +47,7 @@ const CSS = `
 }
 .pstack-section-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 14px;
@@ -127,10 +57,13 @@ const CSS = `
   min-width: 0;
 }
 .pstack-section-desc {
-  margin: 4px 0 0;
+  margin: 0;
+  overflow: hidden;
   color: var(--dsw-alias-label-tertiary);
   font-size: 13px;
   line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .pstack-section-actions {
   display: flex;
@@ -139,58 +72,6 @@ const CSS = `
   flex-wrap: wrap;
   gap: 8px;
   flex: none;
-}
-.pstack-btn {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: var(--dsw-radius-md);
-  background: transparent;
-  color: var(--dsw-alias-label-primary);
-  font: inherit;
-  font-size: 13px;
-  line-height: 20px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background-color 0.12s ease;
-}
-.pstack-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-.pstack-btn-primary {
-  background: var(--dsw-alias-button-primary-fill);
-  color: var(--dsw-alias-label-primary-foreground);
-}
-.pstack-btn-primary:hover:not(:disabled) {
-  background: var(--dsw-alias-button-primary-hover);
-}
-.pstack-btn-outline {
-  border: 0.5px solid var(--dsw-alias-border-l3);
-  background: transparent;
-}
-.pstack-btn-outline:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-.pstack-btn-ghost {
-  color: var(--dsw-alias-label-secondary);
-}
-.pstack-btn-ghost:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-primary);
-}
-.pstack-btn-sm {
-  height: 28px;
-  gap: 4px;
-  padding: 0 10px;
-  border-radius: var(--dsw-radius-sm);
-  font-size: 12px;
-  line-height: 18px;
 }
 .pstack-icon-btn {
   box-sizing: border-box;
@@ -226,76 +107,10 @@ const CSS = `
   background: var(--dsw-alias-interactive-bg-hover-danger);
   color: var(--dsw-alias-state-error-primary);
 }
-.pstack-icon-btn:focus-visible,
-.pstack-btn:focus-visible,
-.pstack-switch:focus-visible {
+.pstack-icon-btn:focus-visible {
   outline: var(--dsw-focus-ring-width) solid
     var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
   outline-offset: 2px;
-}
-.pstack-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 12px;
-  line-height: 18px;
-  white-space: nowrap;
-}
-.pstack-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: currentColor;
-  flex: none;
-}
-.pstack-status[data-tone="success"] {
-  color: var(--dsw-alias-state-success-primary);
-}
-.pstack-status[data-tone="error"] {
-  color: var(--dsw-alias-state-error-primary);
-}
-.pstack-status[data-tone="warn"] {
-  color: var(--dsw-alias-state-warn-primary);
-}
-.pstack-status[data-tone="brand"] {
-  color: var(--dsw-alias-state-business-primary);
-}
-.pstack-status[data-tone="neutral"] {
-  color: var(--dsw-alias-label-tertiary);
-}
-.pstack-switch {
-  box-sizing: border-box;
-  position: relative;
-  flex: none;
-  width: 36px;
-  height: 20px;
-  padding: 2px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--dsw-alias-border-l3);
-  cursor: pointer;
-}
-.pstack-switch[aria-checked="true"] {
-  background: var(--dsw-alias-brand-primary);
-}
-.pstack-switch:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
-.pstack-switch-thumb {
-  display: block;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--dsw-alias-label-primary-foreground);
-  transition: transform 0.12s ease;
-}
-.pstack-switch[aria-checked="true"] .pstack-switch-thumb {
-  transform: translate(16px);
-}
-.pstack-switch[aria-checked="false"] .pstack-switch-thumb {
-  background: var(--dsw-alias-switch-thumb);
 }
 .pstack-plugin-groups {
   display: flex;
@@ -319,12 +134,6 @@ const CSS = `
   font-size: 13px;
   font-weight: 600;
   line-height: 20px;
-}
-.pstack-plugin-group-desc {
-  margin: 2px 0 0;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 12px;
-  line-height: 18px;
 }
 .pstack-plugin-list,
 .pstack-role-list {
@@ -354,6 +163,7 @@ const CSS = `
 .pstack-plugin-icon {
   display: grid;
   place-items: center;
+  align-self: center;
   flex: none;
   width: 40px;
   height: 40px;
@@ -361,6 +171,10 @@ const CSS = `
   border-radius: var(--dsw-radius-md);
   background: var(--dsw-alias-bg-layer-1);
   color: var(--dsw-alias-label-secondary);
+}
+.pstack-plugin-icon > svg {
+  display: block;
+  margin: auto;
 }
 .pstack-plugin-main {
   display: flex;
@@ -416,14 +230,28 @@ const CSS = `
     var(--dsw-alias-settings-card-stroke)
   );
 }
-.pstack-budget-overlay {
-  z-index: 1004;
-}
 .pstack-budget-panel {
   display: flex;
   flex-direction: column;
-  width: 780px;
+  gap: 0;
+  width: min(780px, 100%);
+  max-width: calc(100vw - 48px);
   height: min(700px, calc(100vh - 2 * max(24px, var(--dsh-frame-overlay-top, 24px))));
+  overflow: hidden;
+}
+.pstack-budget-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.pstack-budget-content > div:last-child {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 20px;
+  padding: 0 24px;
+  overflow: hidden;
 }
 .pstack-budget-body {
   display: flex;
@@ -431,14 +259,33 @@ const CSS = `
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
-.pstack-budget-footer {
+.pstack-budget-top {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  flex: none;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+.pstack-budget-top .pstack-budget-form {
+  flex: 1;
+}
+.pstack-budget-apply {
+  flex: none;
+  margin-top: 20px;
+}
+.pstack-budget-apply button {
+  height: 32px;
+}
+.pstack-budget-scroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   gap: 8px;
-  padding: 12px 24px 18px;
-  border-top: 0.5px solid var(--dsw-alias-border-l3);
+  min-height: 0;
+  overflow-y: auto;
 }
 .pstack-budget-bar {
   display: flex;
@@ -712,33 +559,6 @@ const CSS = `
   gap: 8px;
   margin-left: auto;
 }
-.pstack-toast {
-  position: fixed;
-  z-index: 1002;
-  top: max(24px, var(--dsh-frame-overlay-top, 24px));
-  left: 50%;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  max-width: calc(100vw - 48px);
-  padding: 8px 12px;
-  border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-primary);
-  box-shadow: var(--dsw-elevation-prominent);
-  font-size: 12px;
-  line-height: 18px;
-  transform: translateX(-50%);
-}
-.pstack-toast[data-tone="success"] {
-  color: var(--dsw-alias-state-success-primary);
-}
-.pstack-toast[data-tone="warn"] {
-  color: var(--dsw-alias-state-warn-primary);
-}
-.pstack-toast[data-tone="error"] {
-  color: var(--dsw-alias-state-error-primary);
-}
 .pstack-inline-message {
   display: inline-flex;
   align-items: center;
@@ -762,7 +582,7 @@ const CSS = `
   flex-wrap: nowrap;
   white-space: nowrap;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 0;
   color: var(--dsw-alias-label-tertiary);
   font-size: 12px;
   line-height: 18px;
@@ -774,7 +594,7 @@ const CSS = `
   white-space: nowrap;
   font-family: var(--ds-font-family-code);
 }
-.pstack-file-meta > span:not(.pstack-status) {
+.pstack-file-meta > span {
   flex: none;
 }
 .pstack-notice {
@@ -805,38 +625,23 @@ const CSS = `
   padding: 0 0 0 16px;
 }
 .pstack-loading {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 120px;
   gap: 8px;
   color: var(--dsw-alias-label-tertiary);
   font-size: 13px;
   line-height: 20px;
 }
-.pstack-spinner {
-  animation: pstack-spin 0.8s linear infinite;
-}
-@keyframes pstack-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pstack-spinner,
-  .pstack-segmented-indicator,
-  .pstack-switch-thumb {
-    animation: none;
-    transition: none;
-  }
-}
 @media (width <= 600px) {
-  .pstack-panel {
+  .pstack-config-modal,
+  .pstack-budget-panel {
     width: 100%;
     max-width: none;
     height: 100%;
     border-radius: 0;
-  }
-  .pstack-header {
-    padding: 16px 12px 8px 16px;
   }
   .pstack-tabs-row {
     padding: 6px 16px 0;
@@ -886,15 +691,18 @@ const CSS = `
 }
 .pstack-setting-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 18px 0;
-  border-top: 0.5px solid var(--dsw-alias-border-l4);
+  padding: 16px 0;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l4);
 }
 .pstack-setting-item:first-child {
   padding-top: 0;
-  border-top: 0;
+}
+.pstack-setting-item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 .pstack-setting-copy {
   flex: 1;
@@ -915,7 +723,7 @@ const CSS = `
   display: flex;
   flex: none;
   align-items: center;
-  padding-top: 1px;
+  padding-top: 0;
 }
 `;
 

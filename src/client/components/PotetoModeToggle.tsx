@@ -8,7 +8,7 @@ import {
   Switch,
   Tooltip,
 } from "@deepseek-ai/dsh-client-ui-primitives";
-import { showToast } from "./toast.tsx";
+import { showToast } from "../lib/toast.ts";
 
 const STYLE_ID = "pstack-poteto-row-style";
 const ROW_CSS = `

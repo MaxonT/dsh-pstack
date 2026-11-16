@@ -2,8 +2,8 @@
 
 import { useEffect, useState, type ReactElement } from "react";
 
-import { messageOf } from "../components/message.ts";
-import { ensurePstackStyles } from "../components/styles.ts";
+import { messageOf } from "../lib/message.ts";
+import { ensurePstackStyles } from "../lib/styles.ts";
 import { Spinner, Switch } from "../components/ui.tsx";
 import type { PstackTranslations } from "../locales/index.ts";
 

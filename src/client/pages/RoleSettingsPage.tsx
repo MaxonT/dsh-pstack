@@ -20,7 +20,7 @@ import {
   IconUndo,
 } from "../components/icons.tsx";
 import { BudgetDialog, budgetLabel } from "../components/BudgetDialog.tsx";
-import { messageOf } from "../components/message.ts";
+import { messageOf } from "../lib/message.ts";
 import { RoleCard } from "../components/RoleCard.tsx";
 import {
   draftOf,
@@ -31,8 +31,8 @@ import {
   type DraftMap,
 } from "../roles/role-draft.ts";
 import { routeIsIncomplete, routeIsInvalid } from "../roles/role-selectors.ts";
-import { ensurePstackStyles } from "../components/styles.ts";
-import { showToast } from "../components/toast.tsx";
+import { ensurePstackStyles } from "../lib/styles.ts";
+import { showToast } from "../lib/toast.ts";
 import {
   Button,
   IconButton,
@@ -342,9 +342,8 @@ export function RoleSettingsView(props: {
     <section>
       <header className="pstack-section-head">
         <div>
-          <p className="pstack-section-desc">{t("rolesSubtitle")}</p>
           <div className="pstack-file-meta">
-            <Status tone={fileStatus.tone} label={fileStatus.label} />
+            <Status tone={fileStatus.tone} label={fileStatus.label} compact />
             <span>{t("file")}</span>
             <code className="pstack-file-path" title={snapshot.path}>
               {snapshot.path}

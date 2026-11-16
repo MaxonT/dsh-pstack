@@ -1,7 +1,7 @@
 /** Nested budget modal for the role settings page: preview a plan and apply it to the role file. */
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactElement } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useMemo, useState, type ReactElement } from "react";
+import { Modal } from "@deepseek-ai/dsh-client-ui-primitives";
 
 import type { CatalogueResult } from "../../models.ts";
 import {
@@ -17,12 +17,11 @@ import {
 } from "../../roles/budget.ts";
 import type { BudgetApplyResult, RoleFileSnapshot } from "../../roles/role-wire.ts";
 import type { Route } from "../../roles/route.ts";
-import { IconClose } from "./icons.tsx";
-import { useFocusTrap } from "./focus-trap.ts";
-import { messageOf } from "./message.ts";
+import { messageOf } from "../lib/message.ts";
 import { roleLabel } from "../roles/role-copy.ts";
 import { providerIsUsable, providerIssue, providerLabel } from "../roles/role-selectors.ts";
-import { Button, IconButton, Spinner, Status, type StatusTone } from "./ui.tsx";
+import { Button, Spinner, Status, type StatusTone } from "./ui.tsx";
+import { IconCheckCircle } from "./icons.tsx";
 import type { PstackTranslations } from "../locales/index.ts";
 
 export interface BudgetDialogProps {
@@ -51,8 +50,6 @@ const TIER_LABEL: Record<
 export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
   const { snapshot, catalogue, translations, onApply, onApplied, onClose, signal } = props;
   const t = translations.roles;
-  const titleId = useId();
-  const panelRef = useRef<HTMLDivElement>(null);
   const providers = catalogue.providers;
   const usableProviders = providers.filter(providerIsUsable);
   const initialProvider = usableProviders[0];
@@ -71,7 +68,6 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
   const requestClose = useCallback((): void => {
     if (!busy) onClose();
   }, [busy, onClose]);
-  useFocusTrap(panelRef, requestClose, true, { stopEscapePropagation: true, capture: true });
 
   useEffect(() => {
     return () => {
@@ -141,36 +137,18 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
   };
 
   if (typeof document === "undefined") return null;
-  return createPortal(
-    <div className="pstack-overlay pstack-budget-overlay" role="presentation">
-      <div className="pstack-mask" aria-hidden="true" onClick={requestClose} />
-      <div
-        className="pstack-panel pstack-budget-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        ref={panelRef}
-      >
-        <header className="pstack-header">
-          <div>
-            <h2 className="pstack-title" id={titleId}>
-              {t("budgetTitle")}
-            </h2>
-            <p className="pstack-section-desc">
-              {t("budgetCurrent", { budget: budgetLabel(snapshot.budget, t) })}
-            </p>
-          </div>
-          <IconButton
-            label={translations.common("close")}
-            className="pstack-icon-btn-plain"
-            onClick={requestClose}
-            autoFocus
-          >
-            <IconClose size={14} />
-          </IconButton>
-        </header>
-        <div className="pstack-body pstack-budget-body">
+  return (
+    <Modal
+      open
+      title={t("budgetTitle")}
+      description={t("budgetCurrent", { budget: budgetLabel(snapshot.budget, t) })}
+      closeLabel={translations.common("close")}
+      onClose={requestClose}
+      className="pstack-budget-panel"
+      contentClassName="pstack-budget-content"
+    >
+      <div className="pstack-budget-body">
+        <div className="pstack-budget-top">
           <div className="pstack-budget-form">
             <label className="pstack-field">
               <span className="pstack-field-label">{t("budgetScope")}</span>
@@ -255,11 +233,24 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
               </>
             ) : null}
           </div>
-          {plan.error === undefined ? null : (
-            <div className="pstack-notice" data-tone="error">
-              {plan.error}
-            </div>
-          )}
+          <div className="pstack-budget-apply">
+            <Button
+              variant="primary"
+              size="sm"
+              icon={busy ? <Spinner size={13} /> : <IconCheckCircle size={13} />}
+              disabled={!canApply}
+              onClick={() => void apply()}
+            >
+              {busy ? t("budgetApplying") : t("budgetApply")}
+            </Button>
+          </div>
+        </div>
+        {plan.error === undefined ? null : (
+          <div className="pstack-notice" data-tone="error">
+            {plan.error}
+          </div>
+        )}
+        <div className="pstack-budget-scroll">
           {visibleRows.length === 0 ? null : (
             <div className="pstack-budget-preview">
               <h5 className="pstack-budget-preview-title">{t("budgetPreview")}</h5>
@@ -268,7 +259,7 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
                   <article className="pstack-budget-card" data-status={row.status} key={row.key}>
                     <header className="pstack-budget-card-head">
                       <span className="pstack-budget-role">{roleLabel(row.key, t)}</span>
-                      <Status tone={statusTone(row.status)} label={statusText(row, t)} />
+                      <Status tone={statusTone(row.status)} label={statusText(row, t)} compact />
                     </header>
                     <div className="pstack-budget-route-grid">
                       <div className="pstack-budget-route-block">
@@ -295,26 +286,8 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
             </div>
           )}
         </div>
-        <footer className="pstack-budget-footer">
-          <div />
-          <div className="pstack-role-save">
-            <Button variant="outline" size="sm" onClick={requestClose} disabled={busy}>
-              {translations.common("close")}
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              icon={busy ? <Spinner size={13} /> : undefined}
-              disabled={!canApply}
-              onClick={() => void apply()}
-            >
-              {busy ? t("budgetApplying") : t("budgetApply")}
-            </Button>
-          </div>
-        </footer>
       </div>
-    </div>,
-    document.body,
+    </Modal>
   );
 }
 

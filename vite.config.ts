@@ -1,5 +1,3 @@
-import { resolve } from "node:path";
-
 import { defineConfig } from "vite-plus";
 
 /** DSH provides its own runtime packages; never bundle them. */
@@ -54,12 +52,6 @@ export default defineConfig({
   ],
   test: {
     include: ["tests/**/*.test.{ts,tsx,mjs}"],
-    alias: {
-      "@deepseek-ai/dsh-client-ui-primitives": resolve(
-        process.cwd(),
-        "tests/mocks/client-ui-primitives.tsx",
-      ),
-    },
   },
   run: {
     tasks: {

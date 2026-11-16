@@ -17,9 +17,9 @@ import {
   IconTerminal,
   type IconComponent,
 } from "../components/icons.tsx";
-import { ensurePstackStyles } from "../components/styles.ts";
-import { messageOf } from "../components/message.ts";
-import { showToast } from "../components/toast.tsx";
+import { ensurePstackStyles } from "../lib/styles.ts";
+import { messageOf } from "../lib/message.ts";
+import { showToast, type ToastMessage } from "../lib/toast.ts";
 import { Button, IconButton, Spinner, Status, Switch, type StatusTone } from "../components/ui.tsx";
 import type { PstackTranslations, PluginsKey } from "../locales/index.ts";
 
@@ -42,7 +42,6 @@ interface RelatedPlugin {
 interface PluginGroup {
   readonly id: PluginGroupId;
   readonly titleKey: PluginsKey;
-  readonly descriptionKey: PluginsKey;
   readonly plugins: readonly RelatedPlugin[];
 }
 
@@ -50,7 +49,6 @@ const PLUGIN_GROUPS: readonly PluginGroup[] = [
   {
     id: "recommended",
     titleKey: "groupRecommended",
-    descriptionKey: "groupRecommendedDescription",
     plugins: [
       {
         name: "@deepseek-ai/dsh-experimental-forge-bundle",
@@ -69,7 +67,6 @@ const PLUGIN_GROUPS: readonly PluginGroup[] = [
   {
     id: "normal",
     titleKey: "groupNormal",
-    descriptionKey: "groupNormalDescription",
     plugins: [
       {
         name: "@deepseek-ai/dsh-browser-use",
@@ -107,13 +104,6 @@ const PLUGIN_GROUPS: readonly PluginGroup[] = [
 
 const ALL = "__all__";
 
-type PluginNoticeTone = "success" | "warn" | "error" | "neutral";
-
-interface PluginNotice {
-  readonly tone: PluginNoticeTone;
-  readonly text: string;
-}
-
 export function RecommendedPluginsView(props: {
   api: PluginManagerApi | undefined;
   translations: PstackTranslations;
@@ -122,7 +112,7 @@ export function RecommendedPluginsView(props: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState<string | undefined>();
-  const [messages, setMessages] = useState<Record<string, PluginNotice>>({});
+  const [messages, setMessages] = useState<Record<string, ToastMessage>>({});
   const { api, translations } = props;
   const t = translations.plugins;
   const common = translations.common;
@@ -230,7 +220,9 @@ export function RecommendedPluginsView(props: {
     <section>
       <header className="pstack-section-head">
         <div>
-          <p className="pstack-section-desc">{t("pluginsSubtitle")}</p>
+          <p className="pstack-section-desc" title={t("pluginsSubtitle")}>
+            {t("pluginsSubtitle")}
+          </p>
         </div>
         <div className="pstack-section-actions">
           <Status
@@ -256,7 +248,7 @@ export function RecommendedPluginsView(props: {
             {busy === ALL
               ? t("enableAllBusy")
               : enableable > 0
-                ? t("enableAllCount", { count: enableable })
+                ? t("enableAll")
                 : recommendedEnabled === recommended.plugins.length
                   ? t("enableAllComplete")
                   : t("enableAll")}
@@ -277,73 +269,62 @@ export function RecommendedPluginsView(props: {
         </div>
       )}
       <div className="pstack-plugin-groups">
-        {PLUGIN_GROUPS.map((group) => {
-          const enabledInGroup = group.plugins.filter(
-            (plugin) => byName.get(plugin.name)?.enabled === true,
-          ).length;
-          return (
-            <section className="pstack-plugin-group" key={group.id}>
-              <header className="pstack-plugin-group-head">
-                <div>
-                  <h4 className="pstack-plugin-group-title">{t(group.titleKey)}</h4>
-                  <p className="pstack-plugin-group-desc">{t(group.descriptionKey)}</p>
-                </div>
-                <Status
-                  tone={enabledInGroup > 0 ? "success" : "neutral"}
-                  label={`${enabledInGroup}/${group.plugins.length}`}
-                />
-              </header>
-              <ul className="pstack-plugin-list">
-                {group.plugins.map((plugin) => {
-                  const bundle = byName.get(plugin.name);
-                  const status = bundleStatus(bundle, t);
-                  const canSwitch = switchable(bundle);
-                  const title = t(plugin.titleKey);
-                  const action = bundle?.enabled === true ? t("disablePlugin") : t("enablePlugin");
-                  const PluginIcon = plugin.icon;
-                  const message = messages[plugin.name];
-                  return (
-                    <li key={plugin.name}>
-                      <article className="pstack-plugin-card">
-                        <span className="pstack-plugin-icon">
-                          <PluginIcon size={18} />
-                        </span>
-                        <div className="pstack-plugin-main">
-                          <div className="pstack-plugin-title-row">
-                            <span className="pstack-plugin-name">{title}</span>
-                            <Status
-                              tone={status.tone}
-                              label={status.label}
-                              title={bundle?.error?.diagnostic ?? bundle?.readOnlyReason}
-                            />
-                          </div>
-                          <p className="pstack-plugin-desc">{t(plugin.descriptionKey)}</p>
-                          <code className="pstack-plugin-id">{plugin.name}</code>
-                          {message === undefined ? null : (
-                            <span className="pstack-inline-message" data-tone={message.tone}>
-                              <NoticeIcon tone={message.tone} />
-                              {message.text}
-                            </span>
-                          )}
-                        </div>
-                        <div className="pstack-plugin-end">
-                          <Switch
-                            checked={bundle?.enabled === true}
-                            disabled={!canSwitch || busy !== undefined}
-                            label={`${action} ${title}`}
-                            onChange={() =>
-                              bundle === undefined ? undefined : void toggle(bundle)
-                            }
+        {PLUGIN_GROUPS.map((group) => (
+          <section className="pstack-plugin-group" key={group.id}>
+            <header className="pstack-plugin-group-head">
+              <div>
+                <h4 className="pstack-plugin-group-title">{t(group.titleKey)}</h4>
+              </div>
+            </header>
+            <ul className="pstack-plugin-list">
+              {group.plugins.map((plugin) => {
+                const bundle = byName.get(plugin.name);
+                const status = bundleStatus(bundle, t);
+                const canSwitch = switchable(bundle);
+                const title = t(plugin.titleKey);
+                const action = bundle?.enabled === true ? t("disablePlugin") : t("enablePlugin");
+                const PluginIcon = plugin.icon;
+                const message = messages[plugin.name];
+                return (
+                  <li key={plugin.name}>
+                    <article className="pstack-plugin-card">
+                      <span className="pstack-plugin-icon">
+                        <PluginIcon size={18} />
+                      </span>
+                      <div className="pstack-plugin-main">
+                        <div className="pstack-plugin-title-row">
+                          <span className="pstack-plugin-name">{title}</span>
+                          <Status
+                            tone={status.tone}
+                            label={status.label}
+                            title={bundle?.error?.diagnostic ?? bundle?.readOnlyReason}
+                            compact
                           />
                         </div>
-                      </article>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          );
-        })}
+                        <p className="pstack-plugin-desc">{t(plugin.descriptionKey)}</p>
+                        <code className="pstack-plugin-id">{plugin.name}</code>
+                        {message === undefined ? null : (
+                          <span className="pstack-inline-message" data-tone={message.tone}>
+                            <NoticeIcon tone={message.tone} />
+                            {message.text}
+                          </span>
+                        )}
+                      </div>
+                      <div className="pstack-plugin-end">
+                        <Switch
+                          checked={bundle?.enabled === true}
+                          disabled={!canSwitch || busy !== undefined}
+                          label={`${action} ${title}`}
+                          onChange={() => (bundle === undefined ? undefined : void toggle(bundle))}
+                        />
+                      </div>
+                    </article>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))}
       </div>
     </section>
   );
@@ -374,7 +355,7 @@ function changeNotice(
   t: PstackTranslations["plugins"],
   name: string,
   change: ChangeResult,
-): PluginNotice {
+): ToastMessage {
   switch (change.application) {
     case "applied":
       return { tone: "success", text: t("pluginChangeApplied", { name }) };
@@ -412,7 +393,7 @@ function describeChangeError(
   return parts.length === 0 ? t("pluginChangeUnknownReason") : parts.join(": ");
 }
 
-function NoticeIcon({ tone }: { readonly tone: PluginNoticeTone }): ReactElement | null {
+function NoticeIcon({ tone }: { readonly tone: ToastMessage["tone"] }): ReactElement | null {
   if (tone === "success") return <IconCheck size={12} />;
   if (tone === "neutral") return null;
   return <IconAlert size={12} />;

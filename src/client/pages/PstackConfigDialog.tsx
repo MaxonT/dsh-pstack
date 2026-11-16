@@ -1,17 +1,16 @@
 /** Plugin-detail action and configuration dialog for dsh-pstack. */
 
 import { useCallback, useEffect, useId, useRef, useState, type ReactElement } from "react";
-import { createPortal } from "react-dom";
 import type { PropsRuntime } from "@deepseek-ai/dsh-client-ui-slots";
 import type {} from "@deepseek-ai/dsh-client-ui-plugin-manager/client";
+import { Modal } from "@deepseek-ai/dsh-client-ui-primitives";
 
-import { IconClose, IconSettings } from "../components/icons.tsx";
-import { useFocusTrap } from "../components/focus-trap.ts";
+import { IconSettings } from "../components/icons.tsx";
 import { RecommendedPluginsView, type PluginManagerApi } from "./RecommendedPluginsPage.tsx";
 import { RoleSettingsView, type RoleSettingsApi } from "./RoleSettingsPage.tsx";
 import { GeneralSettingsView, type PotetoSettingsApi } from "./GeneralSettingsPage.tsx";
-import { ensurePstackStyles } from "../components/styles.ts";
-import { Button, IconButton, SegmentedTabs, confirmDiscard } from "../components/ui.tsx";
+import { ensurePstackStyles } from "../lib/styles.ts";
+import { Button, SegmentedTabs, confirmDiscard } from "../components/ui.tsx";
 import type { PstackTranslations } from "../locales/index.ts";
 
 ensurePstackStyles();
@@ -32,9 +31,7 @@ export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement
     () => new Set<ConfigTab>(["general"]),
   );
   const [rolesDirty, setRolesDirty] = useState(false);
-  const titleId = useId();
   const tabsId = useId();
-  const panelRef = useRef<HTMLDivElement>(null);
   const { roleApi, pluginApi, potetoApi, translations, onClose } = props;
 
   const dirtyRef = useRef(false);
@@ -58,106 +55,81 @@ export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement
     setVisited((current) => (current.has(next) ? current : new Set([...current, next])));
   };
 
-  useFocusTrap(panelRef, requestClose, true, {
-    suspended: () => document.querySelector(".pstack-budget-overlay") !== null,
-    lockScroll: true,
-    skipHidden: true,
-  });
-
   if (typeof document === "undefined") return null;
 
-  return createPortal(
-    <div className="pstack-overlay" role="presentation">
-      <div className="pstack-mask" aria-hidden="true" onClick={requestClose} />
-      <div
-        className="pstack-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        ref={panelRef}
-      >
-        <header className="pstack-header">
-          <div>
-            <h2 className="pstack-title" id={titleId}>
-              {translations.config("dialogTitle")}
-            </h2>
-          </div>
-          <IconButton
-            label={translations.common("close")}
-            className="pstack-icon-btn-plain"
-            onClick={requestClose}
-            autoFocus
-          >
-            <IconClose size={14} />
-          </IconButton>
-        </header>
-        <div className="pstack-tabs-row">
-          <SegmentedTabs
-            label={translations.config("tabsLabel")}
-            value={tab}
-            onChange={selectTab}
-            items={[
-              {
-                value: "general",
-                label: translations.config("tabGeneral"),
-                id: `${tabsId}-general`,
-                panelId: `${tabsId}-general-panel`,
-              },
-              {
-                value: "plugins",
-                label: translations.config("tabPlugins"),
-                id: `${tabsId}-plugins`,
-                panelId: `${tabsId}-plugins-panel`,
-              },
-              {
-                value: "roles",
-                label: translations.config("tabRoles"),
-                id: `${tabsId}-roles`,
-                panelId: visited.has("roles") ? `${tabsId}-roles-panel` : undefined,
-              },
-            ]}
-          />
-        </div>
-        <main className="pstack-body">
-          {visited.has("general") ? (
-            <div
-              hidden={tab !== "general"}
-              id={`${tabsId}-general-panel`}
-              role="tabpanel"
-              aria-labelledby={`${tabsId}-general`}
-            >
-              <GeneralSettingsView api={potetoApi} translations={translations} />
-            </div>
-          ) : null}
-          {visited.has("plugins") ? (
-            <div
-              hidden={tab !== "plugins"}
-              id={`${tabsId}-plugins-panel`}
-              role="tabpanel"
-              aria-labelledby={`${tabsId}-plugins`}
-            >
-              <RecommendedPluginsView api={pluginApi} translations={translations} />
-            </div>
-          ) : null}
-          {visited.has("roles") ? (
-            <div
-              hidden={tab !== "roles"}
-              id={`${tabsId}-roles-panel`}
-              role="tabpanel"
-              aria-labelledby={`${tabsId}-roles`}
-            >
-              <RoleSettingsView
-                api={roleApi}
-                translations={translations}
-                onDirtyChange={setRolesDirty}
-              />
-            </div>
-          ) : null}
-        </main>
+  return (
+    <Modal
+      open
+      title={translations.config("dialogTitle")}
+      closeLabel={translations.common("close")}
+      onClose={requestClose}
+      className="pstack-config-modal"
+      contentClassName="pstack-config-content"
+    >
+      <div className="pstack-tabs-row">
+        <SegmentedTabs
+          label={translations.config("tabsLabel")}
+          value={tab}
+          onChange={selectTab}
+          items={[
+            {
+              value: "general",
+              label: translations.config("tabGeneral"),
+              id: `${tabsId}-general`,
+              panelId: `${tabsId}-general-panel`,
+            },
+            {
+              value: "plugins",
+              label: translations.config("tabPlugins"),
+              id: `${tabsId}-plugins`,
+              panelId: `${tabsId}-plugins-panel`,
+            },
+            {
+              value: "roles",
+              label: translations.config("tabRoles"),
+              id: `${tabsId}-roles`,
+              panelId: `${tabsId}-roles-panel`,
+            },
+          ]}
+        />
       </div>
-    </div>,
-    document.body,
+      <main className="pstack-body">
+        {visited.has("general") ? (
+          <div
+            hidden={tab !== "general"}
+            id={`${tabsId}-general-panel`}
+            role="tabpanel"
+            aria-labelledby={`${tabsId}-general`}
+          >
+            <GeneralSettingsView api={potetoApi} translations={translations} />
+          </div>
+        ) : null}
+        {visited.has("plugins") ? (
+          <div
+            hidden={tab !== "plugins"}
+            id={`${tabsId}-plugins-panel`}
+            role="tabpanel"
+            aria-labelledby={`${tabsId}-plugins`}
+          >
+            <RecommendedPluginsView api={pluginApi} translations={translations} />
+          </div>
+        ) : null}
+        {visited.has("roles") ? (
+          <div
+            hidden={tab !== "roles"}
+            id={`${tabsId}-roles-panel`}
+            role="tabpanel"
+            aria-labelledby={`${tabsId}-roles`}
+          >
+            <RoleSettingsView
+              api={roleApi}
+              translations={translations}
+              onDirtyChange={setRolesDirty}
+            />
+          </div>
+        ) : null}
+      </main>
+    </Modal>
   );
 }
 

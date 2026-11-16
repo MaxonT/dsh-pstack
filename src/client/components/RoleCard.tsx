@@ -90,7 +90,7 @@ export function RoleCard(props: {
           {description === "" ? null : <p className="pstack-role-desc">{description}</p>}
         </div>
         <div className="pstack-role-status">
-          <Status tone={status.tone} label={status.label} />
+          <Status tone={status.tone} label={status.label} compact />
         </div>
       </header>
       {role.issues.length === 0 ? null : (

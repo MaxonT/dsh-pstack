@@ -1,14 +1,10 @@
 /** Copy for the related plugins page. */
 
 const en = {
-  pluginsSubtitle:
-    "Optional plugins related to the pstack port review. Missing or incomplete packages cannot be enabled here.",
+  pluginsSubtitle: "Optional plugins that enhance the pstack workflow.",
   pluginsSummary: "Recommended {enabled}/{total}",
   groupRecommended: "Recommended",
-  groupRecommendedDescription:
-    "Work directly with the pstack workflow and should usually be enabled.",
   groupNormal: "Optional",
-  groupNormalDescription: "Useful for specific workflows. Enable only when the workflow needs it.",
   loadFailed: "Could not read plugin status: {message}",
   managerUnavailable: "Plugin manager unavailable",
   pluginEnabled: "Enabled",
@@ -19,7 +15,6 @@ const en = {
   enablePlugin: "Enable",
   disablePlugin: "Disable",
   enableAll: "Enable all",
-  enableAllCount: "Enable all ({count})",
   enableAllComplete: "All enabled",
   enableAllBusy: "Enabling…",
   enableAllDone: "Enabled {count} recommended plugins",
@@ -53,12 +48,10 @@ const en = {
 } as const;
 
 const zh = {
-  pluginsSubtitle: "与本插件移植审查相关的可选插件。未安装或依赖不全的插件无法在这里启用。",
+  pluginsSubtitle: "用于增强 pstack 工作流的可选插件。",
   pluginsSummary: "推荐已启用 {enabled}/{total}",
   groupRecommended: "推荐",
-  groupRecommendedDescription: "与 pstack 工作流直接配合，通常应启用。",
   groupNormal: "可选",
-  groupNormalDescription: "用于特定工作流，按需启用。",
   loadFailed: "无法读取插件状态：{message}",
   managerUnavailable: "插件管理器不可用",
   pluginEnabled: "已启用",
@@ -69,7 +62,6 @@ const zh = {
   enablePlugin: "启用",
   disablePlugin: "停用",
   enableAll: "全部启用",
-  enableAllCount: "全部启用（{count}）",
   enableAllComplete: "已全部启用",
   enableAllBusy: "正在启用…",
   enableAllDone: "已启用 {count} 个推荐插件",

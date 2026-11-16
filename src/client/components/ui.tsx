@@ -1,42 +1,15 @@
 /** Shared controls for the pstack client surfaces. */
 
-import type {
-  ButtonHTMLAttributes,
-  CSSProperties,
-  ReactElement,
-  ReactNode,
-  KeyboardEvent,
-} from "react";
+import type { ButtonHTMLAttributes, ReactElement, ReactNode } from "react";
+import {
+  Button as PrimitiveButton,
+  SegmentedTabs as PrimitiveSegmentedTabs,
+  StateDot,
+  Switch as PrimitiveSwitch,
+  Tag,
+} from "@deepseek-ai/dsh-client-ui-primitives";
 
-import { IconRefresh } from "./icons.tsx";
-
-export type ButtonVariant = "primary" | "outline" | "ghost";
-export type ButtonSize = "sm" | "md";
-
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  readonly variant?: ButtonVariant;
-  readonly size?: ButtonSize;
-  readonly icon?: ReactNode;
-}
-
-export function Button(props: ButtonProps): ReactElement {
-  const { variant = "ghost", size = "md", icon, children, className, ...rest } = props;
-  return (
-    <button
-      type="button"
-      {...rest}
-      className={cx(
-        "pstack-btn",
-        `pstack-btn-${variant}`,
-        size === "sm" ? "pstack-btn-sm" : undefined,
-        className,
-      )}
-    >
-      {icon}
-      {children}
-    </button>
-  );
-}
+export { PrimitiveButton as Button, PrimitiveSwitch as Switch };
 
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly label: string;
@@ -47,124 +20,83 @@ export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 export function IconButton(props: IconButtonProps): ReactElement {
   const { label, danger = false, children, className, ...rest } = props;
   return (
-    <button
-      type="button"
+    <PrimitiveButton
+      variant="ghost"
+      size="sm"
       {...rest}
       aria-label={label}
       title={label}
       className={cx("pstack-icon-btn", danger ? "pstack-icon-btn-danger" : undefined, className)}
     >
       {children}
-    </button>
-  );
-}
-
-export interface SwitchProps {
-  readonly checked: boolean;
-  readonly disabled?: boolean;
-  readonly label: string;
-  readonly onChange: (checked: boolean) => void;
-}
-
-export function Switch(props: SwitchProps): ReactElement {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={props.checked}
-      aria-label={props.label}
-      title={props.label}
-      disabled={props.disabled}
-      className="pstack-switch"
-      onClick={() => props.onChange(!props.checked)}
-    >
-      <span className="pstack-switch-thumb" />
-    </button>
+    </PrimitiveButton>
   );
 }
 
 export type StatusTone = "neutral" | "success" | "warn" | "error" | "brand";
 
-export function Status(props: { tone: StatusTone; label: string; title?: string }): ReactElement {
+const STATUS_TONE: Record<StatusTone, "neutral" | "success" | "warning" | "danger" | "info"> = {
+  neutral: "neutral",
+  success: "success",
+  warn: "warning",
+  error: "danger",
+  brand: "info",
+};
+
+const DOT_STATE: Record<StatusTone, "idle" | "done" | "warning" | "error" | "ongoing"> = {
+  neutral: "idle",
+  success: "done",
+  warn: "warning",
+  error: "error",
+  brand: "ongoing",
+};
+
+export function Status(props: {
+  tone: StatusTone;
+  label: string;
+  title?: string;
+  compact?: boolean;
+}): ReactElement {
   return (
-    <span className="pstack-status" data-tone={props.tone} title={props.title}>
-      <span className="pstack-status-dot" aria-hidden="true" />
-      <span>{props.label}</span>
+    <span title={props.title}>
+      <Tag
+        tone={STATUS_TONE[props.tone]}
+        className={props.compact ? "pstack-status pstack-status-compact" : "pstack-status"}
+      >
+        <StateDot state={DOT_STATE[props.tone]} size={props.compact ? 8 : undefined} />
+        <span>{props.label}</span>
+      </Tag>
     </span>
   );
 }
 
 export function Spinner({ size = 14 }: { readonly size?: number }): ReactElement {
-  return <IconRefresh size={size} className="pstack-spinner" />;
+  return <StateDot state="ongoing" size={size} />;
 }
 
 export interface SegmentItem<T extends string> {
   readonly value: T;
   readonly label: string;
   readonly id: string;
-  readonly panelId?: string;
+  readonly panelId: string;
 }
 
 export interface SegmentedTabsProps<T extends string> {
-  readonly items: readonly SegmentItem<T>[];
+  readonly items: readonly [SegmentItem<T>, ...SegmentItem<T>[]];
   readonly value: T;
   readonly onChange: (value: T) => void;
   readonly label: string;
 }
 
 export function SegmentedTabs<T extends string>(props: SegmentedTabsProps<T>): ReactElement {
-  const { items, value, onChange, label } = props;
-  const selected = Math.max(
-    0,
-    items.findIndex((item) => item.value === value),
-  );
-  const style = {
-    "--pstack-segment-count": items.length,
-    "--pstack-segment-index": selected,
-  } as CSSProperties;
-  const focusTab = (event: KeyboardEvent<HTMLButtonElement>, index: number): void => {
-    const buttons =
-      event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
-    const next = buttons?.[index];
-    if (next === undefined) return;
-    onChange(items[index]!.value);
-    next.focus();
-  };
   return (
-    <div role="tablist" aria-label={label} className="pstack-segmented" style={style}>
-      <span className="pstack-segmented-indicator" aria-hidden="true" />
-      {items.map((item, index) => (
-        <button
-          key={item.value}
-          type="button"
-          role="tab"
-          id={item.id}
-          aria-controls={item.panelId}
-          aria-selected={item.value === value}
-          tabIndex={item.value === value ? 0 : -1}
-          className="pstack-segment"
-          onClick={() => onChange(item.value)}
-          onKeyDown={(event) => {
-            if (event.key === "ArrowRight") {
-              event.preventDefault();
-              focusTab(event, (index + 1) % items.length);
-            } else if (event.key === "ArrowLeft") {
-              event.preventDefault();
-              focusTab(event, (index - 1 + items.length) % items.length);
-            } else if (event.key === "Home") {
-              event.preventDefault();
-              focusTab(event, 0);
-            } else if (event.key === "End") {
-              event.preventDefault();
-              focusTab(event, items.length - 1);
-            }
-          }}
-        >
-          {item.label}
-        </button>
-      ))}
-    </div>
-  );
+    <PrimitiveSegmentedTabs
+      items={props.items}
+      value={props.value}
+      onChange={props.onChange}
+      label={props.label}
+    />
+  ) as ReactElement;
 }
 
 export function cx(...values: readonly (string | undefined | false)[]): string {
