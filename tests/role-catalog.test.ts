@@ -103,6 +103,18 @@ describe("pstack_roles", () => {
     expect(renderRoleCapabilities(roles)).toContain("efforts=low,high default=high");
   });
 
+  it("renders a provider error on the route", () => {
+    const entries = new Map([
+      ["swarm workers", { routes: [{ kind: "route" as const, provider: "p", model: "a" }] }],
+    ]);
+    const catalogue: CatalogueResult = {
+      providers: [{ provider: "p", name: "P", models: [], error: "boom" }],
+      truncated: false,
+    };
+    const roles = annotateRoleCapabilities(roleCapabilities(entries), catalogue);
+    expect(renderRoleCapabilities(roles)).toContain('error="boom"');
+  });
+
   it("marks a configured route the catalogue no longer serves", () => {
     const entries = new Map([
       ["swarm workers", { routes: [{ kind: "route" as const, provider: "p", model: "gone" }] }],

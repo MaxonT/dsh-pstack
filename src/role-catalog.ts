@@ -164,7 +164,9 @@ export function createPstackRolesTool(
         ];
       },
     },
-    isConcurrencySafe: () => true,
+    // A legacy role file is migrated on first read, which writes, so this tool is
+    // not concurrency-safe even though its own result is read-only.
+    isConcurrencySafe: () => false,
     async execute(_rawArgs, exec: ToolRunContext) {
       const roleFile = readRoleConfiguration(modelsFilePath(dshHome));
       if (roleFile.status === "unreadable") {
@@ -209,6 +211,7 @@ function renderChoice(route: RoleRoute): string {
   }
   if (route.defaultEffort !== undefined) parts.push(`default=${route.defaultEffort}`);
   if (route.served === false) parts.push("served=no");
+  if (route.error !== undefined) parts.push(`error=${JSON.stringify(route.error)}`);
   return parts.join(" ");
 }
 

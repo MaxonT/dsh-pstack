@@ -143,6 +143,12 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
   ) {
     throw new Error("maxDepth must be a positive safe integer");
   }
+  const name = stringArg(record["name"]);
+  if (name !== null && (!/^[a-z][a-z0-9-]{0,31}$/.test(name) || name === "lead")) {
+    throw new Error(
+      'name must be 1-32 lower-case letters, digits, or hyphens starting with a letter, and not "lead"',
+    );
+  }
   const provider = stringArg(record["provider"]);
   const model = stringArg(record["model"]);
   const reasoningEffort = stringArg(record["reasoning_effort"]);
@@ -156,7 +162,7 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
     description,
     prompt,
     agent,
-    name: stringArg(record["name"]),
+    name,
     provider,
     model,
     reasoningEffort,

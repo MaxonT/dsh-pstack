@@ -7,7 +7,7 @@
  */
 
 import type { Context } from "@deepseek-ai/cordis";
-import { isSkillName } from "@deepseek-ai/dsh-skill";
+import { isSkillName, renderSkillContent } from "@deepseek-ai/dsh-skill";
 import type { SkillRegistry, SkillResourceBase } from "@deepseek-ai/dsh-skill";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
@@ -29,37 +29,7 @@ export interface LoadSkillResult {
 
 /** Render one loaded skill in the shape DSH skill tools use. */
 export function renderLoadedSkill(result: LoadSkillResult): string {
-  const lines = [`<skill_content name="${escapeAttribute(result.name)}">`, "<skill_resources>"];
-  if (result.resourceBase === undefined) {
-    lines.push(
-      `Resources for this skill are managed by provider "${escapeText(result.provider)}".`,
-      "Load referenced resources only as needed.",
-    );
-  } else if (result.resourceBase.kind === "directory") {
-    lines.push(
-      `Base directory for this skill: ${escapeText(result.resourceBase.path)}`,
-      "Resolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.",
-    );
-  } else if (result.resourceBase.kind === "url") {
-    lines.push(
-      `Base URL for this skill: ${escapeText(result.resourceBase.url)}`,
-      "Resolve relative URLs mentioned by this skill against the base URL before using them. Load referenced resources only as needed.",
-    );
-  } else {
-    lines.push(
-      `Resources for this skill: ${escapeText(result.resourceBase.description)}`,
-      "Load referenced resources only as needed.",
-    );
-  }
-  lines.push(
-    "</skill_resources>",
-    "",
-    "<skill_instructions>",
-    result.content,
-    "</skill_instructions>",
-  );
-  lines.push("</skill_content>");
-  return lines.join("\n");
+  return renderSkillContent(result as unknown as Parameters<typeof renderSkillContent>[0]);
 }
 
 const OUTPUT_SCHEMA: JsonSchemaNode = {
@@ -171,12 +141,4 @@ export function createPstackSkillTool(skills: SkillRegistry): ToolDefinition {
 
 export function apply(ctx: Context): void {
   ctx.tools.register(createPstackSkillTool(ctx.skills));
-}
-
-function escapeAttribute(value: string): string {
-  return value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
-}
-
-function escapeText(value: string): string {
-  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }

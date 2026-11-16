@@ -124,6 +124,14 @@ describe("parseDelegationArgs", () => {
       );
     }
   });
+
+  it("rejects a name outside the native child naming rule", () => {
+    for (const name of ["Lead", "lead", "Bad_Name", "-start", "a".repeat(33)]) {
+      expect(() => parseDelegationArgs({ description: "d", prompt: "p", name })).toThrow(
+        /name must be/,
+      );
+    }
+  });
 });
 
 describe("planDelegation", () => {
