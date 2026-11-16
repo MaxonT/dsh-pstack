@@ -81,8 +81,6 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
 | `pstack_roles` | 报告每个 pstack 角色及其已配置路由，路由以 provider、model、reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。传给 `pstack_subagent` 时用 `provider`、`model`、`reasoning_effort`。 |
 
-Agent Teams 是叠加模式。会话开启后多出四个团队任务工具和共享任务板；`pstack_subagent` 的子代理就是同一棵树里的普通子代理，会出现在 `list_agents` 里。
-
 ## Local replacements
 
 | Cursor | DeepSeek Harness |

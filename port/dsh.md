@@ -81,8 +81,6 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
 | `pstack_roles` | Report each pstack role with its configured routes as provider, model, and reasoningEffort values, plus each route's served efforts and default. Pass them to `pstack_subagent` as `provider`, `model`, and `reasoning_effort`. |
 
-Agent Teams mode is additive. When a session enables it, the session gains four team task tools and a shared task board; `pstack_subagent` children are ordinary subagents in the same tree and appear in `list_agents`.
-
 ## Local replacements
 
 | Cursor | DeepSeek Harness |
