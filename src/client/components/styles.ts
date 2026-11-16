@@ -880,6 +880,43 @@ const CSS = `
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.pstack-setting-list {
+  display: flex;
+  flex-direction: column;
+}
+.pstack-setting-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 0;
+  border-top: 0.5px solid var(--dsw-alias-border-l4);
+}
+.pstack-setting-item:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.pstack-setting-copy {
+  flex: 1;
+  min-width: 0;
+}
+.pstack-setting-title {
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.pstack-setting-description {
+  margin: 4px 0 0;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 13px;
+  line-height: 20px;
+}
+.pstack-setting-control {
+  display: flex;
+  flex: none;
+  align-items: center;
+  padding-top: 1px;
+}
 `;
 
 let installed = false;

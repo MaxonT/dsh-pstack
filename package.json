@@ -37,7 +37,9 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./models": "./dist/models.mjs",
-    "./poteto-mode": "./dist/poteto-mode.mjs",
+    "./poteto-projection": "./dist/poteto-projection.mjs",
+    "./poteto-toggle": "./dist/poteto-toggle.mjs",
+    "./poteto-toggle-remote": "./dist/poteto-toggle-remote.mjs",
     "./preset": "./dist/preset.mjs",
     "./readonly": "./dist/readonly.mjs",
     "./role-catalog": "./dist/role-catalog.mjs",
@@ -61,7 +63,14 @@
     "changes:clean": "vpx scripts/changes.ts --clean"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "catalog:runtime"
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.2-rc.2",
+    "@deepseek-ai/dsh-llm": "catalog:types",
+    "@deepseek-ai/dsh-session": "catalog:types",
+    "@deepseek-ai/dsh-session-projection": "catalog:types",
+    "@deepseek-ai/dsh-skill": "catalog:types",
+    "@deepseek-ai/schemastery": "catalog:runtime",
+    "clsx": "2.1.1",
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "catalog:runtime",
@@ -78,6 +87,8 @@
     "@deepseek-ai/dsh-llm": "catalog:types",
     "@deepseek-ai/dsh-plugin-manager": "catalog:types",
     "@deepseek-ai/dsh-sandbox-policy": "catalog:runtime",
+    "@deepseek-ai/dsh-session": "catalog:types",
+    "@deepseek-ai/dsh-session-projection": "catalog:types",
     "@deepseek-ai/dsh-settings": "catalog:types",
     "@deepseek-ai/dsh-skill": "catalog:types",
     "@deepseek-ai/dsh-subagent": "catalog:types",
@@ -101,6 +112,7 @@
     "@deepseek-ai/cordis": "catalog:runtime",
     "@deepseek-ai/cordis-plugin-loader": "catalog:runtime",
     "@deepseek-ai/dsh-sandbox-policy": "catalog:runtime",
+    "@deepseek-ai/dsh-skill": "catalog:types",
     "@deepseek-ai/dsh-typert-protocol": "catalog:runtime"
   },
   "icon": "./assets/logo.png",

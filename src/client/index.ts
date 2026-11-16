@@ -8,11 +8,15 @@ import type {} from "@deepseek-ai/dsh-client-ui-settings/client";
 import type {} from "@deepseek-ai/dsh-client-ui-slots";
 import type {} from "@deepseek-ai/dsh-client-ui-plugin-manager/client";
 
-import { pstackRolesRemote, type PstackRolesNamespace } from "../roles/role-remote.ts";
+import { pstackClientRemote, type PstackRolesNamespace } from "../roles/role-remote.ts";
+import { type PstackPotetoModeNamespace } from "../poteto-toggle-remote.ts";
 import { createPstackConfigAction } from "./pages/PstackConfigDialog.tsx";
+import { PotetoModeToggle } from "./components/PotetoModeToggle.tsx";
+import { PotetoModeBadge } from "./components/PotetoModeBadge.tsx";
 import { NS, catalogs } from "./locales/index.ts";
 import type { PluginManagerApi } from "./pages/RecommendedPluginsPage.tsx";
 import type { RoleSettingsApi } from "./pages/RoleSettingsPage.tsx";
+import type { PotetoSettingsApi } from "./pages/GeneralSettingsPage.tsx";
 
 /** Browser services this plugin needs. `remote.pluginManager` stays optional, so roles load without it. */
 export const inject = ["remote", "slots", "locale"];
@@ -40,7 +44,7 @@ export function createPluginManagerApi(
 }
 
 export async function apply(ctx: Context): Promise<() => Promise<void>> {
-  const disposeRemote = await ctx.remote.$mount(pstackRolesRemote);
+  const disposeRemote = await ctx.remote.$mount(pstackClientRemote);
   ctx.effect(() => ctx.locale.register(NS.common, catalogs.common), "pstack-config.locale.common");
   ctx.effect(() => ctx.locale.register(NS.config, catalogs.config), "pstack-config.locale.config");
   ctx.effect(
@@ -48,6 +52,7 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
     "pstack-config.locale.plugins",
   );
   ctx.effect(() => ctx.locale.register(NS.roles, catalogs.roles), "pstack-config.locale.roles");
+  ctx.effect(() => ctx.locale.register(NS.poteto, catalogs.poteto), "pstack-config.locale.poteto");
 
   // Observe the plugin-manager namespace without gating the role action on it.
   // If it arrives later, the next listBundles call sees it; if it never arrives,
@@ -57,6 +62,20 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
     pluginManager = scope.remote.pluginManager;
   });
   const pluginApi = createPluginManagerApi(() => pluginManager);
+
+  let potetoApi: PstackPotetoModeNamespace["pstackPotetoMode"] | undefined;
+  const potetoSettingsApi: PotetoSettingsApi = {
+    readDefault: async () => {
+      if (potetoApi === undefined) return false;
+      const result = await potetoApi.getDefault();
+      return result.ok ? result.value.enabled : false;
+    },
+    writeDefault: async (enabled) => {
+      if (potetoApi === undefined) return "poteto mode is not available yet";
+      const result = await potetoApi.setDefault(enabled);
+      return result.ok ? null : result.error.message;
+    },
+  };
 
   // `$mount` above installs the namespace, so its dependency is declared only now.
   // Injecting before the await would resolve against a namespace that does not exist yet.
@@ -75,6 +94,7 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
       config: ctx.locale.bind(NS.config),
       plugins: ctx.locale.bind(NS.plugins),
       roles: ctx.locale.bind(NS.roles),
+      poteto: ctx.locale.bind(NS.poteto),
     };
     scope.slots.inject("plugins.detail.actions", () =>
       scope.slots.register(
@@ -84,12 +104,59 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
           order: 20,
           label: translations.config("configureAction"),
         },
-        createPstackConfigAction(roleApi, pluginApi, translations),
+        createPstackConfigAction(roleApi, pluginApi, potetoSettingsApi, translations),
       ),
     );
   });
 
-  return disposeRemote;
+  ctx.inject(["remote.pstackPotetoMode"], (scope: Context) => {
+    potetoApi = (scope.remote as ClientRemote & PstackPotetoModeNamespace).pstackPotetoMode;
+    return () => {
+      potetoApi = undefined;
+    };
+  });
+  const injectProps = (sessionId: string) => ({
+    sessionId,
+    readMode: async () => {
+      if (potetoApi === undefined) return false;
+      const result = await potetoApi.status(sessionId);
+      return result.ok ? result.value.enabled : false;
+    },
+    selectMode: async (enabled: boolean) => {
+      if (potetoApi === undefined) return "poteto mode is not available yet";
+      const result = await potetoApi.setEnabled(sessionId, enabled);
+      return result.ok ? null : result.error.message;
+    },
+  });
+  for (const slot of ["conversation.input.model.options"]) {
+    ctx.slots.inject(slot as never, () =>
+      ctx.slots.register(
+        {
+          name: slot as never,
+          id: "pstack-poteto-mode",
+          locale: NS.poteto,
+          inject: (sessionId: string) => injectProps(sessionId),
+        } as never,
+        PotetoModeToggle as never,
+      ),
+    );
+  }
+  ctx.slots.inject("conversation.session.header.actions" as never, () =>
+    ctx.slots.register(
+      {
+        name: "conversation.session.header.actions" as never,
+        id: "pstack-poteto-badge",
+        order: -5,
+        locale: NS.poteto,
+        inject: (sessionId: string) => injectProps(sessionId),
+      } as never,
+      PotetoModeBadge as never,
+    ),
+  );
+
+  return async () => {
+    await disposeRemote();
+  };
 }
 
 function unwrap<T>(result: RemoteResult<T>): T {

@@ -10,16 +10,6 @@ export interface PresetCopy {
 }
 
 const EN: Record<string, PresetCopy> = {
-  "poteto-mode": {
-    name: "Poteto mode",
-    description:
-      "Based on Standard mode, with the same capabilities plus the persistent poteto-mode workflow.",
-  },
-  "poteto-mode-creator": {
-    name: "Poteto Creator mode",
-    description:
-      "Based on Creator mode, with the same capabilities plus the persistent poteto-mode workflow.",
-  },
   "poteto-agent": {
     name: "Implementation agent",
     description: "Implementation delegate that follows poteto-mode discipline for one task.",
@@ -35,14 +25,6 @@ const EN: Record<string, PresetCopy> = {
 };
 
 const ZH: Record<string, PresetCopy> = {
-  "poteto-mode": {
-    name: "Poteto 模式",
-    description: "基于标准模式，能力与标准模式一致，额外常驻 poteto-mode 工作流。",
-  },
-  "poteto-mode-creator": {
-    name: "Poteto 创造模式",
-    description: "基于创造模式，能力与创造模式一致，额外常驻 poteto-mode 工作流。",
-  },
   "poteto-agent": {
     name: "实现代理",
     description: "实现型子代理，按 poteto-mode 的纪律完成单个任务。",

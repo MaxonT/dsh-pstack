@@ -4,4 +4,5 @@ export const NS = {
   config: "pstack.config",
   plugins: "pstack.plugins",
   roles: "pstack.roles",
+  poteto: "pstack.poteto",
 } as const;

@@ -34,6 +34,7 @@ function translations(): PstackTranslations {
     config: translator(catalogs.config.en),
     plugins: translator(catalogs.plugins.en),
     roles: translator(catalogs.roles.en),
+    poteto: translator(catalogs.poteto.en),
   };
 }
 

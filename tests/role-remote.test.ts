@@ -16,9 +16,13 @@ describe("pstack role Remote contribution", () => {
       "pstackRoles/catalogue",
       "pstackRoles/save",
       "pstackRoles/budget",
+      "pstackPotetoMode/status",
+      "pstackPotetoMode/setEnabled",
+      "pstackPotetoMode/getDefault",
+      "pstackPotetoMode/setDefault",
     ]);
     for (const descriptor of pstackRolesHostContribution.invocations) {
-      expect(descriptor.service).toBe("pstackRoles");
+      expect(["pstackRoles", "pstackPotetoMode"]).toContain(descriptor.service);
       expect(descriptor.invocation.kind).toBe("direct");
     }
   });

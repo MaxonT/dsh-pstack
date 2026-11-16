@@ -3,12 +3,14 @@
 import { common, type CommonKey } from "./common.ts";
 import { config, type ConfigKey } from "./config.ts";
 import { plugins, type PluginsKey } from "./plugins.ts";
+import { poteto, type PotetoKey } from "./poteto.ts";
 import { roles, type RolesKey } from "./roles.ts";
 
 export { NS } from "./namespaces.ts";
 export type { CommonKey } from "./common.ts";
 export type { ConfigKey } from "./config.ts";
 export type { PluginsKey } from "./plugins.ts";
+export type { PotetoKey } from "./poteto.ts";
 export type { RolesKey } from "./roles.ts";
 
 export type Translate<K extends string> = (
@@ -21,6 +23,7 @@ export interface PstackTranslations {
   readonly config: Translate<ConfigKey>;
   readonly plugins: Translate<PluginsKey>;
   readonly roles: Translate<RolesKey>;
+  readonly poteto: Translate<PotetoKey>;
 }
 
 declare module "@deepseek-ai/dsh-client-ui-slots" {
@@ -29,7 +32,8 @@ declare module "@deepseek-ai/dsh-client-ui-slots" {
     "pstack.config": ConfigKey;
     "pstack.plugins": PluginsKey;
     "pstack.roles": RolesKey;
+    "pstack.poteto": PotetoKey;
   }
 }
 
-export const catalogs = { common, config, plugins, roles } as const;
+export const catalogs = { common, config, plugins, roles, poteto } as const;

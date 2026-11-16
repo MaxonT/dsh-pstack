@@ -27,6 +27,7 @@ function translationsFrom(language = FALLBACK_LOCALE): PstackTranslations {
     config: translateFrom(catalogs.config as Dictionaries, language),
     plugins: translateFrom(catalogs.plugins as Dictionaries, language),
     roles: translateFrom(catalogs.roles as Dictionaries, language),
+    poteto: translateFrom(catalogs.poteto as Dictionaries, language),
   };
 }
 
@@ -55,6 +56,13 @@ describe("pstack client", () => {
     }[] = [];
     const dictionaries = new Map<string, Dictionaries>();
     const pstackRoles = roleApi() as unknown as PstackRolesNamespace["pstackRoles"];
+    const potetoApi = {
+      status: async () => ({ ok: true as const, value: { enabled: false } }),
+      setEnabled: async (_sessionId: string, enabled: boolean) => ({
+        ok: true as const,
+        value: { enabled },
+      }),
+    };
     const pluginManager = {
       listBundles: async () => ({ ok: true as const, value: [] as BundleInfo[] }),
       setBundleEnabled: async (name: string) => ({
@@ -91,9 +99,11 @@ describe("pstack client", () => {
         bind: (namespace: string) => translateFrom(dictionaries.get(namespace) ?? {}),
       },
       effect: (callback: () => unknown) => callback(),
-      inject: (_deps: string[], callback: (scope: unknown) => void) => {
+      inject: (deps: string[], callback: (scope: unknown) => void) => {
         callback({
-          remote: { pstackRoles, pluginManager },
+          remote: deps.includes("remote.pstackPotetoMode")
+            ? { pstackPotetoMode: potetoApi }
+            : { pstackRoles, pluginManager },
           slots: slotHost,
         });
         return () => {};
@@ -106,10 +116,17 @@ describe("pstack client", () => {
       "pstack.common",
       "pstack.config",
       "pstack.plugins",
+      "pstack.poteto",
       "pstack.roles",
     ]);
     expect(mounts).toHaveLength(1);
     expect(slots.filter((slot) => slot.name === "plugins.detail.actions")).toHaveLength(1);
+    expect(slots.filter((slot) => slot.name === "conversation.input.model.options")).toHaveLength(
+      1,
+    );
+    expect(
+      slots.filter((slot) => slot.name === "conversation.session.header.actions"),
+    ).toHaveLength(1);
     const action = slots.find((slot) => slot.name === "plugins.detail.actions");
     expect(action?.id).toBe("pstack");
 

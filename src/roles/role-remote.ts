@@ -19,6 +19,7 @@ import type {
 import type { TypertContribution } from "@deepseek-ai/dsh-typert-registry";
 
 import type { CatalogueResult } from "../models.ts";
+import { pstackPotetoRemote } from "../poteto-toggle-remote.ts";
 import { type BudgetApplyRequest, parseBudgetApplyRequest } from "./budget.ts";
 import {
   parseBudgetApplyResult,
@@ -168,11 +169,21 @@ export const pstackRolesRemote: TypertRemoteInfo = {
   } as TypertRemoteInfo["methods"],
 };
 
+/** One Client mount carrying both pstack Remote namespaces. */
+export const pstackClientRemote: TypertRemoteInfo = {
+  package: REMOTE_PACKAGE,
+  descriptors: [...pstackRolesRemote.descriptors, ...pstackPotetoRemote.descriptors],
+  methods: {
+    ...pstackRolesRemote.methods,
+    ...pstackPotetoRemote.methods,
+  } as TypertRemoteInfo["methods"],
+};
+
 /** Register the Host's strict invocation definitions in `ctx.typert.local`. */
 export const pstackRolesHostContribution: TypertContribution = {
   package: REMOTE_PACKAGE,
   face: "host",
   schemas: [],
   model: { services: [], events: [], objects: [] },
-  invocations: pstackRolesRemote.descriptors,
+  invocations: pstackClientRemote.descriptors,
 };

@@ -9,6 +9,7 @@ import { IconClose, IconSettings } from "../components/icons.tsx";
 import { useFocusTrap } from "../components/focus-trap.ts";
 import { RecommendedPluginsView, type PluginManagerApi } from "./RecommendedPluginsPage.tsx";
 import { RoleSettingsView, type RoleSettingsApi } from "./RoleSettingsPage.tsx";
+import { GeneralSettingsView, type PotetoSettingsApi } from "./GeneralSettingsPage.tsx";
 import { ensurePstackStyles } from "../components/styles.ts";
 import { Button, IconButton, SegmentedTabs, confirmDiscard } from "../components/ui.tsx";
 import type { PstackTranslations } from "../locales/index.ts";
@@ -18,22 +19,23 @@ ensurePstackStyles();
 export interface PstackConfigDialogProps {
   readonly roleApi: RoleSettingsApi;
   readonly pluginApi: PluginManagerApi | undefined;
+  readonly potetoApi: PotetoSettingsApi;
   readonly translations: PstackTranslations;
   readonly onClose: () => void;
 }
 
-type ConfigTab = "plugins" | "roles";
+type ConfigTab = "general" | "plugins" | "roles";
 
 export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement | null {
-  const [tab, setTab] = useState<ConfigTab>("plugins");
+  const [tab, setTab] = useState<ConfigTab>("general");
   const [visited, setVisited] = useState<ReadonlySet<ConfigTab>>(
-    () => new Set<ConfigTab>(["plugins"]),
+    () => new Set<ConfigTab>(["general"]),
   );
   const [rolesDirty, setRolesDirty] = useState(false);
   const titleId = useId();
   const tabsId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
-  const { roleApi, pluginApi, translations, onClose } = props;
+  const { roleApi, pluginApi, potetoApi, translations, onClose } = props;
 
   const dirtyRef = useRef(false);
   useEffect(() => {
@@ -97,6 +99,12 @@ export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement
             onChange={selectTab}
             items={[
               {
+                value: "general",
+                label: translations.config("tabGeneral"),
+                id: `${tabsId}-general`,
+                panelId: `${tabsId}-general-panel`,
+              },
+              {
                 value: "plugins",
                 label: translations.config("tabPlugins"),
                 id: `${tabsId}-plugins`,
@@ -112,6 +120,16 @@ export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement
           />
         </div>
         <main className="pstack-body">
+          {visited.has("general") ? (
+            <div
+              hidden={tab !== "general"}
+              id={`${tabsId}-general-panel`}
+              role="tabpanel"
+              aria-labelledby={`${tabsId}-general`}
+            >
+              <GeneralSettingsView api={potetoApi} translations={translations} />
+            </div>
+          ) : null}
           {visited.has("plugins") ? (
             <div
               hidden={tab !== "plugins"}
@@ -147,6 +165,7 @@ export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement
 export function createPstackConfigAction(
   roleApi: RoleSettingsApi,
   pluginApi: PluginManagerApi | undefined,
+  potetoApi: PotetoSettingsApi,
   translations: PstackTranslations,
 ): (props: PropsRuntime<"plugins.detail.actions">) => ReactElement | null {
   return function PstackConfigAction(
@@ -183,6 +202,7 @@ export function createPstackConfigAction(
           <PstackConfigDialog
             roleApi={roleApi}
             pluginApi={pluginApi}
+            potetoApi={potetoApi}
             translations={translations}
             onClose={() => setOpen(false)}
           />

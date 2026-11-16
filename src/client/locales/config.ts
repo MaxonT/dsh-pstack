@@ -6,6 +6,7 @@ const en = {
   tabsLabel: "Configuration sections",
   tabPlugins: "Recommended plugins",
   tabRoles: "Role models",
+  tabGeneral: "General",
 } as const;
 
 const zh = {
@@ -14,6 +15,7 @@ const zh = {
   tabsLabel: "配置分区",
   tabPlugins: "推荐插件",
   tabRoles: "角色模型",
+  tabGeneral: "通用",
 } as const satisfies Record<keyof typeof en, string>;
 
 export type ConfigKey = keyof typeof en;

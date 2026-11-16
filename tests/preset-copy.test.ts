@@ -9,13 +9,7 @@ import { localizePresetConfig, readWebUiLocale } from "../src/preset.ts";
 
 const PATCH = readFileSync("cordis.patch.yml", "utf8");
 
-const PRESET_IDS = [
-  "poteto-mode",
-  "poteto-mode-creator",
-  "poteto-agent",
-  "comment-sicko",
-  "readonly",
-] as const;
+const PRESET_IDS = ["poteto-agent", "comment-sicko", "readonly"] as const;
 
 function presetBlock(id: string): string[] {
   const lines = PATCH.split(/\r?\n/);
@@ -61,15 +55,15 @@ function preset(id: string): PresetDefinition {
 
 describe("presetCopyFor", () => {
   it("resolves an exact tag, a primary tag, and the fallback locale", () => {
-    expect(presetCopyFor("poteto-mode", "zh-CN")?.name).toBe(PRESET_COPY.zh["poteto-mode"]?.name);
-    expect(presetCopyFor("poteto-mode", "en-US")?.name).toBe(
-      PRESET_COPY[FALLBACK_LOCALE]?.["poteto-mode"]?.name,
+    expect(presetCopyFor("poteto-agent", "zh-CN")?.name).toBe(PRESET_COPY.zh["poteto-agent"]?.name);
+    expect(presetCopyFor("poteto-agent", "en-US")?.name).toBe(
+      PRESET_COPY[FALLBACK_LOCALE]?.["poteto-agent"]?.name,
     );
-    expect(presetCopyFor("poteto-mode", "ja")?.name).toBe(
-      PRESET_COPY[FALLBACK_LOCALE]?.["poteto-mode"]?.name,
+    expect(presetCopyFor("poteto-agent", "ja")?.name).toBe(
+      PRESET_COPY[FALLBACK_LOCALE]?.["poteto-agent"]?.name,
     );
-    expect(presetCopyFor("poteto-mode", undefined)?.name).toBe(
-      PRESET_COPY[FALLBACK_LOCALE]?.["poteto-mode"]?.name,
+    expect(presetCopyFor("poteto-agent", undefined)?.name).toBe(
+      PRESET_COPY[FALLBACK_LOCALE]?.["poteto-agent"]?.name,
     );
   });
 });
@@ -107,19 +101,19 @@ describe("localizePresetConfig", () => {
   });
 
   it("uses the matching locale catalog", () => {
-    const localized = localizePresetConfig(contextWithLocale("zh"), preset("poteto-mode"));
-    expect(localized.name).toBe(PRESET_COPY.zh["poteto-mode"]?.name);
-    expect(localized.description).toBe(PRESET_COPY.zh["poteto-mode"]?.description);
+    const localized = localizePresetConfig(contextWithLocale("zh"), preset("poteto-agent"));
+    expect(localized.name).toBe(PRESET_COPY.zh["poteto-agent"]?.name);
+    expect(localized.description).toBe(PRESET_COPY.zh["poteto-agent"]?.description);
   });
 
   it("uses the fallback copy when the preference is absent or unknown", () => {
     const expected = {
-      ...preset("poteto-mode"),
-      name: PRESET_COPY[FALLBACK_LOCALE]?.["poteto-mode"]?.name,
-      description: PRESET_COPY[FALLBACK_LOCALE]?.["poteto-mode"]?.description,
+      ...preset("poteto-agent"),
+      name: PRESET_COPY[FALLBACK_LOCALE]?.["poteto-agent"]?.name,
+      description: PRESET_COPY[FALLBACK_LOCALE]?.["poteto-agent"]?.description,
     };
-    expect(localizePresetConfig(contextWithLocale(), preset("poteto-mode"))).toEqual(expected);
-    expect(localizePresetConfig(contextWithLocale("ja"), preset("poteto-mode"))).toEqual(expected);
+    expect(localizePresetConfig(contextWithLocale(), preset("poteto-agent"))).toEqual(expected);
+    expect(localizePresetConfig(contextWithLocale("ja"), preset("poteto-agent"))).toEqual(expected);
   });
 
   it("leaves unknown preset ids untouched", () => {

@@ -1,0 +1,195 @@
+/** Session-scoped poteto-workflow switch. */
+
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { Service } from "@deepseek-ai/cordis";
+import type { Context } from "@deepseek-ai/cordis";
+import type { Agent } from "@deepseek-ai/dsh-agent";
+import { createUserMessage } from "@deepseek-ai/dsh-llm";
+import type { ProjectionHandle } from "@deepseek-ai/dsh-session-projection";
+import { renderSkillContent } from "@deepseek-ai/dsh-skill";
+import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
+import type {} from "@deepseek-ai/dsh-tools";
+import type {} from "@deepseek-ai/dsh-typert-registry";
+
+import { potetoProjectionDefinition, type PotetoProjectionState } from "./poteto-projection.ts";
+import { resolveDshHome } from "./roles/role-store.ts";
+import { POTETO_SERVICE } from "./poteto-toggle-remote.ts";
+
+export const name = "pstack-poteto-toggle";
+
+const SECTION_NAME = "pstack:poteto-workflow";
+const SECTION_ORDER = 10;
+const SETTINGS_FILENAME = "pstack-settings.json";
+const REMINDER =
+  "Poteto workflow is active. Follow the poteto-mode skill in the system prompt strictly. Do not skip any required step or rule it names.";
+
+function settingsFilePath(): string {
+  return join(resolveDshHome(), SETTINGS_FILENAME);
+}
+
+function readDefaultEnabled(): boolean {
+  try {
+    const parsed = JSON.parse(readFileSync(settingsFilePath(), "utf8")) as {
+      potetoDefault?: unknown;
+    };
+    return parsed.potetoDefault === true;
+  } catch {
+    return false;
+  }
+}
+
+function writeDefaultEnabled(enabled: boolean): void {
+  const path = settingsFilePath();
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify({ version: 1, potetoDefault: enabled }, null, 2)}\n`);
+}
+
+/** Toggle poteto workflow for one Session. */
+export class PotetoModeService extends TypertRemoteService {
+  static inject = ["agents", "skills", "sessions", "sessionProjections", "systemPrompt", "typert"];
+
+  private readonly lastUserMessage = new Map<string, string>();
+  private readonly lifts = new WeakMap<Agent, () => void>();
+  private defaultEnabled = false;
+  private sectionText = "";
+  private projection!: ProjectionHandle<PotetoProjectionState>;
+
+  constructor(ctx: Context) {
+    super(ctx, POTETO_SERVICE);
+  }
+
+  protected async [Service.init](): Promise<void> {
+    this.defaultEnabled = readDefaultEnabled();
+    this.projection = await this.ctx.sessionProjections.register(potetoProjectionDefinition);
+    const skill = await this.ctx.skills.get("poteto-mode", {});
+    if (skill === undefined) throw new Error("poteto-mode skill is not available");
+    this.sectionText = [
+      "Poteto workflow is enabled for this session. Strictly follow the poteto-mode skill below for every user request. Do not skip any required step or rule it names.",
+      "",
+      renderSkillContent(skill),
+    ].join("\n");
+
+    const host = this.ctx as unknown as {
+      systemPrompt: {
+        section(section: {
+          name: string;
+          order: number;
+          interpolate?: boolean;
+          text: (context: { agent: Agent }) => string;
+        }): () => void;
+      };
+    };
+    this.ctx.effect(
+      () =>
+        host.systemPrompt.section({
+          name: SECTION_NAME,
+          order: SECTION_ORDER,
+          interpolate: false,
+          text: ({ agent }) => (this.isEnabledFor(agent) ? this.sectionText : ""),
+        }),
+      "pstack.poteto-toggle.section()",
+    );
+
+    this.ctx.effect(
+      () =>
+        this.ctx.on("agent/created", ({ agent }) => {
+          if (agent.session.header.origin === "subagent") return;
+          if (this.isEnabledFor(agent)) this.ensureNativeToolsRestricted(agent);
+        }),
+      "pstack.poteto-toggle.agent-created",
+    );
+
+    this.ctx.effect(
+      () =>
+        this.ctx.on(
+          "agent/pre-step",
+          (async (
+            input: {
+              agent: Agent;
+              messages: readonly {
+                id?: string;
+                source?: { kind?: string };
+              }[];
+            },
+            next: () => Promise<{ kind: string; messages?: readonly unknown[] }>,
+          ) => {
+            const decision = await next();
+            if (decision.kind === "reject") return decision;
+            if (!this.isEnabledFor(input.agent)) return decision;
+            this.ensureNativeToolsRestricted(input.agent);
+            const users = input.messages.filter((message) => message.source?.kind === "user");
+            const latest = users[users.length - 1];
+            if (latest?.id === undefined) return decision;
+            if (this.lastUserMessage.get(input.agent.id) === latest.id) return decision;
+            this.lastUserMessage.set(input.agent.id, latest.id);
+            const injection = createUserMessage({
+              content: [{ type: "text", text: REMINDER }],
+              source: { kind: "agent-instructions", form: "instructions", changes: [] } as never,
+            });
+            return { ...decision, messages: [...(decision.messages ?? []), injection] };
+          }) as never,
+          { prepend: true },
+        ) as never,
+      "pstack.poteto-toggle.pre-step",
+    );
+  }
+
+  /** Whether poteto workflow is on for one exact Agent scope. */
+  isEnabledFor(agent: Agent): boolean {
+    return this.projection.stateOf(agent.session).enabled ?? this.defaultEnabled;
+  }
+
+  /** Read the saved switch for one Session id. */
+  status(sessionId: string): { enabled: boolean } {
+    const agent = this.ctx.agents.get(sessionId as never);
+    return { enabled: agent === undefined ? this.defaultEnabled : this.isEnabledFor(agent) };
+  }
+
+  /** Read the global default used by new sessions. */
+  getDefault(): { enabled: boolean } {
+    return { enabled: this.defaultEnabled };
+  }
+
+  /** Save the global default used by new sessions. */
+  setDefault(enabled: boolean, signal?: AbortSignal): { enabled: boolean } {
+    signal?.throwIfAborted();
+    writeDefaultEnabled(enabled);
+    this.defaultEnabled = enabled;
+    return { enabled };
+  }
+
+  /** Save the switch for one Session id. */
+  async setEnabled(
+    sessionId: string,
+    enabled: boolean,
+    signal?: AbortSignal,
+  ): Promise<{ enabled: boolean }> {
+    signal?.throwIfAborted();
+    const agent = this.ctx.agents.get(sessionId as never);
+    if (agent === undefined) throw new Error(`session ${sessionId} is not live`);
+    if (this.isEnabledFor(agent) !== enabled) {
+      agent.session.append("poteto/mode", { enabled });
+      await this.ctx.sessions.flush(agent.session);
+    }
+    if (enabled) this.ensureNativeToolsRestricted(agent);
+    else this.clearNativeToolsRestriction(agent);
+    return { enabled };
+  }
+
+  private ensureNativeToolsRestricted(agent: Agent): void {
+    if (this.lifts.has(agent)) return;
+    try {
+      this.lifts.set(agent, agent.ctx.tools.restrict({ deny: ["subagent", "subagent_fork"] }));
+    } catch {
+      // Tool restriction is best effort; prompt injection remains active.
+    }
+  }
+
+  private clearNativeToolsRestriction(agent: Agent): void {
+    this.lifts.get(agent)?.();
+    this.lifts.delete(agent);
+  }
+}
+
+export default PotetoModeService;

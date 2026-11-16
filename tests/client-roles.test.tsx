@@ -38,6 +38,7 @@ function translations(): PstackTranslations {
     config: translator(catalogs.config.en),
     plugins: translator(catalogs.plugins.en),
     roles: translator(catalogs.roles.en),
+    poteto: translator(catalogs.poteto.en),
   };
 }
 
@@ -207,6 +208,7 @@ async function openRoles(api: RoleSettingsApi): Promise<void> {
       createElement(PstackConfigDialog, {
         roleApi: api,
         pluginApi: undefined,
+        potetoApi: { readDefault: async () => false, writeDefault: async () => null },
         translations: translations(),
         onClose: () => {},
       }),
@@ -224,6 +226,7 @@ describe("role drafts across tabs", () => {
         createElement(PstackConfigDialog, {
           roleApi: controller.api,
           pluginApi: undefined,
+          potetoApi: { readDefault: async () => false, writeDefault: async () => null },
           translations: translations(),
           onClose: () => {},
         }),
@@ -625,6 +628,7 @@ describe("unsaved-close confirmation", () => {
         createElement(PstackConfigDialog, {
           roleApi: controller.api,
           pluginApi: undefined,
+          potetoApi: { readDefault: async () => false, writeDefault: async () => null },
           translations: translations(),
           onClose: () => closes.push(1),
         }),
@@ -691,7 +695,12 @@ describe("dialog focus management", () => {
   });
 
   it("restores focus to the Configure trigger on close", async () => {
-    const Action = createPstackConfigAction(makeRoleApi().api, undefined, translations());
+    const Action = createPstackConfigAction(
+      makeRoleApi().api,
+      undefined,
+      { readDefault: async () => false, writeDefault: async () => null },
+      translations(),
+    );
     await act(async () => {
       root.render(
         createElement(Action as never, {
@@ -824,6 +833,7 @@ describe("remote adapter unwrap", () => {
     });
     await flush();
     await click(buttonByText(container, "Configure"));
+    await click(tab("Recommended plugins"));
 
     expect(document.body.textContent).toContain("Could not read plugin status");
     expect(document.body.textContent).toContain("Plugin manager unavailable");
