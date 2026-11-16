@@ -147,11 +147,10 @@ export function createPstackSkillTool(skills: SkillRegistry): ToolDefinition {
         signal: exec.signal,
         ...(exec.agent === undefined ? {} : { scope: exec.agent }),
       };
-      const summary = await skills.get(skillName, lookup);
-      if (summary === undefined) {
+      const definition = await skills.get(skillName, lookup);
+      if (definition === undefined) {
         throw new Error(`skill "${skillName}" is unknown or no longer available`);
       }
-      const definition = summary;
       // The native skill tool loads every catalog skill, including third-party ones.
       // This tool reaches only the hidden bundled pstack skills.
       if (definition.provider !== PSTACK_SKILL_PROVIDER) {

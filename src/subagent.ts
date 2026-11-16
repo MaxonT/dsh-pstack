@@ -125,11 +125,24 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
   const description = stringArg(record["description"]);
   if (description === null) throw new Error("description is required");
   const agentValue = record["agent"];
-  const agent =
-    typeof agentValue === "string" && (AGENT_KINDS as readonly string[]).includes(agentValue)
-      ? (agentValue as AgentKind)
-      : "general";
+  let agent: AgentKind = "general";
+  if (agentValue !== undefined && agentValue !== null) {
+    if (
+      typeof agentValue !== "string" ||
+      !(AGENT_KINDS as readonly string[]).includes(agentValue)
+    ) {
+      throw new Error(`unknown agent preset "${String(agentValue)}"`);
+    }
+    agent = agentValue as AgentKind;
+  }
   const maxDepth = record["maxDepth"];
+  if (
+    maxDepth !== undefined &&
+    maxDepth !== null &&
+    (typeof maxDepth !== "number" || !Number.isSafeInteger(maxDepth) || maxDepth < 1)
+  ) {
+    throw new Error("maxDepth must be a positive safe integer");
+  }
   const provider = stringArg(record["provider"]);
   const model = stringArg(record["model"]);
   const reasoningEffort = stringArg(record["reasoning_effort"]);

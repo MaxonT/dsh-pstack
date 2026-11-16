@@ -110,6 +110,20 @@ describe("parseDelegationArgs", () => {
   it("defaults the agent to general", () => {
     expect(parseDelegationArgs({ description: "d", prompt: "p" }).agent).toBe("general");
   });
+
+  it("rejects an unknown agent preset", () => {
+    expect(() => parseDelegationArgs({ description: "d", prompt: "p", agent: "nope" })).toThrow(
+      /unknown agent preset/,
+    );
+  });
+
+  it("rejects a maxDepth that is not a positive safe integer", () => {
+    for (const value of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => parseDelegationArgs({ description: "d", prompt: "p", maxDepth: value })).toThrow(
+        /positive safe integer/,
+      );
+    }
+  });
 });
 
 describe("planDelegation", () => {
