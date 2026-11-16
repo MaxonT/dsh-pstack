@@ -12,6 +12,8 @@
 # `dsh-pstack/preset` overwrites both at runtime from `src/preset-copy.ts` for the
 # active locale, so change the user-visible copy there, not here.
 - insert:
+    - id: pstack
+      name: dsh-pstack
     - id: pstack-skills
       name: "@deepseek-ai/dsh-skill-filesystem"
       config:
