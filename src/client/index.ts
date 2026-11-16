@@ -11,8 +11,9 @@ import type {} from "@deepseek-ai/dsh-client-ui-plugin-manager/client";
 import { pstackClientRemote, type PstackRolesNamespace } from "../roles/role-remote.ts";
 import { type PstackPotetoModeNamespace } from "../poteto-toggle-remote.ts";
 import { createPstackConfigAction } from "./pages/PstackConfigDialog.tsx";
-import { PotetoModeToggle } from "./components/PotetoModeToggle.tsx";
+import { PotetoModeToggle, POTETO_MODE_EVENT } from "./components/PotetoModeToggle.tsx";
 import { PotetoModeBadge } from "./components/PotetoModeBadge.tsx";
+import { showToast } from "./components/toast.tsx";
 import { NS, catalogs } from "./locales/index.ts";
 import type { PluginManagerApi } from "./pages/RecommendedPluginsPage.tsx";
 import type { RoleSettingsApi } from "./pages/RoleSettingsPage.tsx";
@@ -76,6 +77,54 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
       return result.ok ? null : result.error.message;
     },
   };
+
+  const togglePoteto = async (sessionId: string): Promise<void> => {
+    if (potetoApi === undefined) return;
+    const current = await potetoApi.status(sessionId);
+    if (!current.ok) return;
+    const enabled = !current.value.enabled;
+    const result = await potetoApi.setEnabled(sessionId, enabled);
+    if (!result.ok) return;
+    window.dispatchEvent(new CustomEvent(POTETO_MODE_EVENT, { detail: { sessionId, enabled } }));
+    const t = ctx.locale.bind(NS.poteto);
+    showToast({
+      tone: enabled ? "success" : "neutral",
+      text: t(enabled ? "enabledNotice" : "disabledNotice"),
+    });
+  };
+
+  ctx.inject(["shortcuts"], (scope: Context) => {
+    const shortcuts = (
+      scope as unknown as {
+        shortcuts?: { register(command: unknown): () => void };
+      }
+    ).shortcuts;
+    if (shortcuts === undefined) return;
+    ctx.effect(
+      () =>
+        shortcuts.register({
+          id: "pstack.poteto.toggle" as never,
+          label: () => ctx.locale.bind(NS.poteto)("shortcutLabel"),
+          aliases: ["poteto", "poteto workflow"],
+          defaults: {},
+          regions: ["page", "editable", "terminal"],
+          modals: [],
+          resolve: ({ target, modal }: { target: Element | null; modal: string | null }) => {
+            if (modal !== null || target === null) return { status: "pass" as const };
+            const occurrence = target.closest<HTMLElement>("[data-conversation-session]");
+            const sessionId = occurrence?.dataset.conversationSession;
+            if (sessionId === undefined) return { status: "pass" as const };
+            return {
+              status: "handled" as const,
+              run: () => {
+                void togglePoteto(sessionId);
+              },
+            };
+          },
+        }),
+      "pstack.poteto.shortcut",
+    );
+  });
 
   // `$mount` above installs the namespace, so its dependency is declared only now.
   // Injecting before the await would resolve against a namespace that does not exist yet.
