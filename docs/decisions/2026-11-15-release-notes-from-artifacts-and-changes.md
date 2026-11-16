@@ -1,10 +1,11 @@
 # 决策：发布说明由产物差异与 changes 注记生成
 
-Status: accepted
+Status: superseded
 Date: 2026-11-15
 Scope: .github/workflows/release.yml, scripts/**, changes/**, package.json, port/surface.json, docs/decisions/**
 Implemented-by: commit:858b589
 Review: 2026-11-15
+Superseded-by: docs/decisions/2026-11-16-release-notes-authored-by-agent.md — 发布说明改为由 agent 会话生成并作为发布前置条件
 
 ## 背景
 

@@ -79,19 +79,18 @@ jobs:
 
       # Runs only after a successful npm publish, so a failed publish no longer
       # leaves behind a GitHub Release for a version that never reached npm.
-      # Notes come from artifact diffs plus changes/ notes, not commit history.
+      # The tag carries changes/RELEASE.md, authored before release; use it as
+      # the Release body.
       - name: Create or update GitHub Release
         run: |
-          PREV="$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -vx "$GITHUB_REF_NAME" | head -n 1 || true)"
-          if [ -n "$PREV" ]; then
-            pnpm exec vpx scripts/release-notes.ts --base "$PREV" --output release-notes.md
-          else
-            pnpm exec vpx scripts/release-notes.ts --output release-notes.md
+          if [ ! -f changes/RELEASE.md ]; then
+            echo "::error::changes/RELEASE.md is missing from tag $GITHUB_REF_NAME"
+            exit 1
           fi
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release edit "$GITHUB_REF_NAME" --notes-file release-notes.md
+            gh release edit "$GITHUB_REF_NAME" --notes-file changes/RELEASE.md
           else
-            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md --verify-tag
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file changes/RELEASE.md --verify-tag
           fi
         continue-on-error: true
         env:

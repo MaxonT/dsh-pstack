@@ -52,12 +52,9 @@
     "ci": "vp check && vp run typecheck && vp run playground:typecheck && vp test && vp run generate:check && vp run surface:check && vp run compatibility:check && vp run build",
     "surface:generate": "vpx scripts/release-surface.ts --write",
     "surface:check": "vpx scripts/release-surface.ts --check",
-    "release:notes": "vpx scripts/release-notes.ts",
-    "changes:check": "vpx scripts/changes.ts --check",
     "prerelease": "vp run ci",
     "release": "bash scripts/release.sh",
-    "prepublishOnly": "vp run ci",
-    "changes:clean": "vpx scripts/changes.ts --clean"
+    "prepublishOnly": "vp run ci"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "catalog:runtime",

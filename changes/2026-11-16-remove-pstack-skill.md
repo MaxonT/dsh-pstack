@@ -1,1 +1,0 @@
-- `pstack_skill` 工具被移除。随包 pstack 技能（对 `skill` 目录隐藏）改为直接读取 `<pstack>/skills/<name>/SKILL.md` 加载，与上游 Claude Code 的适配方式一致；`skill` 工具继续用于会话技能目录里可见的技能。旧的 `pstack_skill{name:"..."}` 调用改为 `read <pstack>/skills/<name>/SKILL.md`，playbook 和 reference 一并从该技能目录读取。
