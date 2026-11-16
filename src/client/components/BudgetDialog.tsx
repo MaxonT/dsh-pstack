@@ -16,7 +16,7 @@ import {
   type BudgetTier,
 } from "../../roles/budget.ts";
 import type { BudgetApplyResult, RoleFileSnapshot } from "../../roles/role-wire.ts";
-import { renderRouteValue, type Route } from "../../roles/route.ts";
+import type { Route } from "../../roles/route.ts";
 import { IconClose } from "./icons.tsx";
 import { useFocusTrap } from "./focus-trap.ts";
 import { messageOf } from "./message.ts";
@@ -349,16 +349,24 @@ function budgetPlanErrorText(reason: unknown, t: PstackTranslations["roles"]): s
   return messageOf(reason);
 }
 
+/** Display-only join for a route chip; the structured value is never re-parsed. */
+function formatRoute(route: Route): string {
+  if (route.kind === "inherit") return route.alias;
+  return route.effort === undefined
+    ? `${route.provider}/${route.model}`
+    : `${route.provider}/${route.model} [${route.effort}]`;
+}
+
 function routeTokens(routes: readonly Route[], t: PstackTranslations["roles"]): ReactElement[] {
   const list =
     routes.length === 0 ? [{ kind: "inherit" as const, alias: "inherit-parent" as const }] : routes;
   return list.map((route, index) => (
-    <code className="pstack-budget-route-chip" key={`${index}-${renderRouteValue([route])}`}>
+    <code className="pstack-budget-route-chip" key={`${index}-${formatRoute(route)}`}>
       {route.kind === "inherit"
         ? route.alias === "auto"
           ? t("auto")
           : t("inheritParent")
-        : renderRouteValue([route])}
+        : formatRoute(route)}
     </code>
   ));
 }

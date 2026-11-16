@@ -13,7 +13,7 @@ import {
   validateSaveRequest,
 } from "../src/roles/role-editor.ts";
 import { parseSaveRoleRequest } from "../src/roles/role-wire.ts";
-import { renderRouteValue, type Route } from "../src/roles/route.ts";
+import type { Route } from "../src/roles/route.ts";
 import type { CatalogueResult } from "../src/models.ts";
 
 const directories: string[] = [];
@@ -40,6 +40,14 @@ function pathOf(directory: string): string {
   return join(directory, "pstack-models.json");
 }
 
+function formatRoute(route: Route): string {
+  return route.kind === "inherit"
+    ? route.alias
+    : route.effort === undefined
+      ? `${route.provider}/${route.model}`
+      : `${route.provider}/${route.model} [${route.effort}]`;
+}
+
 function readDoc(path: string): {
   version: number;
   budget?: string;
@@ -52,9 +60,7 @@ function readDoc(path: string): {
   };
   const roles: Record<string, string[]> = {};
   for (const [key, routes] of Object.entries(raw.roles)) {
-    roles[key] = routes.map((route) =>
-      typeof route === "string" ? route : renderRouteValue([route]),
-    );
+    roles[key] = routes.map((route) => (typeof route === "string" ? route : formatRoute(route)));
   }
   return { version: raw.version, budget: raw.budget, roles };
 }

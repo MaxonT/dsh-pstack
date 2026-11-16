@@ -14,20 +14,14 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 
-import { migrateLegacyRoleFile } from "../compat/legacy-role-file.ts";
+import { migrateLegacyRoleFile, parseLegacyRoute } from "../compat/legacy-role-file.ts";
 import { writeFileAtomically } from "../lib/atomic-write.ts";
 import {
   LEGACY_PSTACK_MODELS_FILENAME,
   PSTACK_MODELS_FILENAME,
   findRole,
 } from "./role-manifest.ts";
-import {
-  parseRoute,
-  parseRouteEntry,
-  validateRoleRouteShape,
-  type ParsedRoute,
-  type Route,
-} from "./route.ts";
+import { parseRouteEntry, validateRoleRouteShape, type ParsedRoute, type Route } from "./route.ts";
 
 export type { Route } from "./route.ts";
 
@@ -237,7 +231,7 @@ export function readRoleConfiguration(path: string): RoleConfiguration {
 
 /** One route entry: a structured object, or a legacy string token. */
 function routeFromEntry(entry: unknown): ParsedRoute {
-  return typeof entry === "string" ? parseRoute(entry) : parseRouteEntry(entry);
+  return typeof entry === "string" ? parseLegacyRoute(entry) : parseRouteEntry(entry);
 }
 
 /** Atomically write an editable role document. */
