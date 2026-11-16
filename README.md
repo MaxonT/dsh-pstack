@@ -129,17 +129,15 @@ Use pstack skills to start workflows directly from a Session.
 
 ### 🎭 Agent presets
 
-The package ships two root presets and three child presets.
+The package ships three child presets for delegation.
 
 | Preset | Scope | Use |
 |---|---|---|
-| `poteto-mode` | Root | Based on Standard mode, with the same capabilities plus the persistent `poteto-mode` workflow. |
-| `poteto-mode-creator` | Root | Based on Creator mode, with the same capabilities plus the persistent `poteto-mode` workflow. |
 | `poteto-agent` | Child | Handles implementation delegation with the pstack persona and `poteto-mode` instructions. |
 | `comment-sicko` | Child | Handles read-only comment review and reports deletion targets and `MUST KILL` symbols. |
 | `readonly` | Child | Provides a sandbox-enforced read-only researcher for inspection and evidence gathering. |
 
-Open **Settings → Agent presets** and click **Set as default** on the preset that new Sessions should use.
+The Poteto workflow is a session switch, not a preset. Set its default for new sessions in the Pstack configuration dialog.
 
 ### 📚 Additional skills
 
@@ -202,7 +200,7 @@ These limits remain even with every optional plugin that can run alongside pstac
 | Cursor platform services | No Automations, Cursor webhooks, `SendToUser`, cloud agents, or persistent cloud Projects. |
 | Bugbot | Cannot start, configure, or wait for Bugbot. You can still handle existing Bugbot comments as PR reviews. |
 | PR orchestration | No model-side change-request tool or shared PR tracking board and ledger. `watch-pr` still provides stack verdicts. |
-| Mode switching | No Option+Enter toggle or mid-session mode switch. Select `poteto-mode` or `poteto-mode-creator` at session creation. Other presets invoke `/poteto-mode` for each task. |
+| Mode switching | No Option+Enter. Use the Poteto workflow switch in the session input; new sessions follow the default set in the Pstack configuration dialog. |
 | Event-driven loops | No forge event subscription. Local goals, schedules, and watchers are not equivalent. |
 | Diagram rendering | No built-in renderer. Charts return Mermaid text. Render an image with your own tools when needed. |
 | Media evidence | No built-in video rendering, recording, or frame-level verification. A project-owned renderer works when it produces a checkable file. Otherwise use external recording or FFmpeg. |

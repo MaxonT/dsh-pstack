@@ -129,17 +129,15 @@
 
 ### 🎭 Agent 预设
 
-随包提供两个根预设和三个子代理预设。
+随包提供三个委派子代理预设。
 
 | 预设 | 范围 | 用途 |
 |---|---|---|
-| `poteto-mode` | 根 | 基于标准模式，能力与标准模式一致，额外常驻 `poteto-mode` 工作流。 |
-| `poteto-mode-creator` | 根 | 基于创造模式，能力与创造模式一致，额外常驻 `poteto-mode` 工作流。 |
 | `poteto-agent` | 子代理 | 实现型子代理，注入 pstack 人格和 `poteto-mode` 指令。 |
 | `comment-sicko` | 子代理 | 只读评论评审子代理，报告删除目标和 `MUST KILL` 符号。 |
 | `readonly` | 子代理 | 带只读沙箱的研究子代理，用于检查和取证。 |
 
-在 **设置 → Agent 预设** 里点击 **默认预设**，新建会话就会自动使用该预设。
+Poteto 工作流是会话开关，不是预设。新会话默认值在 Pstack 配置弹窗里设置。
 
 ### 📚 额外技能
 
@@ -202,7 +200,7 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 | Cursor 平台服务 | 不支持 Automations、Cursor webhook、`SendToUser`、云代理和持久云端 Projects。 |
 | Bugbot | 无法启动、配置或等待 Bugbot。已有的 Bugbot 评论仍可作为 PR 评审处理。 |
 | PR 编排 | 没有模型侧变更请求工具，也没有共享的 PR 跟踪面板与记录。`watch-pr` 仍提供 PR 栈判定。 |
-| 模式切换 | 没有 Option+Enter 开关或会话中切换模式的入口。新建会话时选择 `poteto-mode` 或 `poteto-mode-creator`。其它预设每个任务都要调用 `/poteto-mode`。 |
+| 模式切换 | 没有 Option+Enter。使用会话输入区的 Poteto 工作流开关；新会话默认值在 Pstack 配置弹窗里设置。 |
 | 事件驱动循环 | 不订阅 forge 事件。本地目标、定时任务和事件监听器并非等价替代。 |
 | 图表渲染 | 不提供内置渲染器。图表以 Mermaid 文本返回。需要图片时自行用外部工具渲染。 |
 | 视频证据 | 没有内置视频渲染、录屏与逐帧验证。项目自带的渲染器只要产出可核对的文件即可使用。否则借助外部录屏或 FFmpeg。 |

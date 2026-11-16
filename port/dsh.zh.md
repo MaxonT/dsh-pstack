@@ -89,5 +89,5 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | `/deslop` | 用 vendored `deslop` 技能处理代码噪声；`unslop` 只处理 prose。 |
 | `/loop` | 自动继续用 `create_goal`，定时心跳用 `schedule_create`，可观察事件用后台 `bash` watcher。 |
 | `/automate` | 用 `writing-for-agents` 把已验证的工作模式写成个人技能；历史搜索不可用时用可用的会话证据。 |
-| Custom Mode | 新建会话时选择随包 `poteto-mode` 或 `poteto-mode-creator` 根 preset。 |
+| Custom Mode | 使用会话输入区的 Poteto 工作流开关；新会话默认值在 Pstack 配置弹窗里设置。 |
 | `control-ui`, `control-cli`, `cursor-team-kit` | 使用 vendored 指令技能；浏览器或 PTY 依赖写在其 `SKILL.md`。 |

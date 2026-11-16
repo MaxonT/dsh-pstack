@@ -89,5 +89,5 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 | `/deslop` | Use the vendored `deslop` skill for code slop; `unslop` is only for prose. |
 | `/loop` | Use `create_goal` for automatic continuation, `schedule_create` for a timed heartbeat, or a background `bash` watcher for observable events. |
 | `/automate` | Use `writing-for-agents` to turn verified work patterns into a personal skill; fall back to available session evidence when history search is unavailable. |
-| Custom Mode | Select the shipped `poteto-mode` or `poteto-mode-creator` root preset at session creation. |
+| Custom Mode | Use the Poteto workflow switch in the session input. Set the default for new sessions in the Pstack configuration dialog. |
 | `control-ui`, `control-cli`, `cursor-team-kit` | Use the vendored instruction skills; their browser or PTY requirements are stated in their own `SKILL.md`. |
