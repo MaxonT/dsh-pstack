@@ -6,11 +6,8 @@
  * load a skill the model skill catalog does not list.
  */
 
-import { readFile } from "node:fs/promises";
-import { resolve, sep } from "node:path";
-
 import type { Context } from "@deepseek-ai/cordis";
-import type { SkillDefinition, SkillRegistry, SkillResourceBase } from "@deepseek-ai/dsh-skill";
+import type { SkillRegistry, SkillResourceBase } from "@deepseek-ai/dsh-skill";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
 export const name = "pstack-skill";
@@ -21,17 +18,11 @@ export const TOOL_NAME = "pstack_skill";
 
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export interface SkillResourceResult {
-  readonly path: string;
-  readonly content: string;
-}
-
 export interface LoadSkillResult {
   readonly name: string;
   readonly provider: string;
   readonly resourceBase?: SkillResourceBase;
   readonly content: string;
-  readonly resource?: SkillResourceResult;
 }
 
 /** Render one loaded skill in the shape DSH skill tools use. */
@@ -65,47 +56,8 @@ export function renderLoadedSkill(result: LoadSkillResult): string {
     result.content,
     "</skill_instructions>",
   );
-  if (result.resource !== undefined) {
-    lines.push(
-      "",
-      `<skill_resource path="${escapeAttribute(result.resource.path)}">`,
-      result.resource.content,
-      "</skill_resource>",
-    );
-  }
   lines.push("</skill_content>");
   return lines.join("\n");
-}
-
-/** Read one resource relative to a directory-backed skill. */
-export async function readSkillResource(
-  definition: SkillDefinition,
-  resource: string,
-): Promise<SkillResourceResult> {
-  const base = definition.resourceBase;
-  if (base === undefined || base.kind !== "directory") {
-    throw new Error(`skill "${definition.name}" does not expose a directory resource base`);
-  }
-  if (resource.trim() === "" || resource.includes("\0")) {
-    throw new Error("resource must be a non-empty relative path");
-  }
-  if (resource.startsWith("/") || resource.startsWith("\\") || /^[a-zA-Z]:[\\/]/.test(resource)) {
-    throw new Error(`resource "${resource}" must be relative to the skill directory`);
-  }
-  const root = resolve(base.path);
-  const target = resolve(root, resource);
-  if (target !== root && !target.startsWith(root + sep)) {
-    throw new Error(`resource "${resource}" escapes the skill directory`);
-  }
-  try {
-    return { path: resource, content: await readFile(target, "utf8") };
-  } catch (error) {
-    const code = (error as NodeJS.ErrnoException).code;
-    if (code === "ENOENT" || code === "EISDIR") {
-      throw new Error(`resource "${resource}" is not available for skill "${definition.name}"`);
-    }
-    throw error;
-  }
 }
 
 const OUTPUT_SCHEMA: JsonSchemaNode = {
@@ -146,15 +98,6 @@ const OUTPUT_SCHEMA: JsonSchemaNode = {
       ],
     },
     content: { type: "string" },
-    resource: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        path: { type: "string" },
-        content: { type: "string" },
-      },
-      required: ["path", "content"],
-    },
   },
   required: ["name", "provider", "content"],
 };
@@ -164,7 +107,7 @@ const TOOL_DESCRIPTION = [
   "",
   "Use this when a pstack skill tells you to route through another packaged pstack skill that the `skill` tool does not load.",
   "",
-  "Pass `resource` with a path relative to the skill directory to read one reference or playbook beside its `SKILL.md`. The path cannot leave the skill directory.",
+  "Read a playbook or reference as a file under the skill's base directory; do not reload the skill to read its resources.",
 ].join("\n");
 
 /** Build the tool for one skills registry. */
@@ -179,10 +122,6 @@ export function createPstackSkillTool(skills: SkillRegistry): ToolDefinition {
         name: {
           type: "string",
           description: "Exact kebab-case skill name, such as `how` or `principle-prove-it-works`.",
-        },
-        resource: {
-          type: "string",
-          description: "Optional path relative to the skill directory.",
         },
       },
       required: ["name"],
@@ -200,12 +139,8 @@ export function createPstackSkillTool(skills: SkillRegistry): ToolDefinition {
       }
       const args = rawArgs as Record<string, unknown>;
       const skillName = args["name"];
-      const resource = args["resource"];
       if (typeof skillName !== "string" || !SKILL_NAME.test(skillName)) {
         throw new Error(`invalid skill name "${String(skillName)}"`);
-      }
-      if (resource !== undefined && typeof resource !== "string") {
-        throw new Error("resource must be a string when present");
       }
       const definition = await skills.get(skillName, {
         signal: exec.signal,
@@ -219,9 +154,6 @@ export function createPstackSkillTool(skills: SkillRegistry): ToolDefinition {
         provider: definition.provider,
         ...(definition.resourceBase === undefined ? {} : { resourceBase: definition.resourceBase }),
         content: definition.content,
-        ...(resource === undefined
-          ? {}
-          : { resource: await readSkillResource(definition, resource) }),
       };
       return result;
     },

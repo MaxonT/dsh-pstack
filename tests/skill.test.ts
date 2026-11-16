@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import type { SkillDefinition, SkillRegistry } from "@deepseek-ai/dsh-skill";
 
-import { createPstackSkillTool, readSkillResource, renderLoadedSkill } from "../src/skill.ts";
+import { createPstackSkillTool, renderLoadedSkill } from "../src/skill.ts";
 import type { ToolRunContext } from "@deepseek-ai/dsh-tools";
 
 const directories: string[] = [];
@@ -50,17 +50,6 @@ describe("pstack_skill", () => {
     expect(rendered).toContain('<skill_content name="how">');
     expect(rendered).toContain("Base directory for this skill:");
     expect(rendered).toContain("Load referenced resources only as needed.");
-  });
-
-  it("reads a relative resource and refuses traversal", async () => {
-    const definition = temporarySkill();
-    await expect(readSkillResource(definition, "references/explorer-prompt.md")).resolves.toEqual({
-      path: "references/explorer-prompt.md",
-      content: "explore this\n",
-    });
-    await expect(readSkillResource(definition, "../secret.txt")).rejects.toThrow(
-      /escapes the skill directory/,
-    );
   });
 
   it("rejects an invalid skill name before querying the registry", async () => {

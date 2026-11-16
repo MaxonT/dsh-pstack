@@ -44,10 +44,6 @@
           "name": {
             "type": "string",
             "description": "Exact kebab-case skill name, such as `how` or `principle-prove-it-works`."
-          },
-          "resource": {
-            "type": "string",
-            "description": "Optional path relative to the skill directory."
           }
         },
         "required": ["name"]
