@@ -63,14 +63,8 @@
     "changes:clean": "vpx scripts/changes.ts --clean"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-client-ui-primitives": "0.2.2-rc.2",
-    "@deepseek-ai/dsh-llm": "catalog:types",
-    "@deepseek-ai/dsh-session": "catalog:types",
-    "@deepseek-ai/dsh-session-projection": "catalog:types",
-    "@deepseek-ai/dsh-skill": "catalog:types",
     "@deepseek-ai/schemastery": "catalog:runtime",
-    "clsx": "2.1.1",
-    "zod": "^4.6.6"
+    "zod": "catalog:runtime"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "catalog:runtime",
@@ -81,6 +75,7 @@
     "@deepseek-ai/dsh-api-remotes": "catalog:types",
     "@deepseek-ai/dsh-client-locale": "catalog:types",
     "@deepseek-ai/dsh-client-ui-plugin-manager": "catalog:types",
+    "@deepseek-ai/dsh-client-ui-primitives": "catalog:runtime",
     "@deepseek-ai/dsh-client-ui-renderer": "catalog:types",
     "@deepseek-ai/dsh-client-ui-settings": "catalog:types",
     "@deepseek-ai/dsh-client-ui-slots": "catalog:types",
@@ -111,8 +106,9 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "catalog:runtime",
     "@deepseek-ai/cordis-plugin-loader": "catalog:runtime",
+    "@deepseek-ai/dsh-llm": "catalog:runtime",
     "@deepseek-ai/dsh-sandbox-policy": "catalog:runtime",
-    "@deepseek-ai/dsh-skill": "catalog:types",
+    "@deepseek-ai/dsh-skill": "catalog:runtime",
     "@deepseek-ai/dsh-typert-protocol": "catalog:runtime"
   },
   "icon": "./assets/logo.png",
