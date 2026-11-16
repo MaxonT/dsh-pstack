@@ -1,13 +1,7 @@
 /** Wire shapes shared by the role settings Host service and Client page. */
 
-import {
-  INHERIT_ALIASES,
-  isRoleKey,
-  ROLE_SHAPES,
-  type InheritAlias,
-  type RoleShape,
-} from "./role-manifest.ts";
-import { validateRouteParts, type Route } from "./route.ts";
+import { isRoleKey, ROLE_SHAPES, type RoleShape } from "./role-manifest.ts";
+import { parseRouteEntry, type Route } from "./route.ts";
 import { WireTypeError } from "../lib/wire-error.ts";
 
 export type { CatalogueResult } from "../models/catalogue.ts";
@@ -74,38 +68,9 @@ function optionalString(
 }
 
 function parseRouteView(value: unknown, path: string): RouteView {
-  const record = parseRecord(value, path);
-  if (record["kind"] === "inherit") {
-    const alias = record["alias"] ?? "inherit-parent";
-    if (typeof alias !== "string" || !(INHERIT_ALIASES as readonly string[]).includes(alias)) {
-      throw new WireTypeError(`${path}.alias`, '"inherit-parent" or "auto"');
-    }
-    return { kind: "inherit", alias: alias as InheritAlias };
-  }
-  if (record["kind"] !== "route") throw new WireTypeError(`${path}.kind`, '"route" or "inherit"');
-  const provider = record["provider"];
-  const model = record["model"];
-  const effort = record["effort"];
-  if (typeof provider !== "string" || provider.trim() === "") {
-    throw new WireTypeError(`${path}.provider`, "a non-empty string");
-  }
-  if (typeof model !== "string" || model.trim() === "") {
-    throw new WireTypeError(`${path}.model`, "a non-empty string");
-  }
-  if (effort !== undefined && (typeof effort !== "string" || effort.trim() === "")) {
-    throw new WireTypeError(`${path}.effort`, "a non-empty string when present");
-  }
-  const providerValue = provider.trim();
-  const modelValue = model.trim();
-  const effortValue = typeof effort === "string" ? effort.trim() : undefined;
-  const issue = validateRouteParts(providerValue, modelValue, effortValue);
-  if (issue !== undefined) throw new WireTypeError(path, issue);
-  return {
-    kind: "route",
-    provider: providerValue,
-    model: modelValue,
-    ...(effortValue === undefined ? {} : { effort: effortValue }),
-  };
+  const parsed = parseRouteEntry(value);
+  if (parsed.route === undefined) throw new WireTypeError(path, parsed.issue);
+  return parsed.route;
 }
 
 /** Parse one save request. An empty route list removes the role line. */

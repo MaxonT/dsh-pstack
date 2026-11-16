@@ -81,7 +81,6 @@ describe("pstack_roles", () => {
             {
               provider: "p",
               id: "a",
-              name: "A",
               efforts: ["low", "high"],
               defaultEffort: "high",
             },

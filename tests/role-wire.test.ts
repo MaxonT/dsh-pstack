@@ -18,7 +18,7 @@ const validCatalogue: CatalogueResult = {
     {
       provider: "cpa",
       name: "CPA",
-      models: [{ provider: "cpa", id: "model-a", name: "Model A", efforts: ["high"] }],
+      models: [{ provider: "cpa", id: "model-a", efforts: ["high"] }],
     },
   ],
   truncated: false,
@@ -62,7 +62,7 @@ describe("role wire parsers", () => {
     expect(() => parseSaveRoleRequest({ key: "bug-fix", routes: "no" })).toThrow("request.routes");
     expect(() =>
       parseSaveRoleRequest({ key: "bug-fix", routes: [{ kind: "route", provider: "cpa" }] }),
-    ).toThrow("request.routes[0].model");
+    ).toThrow("request.routes[0]");
   });
 
   it("round-trips the Host producer's snapshot without losing fields", () => {
@@ -126,22 +126,10 @@ describe("role wire parsers", () => {
         providers: [{ ...validCatalogue.providers[0]!, error: 1 }],
       }),
     ).toThrow("catalogue.providers[0].error");
-    for (const [field, path] of [
-      ["description", "catalogue.providers[0].models[0].description"],
-      ["contextWindow", "catalogue.providers[0].models[0].contextWindow"],
-      ["maxTokens", "catalogue.providers[0].models[0].maxTokens"],
-      ["defaultEffort", "catalogue.providers[0].models[0].defaultEffort"],
-      ["error", "catalogue.providers[0].models[0].error"],
-    ] as const) {
-      const value = field === "contextWindow" || field === "maxTokens" ? "bad" : 1;
-      expect(() => parseCatalogueResult(catalogueWithModel({ [field]: value }))).toThrow(path);
-    }
-    for (const field of ["contextWindow", "maxTokens"] as const) {
-      for (const value of [1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
-        expect(() => parseCatalogueResult(catalogueWithModel({ [field]: value }))).toThrow(
-          "integer when present",
-        );
-      }
+    for (const field of ["defaultEffort", "error"] as const) {
+      expect(() => parseCatalogueResult(catalogueWithModel({ [field]: 1 }))).toThrow(
+        `catalogue.providers[0].models[0].${field}`,
+      );
     }
   });
 
@@ -156,7 +144,6 @@ describe("role wire parsers", () => {
               {
                 provider: "cpa",
                 id: "model-a",
-                name: "Model A",
                 efforts: ["low", "high"],
               },
             ],

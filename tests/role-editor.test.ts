@@ -75,8 +75,8 @@ const catalogue: CatalogueResult = {
       provider: "cpa",
       name: "CPA",
       models: [
-        { provider: "cpa", id: "model-a", name: "Model A", efforts: ["low", "high"] },
-        { provider: "cpa", id: "model-b", name: "Model B", efforts: ["low", "high"] },
+        { provider: "cpa", id: "model-a", efforts: ["low", "high"] },
+        { provider: "cpa", id: "model-b", efforts: ["low", "high"] },
       ],
     },
   ],

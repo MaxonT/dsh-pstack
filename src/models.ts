@@ -76,8 +76,6 @@ export async function collectCatalogue(
         entries.push({
           provider: provider.id,
           id: model.id,
-          name: model.name,
-          ...(model.description === undefined ? {} : { description: model.description }),
           efforts: [],
           error: describeError(error),
         });
@@ -129,12 +127,6 @@ function entryFor(provider: string, info: LlmResolvedModelInfo): ModelEntry {
   return {
     provider,
     id: info.id,
-    name: info.name,
-    ...(info.description === undefined ? {} : { description: info.description }),
-    ...(info.context?.contextWindow === undefined
-      ? {}
-      : { contextWindow: info.context.contextWindow }),
-    ...(info.defaultMaxTokens === undefined ? {} : { maxTokens: info.defaultMaxTokens }),
     efforts: info.reasoning?.efforts.map((effort) => effort.id) ?? [],
     ...(info.reasoning?.defaultEffort === undefined
       ? {}

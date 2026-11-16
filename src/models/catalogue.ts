@@ -7,10 +7,6 @@ import { WireTypeError } from "../lib/wire-error.ts";
 export interface ModelEntry {
   readonly provider: string;
   readonly id: string;
-  readonly name: string;
-  readonly description?: string;
-  readonly contextWindow?: number;
-  readonly maxTokens?: number;
   readonly efforts: readonly string[];
   readonly defaultEffort?: string;
   readonly error?: string;
@@ -50,15 +46,11 @@ export const CATALOGUE_OUTPUT_SCHEMA: JsonSchemaNode = {
               properties: {
                 provider: { type: "string" },
                 id: { type: "string" },
-                name: { type: "string" },
-                description: { type: "string" },
-                contextWindow: { type: "integer" },
-                maxTokens: { type: "integer" },
                 efforts: { type: "array", items: { type: "string" } },
                 defaultEffort: { type: "string" },
                 error: { type: "string" },
               },
-              required: ["route", "id", "name", "efforts"],
+              required: ["provider", "id", "efforts"],
             },
           },
         },
@@ -90,18 +82,6 @@ function optionalString(
   return value as string | undefined;
 }
 
-function optionalInteger(
-  record: Record<string, unknown>,
-  key: string,
-  path: string,
-): number | undefined {
-  const value = record[key];
-  if (value !== undefined && !Number.isSafeInteger(value)) {
-    throw new WireTypeError(`${path}.${key}`, "an integer when present");
-  }
-  return value as number | undefined;
-}
-
 /** Parse the live model catalogue returned by the Host. */
 export function parseCatalogueResult(value: unknown): CatalogueResult {
   const record = parseRecord(value, "catalogue");
@@ -130,29 +110,18 @@ export function parseCatalogueResult(value: unknown): CatalogueResult {
         models: entry["models"].map((model, modelIndex) => {
           const modelPath = `${path}.models[${modelIndex}]`;
           const item = parseRecord(model, modelPath);
-          if (
-            typeof item["provider"] !== "string" ||
-            typeof item["id"] !== "string" ||
-            typeof item["name"] !== "string"
-          ) {
-            throw new WireTypeError(modelPath, "provider, id, and name strings");
+          if (typeof item["provider"] !== "string" || typeof item["id"] !== "string") {
+            throw new WireTypeError(modelPath, "provider and id strings");
           }
           const efforts = item["efforts"];
           if (!Array.isArray(efforts) || efforts.some((effort) => typeof effort !== "string")) {
             throw new WireTypeError(`${modelPath}.efforts`, "an array of strings");
           }
-          const description = optionalString(item, "description", modelPath);
-          const contextWindow = optionalInteger(item, "contextWindow", modelPath);
-          const maxTokens = optionalInteger(item, "maxTokens", modelPath);
           const defaultEffort = optionalString(item, "defaultEffort", modelPath);
           const modelError = optionalString(item, "error", modelPath);
           return {
             provider: item["provider"],
             id: item["id"],
-            name: item["name"],
-            ...(description === undefined ? {} : { description }),
-            ...(contextWindow === undefined ? {} : { contextWindow }),
-            ...(maxTokens === undefined ? {} : { maxTokens }),
             efforts,
             ...(defaultEffort === undefined ? {} : { defaultEffort }),
             ...(modelError === undefined ? {} : { error: modelError }),
