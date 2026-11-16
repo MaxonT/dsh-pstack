@@ -104,7 +104,12 @@ export function loadProviderPlan(
       if (efforts.length === 0)
         throw new Error(`host deploys no allowed effort for ${provider}/${model}`);
       routes.push({ provider, model, effort: "", efforts, apiKey: entry.apiKey });
-      filteredModels.push(hostModel);
+      filteredModels.push({
+        ...hostModel,
+        reasoningEfforts: Object.fromEntries(
+          efforts.map((effort) => [effort, hostModel.reasoningEfforts?.[effort] ?? null]),
+        ),
+      });
     }
     providers[provider] = { ...host, models: filteredModels };
   }
@@ -159,6 +164,7 @@ const WORKER_INSTRUCTION_SECTIONS: readonly WorkerInstructionSection[] = [
       "You may read files only inside the current workspace.",
       "Read-only runtime input explicitly mounted for this session is also allowed.",
       "The worker role file $DSH_HOME/pstack-models.json is allowed read-only runtime input.",
+      "The installed dsh-pstack package tree is allowed read-only runtime input: read any file under its dist/pstack directory, including skills and docs.",
       "Never read, list, stat, search, or infer any other path, even when the user supplies an absolute path.",
     ],
   },
@@ -261,6 +267,28 @@ export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, _phase: P
     },
   ];
   writeFileSync(homePatchFile(paths), yamlDump(patch, { lineWidth: 120 }));
+
+  // The Settings page reads the profile patch, while the worker also loads the home patch.
+  // Mirror the provider rows into the profile patch so its model catalog matches the session.
+  const profilePatchPath = join(profileDirectory(paths), "cordis.patch.yml");
+  if (existsSync(profilePatchPath)) {
+    const existing = (yamlLoad(readFileSync(profilePatchPath, "utf8")) as unknown[]) ?? [];
+    const overrides = new Map(patch.map((entry) => [entry.id, entry]));
+    const merged = existing.map((entry) => {
+      if (typeof entry !== "object" || entry === null) return entry;
+      const id = (entry as { id?: unknown }).id;
+      return typeof id === "string" && overrides.has(id) ? overrides.get(id) : entry;
+    });
+    const present = new Set(
+      existing
+        .map((entry) =>
+          typeof entry === "object" && entry !== null ? (entry as { id?: unknown }).id : undefined,
+        )
+        .filter((id): id is string => typeof id === "string"),
+    );
+    for (const entry of patch) if (!present.has(entry.id)) merged.push(entry);
+    writeFileSync(profilePatchPath, yamlDump(merged, { lineWidth: 120 }));
+  }
   writeWorkerInstructions(paths);
 }
 
@@ -534,7 +562,11 @@ export interface StartedWeb {
   port: number;
 }
 
-export async function startWeb(paths: WorkerPaths, plan: ProviderPlan): Promise<StartedWeb> {
+export async function startWeb(
+  paths: WorkerPaths,
+  plan: ProviderPlan,
+  port = 0,
+): Promise<StartedWeb> {
   if (process.platform !== "linux") {
     throw new Error(
       "the managed web lifecycle currently supports Linux only; run scenarios in a managed DSH process",
@@ -566,7 +598,7 @@ export async function startWeb(paths: WorkerPaths, plan: ProviderPlan): Promise<
   mkdirSync(join(paths.home, "gh-config"), { recursive: true });
   const child = spawn(
     DSH_BIN,
-    ["--profile", PROFILE_NAME, "--port", "0", "--host", HOST, "--no-open"],
+    ["--profile", PROFILE_NAME, "--port", String(port), "--host", HOST, "--no-open"],
     {
       cwd: paths.isolatedRoot,
       env: spawnEnvironment,

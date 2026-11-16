@@ -53,9 +53,16 @@ async function waitReachable(url: string): Promise<boolean> {
   return false;
 }
 
-async function startWorkers(paths: WorkerPaths[], plan: ProviderPlan): Promise<void> {
+async function startWorkers(
+  paths: WorkerPaths[],
+  plan: ProviderPlan,
+  port?: number,
+): Promise<void> {
   const started = await Promise.all(
-    paths.map(async (worker) => ({ worker, ...(await startWeb(worker, plan)) })),
+    paths.map(async (worker, index) => ({
+      worker,
+      ...(await startWeb(worker, plan, port === undefined ? 0 : port + index)),
+    })),
   );
   const ports = started.map((entry) => entry.port);
   if (new Set(ports).size !== ports.length) throw new Error("workers bound duplicate ports");
@@ -71,7 +78,7 @@ async function main(): Promise<void> {
   const phase = argValue("--phase") as Phase | undefined;
   if (!isPhase(phase)) {
     throw new Error(
-      "usage: prepare.ts --phase raw|adapted --environment ID [--workers N] [--reset|--reuse]",
+      "usage: prepare.ts --phase raw|adapted --environment ID [--workers N] [--port N] [--reset|--reuse]",
     );
   }
   const environmentId = argValue("--environment");
@@ -91,6 +98,14 @@ async function main(): Promise<void> {
   const workerFlag = argValue("--workers");
   const requested = workerFlag === undefined ? undefined : Number(workerFlag);
   const count = computeWorkers(requested).workers;
+  const portFlag = argValue("--port");
+  const port = portFlag === undefined ? undefined : Number(portFlag);
+  if (
+    port !== undefined &&
+    (!Number.isSafeInteger(port) || port < 1 || port > 65_535 || port + count - 1 > 65_535)
+  ) {
+    throw new Error("--port must be a port number that leaves room for every worker");
+  }
   const reset = process.argv.includes("--reset");
   const reuse = process.argv.includes("--reuse");
   if (reset && reuse) throw new Error("--reset and --reuse are mutually exclusive");
@@ -106,7 +121,7 @@ async function main(): Promise<void> {
       writeWorkerInstructions(worker);
       writeRoleFile(worker, config);
     }
-    await startWorkers(workers, plan);
+    await startWorkers(workers, plan, port);
     return;
   }
 
@@ -140,7 +155,7 @@ async function main(): Promise<void> {
       }
     }
   }
-  await startWorkers(workers, plan);
+  await startWorkers(workers, plan, port);
   console.log(
     `[prepare] phase=${phase} environment=${matrix.id} workers=${count} model=${plan.main.provider}/${plan.main.model}[${plan.main.effort}]`,
   );
