@@ -104,7 +104,7 @@ export interface ToolCallEvidence {
   errorText?: string;
 }
 
-export const SKILL_TOOL_NAMES = ["skill", "pstack_skill", "pstack-skill"] as const;
+export const SKILL_TOOL_NAMES = ["skill"] as const;
 export interface ToolAttemptAnalysis {
   name: string;
   attempts: number;

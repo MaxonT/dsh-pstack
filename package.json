@@ -33,9 +33,7 @@
     "README.zh.md"
   ],
   "type": "module",
-  "types": "./dist/index.d.mts",
   "exports": {
-    ".": "./dist/index.mjs",
     "./models": "./dist/models.mjs",
     "./poteto-projection": "./dist/poteto-projection.mjs",
     "./poteto-toggle": "./dist/poteto-toggle.mjs",
@@ -44,7 +42,6 @@
     "./readonly": "./dist/readonly.mjs",
     "./role-catalog": "./dist/role-catalog.mjs",
     "./role-service": "./dist/role-service.mjs",
-    "./skill": "./dist/skill.mjs",
     "./subagent": "./dist/subagent.mjs",
     "./package.json": "./package.json",
     "./locale/*.json": "./locale/*.json",

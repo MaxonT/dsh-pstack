@@ -42,7 +42,7 @@
 
 ---
 
-`dsh-pstack` ports [pstack](https://github.com/cursor/plugins/tree/main/pstack) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). It ships the upstream skills, playbooks, and references, then adds skill routing, a model route for each role, subagents that accept an explicit route, and tools to list, resume, and interrupt those subagents.
+`dsh-pstack` ports [pstack](https://github.com/cursor/plugins/tree/main/pstack) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). It ships the upstream skills, playbooks, and references, then adds the DSH adapter for skill names, a model route for each role, subagents that accept an explicit route, and tools to list, resume, and interrupt those subagents.
 
 The [runtime mapping](./port/dsh.md) maps each Cursor feature to DeepSeek Harness. Real DSH Web sessions test the port, and [Port verification](#-port-verification) explains how.
 
@@ -123,7 +123,6 @@ Use pstack skills to start workflows directly from a Session.
 |---|---|
 | `pstack_subagent` | Starts one subagent with an `agent_preset`, optionally overriding its route with provider, model, and reasoning_effort. |
 | `pstack_interrupt` | Stops a pstack child's current turn by its name from `list_agents` or its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path. |
-| `pstack_skill` | Loads a bundled pstack skill by exact name; only skills from the `pstack` provider, which are hidden from the model catalog. Use the native `skill` tool for catalog skills. |
 | `pstack_models` | Lists the providers, models, and reasoning efforts this deployment serves. |
 | `pstack_roles` | Reports each role's configured routes as provider, model, and reasoningEffort values, with each route's served efforts and default. |
 

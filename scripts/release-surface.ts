@@ -12,7 +12,6 @@ import { format } from "vite-plus/fmt";
 
 import { createPstackModelsTool } from "../src/models.ts";
 import { createPstackRolesTool } from "../src/role-catalog.ts";
-import { createPstackSkillTool } from "../src/skill.ts";
 import { createPstackInterruptTool, createPstackSubagentTool } from "../src/subagent.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -36,7 +35,6 @@ export function buildSurface(): Surface {
     createPstackInterruptTool(STUB),
     createPstackModelsTool(STUB),
     createPstackRolesTool("/nonexistent-dsh-home"),
-    createPstackSkillTool(STUB),
   ];
   const tools = definitions
     .map((definition) => ({ name: definition.name, parameters: definition.parameters }))

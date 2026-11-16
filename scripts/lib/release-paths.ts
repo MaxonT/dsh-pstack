@@ -15,7 +15,6 @@ export const USER_VISIBLE_PATHS = [
   "src/subagent.ts",
   "src/role-catalog.ts",
   "src/models.ts",
-  "src/skill.ts",
   "src/client/",
   "src/presets/",
 ] as const;

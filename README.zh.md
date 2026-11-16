@@ -42,7 +42,7 @@
 
 ---
 
-`dsh-pstack` 将 [pstack](https://github.com/cursor/plugins/tree/main/pstack) 移植到 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）。它随包提供上游的技能、playbook 与参考文档。在此基础上，它提供技能路由、为每个角色指定模型路由、可显式指定路由的子代理，以及列出、续聊和中断这些子代理的工具。
+`dsh-pstack` 将 [pstack](https://github.com/cursor/plugins/tree/main/pstack) 移植到 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）。它随包提供上游的技能、playbook 与参考文档。在此基础上，它提供技能名的 DSH 适配、为每个角色指定模型路由、可显式指定路由的子代理，以及列出、续聊和中断这些子代理的工具。
 
 [运行时映射](./port/dsh.zh.md)给出每项 Cursor 能力到 DeepSeek Harness 的对应关系。移植由真实 DSH Web 会话验证，不靠比对文本，具体做法见[移植如何验证](#-移植如何验证)。
 
@@ -123,7 +123,6 @@
 |---|---|
 | `pstack_subagent` | 用 `agent_preset` 启动一个子代理，可用 provider、model 和 reasoning_effort 覆盖路由。 |
 | `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是中断通道。 |
-| `pstack_skill` | 按精确名称加载随包 pstack 技能；只限 `pstack` provider 下、对模型目录隐藏的技能。目录内技能用原生 `skill`。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning effort。 |
 | `pstack_roles` | 报告每个角色已配置的路由，以 provider、model 和 reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。 |
 

@@ -38,8 +38,6 @@ playground 真实会话验证
 | 模块 | 真实路径与入口 | 当前职责 |
 |---|---|---|
 | Bundle 装配 | `cordis.patch.yml` | 注册技能目录、Host 工具和角色服务；组合两个根 preset 与三个子代理 preset。 |
-| Host 主入口 | `src/index.ts` | 注册受信技能加载器；其余 Host 能力各自通过独立子路径（如 `dsh-pstack/models`）由 bundle 按行加载。 |
-| 技能加载 | `src/skill.ts`、`src/lib/paths.ts` | 实现 `pstack_skill`，按名称加载技能及目录内资源；集中定义发布包内资源路径。 |
 | 模型目录 | `src/models.ts`、`src/models/catalogue.ts` | 实现 `pstack_models`，读取实时 LLM adapter 目录，保留单 provider 或 model 的发现错误；共享 catalogue 类型、schema 与 wire 解析。 |
 | 角色清单 | `src/roles/role-manifest.ts`、`src/role-catalog.ts` | 定义角色 key 与 shape；实现只读的 `pstack_roles`，按角色报告配置好的 provider/model/effort 路由，并附实时目录中该路由的可用 efforts 与默认档位。 |
 | 子代理委派 | `src/subagent.ts` | 实现 `pstack_subagent` 薄包装：一次调用只启动一个子代理，`description` 和 `prompt` 必填，支持可选 `agent_preset`、`name`、`cwd`、`maxDepth`；`provider`/`model`/`reasoning_effort` 转成 `agentOptions`，省略则继承父路由；做能力校验与路由预检后调用 `ctx.subagents.startActivation`，返回原生 `{kind:"activation", name}`。同一模块还注册 `pstack_interrupt`，用于按名称或会话 id 中断 pstack 子代理；列出与续聊改用原生 `list_agents`、`send_message`。 |

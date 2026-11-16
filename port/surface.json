@@ -36,20 +36,6 @@
       }
     },
     {
-      "name": "pstack_skill",
-      "parameters": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Exact kebab-case skill name, such as `how` or `principle-prove-it-works`."
-          }
-        },
-        "required": ["name"]
-      }
-    },
-    {
       "name": "pstack_subagent",
       "parameters": {
         "type": "object",

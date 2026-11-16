@@ -112,18 +112,18 @@
 - 建议动作：在适配插件（port 阶段）提供一个“完整模型发现”工具，返回该部署实际服务的全部 provider/model/effort 路由，不受父会话路由限制；委派时据此选择，若会话策略仍不允许则回退父路由并说明。
 - 你的决定：已定。由插件内提供工具，用于发现完整模型列表，而不是只有当前父会话模型。
 
-### Q2 随包技能应由适配插件提供工具按名加载
+### Q2 随包技能直接读 SKILL.md 加载，不另设工具
 
-- 类型：plugin
+- 类型：dsh-md
 - 能力类别：tool（skill-loading）
 - 影响场景：`capability-skill-loading`
 - 证据：
   - [record](scenarios/capability-skill-loading/raw-base/record.json) / [截图](scenarios/capability-skill-loading/raw-base/screenshot.png)
-- 现象：`mechanicalFailures=["process evidence: poteto-help was not loaded"]`，但 `poteto-help` 不在模型的技能目录里，`skill` 按名加载不到；模型改用 `read` 打开其 `SKILL.md` 并据其作答，答复质量完整。
-- 根因：场景的 `skill-loaded: poteto-help` 断言假定该技能能按名加载，实际它不在模型技能目录里，属断言问题。
-- 与当前阶段 dsh.md 的关系：`dsh.md` Tools 行已描述“按名加载不到时用 read”的回退，保留即可；要按名加载随包技能，由适配插件提供工具。
-- 建议动作：在适配插件内提供一个技能加载工具，按名加载随包技能；原生 `read` 路径作为无插件时的回退。
-- 你的决定：已定。由插件内提供工具，用于加载随包技能。
+- 现象：`mechanicalFailures=["process evidence: poteto-help was not loaded"]`，但 `poteto-help` 不在模型的技能目录里（随包技能都设 `disable-model-invocation: true`），`skill` 按名加载不到；模型改用 `read` 打开其 `SKILL.md` 并据其作答，答复质量完整。
+- 根因：随包 pstack 技能对 `skill` 目录隐藏，场景的 `skill-loaded: poteto-help` 断言又假定能按名加载，属断言与加载路径问题。
+- 与当前阶段 dsh.md 的关系：`dsh.md` Tools 行已描述按名加载不到时用 `read` 回退；按上游 Claude Code 的处理方式，随包技能就直接 `read` `<pstack>/skills/<name>/SKILL.md`，不需要额外工具。
+- 建议动作：不新增技能加载工具。按上游 Claude Code 方式用 `read` 直接读取 `<pstack>/skills/<name>/SKILL.md` 并遵循；`skill` 只用于会话技能目录里可见的技能。
+- 你的决定：已定。删除 `pstack_skill`，随包技能直接 `read` SKILL.md。
 
 ### Q3 base 无内联音频/视频播放器，产出真实媒体但只呈现文件卡片
 
@@ -186,7 +186,7 @@
 | Tools · `Task` | `subagent` 立即返回名称，`subagent_fork` 继承上下文 | task、subagent-general、inherit-parent、run-in-background、resume | 够用 | 保持（记录里 `subagent name=...` 与返回名称一致） |
 | Tools · `AskQuestion` | `questions` 数组 + options + 空选/超时语义 | askquestion | 够用 | 保持（Q5 是模型表现） |
 | Tools · Open a todolist | `todo_write` 整表替换，无 skipped | open-a-todolist | 够用 | 保持 |
-| Tools · Run another pstack skill | 按名加载不到时用 `read`，`/name` 直接注入 | skill-loading | 够用 | 保持（Q2 是断言问题） |
+| Tools · Run another pstack skill | 按名加载不到时用 `read`，`/name` 直接注入 | skill-loading | 够用 | 保持；Q2 已定不另设工具、随包技能直接 read |
 | Tools · `Grep`,`Glob` | 原生工具，grep 用 ripgrep | grep-glob | 够用 | 保持 |
 | Subagent fields · generalPurpose / poteto-agent / readonly / cloud / local / base-branch / background | 各字段映射 | cloud-base-branch、readonly-true/false、environment-cloud/local、file-attachments、run-in-background、poteto-agent | 够用 | 保持 |
 | Subagent fields · `resume` | `send_message` 按 `agent`（名称或会话 id）；`interrupt_agent` 内置 preset 禁用，视为无法中断 | resume、stop-subagent、task、subagent-general | 够用 | 保持（与 rc.2 通知按名称、interrupt 关闭的事实一致） |
@@ -199,12 +199,12 @@
 
 ## 5. 待用户判断的问题
 
-- 已裁定：Q1、Q2 由适配插件提供工具处理；Q4 属 worker 问题暂时保留；Q6 为 rc.2 原生限制，已在 raw `dsh.md` 记录，适配阶段实现中断能力。
+- 已裁定：Q1 由适配插件提供工具处理；Q2 改为直接 `read` SKILL.md 并删除 `pstack_skill`；Q4 属 worker 问题暂时保留；Q6 为 rc.2 原生限制，已在 raw `dsh.md` 记录，适配阶段实现中断能力。
 - 当前无待判项。
 
 ## 6. 后续动作
 
-- `plugin`：Q1（适配插件提供“完整模型发现”工具）、Q2（适配插件提供“随包技能加载”工具）、Q6（适配插件经服务层暴露中断），在 port/适配阶段实现。
+- `plugin`：Q1（适配插件提供“完整模型发现”工具）、Q6（适配插件经服务层暴露中断），在 port/适配阶段实现。Q2 改为直接 `read` `<pstack>/skills/<name>/SKILL.md`，不新增工具，并删除 `pstack_skill`。
 - `dsh-md`：无新增。raw `dsh.md` 已按 rc.2 更新 `Task`、`run_in_background`、`resume` 三处，本轮证据确认够用。
 - `ignore-environment`：Q3 音频/视频（预期降级，不处理）、Q4（worker 读边界，暂时保留）。
 - `probe`：无。

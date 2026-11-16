@@ -1,20 +1,17 @@
 # dsh-pstack bundle patch.
 #
-# `pstack-skill` registers the trusted hidden-skill loader. The three
-# `dsh-skill-filesystem` rows expose the generated pstack tree, vendored
-# cursor-team-kit skills, and authored project skills as bundled skills.
-# `pstack-models` reports the live route catalogue; `pstack-role-catalog` reports
-# role routes; `pstack-subagent` starts one child per call with an optional
-# explicit model route. The
-# preset rows below own the child personas and tool compositions. There is no
-# rendering row; charts stay Mermaid text and video rendering is not provided.
+# The three `dsh-skill-filesystem` rows expose the generated pstack tree,
+# vendored cursor-team-kit skills, and authored project skills as bundled
+# skills. `pstack-models` reports the live route catalogue; `pstack-role-catalog`
+# reports role routes; `pstack-subagent` starts one child per call with an
+# optional explicit model route. The preset rows below own the child personas
+# and tool compositions. There is no rendering row; charts stay Mermaid text and
+# video rendering is not provided.
 #
 # Each `dsh-pstack/preset` row's `name`/`description` below is a display default.
 # `dsh-pstack/preset` overwrites both at runtime from `src/preset-copy.ts` for the
 # active locale, so change the user-visible copy there, not here.
 - insert:
-    - id: pstack
-      name: dsh-pstack
     - id: pstack-skills
       name: "@deepseek-ai/dsh-skill-filesystem"
       config:
@@ -86,8 +83,6 @@
             config:
               fetch: true
               searchTimeoutMs: 60000
-          - id: pstack-skill
-            name: dsh-pstack
           - id: pstack-subagent
             name: dsh-pstack/subagent
             config:
@@ -145,8 +140,6 @@
             name: "@deepseek-ai/dsh-tool-fs-search"
             config:
               sampleOverCapGlobResults: false
-          - id: pstack-skill
-            name: dsh-pstack
           - id: pstack-subagent
             name: dsh-pstack/subagent
             config:
@@ -179,8 +172,6 @@
             name: "@deepseek-ai/dsh-tool-fs-search"
             config:
               sampleOverCapGlobResults: false
-          - id: pstack-skill
-            name: dsh-pstack
           - id: pstack-subagent
             name: dsh-pstack/subagent
             config:

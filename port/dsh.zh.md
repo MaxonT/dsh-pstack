@@ -11,7 +11,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | `Task` | `pstack_subagent` 一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它，并传 `description` 和 `prompt`。传 `provider`、`model` 和可选 `reasoning_effort` 覆盖路由，或全部省略以继承父路由。`pstack_models` 把每个 model id 列在对应 provider 标题下：把标题里的 provider id 传给 `provider`、把列出的 id 传给 `model`，不要传组合后的 `provider/model` 路由。 |
 | `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体有人工回答者；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
-| Run another pstack skill (`/name` 或 "the **name** skill") | 会话技能目录里的技能一律用原生 `skill` 工具。`pstack_skill` 只按精确 kebab-case 名称加载 pstack 随包的隐藏技能，返回它的 `SKILL.md` 和基础目录；读 playbook 或 reference 用 `read` 打开目录下的文件。内置帮助技能是 `poteto-help`。 |
+| Run another pstack skill (`/name` 或 "the **name** skill") | 会话技能目录里的技能用原生 `skill` 工具。带 `disable-model-invocation: true` 的随包 pstack 技能对 `skill` 隐藏，所以用 `read` 读取 `<pstack>/skills/<name>/SKILL.md` 并遵循，包括技能目录下的 playbook 和 reference。用户 `/name` 手势会直接注入一个技能；内置帮助技能是 `poteto-help`。 |
 | `Grep`, `Glob` | `grep` 和 `glob` 是原生工具，直接调用。只有会话两者都没有时才用 `bash` 的 `rg`。 |
 
 ## Subagent fields
@@ -51,7 +51,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `.cursor/skills/`, `~/.cursor/skills/` | 项目技能位于 `.dsh/skills/` 或 `.agents/skills/`；用户技能位于 `$DSH_HOME/skills/` 或 `~/.agents/skills/`。随包 pstack 技能通过 `pstack_skill` 加载。 |
+| `.cursor/skills/`, `~/.cursor/skills/` | 项目技能位于 `.dsh/skills/` 或 `.agents/skills/`；用户技能位于 `$DSH_HOME/skills/` 或 `~/.agents/skills/`。随包 pstack 技能位于 `<pstack>/skills/`，通过读取它的 `SKILL.md` 加载。 |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | 在 `SKILL.md` 旁解析包资源；插件 manifest 是 `package.json` 的 `dsh` 段。 |
 | `.cursor/rules/*.mdc`, always-applied rules | `AGENTS.md` 兼容链。DSH 不读取 `.mdc`；pstack 角色文件由调用方读取，`pstack_subagent` 不解析它。 |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | 包内存在该文件时使用 `<pstack>/<path>`。读取本地副本，需要链接时给用户公开 URL。 |
@@ -77,7 +77,6 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | --- | --- |
 | `pstack_subagent` | 启动一个子智能体。必填 `description` 和 `prompt`；可选 `agent_preset`（默认 `general`）、`name`、`cwd`、`maxDepth`，以及用 `provider`、`model`、`reasoning_effort` 覆盖路由。返回 `{kind:"activation", name}`。完成时发通知。子智能体不是后台 job：不要把它的名称传给 `job_output`；等完成通知，或用原生 `list_agents`/`send_message`。 |
 | `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是 pstack 子代理的中断通道。 |
-| `pstack_skill` | 按精确 kebab-case 名称加载随包 pstack 技能；`resource` 读取参考或 playbook。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
 | `pstack_roles` | 报告每个 pstack 角色及其已配置路由，路由以 provider、model、reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。传给 `pstack_subagent` 时用 `provider`、`model`、`reasoning_effort`。 |
 

@@ -11,7 +11,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | `Task` | `pstack_subagent` starts one subagent per call; fan out by calling it once per child in one message, passing `description` and `prompt`. Pass `provider`, `model`, and an optional `reasoning_effort` to override the route, or omit all three to inherit the parent route. `pstack_models` lists each model id on its own line under a provider heading: pass the heading's provider id as `provider` and the listed id as `model`, never the combined `provider/model` route. |
 | `AskQuestion` | `ask_user_question` takes a batch of questions with options and free input. Only a live root agent has a human answerer; a delegated child keeps its questions in its result. Ask in plain text when the tool is absent. |
 | Open a todolist | `todo_write` replaces the whole list and has no `skipped` status. Keep a skipped step visible as `skip: <reason> - <step>` in `content` and mark it `completed`. |
-| Run another pstack skill (`/name` or "the **name** skill") | Use the native `skill` tool for any skill in the session catalog. `pstack_skill` only loads pstack's bundled hidden skills by exact kebab-case `name` and returns their `SKILL.md` and base directory; read a playbook or reference by opening the file there with `read`. The built-in help skill is `poteto-help`. |
+| Run another pstack skill (`/name` or "the **name** skill") | Use the native `skill` tool for skills in the session catalog. A bundled pstack skill with `disable-model-invocation: true` is hidden from `skill`, so `read` `<pstack>/skills/<name>/SKILL.md` and follow it, including playbooks and references under the skill directory. A user `/name` gesture injects one directly; the built-in help skill is `poteto-help`. |
 | `Grep`, `Glob` | `grep` and `glob` are native tools; call them directly. Use `bash` with `rg` only when the session has neither. |
 
 ## Subagent fields
@@ -51,7 +51,7 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `.cursor/skills/`, `~/.cursor/skills/` | Project skills live in `.dsh/skills/` or `.agents/skills/`; user skills live in `$DSH_HOME/skills/` or `~/.agents/skills/`. Packaged pstack skills load through `pstack_skill`. |
+| `.cursor/skills/`, `~/.cursor/skills/` | Project skills live in `.dsh/skills/` or `.agents/skills/`; user skills live in `$DSH_HOME/skills/` or `~/.agents/skills/`. Packaged pstack skills live under `<pstack>/skills/` and load by reading their `SKILL.md`. |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | Resolve package resources beside their `SKILL.md`; a plugin manifest is the `dsh` section of its `package.json`. |
 | `.cursor/rules/*.mdc`, always-applied rules | The `AGENTS.md`-compatible chain. DSH never reads `.mdc`; the calling agent reads the pstack role file, and `pstack_subagent` does not parse it. |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | `<pstack>/<path>` when the package ships it. Read the local copy and give the user the public URL when needed. |
@@ -77,7 +77,6 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 | --- | --- |
 | `pstack_subagent` | Start one subagent. Requires `description` and `prompt`; optional `agent_preset` (default `general`), `name`, `cwd`, `maxDepth`, and a route override with `provider`, `model`, and `reasoning_effort`. Returns `{kind:"activation", name}`. Completion arrives as a notice. A subagent is not a background job: never pass its name to `job_output`; wait for the completion notice, or use the native `list_agents`/`send_message`. |
 | `pstack_interrupt` | Stop one pstack child's current turn by its name from `list_agents` or its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child. |
-| `pstack_skill` | Load a packaged pstack skill by exact kebab-case name; `resource` reads a reference or playbook. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
 | `pstack_roles` | Report each pstack role with its configured routes as provider, model, and reasoningEffort values, plus each route's served efforts and default. Pass them to `pstack_subagent` as `provider`, `model`, and `reasoning_effort`. |
 
