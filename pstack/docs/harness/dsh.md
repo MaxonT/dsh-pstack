@@ -39,6 +39,8 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | The pstack role file | `$DSH_HOME/pstack-models.json`. Read `pstack_roles` to map a role to its route; `pstack_subagent` does not parse it. A missing file leaves no configured route, so the child inherits the parent route. |
 | A role value such as `<model> <effort>` | Write a structured route object `{ kind: "route", provider, model, effort? }`; a role holds an array of these, or `{ kind: "inherit", alias }` for `auto` or `inherit-parent`. Read `provider`, `model`, and `effort` from `pstack_models` or `pstack_roles`; never join or split a `provider/model` string. |
 
+When passing `provider` and `model` to override the child route, also pass `reasoning_effort` when the target model does not support the parent's current effort. Omitting it inherits the parent's effort and can fail before the child starts.
+
 ## setup-pstack
 
 `setup-pstack` writes the role file the calling agent reads to choose a route. Use `pstack_models` to discover the live provider, model, and effort routes; do not infer them from Cursor slugs.
@@ -79,6 +81,14 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 | `pstack_interrupt` | Stop one pstack child's current turn by its name from `list_agents` or its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child. |
 | `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
 | `pstack_roles` | Report each pstack role with its configured routes as provider, model, and reasoningEffort values, plus each route's served efforts and default. Pass them to `pstack_subagent` as `provider`, `model`, and `reasoning_effort`. |
+
+## Agent Teams
+
+When the session enables Agent Teams, `pstack_subagent` starts a teammate. Create the shared task with `team_task_create` first, start the child with a `name`, then reassign the task to that returned name with `team_task_update` action `reassign`. Include the task id in the child prompt so the child can claim and complete it. The role entries reported by `pstack_roles` are model routes, not Team members.
+
+Use the Team board for durable work that needs an owner, dependencies, write scopes, or handoff to another member. Do not create a Team task for private or one-shot exploration, quick lookups, tool setup, or a single-turn check the Lead can finish directly; those remain ordinary `pstack_subagent` delegation without a task.
+
+After each `pstack_subagent` call made for a Team task, immediately bind the task owner with `team_task_update`. After dispatching a batch, run `team_task_list` and reject any pending task that has no owner; reassign or delete it before waiting. Re-read the task immediately before every `team_task_update` so its revision is current.
 
 ## Local replacements
 

@@ -39,6 +39,8 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | pstack 角色文件 | `$DSH_HOME/pstack-models.json`。用 `pstack_roles` 把角色映射到路由；`pstack_subagent` 不解析它。文件缺失时没有已配置路由，子智能体继承父路由。 |
 | 形如 `<model> <effort>` 的角色值 | 写结构化路由对象 `{ kind: "route", provider, model, effort? }`；一个角色保存这些对象的数组，或用 `{ kind: "inherit", alias }` 表示 `auto` 或 `inherit-parent`。`provider`、`model`、`effort` 从 `pstack_models` 或 `pstack_roles` 读取，不要把 `provider/model` 拼成字符串或再拆开。 |
 
+传 `provider` 和 `model` 覆盖子代理路由时，如果目标模型不支持父级当前 effort，同时传 `reasoning_effort`。省略它会继承父级 effort，并可能在子代理启动前失败。
+
 ## setup-pstack
 
 `setup-pstack` 写调用方用来选择路由的角色文件。先用 `pstack_models` 发现本部署提供的 provider、model 和 effort 路由，不要根据 Cursor slug 猜测。
@@ -79,6 +81,14 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是 pstack 子代理的中断通道。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
 | `pstack_roles` | 报告每个 pstack 角色及其已配置路由，路由以 provider、model、reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。传给 `pstack_subagent` 时用 `provider`、`model`、`reasoning_effort`。 |
+
+## Agent Teams
+
+会话启用 Agent Teams 时，`pstack_subagent` 启动的是 teammate。先用 `team_task_create` 创建共享任务，再用 `name` 启动子代理，最后用 `team_task_update` 的 `reassign` 动作把任务分配给返回的子代理名。把任务 id 写进子代理 prompt，让子代理自己领取并完成任务。`pstack_roles` 报告的角色条目是模型路由，不是 Team 成员。
+
+Team 任务板用于需要负责人、依赖关系、写入范围或交接给其他成员的持久工作。私有或一次性的探索、快速查询、工具配置，以及 Lead 自己一轮就能完成的检查，不要创建 Team task；这些仍然使用普通的 `pstack_subagent` 委派，不登记任务。
+
+每次为 Team task 调用 `pstack_subagent` 后，立即用 `team_task_update` 绑定任务负责人。一轮任务派发完成后，先运行 `team_task_list`，发现 pending 且没有 owner 的任务就重新分配或删除，再进入等待。每次 `team_task_update` 前重新读取任务，确保 revision 是最新的。
 
 ## Local replacements
 
