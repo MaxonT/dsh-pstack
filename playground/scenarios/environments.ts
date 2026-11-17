@@ -25,7 +25,7 @@ export const environments: readonly EnvironmentMatrix[] = [
   {
     id: "agent-team",
     description:
-      "Team-on 环境：开启 Agent Teams，验证 pstack 委派、任务板、消息与中断在团队模式下可用。",
+      "Team-on 环境：prepare 在 profile cordis.patch.yml 写入 agent-team.defaultEnabled=true，验证 pstack 执行者作为 teammate、共享任务板、owner 绑定、消息续跑与中断。",
     kind: "capability",
     enabledPluginPackages: [],
     teamMode: true,
