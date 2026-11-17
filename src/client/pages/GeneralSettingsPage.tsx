@@ -12,7 +12,11 @@ ensurePstackStyles();
 export interface PotetoSettingsApi {
   readDefault(): Promise<boolean>;
   writeDefault(enabled: boolean): Promise<string | null>;
+  readAgentTeamDefault(): Promise<boolean>;
+  writeAgentTeamDefault(enabled: boolean): Promise<string | null>;
 }
+
+type SettingKey = "poteto" | "agentTeam";
 
 export function GeneralSettingsView(props: {
   api: PotetoSettingsApi;
@@ -21,16 +25,18 @@ export function GeneralSettingsView(props: {
   const { api, translations } = props;
   const t = translations.poteto;
   const [enabled, setEnabled] = useState(false);
+  const [agentTeamEnabled, setAgentTeamEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState(false);
+  const [pending, setPending] = useState<SettingKey | null>(null);
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
     let live = true;
-    void api.readDefault().then(
-      (value) => {
+    void Promise.all([api.readDefault(), api.readAgentTeamDefault()]).then(
+      ([poteto, agentTeam]) => {
         if (live) {
-          setEnabled(value);
+          setEnabled(poteto);
+          setAgentTeamEnabled(agentTeam);
           setLoading(false);
         }
       },
@@ -45,16 +51,18 @@ export function GeneralSettingsView(props: {
     };
   }, [api, t]);
 
-  const change = (next: boolean): void => {
-    setPending(true);
+  const change = (key: SettingKey, next: boolean): void => {
+    setPending(key);
     setError(undefined);
-    void api
-      .writeDefault(next)
+    const request = key === "poteto" ? api.writeDefault(next) : api.writeAgentTeamDefault(next);
+    void request
       .then((failure) => {
-        if (failure === null) setEnabled(next);
-        else setError(failure);
+        if (failure === null) {
+          if (key === "poteto") setEnabled(next);
+          else setAgentTeamEnabled(next);
+        } else setError(failure);
       })
-      .finally(() => setPending(false));
+      .finally(() => setPending(null));
   };
 
   if (loading) {
@@ -80,9 +88,23 @@ export function GeneralSettingsView(props: {
         <div className="pstack-setting-control">
           <Switch
             checked={enabled}
-            disabled={pending}
+            disabled={pending !== null}
             label={t("defaultLabel")}
-            onChange={change}
+            onChange={(next) => change("poteto", next)}
+          />
+        </div>
+      </div>
+      <div className="pstack-setting-item">
+        <div className="pstack-setting-copy">
+          <div className="pstack-setting-title">{t("agentTeamLabel")}</div>
+          <p className="pstack-setting-description">{t("agentTeamDescription")}</p>
+        </div>
+        <div className="pstack-setting-control">
+          <Switch
+            checked={agentTeamEnabled}
+            disabled={pending !== null}
+            label={t("agentTeamLabel")}
+            onChange={(next) => change("agentTeam", next)}
           />
         </div>
       </div>

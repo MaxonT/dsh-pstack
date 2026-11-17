@@ -5,6 +5,8 @@ import { dirname, join } from "node:path";
 import { Service } from "@deepseek-ai/cordis";
 import type { Context } from "@deepseek-ai/cordis";
 import type { Agent } from "@deepseek-ai/dsh-agent";
+import type {} from "@deepseek-ai/dsh-agent-team";
+import type { ConfigEditor } from "@deepseek-ai/dsh-config-editor";
 import type { SessionId } from "@deepseek-ai/dsh-session";
 import { createUserMessage } from "@deepseek-ai/dsh-llm";
 import type {} from "@deepseek-ai/dsh-agent-instructions";
@@ -24,6 +26,7 @@ export const name = "pstack-poteto-toggle";
 const SECTION_NAME = "pstack:poteto-workflow";
 const SECTION_ORDER = 10;
 const SETTINGS_FILENAME = "pstack-settings.json";
+const AGENT_TEAM_ENTRY = "@deepseek-ai/dsh-agent-team";
 const REMINDER =
   "Poteto workflow is active. Follow the poteto-mode skill in the system prompt strictly. Do not skip any required step or rule it names.";
 
@@ -31,22 +34,37 @@ function settingsFilePath(): string {
   return join(resolveDshHome(), SETTINGS_FILENAME);
 }
 
-function readDefaultEnabled(): boolean {
+interface PstackSettings {
+  readonly version: number;
+  readonly potetoDefault: boolean;
+}
+
+const EMPTY_SETTINGS: PstackSettings = {
+  version: 1,
+  potetoDefault: false,
+};
+
+function readSettings(): PstackSettings {
   try {
-    const parsed = JSON.parse(readFileSync(settingsFilePath(), "utf8")) as {
-      potetoDefault?: unknown;
+    const parsed = JSON.parse(readFileSync(settingsFilePath(), "utf8")) as Record<string, unknown>;
+    return {
+      version: typeof parsed["version"] === "number" ? parsed["version"] : 1,
+      potetoDefault: parsed["potetoDefault"] === true,
     };
-    return parsed.potetoDefault === true;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return false;
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return EMPTY_SETTINGS;
     throw error;
   }
 }
 
-function writeDefaultEnabled(enabled: boolean): void {
+function writeSettings(settings: PstackSettings): void {
   const path = settingsFilePath();
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, `${JSON.stringify({ version: 1, potetoDefault: enabled }, null, 2)}\n`);
+  writeFileSync(path, `${JSON.stringify(settings, null, 2)}\n`);
+}
+
+function writeDefaultEnabled(enabled: boolean): void {
+  writeSettings({ version: 1, potetoDefault: enabled });
 }
 
 /** Toggle poteto workflow for one Session. */
@@ -64,7 +82,8 @@ export class PotetoModeService extends TypertRemoteService {
   }
 
   protected async [Service.init](): Promise<void> {
-    this.defaultEnabled = readDefaultEnabled();
+    const settings = readSettings();
+    this.defaultEnabled = settings.potetoDefault;
     this.projection = await this.ctx.sessionProjections.register(potetoProjectionDefinition);
     const skill = await this.ctx.skills.get("poteto-mode", {});
     if (skill === undefined) throw new Error("poteto-mode skill is not available");
@@ -143,6 +162,41 @@ export class PotetoModeService extends TypertRemoteService {
     writeDefaultEnabled(enabled);
     this.defaultEnabled = enabled;
     return { enabled };
+  }
+
+  /** Read the Agent Teams default used by new sessions. */
+  getAgentTeamDefault(): { enabled: boolean } {
+    const config = this.agentTeamConfig();
+    return { enabled: config?.current["defaultEnabled"] === true };
+  }
+
+  /** Save the Agent Teams default used by new sessions. */
+  async setAgentTeamDefault(enabled: boolean, signal?: AbortSignal): Promise<{ enabled: boolean }> {
+    signal?.throwIfAborted();
+    const config = this.agentTeamConfig();
+    if (config === undefined) throw new Error("Agent Teams configuration is not available");
+    await config.editor.edit(config.entry, (current) => ({ ...current, defaultEnabled: enabled }));
+    return { enabled };
+  }
+
+  private agentTeamConfig():
+    | {
+        readonly editor: ConfigEditor;
+        readonly entry: ReturnType<ConfigEditor["entries"]>[number];
+        readonly current: Record<string, unknown>;
+      }
+    | undefined {
+    const editor = this.ctx.get("configEditor") as ConfigEditor | undefined;
+    if (editor === undefined) return undefined;
+    const config = editor
+      .configuration()
+      .find(({ entry }) => entry.options.name === AGENT_TEAM_ENTRY);
+    if (config === undefined) return undefined;
+    return {
+      editor,
+      entry: config.entry,
+      current: { ...config.inherited, ...config.override },
+    };
   }
 
   /** Save the switch for one Session id. */

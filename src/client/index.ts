@@ -79,6 +79,16 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
       const result = await potetoApi.setDefault(enabled);
       return result.ok ? null : result.error.message;
     },
+    readAgentTeamDefault: async () => {
+      if (potetoApi === undefined) throw new Error("agent team is not available yet");
+      const result = await potetoApi.getAgentTeamDefault();
+      return unwrap(result).enabled;
+    },
+    writeAgentTeamDefault: async (enabled) => {
+      if (potetoApi === undefined) return "agent team is not available yet";
+      const result = await potetoApi.setAgentTeamDefault(enabled);
+      return result.ok ? null : result.error.message;
+    },
   };
 
   const togglePoteto = async (sessionId: string): Promise<void> => {

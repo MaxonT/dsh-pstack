@@ -125,6 +125,17 @@ const setDefaultMethod = directMethod<{ enabled: boolean }, { enabled: boolean }
   result: codec("PstackPotetoModeStatus", modeStatus),
   cancellation: true,
 });
+const getAgentTeamDefaultMethod = directMethod<Record<string, never>, { enabled: boolean }>({
+  method: "getAgentTeamDefault",
+  parameters: [],
+  result: codec("PstackPotetoModeStatus", modeStatus),
+});
+const setAgentTeamDefaultMethod = directMethod<{ enabled: boolean }, { enabled: boolean }>({
+  method: "setAgentTeamDefault",
+  parameters: [parameter("enabled", "PstackPotetoModeEnabled", booleanValue)],
+  result: codec("PstackPotetoModeStatus", modeStatus),
+  cancellation: true,
+});
 
 export interface PstackPotetoModeNamespace {
   readonly pstackPotetoMode: {
@@ -136,6 +147,11 @@ export interface PstackPotetoModeNamespace {
     ): Promise<RemoteResult<{ enabled: boolean }>>;
     getDefault(): Promise<RemoteResult<{ enabled: boolean }>>;
     setDefault(enabled: boolean, signal?: AbortSignal): Promise<RemoteResult<{ enabled: boolean }>>;
+    getAgentTeamDefault(): Promise<RemoteResult<{ enabled: boolean }>>;
+    setAgentTeamDefault(
+      enabled: boolean,
+      signal?: AbortSignal,
+    ): Promise<RemoteResult<{ enabled: boolean }>>;
   };
 }
 
@@ -146,11 +162,15 @@ export const pstackPotetoRemote: TypertRemoteInfo = {
     setMethod,
     getDefaultMethod,
     setDefaultMethod,
+    getAgentTeamDefaultMethod,
+    setAgentTeamDefaultMethod,
   ] as InvocationDescriptor[],
   methods: {
     [`${POTETO_SERVICE}/status`]: statusMethod,
     [`${POTETO_SERVICE}/setEnabled`]: setMethod,
     [`${POTETO_SERVICE}/getDefault`]: getDefaultMethod,
     [`${POTETO_SERVICE}/setDefault`]: setDefaultMethod,
+    [`${POTETO_SERVICE}/getAgentTeamDefault`]: getAgentTeamDefaultMethod,
+    [`${POTETO_SERVICE}/setAgentTeamDefault`]: setAgentTeamDefaultMethod,
   } as TypertRemoteInfo["methods"],
 };

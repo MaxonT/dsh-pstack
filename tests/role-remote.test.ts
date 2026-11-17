@@ -20,6 +20,8 @@ describe("pstack role Remote contribution", () => {
       "pstackPotetoMode/setEnabled",
       "pstackPotetoMode/getDefault",
       "pstackPotetoMode/setDefault",
+      "pstackPotetoMode/getAgentTeamDefault",
+      "pstackPotetoMode/setAgentTeamDefault",
     ]);
     for (const descriptor of pstackRolesHostContribution.invocations) {
       expect(["pstackRoles", "pstackPotetoMode"]).toContain(descriptor.service);
