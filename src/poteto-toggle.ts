@@ -1,7 +1,5 @@
 /** Session-scoped poteto-workflow switch. */
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
 import { Service } from "@deepseek-ai/cordis";
 import type { Context } from "@deepseek-ai/cordis";
 import type { Agent } from "@deepseek-ai/dsh-agent";
@@ -18,50 +16,16 @@ import type {} from "@deepseek-ai/dsh-system-prompt";
 import type {} from "@deepseek-ai/dsh-typert-registry";
 
 import { potetoProjectionDefinition, type PotetoProjectionState } from "./poteto-projection.ts";
-import { resolveDshHome } from "./roles/role-store.ts";
+import { readSettings, writeSettings } from "./poteto-settings.ts";
 import { POTETO_SERVICE } from "./poteto-toggle-remote.ts";
 
 export const name = "pstack-poteto-toggle";
 
 const SECTION_NAME = "pstack:poteto-workflow";
 const SECTION_ORDER = 10;
-const SETTINGS_FILENAME = "pstack-settings.json";
 const AGENT_TEAM_ENTRY = "@deepseek-ai/dsh-agent-team";
 const REMINDER =
   "Poteto workflow is active. Follow the poteto-mode skill in the system prompt strictly. Do not skip any required step or rule it names.";
-
-function settingsFilePath(): string {
-  return join(resolveDshHome(), SETTINGS_FILENAME);
-}
-
-interface PstackSettings {
-  readonly version: number;
-  readonly potetoDefault: boolean;
-}
-
-const EMPTY_SETTINGS: PstackSettings = {
-  version: 1,
-  potetoDefault: false,
-};
-
-function readSettings(): PstackSettings {
-  try {
-    const parsed = JSON.parse(readFileSync(settingsFilePath(), "utf8")) as Record<string, unknown>;
-    return {
-      version: typeof parsed["version"] === "number" ? parsed["version"] : 1,
-      potetoDefault: parsed["potetoDefault"] === true,
-    };
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return EMPTY_SETTINGS;
-    throw error;
-  }
-}
-
-function writeSettings(settings: PstackSettings): void {
-  const path = settingsFilePath();
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, `${JSON.stringify(settings, null, 2)}\n`);
-}
 
 function writeDefaultEnabled(enabled: boolean): void {
   writeSettings({ version: 1, potetoDefault: enabled });

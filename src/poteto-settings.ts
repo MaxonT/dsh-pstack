@@ -1,0 +1,52 @@
+/** Global poteto-workflow defaults persisted in `$DSH_HOME/pstack-settings.json`. */
+
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { writeFileAtomically } from "./lib/atomic-write.ts";
+import { resolveDshHome } from "./roles/role-store.ts";
+
+const SETTINGS_FILENAME = "pstack-settings.json";
+
+/** The whole settings document, versioned for forward-compatible reads. */
+export interface PstackSettings {
+  readonly version: number;
+  readonly potetoDefault: boolean;
+}
+
+/** Defaults used when the file is missing or corrupt. */
+export const EMPTY_SETTINGS: PstackSettings = { version: 1, potetoDefault: false };
+
+/** Absolute path of the settings file for the current DSH home. */
+export function settingsFilePath(): string {
+  return join(resolveDshHome(), SETTINGS_FILENAME);
+}
+
+/**
+ * Read the settings document. A missing file is a fresh install; a corrupt file
+ * falls back to {@link EMPTY_SETTINGS} so one bad write cannot break startup.
+ * Every other I/O error still surfaces.
+ */
+export function readSettings(path: string = settingsFilePath()): PstackSettings {
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return EMPTY_SETTINGS;
+    throw error;
+  }
+  try {
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    return {
+      version: typeof parsed["version"] === "number" ? parsed["version"] : 1,
+      potetoDefault: parsed["potetoDefault"] === true,
+    };
+  } catch {
+    return EMPTY_SETTINGS;
+  }
+}
+
+/** Persist the settings document atomically so a crash cannot leave it half-written. */
+export function writeSettings(settings: PstackSettings, path: string = settingsFilePath()): void {
+  writeFileAtomically(path, `${JSON.stringify(settings, null, 2)}\n`);
+}

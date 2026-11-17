@@ -37,6 +37,7 @@
     ".": "./dist/index.mjs",
     "./models": "./dist/models.mjs",
     "./poteto-projection": "./dist/poteto-projection.mjs",
+    "./poteto-settings": "./dist/poteto-settings.mjs",
     "./poteto-toggle": "./dist/poteto-toggle.mjs",
     "./poteto-toggle-remote": "./dist/poteto-toggle-remote.mjs",
     "./preset": "./dist/preset.mjs",
