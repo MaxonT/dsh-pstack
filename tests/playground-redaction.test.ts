@@ -18,7 +18,7 @@ function record(): RunRecord {
     target: null,
     session: {
       sessionId: "session-1",
-      sessionFile: "/home/leihaohao/.dsh/sessions/x/session.v4.jsonl.zstd",
+      sessionFile: "/home/user/.dsh/sessions/x/session.v4.jsonl.zstd",
       workspacePath: "/tmp/dsh-pstack-playground/raw/base/w0/workspace/x",
       agentPreset: "standard",
       skillLoads: [],
@@ -27,18 +27,25 @@ function record(): RunRecord {
           name: "bash",
           status: "ok",
           argsSummary:
-            "bash command=cat /home/leihaohao/.dsh/credentials.yaml api_key=sk-abcdefgh12345678",
+            "bash command=cat /home/user/.dsh/credentials.yaml api_key=sk-abcdefgh12345678",
+        },
+        {
+          name: "bash",
+          status: "ok",
+          argsSummary:
+            "bash command=ls ~/.dsh/sessions/--home-user-workspace-dsh-pstack-raw-base-w0--/ && curl 'http://127.0.0.1:1234/?token=faketoken0123456789abcdef'",
         },
       ],
       turnEndReason: "completed",
-      assistantText: "token sk-abcdefgh12345678 at /home/leihaohao/private",
+      assistantText:
+        "token sk-abcdefgh12345678 at /home/user/private; see --home-user-workspace-proj and token=deadbeefcafe",
       userText: "read /tmp/other",
       userTexts: ["read /tmp/other"],
       autoAnswers: [],
     },
     artifacts: {
-      recordFile: "/home/leihaohao/worker/record.json",
-      screenshotFile: "/home/leihaohao/worker/shot.png",
+      recordFile: "/home/user/worker/record.json",
+      screenshotFile: "/home/user/worker/shot.png",
       observed: ["path /tmp/other"],
     },
     semanticReview: { status: "pending", reason: "pending" },
@@ -56,5 +63,14 @@ describe("record redaction", () => {
     expect(safe.session?.sessionFile).toBe("session.jsonl.zstd");
     expect(safe.session?.workspacePath).toBe("<WORKSPACE>");
     expect(safe.artifacts.recordFile).toBe("record.json");
+  });
+
+  it("redacts URL tokens and the login name hidden in encoded session keys", () => {
+    const text = JSON.stringify(sanitizeRecord(record()));
+    expect(text).not.toContain("faketoken0123456789");
+    expect(text).not.toContain("deadbeefcafe");
+    expect(text).not.toContain("--home-user");
+    expect(text).toContain("token=<REDACTED_TOKEN>");
+    expect(text).toContain("--home-<REDACTED_USER>");
   });
 });

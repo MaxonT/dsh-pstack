@@ -59,7 +59,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w5-workspace-capability-tool-absent-fallback--/session-e64b582a-5eec-40c1-be4e-912b"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w5-workspace-capability-tool-absent-fallback--/session-e64b582a-5eec-40c1-be4e-912b"
       },
       {
         "name": "bash",
@@ -119,7 +119,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w5-workspace-capability-tool-absent-fallback--/session-e64b582a-5eec-40c1-be4e-912b"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w5-workspace-capability-tool-absent-fallback--/session-e64b582a-5eec-40c1-be4e-912b"
       },
       {
         "name": "bash",
@@ -244,7 +244,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w5-workspace-capability-tool-absent-fallback--/session-e64b582a-5eec-40c1-be4e-912b"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w5-workspace-capability-tool-absent-fallback--/session-e64b582a-5eec-40c1-be4e-912b"
       },
       {
         "name": "bash",
@@ -419,7 +419,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd /tmp && curl -s -i -c <TEMP_PATH> \"http://127.0.0.1:38789/?token=JlkOHRR87Kooz18-Ze93wl6M0jeJ54l6KNrXKo5hObU\" | head -8; echo ===; cat <TEMP_PATH>"
+        "argsSummary": "bash command=cd /tmp && curl -s -i -c <TEMP_PATH> \"http://127.0.0.1:38789/?token=<REDACTED_TOKEN>\" | head -8; echo ===; cat <TEMP_PATH>"
       },
       {
         "name": "bash",

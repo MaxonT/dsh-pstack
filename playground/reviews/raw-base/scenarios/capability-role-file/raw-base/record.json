@@ -254,17 +254,17 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-role-file--\" && ls -la && head -c 2000 *.jsonl"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-role-file--\" && ls -la && head -c 2000 *.jsonl"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-role-file--/3a3c4544-0903-4c1a-beb0-c3f2963be007\" && ls -la"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-role-file--/3a3c4544-0903-4c1a-beb0-c3f2963be007\" && ls -la"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-role-file--/3a3c4544-0903-4c1a-beb0-c3f2963be007\" && zstd -"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-role-file--/3a3c4544-0903-4c1a-beb0-c3f2963be007\" && zstd -"
       },
       {
         "name": "subagent",

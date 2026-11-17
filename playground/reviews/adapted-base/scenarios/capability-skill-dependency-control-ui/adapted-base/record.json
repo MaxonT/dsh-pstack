@@ -109,7 +109,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=export AB=<HOST_PATH> $AB open 'http://127.0.0.1:35289/?token=RIIv"
+        "argsSummary": "bash command=export AB=<HOST_PATH> $AB open 'http://127.0.0.1:35289/?token=<REDACTED_TOKEN>"
       },
       {
         "name": "bash",

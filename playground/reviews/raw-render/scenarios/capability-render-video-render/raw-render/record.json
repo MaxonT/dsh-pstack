@@ -169,7 +169,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=TOK=IPmUYQVS-uw5y-Gs2Mut-3dhd7d6mfo73QxwMHvieHw; curl -s -o /dev/null -w \"%{http_code}\\n\" \"http://127.0.0.1:35103/api/file?path=%2Ftmp&token=$TOK\"; curl -s -o /dev/null -w \"%{http_code}\\n"
+        "argsSummary": "bash command=TOK=<REDACTED_TOKEN>; curl -s -o /dev/null -w \"%{http_code}\\n\" \"http://127.0.0.1:35103/api/file?path=%2Ftmp&token=$TOK\"; curl -s -o /dev/null -w \"%{http_code}\\n"
       },
       {
         "name": "bash",
@@ -224,12 +224,12 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=TOK=IPmUYQVS-uw5y-Gs2Mut-3dhd7d6mfo73QxwMHvieHw; curl -s -i \"http://127.0.0.1:35103/?token=$TOK\" -o /dev/null -D- | head -20"
+        "argsSummary": "bash command=TOK=<REDACTED_TOKEN>; curl -s -i \"http://127.0.0.1:35103/?token=$TOK\" -o /dev/null -D- | head -20"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=TOK=IPmUYQVS-uw5y-Gs2Mut-3dhd7d6mfo73QxwMHvieHw; curl -s -c <TEMP_PATH> -L \"http://127.0.0.1:35103/?token=$TOK\" -o /dev/null; cat <TEMP_PATH> echo ===; curl -s -b <TEMP_PATH> -o /dev/nul"
+        "argsSummary": "bash command=TOK=<REDACTED_TOKEN>; curl -s -c <TEMP_PATH> -L \"http://127.0.0.1:35103/?token=$TOK\" -o /dev/null; cat <TEMP_PATH> echo ===; curl -s -b <TEMP_PATH> -o /dev/nul"
       },
       {
         "name": "bash",

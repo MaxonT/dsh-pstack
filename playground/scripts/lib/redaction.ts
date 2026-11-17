@@ -7,6 +7,8 @@ const SECRET_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
   [/github_pat_[A-Za-z0-9_]{8,}/g, "<REDACTED_GITHUB_TOKEN>"],
   [/AKIA[0-9A-Z]{12,}/g, "<REDACTED_AWS_KEY>"],
   [/Bearer\s+[A-Za-z0-9._-]{8,}/gi, "Bearer <REDACTED_TOKEN>"],
+  [/\btoken=[A-Za-z0-9._~%+-]{4,}/g, "token=<REDACTED_TOKEN>"],
+  [/\b(TOK|TOKEN)=[A-Za-z0-9._~%+-]{8,}/g, "$1=<REDACTED_TOKEN>"],
   [/-----BEGIN [A-Z ]*PRIVATE KEY-----/g, "<REDACTED_PRIVATE_KEY>"],
 ];
 
@@ -15,6 +17,11 @@ const PATH_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
   [/\/tmp\/[^\s"'\\]*/g, "<TEMP_PATH>"],
   [/\/Users\/[^\s"'\\]*/g, "<HOST_PATH>"],
   [/[A-Za-z]:\\\\[^\s"'\\]+/g, "<HOST_PATH>"],
+  // DSH session directory keys encode the workspace path with "/" replaced by "-",
+  // so a home login name shows up as `--home-<name>-...` (or `--Users-<name>-...`
+  // on macOS) and survives the absolute-path patterns above.
+  [/(--home-)[A-Za-z0-9._]+(?=-)/g, "$1<REDACTED_USER>"],
+  [/(--Users-)[A-Za-z0-9._]+(?=-)/g, "$1<REDACTED_USER>"],
 ];
 
 export function sanitizeDeep(value: unknown): unknown {

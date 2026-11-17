@@ -236,12 +236,12 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls -R \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w2-workspace-capability-render-audio--\" | head -30"
+        "argsSummary": "bash command=ls -R \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w2-workspace-capability-render-audio--\" | head -30"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w2-workspace-capability-render-audio--/session-9c6044de-042a-4ee2-8374-4b0a9814b23c"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w2-workspace-capability-render-audio--/session-9c6044de-042a-4ee2-8374-4b0a9814b23c"
       },
       {
         "name": "bash",

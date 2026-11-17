@@ -64,7 +64,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-model-unavailable-fallback--\" && ls -R | head -50"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-model-unavailable-fallback--\" && ls -R | head -50"
       },
       {
         "name": "list_subagent_models",
@@ -101,7 +101,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-model-unavailable-fallback--/session-97391956-a8d9-41cf-b8b"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-model-unavailable-fallback--/session-97391956-a8d9-41cf-b8b"
       },
       {
         "name": "bash",
@@ -314,7 +314,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-leihaohao-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-model-unavailable-fallback--/session-97391956-a8d9-41cf-b8b"
+        "argsSummary": "bash command=cd \"$DSH_HOME/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-.tmp-tmpdir-dsh-pstack-playground-raw-base-w1-workspace-capability-model-unavailable-fallback--/session-97391956-a8d9-41cf-b8b"
       },
       {
         "name": "bash",

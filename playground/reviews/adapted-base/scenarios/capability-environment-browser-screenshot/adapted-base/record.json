@@ -196,7 +196,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && node shot.mjs \"http://127.0.0.1:34407/?token=SeprPzuNXdDHOObqcVeoh13zIY4HfJZhiMOM071F3"
+        "argsSummary": "bash command=cd <TEMP_PATH> && node shot.mjs \"http://127.0.0.1:34407/?token=<REDACTED_TOKEN>"
       },
       {
         "name": "read_image",

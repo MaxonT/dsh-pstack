@@ -99,7 +99,7 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls -t ~/.dsh/sessions | head -20; ls ~/.dsh/sessions/--home-leihaohao-workspace-dsh-pstack-* 2>/dev/null | head"
+        "argsSummary": "bash command=ls -t ~/.dsh/sessions | head -20; ls ~/.dsh/sessions/--home-<REDACTED_USER>-workspace-dsh-pstack-* 2>/dev/null | head"
       },
       {
         "name": "bash",
