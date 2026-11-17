@@ -21,10 +21,9 @@
   <table>
     <tr>
       <td align="center"><strong>58</strong><br /><sub>pstack skills</sub></td>
-      <td align="center"><strong>23</strong><br /><sub>playbooks</sub></td>
-      <td align="center"><strong>5</strong><br /><sub>plugin tools</sub></td>
-      <td align="center"><strong>5</strong><br /><sub>agent presets</sub></td>
-      <td align="center"><strong>5</strong><br /><sub>maintenance scripts</sub></td>
+      <td align="center"><strong>22</strong><br /><sub>playbooks</sub></td>
+      <td align="center"><strong>4</strong><br /><sub>plugin tools</sub></td>
+      <td align="center"><strong>3</strong><br /><sub>agent presets</sub></td>
     </tr>
   </table>
 
@@ -42,7 +41,7 @@
 
 ---
 
-`dsh-pstack` ports [pstack](https://github.com/cursor/plugins/tree/main/pstack) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). It ships the upstream skills, playbooks, and references, then adds the DSH adapter for skill names, a model route for each role, subagents that accept an explicit route, and tools to list, resume, and interrupt those subagents.
+`dsh-pstack` ports [pstack](https://github.com/cursor/plugins/tree/main/pstack) to [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). It ships the upstream skills, playbooks, and references, then adds the DSH adapter for skill names, a model route for each role, subagents that accept an explicit route, and tools to list the available models and roles and interrupt a subagent.
 
 The [runtime mapping](./port/dsh.md) maps each Cursor feature to DeepSeek Harness. Real DSH Web sessions test the port, and [Port verification](#-port-verification) explains how.
 
@@ -70,27 +69,27 @@ Pick either path and expand it for the full steps.
 <details>
 <summary><strong>🖥️ Visual setup</strong></summary>
 
-Use the plugin UI to configure related plugins and role routes.
+Use the plugin UI to set workflow defaults, enable related plugins, and route each role.
 
 1. Open **Plugins → Installed plugins**, select **pstack**, then click **Configure**.
 
    ![Configure entry](./assets/plugin-configure.png)
 
-2. In **Recommended plugins**, review the **Recommended**, **Optional**, and **Conflicts** groups. **Enable all** only enables plugins in the **Recommended** group.
+2. On the **General** tab, choose whether new Sessions start with the Poteto workflow and with Agent Teams collaboration.
+
+   ![General settings](./assets/plugin-general.png)
+
+3. In **Recommended plugins**, review the **Recommended** and **Optional** groups. **Enable all** only enables plugins in the **Recommended** group.
 
    ![Recommended plugins](./assets/plugin-recommended.png)
 
-3. Open **Role models**, set the provider, model, and reasoning effort for each role, then save the changed row or use **Save all**.
+4. Open **Role models**, set the provider, model, and reasoning effort for each role, then save the changed row or use **Save all**.
 
    ![Role models](./assets/plugin-roles.png)
 
-4. Open **Settings → Agent presets**, select **Poteto mode** or **Poteto Creator mode**, and click **Set as default**.
+5. In a Session, open the model and reasoning menu. Turn on **Poteto workflow** and **Use Agent Teams** independently. Both work under any preset.
 
-   ![Agent presets](./assets/agent-presets.png)
-
-5. When creating a Session, keep the default preset or select **Poteto mode** manually.
-
-   ![Session preset](./assets/session-preset.png)
+   ![Session workflow switches](./assets/session-workflow-switches.png)
 
 </details>
 
@@ -126,6 +125,24 @@ Use pstack skills to start workflows directly from a Session.
 | `pstack_models` | Lists the providers, models, and reasoning efforts this deployment serves. |
 | `pstack_roles` | Reports each role's configured routes as provider, model, and reasoningEffort values, with each route's served efforts and default. |
 
+### 🎛️ Workflow switches
+
+The Poteto workflow and Agent Teams collaboration are independent switches, and you can turn on both in one Session. They work under any preset.
+
+- **Poteto workflow** keeps the poteto-mode rules in the system prompt on every turn.
+- **Use Agent Teams** makes `pstack_subagent` start a teammate, so pstack delegation can track shared work on the Team board.
+
+Set a switch for the current Session in the model and reasoning menu. Set the defaults for new Sessions on the **General** tab of the Pstack configuration dialog, using **Default for new sessions** and **Default Agent Teams for new sessions**.
+
+<details>
+<summary><strong>⌨️ Toggle with a keyboard shortcut</strong></summary>
+
+To flip the Poteto workflow switch from the keyboard, set a shortcut in **Settings → General → Shortcuts** under **Toggle Poteto workflow**. The shortcut toggles the switch for the current Session.
+
+![Toggle Poteto workflow shortcut](./assets/shortcut-toggle-poteto.png)
+
+</details>
+
 ### 🎭 Agent presets
 
 The package ships three child presets for delegation.
@@ -135,8 +152,6 @@ The package ships three child presets for delegation.
 | `poteto-agent` | Child | Handles implementation delegation with the pstack persona and `poteto-mode` instructions. |
 | `comment-sicko` | Child | Handles read-only comment review and reports deletion targets and `MUST KILL` symbols. |
 | `readonly` | Child | Provides a sandbox-enforced read-only researcher for inspection and evidence gathering. |
-
-The Poteto workflow is a session switch, not a preset. Set its default for new sessions in the Pstack configuration dialog.
 
 ### 📚 Additional skills
 
@@ -199,7 +214,6 @@ These limits remain even with every optional plugin that can run alongside pstac
 | Cursor platform services | No Automations, Cursor webhooks, `SendToUser`, cloud agents, or persistent cloud Projects. |
 | Bugbot | Cannot start, configure, or wait for Bugbot. You can still handle existing Bugbot comments as PR reviews. |
 | PR orchestration | No model-side change-request tool or shared PR tracking board and ledger. `watch-pr` still provides stack verdicts. |
-| Mode switching | No Option+Enter. Use the Poteto workflow switch in the session input; new sessions follow the default set in the Pstack configuration dialog. |
 | Event-driven loops | No forge event subscription. Local goals, schedules, and watchers are not equivalent. |
 | Diagram rendering | No built-in renderer. Charts return Mermaid text. Render an image with your own tools when needed. |
 | Media evidence | No built-in video rendering, recording, or frame-level verification. A project-owned renderer works when it produces a checkable file. Otherwise use external recording or FFmpeg. |

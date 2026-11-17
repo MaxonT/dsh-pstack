@@ -21,10 +21,9 @@
   <table>
     <tr>
       <td align="center"><strong>58</strong><br /><sub>pstack 技能</sub></td>
-      <td align="center"><strong>23</strong><br /><sub>playbook</sub></td>
-      <td align="center"><strong>5</strong><br /><sub>插件工具</sub></td>
-      <td align="center"><strong>5</strong><br /><sub>agent 预设</sub></td>
-      <td align="center"><strong>5</strong><br /><sub>维护脚本</sub></td>
+      <td align="center"><strong>22</strong><br /><sub>playbook</sub></td>
+      <td align="center"><strong>4</strong><br /><sub>插件工具</sub></td>
+      <td align="center"><strong>3</strong><br /><sub>智能体预设</sub></td>
     </tr>
   </table>
 
@@ -42,7 +41,7 @@
 
 ---
 
-`dsh-pstack` 将 [pstack](https://github.com/cursor/plugins/tree/main/pstack) 移植到 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）。它随包提供上游的技能、playbook 与参考文档。在此基础上，它提供技能名的 DSH 适配、为每个角色指定模型路由、可显式指定路由的子代理，以及列出、续聊和中断这些子代理的工具。
+`dsh-pstack` 将 [pstack](https://github.com/cursor/plugins/tree/main/pstack) 移植到 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（DSH）。它随包提供上游的技能、playbook 与参考文档。在此基础上，它提供技能名的 DSH 适配、为每个角色指定模型路由、可显式指定路由的子代理，以及列出可用模型与角色并中断子代理的工具。
 
 [运行时映射](./port/dsh.zh.md)给出每项 Cursor 能力到 DeepSeek Harness 的对应关系。移植由真实 DSH Web 会话验证，不靠比对文本，具体做法见[移植如何验证](#-移植如何验证)。
 
@@ -70,27 +69,27 @@
 <details>
 <summary><strong>🖥️ 可视化使用步骤</strong></summary>
 
-需要配置相关插件或角色路由时，使用插件界面。
+用插件界面设置工作流默认值、启用相关插件并配置每个角色的路由。
 
 1. 打开 **插件 → 已安装插件**，选择 **pstack 工作流**，然后点击 **配置**。
 
    ![配置入口](./assets/plugin-configure.png)
 
-2. 在 **推荐插件** 中查看 **推荐**、**可选**、**冲突** 三组。**全部启用** 只会启用 **推荐** 组中的插件。
+2. 在 **通用** 标签页，选择新会话是否默认开启 Poteto 工作流和智能体团队协作。
+
+   ![通用设置](./assets/plugin-general.png)
+
+3. 在 **推荐插件** 中查看 **推荐** 和 **可选** 两组。**全部启用** 只会启用 **推荐** 组中的插件。
 
    ![推荐插件](./assets/plugin-recommended.png)
 
-3. 打开 **角色模型**，为每个角色设置提供方、模型和推理强度，然后保存该行或点击 **全部保存**。
+4. 打开 **角色模型**，为每个角色设置提供方、模型和推理强度，然后保存该行或点击 **全部保存**。
 
    ![角色模型](./assets/plugin-roles.png)
 
-4. 打开 **设置 → Agent 预设**，选择 **Poteto 模式** 或 **Poteto 创造模式**，点击 **默认预设**。
+5. 在会话中打开模型与推理等级菜单，分别开启 **Poteto 工作流** 和 **启用智能体团队协作**。两者在任意预设下都可用。
 
-   ![Agent 预设](./assets/agent-presets.png)
-
-5. 新建会话时保留默认预设，或手动选择 **Poteto 模式**。
-
-   ![会话预设](./assets/session-preset.png)
+   ![会话工作流开关](./assets/session-workflow-switches.png)
 
 </details>
 
@@ -122,11 +121,29 @@
 | 工具 | 作用 |
 |---|---|
 | `pstack_subagent` | 用 `agent_preset` 启动一个子代理，可用 provider、model 和 reasoning_effort 覆盖路由。 |
-| `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是中断通道。 |
+| `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置预设禁用了原生 `interrupt_agent`，所以这是中断通道。 |
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning effort。 |
 | `pstack_roles` | 报告每个角色已配置的路由，以 provider、model 和 reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。 |
 
-### 🎭 Agent 预设
+### 🎛️ 工作流开关
+
+Poteto 工作流和智能体团队协作是两个独立开关，可以在同一个会话里同时开启。它们在任意预设下都可用。
+
+- **Poteto 工作流** 每轮把 poteto-mode 规则保留在系统提示里。
+- **启用智能体团队协作** 让 `pstack_subagent` 启动团队成员，因此 pstack 委派可以在团队任务板上跟踪共享工作。
+
+在模型与推理等级菜单里设置当前会话的开关。新会话的默认值在 Pstack 配置弹窗的 **通用** 标签页里设置，对应 **新会话默认开启** 和 **新会话默认开启智能体团队协作**。
+
+<details>
+<summary><strong>⌨️ 用快捷键切换</strong></summary>
+
+想用键盘切换 Poteto 工作流开关，可以在 **设置 → 通用设置 → 快捷键** 里给 **切换 Poteto 工作流** 设置一个快捷键。快捷键切换的是当前会话的开关。
+
+![切换 Poteto 工作流快捷键](./assets/shortcut-toggle-poteto.png)
+
+</details>
+
+### 🎭 智能体预设
 
 随包提供三个委派子代理预设。
 
@@ -135,8 +152,6 @@
 | `poteto-agent` | 子代理 | 实现型子代理，注入 pstack 人格和 `poteto-mode` 指令。 |
 | `comment-sicko` | 子代理 | 只读评论评审子代理，报告删除目标和 `MUST KILL` 符号。 |
 | `readonly` | 子代理 | 带只读沙箱的研究子代理，用于检查和取证。 |
-
-Poteto 工作流是会话开关，不是预设。新会话默认值在 Pstack 配置弹窗里设置。
 
 ### 📚 额外技能
 
@@ -188,7 +203,7 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 - **场景驱动。** 能力覆盖来自 `playground/scenarios/capability-inventory.json`，这份派生清单从 pstack 使用与 `raw/dsh.md` 维护。技能与 playbook 是被消费方，不按文件数量预设覆盖。
 - **语义审核。** 技能能加载，只证明它可被触达。每个场景单独记录 `supported`、`gap` 或 `inconclusive` 结论，并附审核者与理由。adapted 运行记录 `verified`、`not-verified` 或 `inconclusive`。
 - **adapted 复验。** 审核结论驱动 [port/dsh.zh.md](./port/dsh.zh.md)。用 `vp run build` 重建适配包，再重跑同一批场景，确认映射后的行为。
-- **环境矩阵。** 能力探针默认在 `base` 运行。`render` 是渲染对照环境。`agent-team` 是 team-on 环境，用于验证开启 Agent Teams 后的 pstack 委派。
+- **环境矩阵。** 能力探针默认在 `base` 运行。`render` 是渲染对照环境。`agent-team` 是开启团队协作的环境，用于验证开启智能体团队协作后的 pstack 委派。
 
 ## ⚠️ 仍存在的缺口
 
@@ -199,7 +214,6 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 | Cursor 平台服务 | 不支持 Automations、Cursor webhook、`SendToUser`、云代理和持久云端 Projects。 |
 | Bugbot | 无法启动、配置或等待 Bugbot。已有的 Bugbot 评论仍可作为 PR 评审处理。 |
 | PR 编排 | 没有模型侧变更请求工具，也没有共享的 PR 跟踪面板与记录。`watch-pr` 仍提供 PR 栈判定。 |
-| 模式切换 | 没有 Option+Enter。使用会话输入区的 Poteto 工作流开关；新会话默认值在 Pstack 配置弹窗里设置。 |
 | 事件驱动循环 | 不订阅 forge 事件。本地目标、定时任务和事件监听器并非等价替代。 |
 | 图表渲染 | 不提供内置渲染器。图表以 Mermaid 文本返回。需要图片时自行用外部工具渲染。 |
 | 视频证据 | 没有内置视频渲染、录屏与逐帧验证。项目自带的渲染器只要产出可核对的文件即可使用。否则借助外部录屏或 FFmpeg。 |
