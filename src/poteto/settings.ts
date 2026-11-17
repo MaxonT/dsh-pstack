@@ -3,8 +3,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { writeFileAtomically } from "./lib/atomic-write.ts";
-import { resolveDshHome } from "./roles/role-store.ts";
+import { writeFileAtomically } from "../lib/atomic-write.ts";
+import { resolveDshHome } from "../roles/role-store.ts";
 
 const SETTINGS_FILENAME = "pstack-settings.json";
 

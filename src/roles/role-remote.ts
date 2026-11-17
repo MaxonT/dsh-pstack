@@ -14,7 +14,7 @@ import type {
 import type { TypertContribution } from "@deepseek-ai/dsh-typert-registry";
 
 import type { CatalogueResult } from "../models.ts";
-import { pstackPotetoRemote } from "../poteto-toggle-remote.ts";
+import { pstackPotetoRemote } from "../poteto/remote.ts";
 import { REMOTE_PACKAGE, codec, directMethod, parameter } from "../lib/typert-method.ts";
 import { type BudgetApplyRequest, parseBudgetApplyRequest } from "./budget.ts";
 import {

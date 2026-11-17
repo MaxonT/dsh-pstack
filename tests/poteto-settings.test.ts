@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import { EMPTY_SETTINGS, readSettings, writeSettings } from "../src/poteto-settings.ts";
+import { EMPTY_SETTINGS, readSettings, writeSettings } from "../src/poteto/settings.ts";
 
 /** A fresh settings path inside a throwaway directory, cleaned after `run`. */
 function inTempFile(run: (path: string, dir: string) => void): void {

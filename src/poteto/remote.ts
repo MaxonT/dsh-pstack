@@ -6,7 +6,7 @@ import type {
   TypertRemoteInfo,
 } from "@deepseek-ai/dsh-typert-protocol";
 
-import { REMOTE_PACKAGE, codec, directMethod, parameter } from "./lib/typert-method.ts";
+import { REMOTE_PACKAGE, codec, directMethod, parameter } from "../lib/typert-method.ts";
 
 /** npm package owning these methods. */
 export { REMOTE_PACKAGE };

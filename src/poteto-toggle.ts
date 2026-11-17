@@ -16,10 +16,10 @@ import type {} from "@deepseek-ai/dsh-tools";
 import type {} from "@deepseek-ai/dsh-system-prompt";
 import type {} from "@deepseek-ai/dsh-typert-registry";
 
-import { potetoSupportsPreset, resolvePotetoEnabled } from "./poteto-preset.ts";
-import { potetoProjectionDefinition, type PotetoProjectionState } from "./poteto-projection.ts";
-import { readSettings, writeSettings } from "./poteto-settings.ts";
-import { POTETO_SERVICE } from "./poteto-toggle-remote.ts";
+import { potetoSupportsPreset, resolvePotetoEnabled } from "./poteto/preset-gate.ts";
+import { potetoProjectionDefinition, type PotetoProjectionState } from "./poteto/projection.ts";
+import { POTETO_SERVICE } from "./poteto/remote.ts";
+import { readSettings, writeSettings } from "./poteto/settings.ts";
 
 export const name = "pstack-poteto-toggle";
 

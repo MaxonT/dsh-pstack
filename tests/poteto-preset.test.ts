@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { potetoSupportsPreset, resolvePotetoEnabled } from "../src/poteto-preset.ts";
+import { potetoSupportsPreset, resolvePotetoEnabled } from "../src/poteto/preset-gate.ts";
 
 describe("poteto preset gate", () => {
   it("blocks the Minimal preset", () => {

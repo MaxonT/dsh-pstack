@@ -12,7 +12,7 @@ import type {} from "@deepseek-ai/dsh-client-ui-slots";
 import type {} from "@deepseek-ai/dsh-client-ui-plugin-manager/client";
 
 import { pstackClientRemote, type PstackRolesNamespace } from "../roles/role-remote.ts";
-import { type PstackPotetoModeNamespace } from "../poteto-toggle-remote.ts";
+import { type PstackPotetoModeNamespace } from "../poteto/remote.ts";
 import { createPstackConfigAction } from "./pages/PstackConfigDialog.tsx";
 import { PotetoModeToggle, POTETO_MODE_EVENT } from "./components/PotetoModeToggle.tsx";
 import { PotetoModeBadge } from "./components/PotetoModeBadge.tsx";
