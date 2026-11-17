@@ -82,9 +82,9 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
 | `pstack_roles` | 报告每个 pstack 角色及其已配置路由，路由以 provider、model、reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。传给 `pstack_subagent` 时用 `provider`、`model`、`reasoning_effort`。 |
 
-## Agent Teams
+## 智能体团队协作
 
-会话启用 Agent Teams 时，`pstack_subagent` 启动的是 teammate。先用 `team_task_create` 创建共享任务，再用 `name` 启动子代理，最后用 `team_task_update` 的 `reassign` 动作把任务分配给返回的子代理名。把任务 id 写进子代理 prompt，让子代理自己领取并完成任务。`pstack_roles` 报告的角色条目是模型路由，不是 Team 成员。
+会话启用智能体团队协作时，`pstack_subagent` 启动的是 teammate。先用 `team_task_create` 创建共享任务，再用 `name` 启动子代理，最后用 `team_task_update` 的 `reassign` 动作把任务分配给返回的子代理名。把任务 id 写进子代理 prompt，让子代理自己领取并完成任务。`pstack_roles` 报告的角色条目是模型路由，不是团队协作成员。
 
 Team 任务板用于需要负责人、依赖关系、写入范围或交接给其他成员的持久工作。私有或一次性的探索、快速查询、工具配置，以及 Lead 自己一轮就能完成的检查，不要创建 Team task；这些仍然使用普通的 `pstack_subagent` 委派，不登记任务。
 
