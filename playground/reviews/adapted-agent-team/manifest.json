@@ -1,96 +1,96 @@
 {
   "phase": "adapted",
   "environment": "agent-team",
-  "updatedAt": "2026-11-15T12:09:38.269Z",
-  "lastBatchId": "adapted-agent-team-20261115200516",
+  "updatedAt": "2026-11-17T04:55:43.312Z",
+  "lastBatchId": "adapted-agent-team-20261117125331",
   "lastMode": "full",
   "lastScope": [
-    "conflict-agent-team-interrupt-agent-contract",
-    "conflict-agent-team-list-agents-contract",
-    "conflict-agent-team-send-message-contract",
-    "conflict-agent-team-spawn-contract"
+    "agent-team-interrupt-agent-contract",
+    "agent-team-list-agents-contract",
+    "agent-team-send-message-contract",
+    "agent-team-spawn-contract"
   ],
   "scenarioIds": [
-    "conflict-agent-team-interrupt-agent-contract",
-    "conflict-agent-team-list-agents-contract",
-    "conflict-agent-team-send-message-contract",
-    "conflict-agent-team-spawn-contract"
+    "agent-team-interrupt-agent-contract",
+    "agent-team-list-agents-contract",
+    "agent-team-send-message-contract",
+    "agent-team-spawn-contract"
   ],
   "scenarios": [
     {
-      "id": "conflict-agent-team-interrupt-agent-contract",
-      "capturedAt": "2026-11-15T12:05:17.214Z",
-      "batchId": "adapted-agent-team-20261115200516",
+      "id": "agent-team-interrupt-agent-contract",
+      "capturedAt": "2026-11-17T04:53:31.815Z",
+      "batchId": "adapted-agent-team-20261117125331",
       "environment": {
         "worker": 0,
         "dshVersion": "0.2.2-rc.2",
         "adaptedVersion": "0.4.1",
         "matrix": {
           "id": "agent-team",
-          "description": "Team-on 环境：开启 Agent Teams，验证 pstack 委派、任务板、消息与中断在团队模式下可用。",
+          "description": "Team-on 环境：prepare 在 profile cordis.patch.yml 写入 agent-team.defaultEnabled=true，验证 pstack 执行者作为 teammate、共享任务板、owner 绑定、消息续跑与中断。",
           "kind": "capability",
           "enabledPluginPackages": [],
           "teamMode": true
         },
-        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
-        "configHash": "168a469d592f6d916d78eacf692972d51700d232db22ecac2557bc82a4912bb4"
+        "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
+        "configHash": "954540b81612543531565add1e354ca45e9999b0224ae535ef69b973f2d34297"
       }
     },
     {
-      "id": "conflict-agent-team-list-agents-contract",
-      "capturedAt": "2026-11-15T12:06:11.258Z",
-      "batchId": "adapted-agent-team-20261115200516",
+      "id": "agent-team-list-agents-contract",
+      "capturedAt": "2026-11-17T04:53:31.812Z",
+      "batchId": "adapted-agent-team-20261117125331",
       "environment": {
-        "worker": 0,
+        "worker": 1,
         "dshVersion": "0.2.2-rc.2",
         "adaptedVersion": "0.4.1",
         "matrix": {
           "id": "agent-team",
-          "description": "Team-on 环境：开启 Agent Teams，验证 pstack 委派、任务板、消息与中断在团队模式下可用。",
+          "description": "Team-on 环境：prepare 在 profile cordis.patch.yml 写入 agent-team.defaultEnabled=true，验证 pstack 执行者作为 teammate、共享任务板、owner 绑定、消息续跑与中断。",
           "kind": "capability",
           "enabledPluginPackages": [],
           "teamMode": true
         },
-        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
-        "configHash": "168a469d592f6d916d78eacf692972d51700d232db22ecac2557bc82a4912bb4"
+        "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
+        "configHash": "954540b81612543531565add1e354ca45e9999b0224ae535ef69b973f2d34297"
       }
     },
     {
-      "id": "conflict-agent-team-send-message-contract",
-      "capturedAt": "2026-11-15T12:07:05.329Z",
-      "batchId": "adapted-agent-team-20261115200516",
+      "id": "agent-team-send-message-contract",
+      "capturedAt": "2026-11-17T04:53:31.813Z",
+      "batchId": "adapted-agent-team-20261117125331",
       "environment": {
-        "worker": 0,
+        "worker": 2,
         "dshVersion": "0.2.2-rc.2",
         "adaptedVersion": "0.4.1",
         "matrix": {
           "id": "agent-team",
-          "description": "Team-on 环境：开启 Agent Teams，验证 pstack 委派、任务板、消息与中断在团队模式下可用。",
+          "description": "Team-on 环境：prepare 在 profile cordis.patch.yml 写入 agent-team.defaultEnabled=true，验证 pstack 执行者作为 teammate、共享任务板、owner 绑定、消息续跑与中断。",
           "kind": "capability",
           "enabledPluginPackages": [],
           "teamMode": true
         },
-        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
-        "configHash": "168a469d592f6d916d78eacf692972d51700d232db22ecac2557bc82a4912bb4"
+        "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
+        "configHash": "954540b81612543531565add1e354ca45e9999b0224ae535ef69b973f2d34297"
       }
     },
     {
-      "id": "conflict-agent-team-spawn-contract",
-      "capturedAt": "2026-11-15T12:08:18.299Z",
-      "batchId": "adapted-agent-team-20261115200516",
+      "id": "agent-team-spawn-contract",
+      "capturedAt": "2026-11-17T04:53:31.833Z",
+      "batchId": "adapted-agent-team-20261117125331",
       "environment": {
-        "worker": 0,
+        "worker": 3,
         "dshVersion": "0.2.2-rc.2",
         "adaptedVersion": "0.4.1",
         "matrix": {
           "id": "agent-team",
-          "description": "Team-on 环境：开启 Agent Teams，验证 pstack 委派、任务板、消息与中断在团队模式下可用。",
+          "description": "Team-on 环境：prepare 在 profile cordis.patch.yml 写入 agent-team.defaultEnabled=true，验证 pstack 执行者作为 teammate、共享任务板、owner 绑定、消息续跑与中断。",
           "kind": "capability",
           "enabledPluginPackages": [],
           "teamMode": true
         },
-        "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
-        "configHash": "168a469d592f6d916d78eacf692972d51700d232db22ecac2557bc82a4912bb4"
+        "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
+        "configHash": "954540b81612543531565add1e354ca45e9999b0224ae535ef69b973f2d34297"
       }
     }
   ]
