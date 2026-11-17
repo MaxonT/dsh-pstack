@@ -43,6 +43,7 @@ export interface PotetoModeToggleInjected {
   readonly selectMode: (enabled: boolean) => Promise<string | null>;
   readonly t: (
     key: "label" | "description" | "failed" | "enabledLabel" | "enabledNotice" | "disabledNotice",
+    vars?: Record<string, string | number>,
   ) => string;
 }
 
@@ -92,6 +93,8 @@ export function PotetoModeToggle(props: PotetoModeToggleInjected): ReactElement 
             tone: next ? "success" : "neutral",
             text: t(next ? "enabledNotice" : "disabledNotice"),
           });
+        } else {
+          showToast({ tone: "error", text: t("failed", { message: failure }) });
         }
       })
       .finally(() => setPending(false));

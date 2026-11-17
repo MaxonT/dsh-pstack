@@ -28,7 +28,8 @@ export function GeneralSettingsView(props: {
   const [agentTeamEnabled, setAgentTeamEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState<SettingKey | null>(null);
-  const [error, setError] = useState<string | undefined>();
+  const [loadError, setLoadError] = useState<string | undefined>();
+  const [error, setError] = useState<{ key: SettingKey; message: string } | undefined>();
 
   useEffect(() => {
     let live = true;
@@ -42,7 +43,7 @@ export function GeneralSettingsView(props: {
       },
       (reason: unknown) => {
         if (!live) return;
-        setError(t("defaultFailed", { message: messageOf(reason) }));
+        setLoadError(t("defaultFailed", { message: messageOf(reason) }));
         setLoading(false);
       },
     );
@@ -60,7 +61,7 @@ export function GeneralSettingsView(props: {
         if (failure === null) {
           if (key === "poteto") setEnabled(next);
           else setAgentTeamEnabled(next);
-        } else setError(failure);
+        } else setError({ key, message: failure });
       })
       .finally(() => setPending(null));
   };
@@ -75,15 +76,20 @@ export function GeneralSettingsView(props: {
 
   return (
     <section className="pstack-setting-list" aria-label={t("defaultLabel")}>
+      {loadError === undefined ? null : (
+        <p className="pstack-setting-description" role="alert">
+          {loadError}
+        </p>
+      )}
       <div className="pstack-setting-item">
         <div className="pstack-setting-copy">
           <div className="pstack-setting-title">{t("defaultLabel")}</div>
           <p className="pstack-setting-description">{t("defaultDescription")}</p>
-          {error === undefined ? null : (
+          {error?.key === "poteto" ? (
             <p className="pstack-setting-description" role="alert">
-              {error}
+              {error.message}
             </p>
-          )}
+          ) : null}
         </div>
         <div className="pstack-setting-control">
           <Switch
@@ -98,6 +104,11 @@ export function GeneralSettingsView(props: {
         <div className="pstack-setting-copy">
           <div className="pstack-setting-title">{t("agentTeamLabel")}</div>
           <p className="pstack-setting-description">{t("agentTeamDescription")}</p>
+          {error?.key === "agentTeam" ? (
+            <p className="pstack-setting-description" role="alert">
+              {error.message}
+            </p>
+          ) : null}
         </div>
         <div className="pstack-setting-control">
           <Switch
