@@ -11,8 +11,7 @@ import { presetCopyFor } from "./presets/preset-copy.ts";
 
 /** Read the explicit Web UI locale from `locale.preference`. */
 export function readWebUiLocale(ctx: Context): string | undefined {
-  const host = ctx as unknown as { get(name: string): unknown };
-  const settings = host.get("settings") as SettingsForms | undefined;
+  const settings: SettingsForms | undefined = ctx.get("settings");
   try {
     const value = settings?.describe().find((row) => row.ns === "locale")?.value;
     if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
