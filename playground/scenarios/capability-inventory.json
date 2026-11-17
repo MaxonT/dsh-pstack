@@ -171,8 +171,7 @@
       "sources": [
         "playground/raw/dsh.md",
         "upstream/cursor-plugins/pstack/docs/harness/claude-code.md",
-        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md",
-        "upstream/cursor-plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md"
+        "upstream/cursor-plugins/pstack/skills/swarm/SKILL.md"
       ],
       "requiredBy": ["poteto-mode", "swarm"],
       "status": "covered",
@@ -667,7 +666,6 @@
       "sources": [
         "upstream/cursor-plugins/pstack/skills/teach/SKILL.md",
         "upstream/cursor-plugins/pstack/skills/ketchup/SKILL.md",
-        "upstream/cursor-plugins/pstack/skills/how/references/explainer-prompt.md",
         "upstream/cursor-plugins/pstack/skills/statechart/SKILL.md"
       ],
       "requiredBy": ["how", "ketchup", "statechart", "teach"],
