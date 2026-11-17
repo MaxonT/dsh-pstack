@@ -229,7 +229,7 @@ These limits remain even with every optional plugin that can run alongside pstac
 
 ## 📦 Compatibility
 
-Choose a release by its declared DSH range. Each range has its own table of releases and the pstack version each bundles. A new range appears only when a DSH breaking change starts a new compatibility range; releases within an existing range add a row, and every `x.y` keeps only its latest release.
+Choose a release by its declared DSH range. Each range has its own table of releases and the pstack version each bundles.
 
 **DSH `>=0.2.2-rc.1`**
 
