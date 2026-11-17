@@ -1,10 +1,10 @@
 # 决策：角色文件路由改为结构化对象
 
-Status: proposed
+Status: accepted
 Date: 2026-11-16
 Scope: src/roles/**, src/models/**, src/compat/**, port/dsh.md, port/dsh.zh.md, docs/architecture.md, tests/**
-Implemented-by: -
-Review: 2026-11-16
+Implemented-by: commit:461d4e2
+Review: 2026-11-17
 
 ## 背景
 

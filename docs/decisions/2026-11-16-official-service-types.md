@@ -1,10 +1,10 @@
 # 决策：直接使用 DSH 服务与插槽类型
 
-Status: proposed
+Status: accepted
 Date: 2026-11-16
 Scope: src/**, package.json, pnpm-workspace.yaml, docs/decisions/**
-Implemented-by: -
-Review: 2026-11-16
+Implemented-by: commit:700bcb0
+Review: 2026-11-17
 
 ## 背景
 

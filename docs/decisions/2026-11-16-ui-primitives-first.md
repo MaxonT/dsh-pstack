@@ -1,10 +1,10 @@
 # 决策：客户端 UI 优先使用 DSH primitives
 
-Status: proposed
+Status: accepted
 Date: 2026-11-16
 Scope: src/client/**, tests/**, vite.config.ts, docs/decisions/**
-Implemented-by: -
-Review: 2026-11-16
+Implemented-by: commit:c9f76c3
+Review: 2026-11-17
 
 ## 背景
 

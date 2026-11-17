@@ -1,9 +1,9 @@
 # 决策：兼容表按 DSH 范围分组并拆历史文件，基线只记 pstack 版本
 
-Status: proposed
+Status: accepted
 Date: 2026-11-17
 Scope: README.md, README.zh.md, package.json, bump.config.ts, changes/AGENTS.md, scripts/release-compatibility.ts, port/**, docs/**, tests/release-compatibility.test.ts, tests/playground-execution.test.ts, upstream/cursor-plugins
-Implemented-by: -
+Implemented-by: commit:fcfd343
 Review: 2026-11-17
 
 ## 背景
