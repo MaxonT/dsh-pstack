@@ -11,7 +11,7 @@
 
   <p>
     <a href="https://npmx.dev/package/dsh-pstack"><img src="https://img.shields.io/npm/v/dsh-pstack?style=flat-square&colorA=080f12&colorB=1fa669" alt="npm version" /></a>
-    <a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/dsh-%3E%3D0.2.2--rc.1-1f6feb?style=flat-square" alt="dsh >=0.2.2-rc.1" /></a>
+    <a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://img.shields.io/badge/dsh-%3E%3D0.2.2--rc.2-1f6feb?style=flat-square" alt="dsh >=0.2.2-rc.2" /></a>
     <a href="https://github.com/cursor/plugins/tree/main/pstack"><img src="https://img.shields.io/badge/pstack-0.15.43-d97706?style=flat-square" alt="pstack 0.15.43" /></a>
     <a href="https://github.com/l246804/dsh-pstack/blob/main/LICENSE"><img src="https://img.shields.io/github/license/l246804/dsh-pstack?style=flat-square&colorA=080f12&colorB=1fa669" alt="license" /></a>
     <a href="https://dshopen.org/plugins/dsh-pstack/"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fdshopen.org%2Fbadge%2Fdsh-pstack.json%3Flang%3Dzh&style=flat-square" alt="开放插件市场" /></a>
@@ -47,7 +47,7 @@
 [运行时映射](./port/dsh.zh.md)给出每项 Cursor 能力到 DeepSeek Harness 的对应关系。移植由真实 DSH Web 会话验证，不靠比对文本，具体做法见[移植如何验证](#-移植如何验证)。
 
 > [!IMPORTANT]
-> 要求 DSH `>=0.2.2-rc.1`、Node.js `>=24.21.1`。部分脚本需要额外运行时，见对应脚本自身的帮助信息。
+> 要求 DSH `>=0.2.2-rc.2`、Node.js `>=24.21.1`。部分脚本需要额外运行时，见对应脚本自身的帮助信息。
 
 <a id="quick-start"></a>
 
@@ -223,16 +223,28 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 
 ## 📦 兼容性
 
-按发布版本声明的 DSH 范围选择。同一兼容范围内，每个 x.y 只保留最新版本。pstack 列记录当前移植基线，不逐一追溯旧插件版本。
+按发布版本声明的 DSH 范围选择。每个范围一张小表，列出各发布版本及其打包的 pstack 版本。只有当 DSH 出现破坏性变更、开启新的兼容范围时才新增分组；已存在范围内新增发布会增加一行，每个 x.y 只保留最新版本。
 
-<!-- compatibility-keys: ["dsh-0.2.2-rc.1+port-v1","dsh-0.2.1-rc.5+legacy-v1","dsh-0.2.0-0.3.0+legacy-v1"] -->
-| DSH 版本 | dsh-pstack 发布版本 | 包含的 pstack 版本 |
-|---|---|---|
-| `>=0.2.2-rc.1` | `0.3.1`、`0.4.1` | `0.15.43` |
-| `>=0.2.1-rc.5` | `0.2.2` | `0.15.36` |
-| `>=0.2.0 < 0.3.0` | `0.1.0` | `0.15.29` |
+**DSH `>=0.2.2-rc.1`**
 
-新增兼容范围时增加一行，其他发布自动更新所属行。规则见[移植与维护](./port/AGENTS.md#破坏性变更)。
+| dsh-pstack 发布版本 | pstack 版本 |
+|---|---|
+| `0.4.1` | `0.15.36` |
+| `0.3.1` | `0.15.36` |
+
+**DSH `>=0.2.1-rc.5`**
+
+| dsh-pstack 发布版本 | pstack 版本 |
+|---|---|
+| `0.2.2` | `0.15.36` |
+
+**DSH `>=0.2.0`**
+
+| dsh-pstack 发布版本 | pstack 版本 |
+|---|---|
+| `0.1.0` | `0.15.29` |
+
+表格维护规则见[移植与维护](./port/AGENTS.md#生成与发布)。更早的 DSH 基线移到[兼容历史](./docs/compatibility-history.zh.md)。
 
 ## 🔗 友情链接
 

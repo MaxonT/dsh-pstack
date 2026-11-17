@@ -8,7 +8,7 @@
 
 - `dsh.md`：最终适配文案的唯一手写来源。
 - `dsh.zh.md`：`dsh.md` 的逐行中文审阅译文。
-- `baseline.json`：发布兼容键、DSH 范围、上游 pstack commit。
+- `baseline.json`：当前移植的 pstack 版本。
 - `docs/`：port 自身的详细规则和记录。
 
 `port/` 只保存上述交付文件。
@@ -17,7 +17,7 @@
 
 | 文档 | 职责 |
 | --- | --- |
-| [docs/baseline.md](./docs/baseline.md) | baseline.json 字段、兼容键和发布同步规则 |
+| [docs/baseline.md](./docs/baseline.md) | baseline.json 字段、兼容表分组和发布同步规则 |
 | [docs/extensions.md](./docs/extensions.md) | 非 gap 移植的本地扩展 |
 | [docs/regressions.md](./docs/regressions.md) | 反复出现的移植问题和验证方式 |
 | [../docs/dsh-adapter.md](../docs/dsh-adapter.md) | dsh.md 模板、分块规则和 raw/port 差异 |
@@ -30,7 +30,7 @@
 1. 按 `docs/dsh-adapter.md` 维护 `dsh.md` 和 `dsh.zh.md`。
 2. 生成后运行 `vp run generate:check` 检查生成树。
 3. 用 `vpx scripts/generate-pstack.mjs --target port` 生成根 `pstack/`；加 `--check` 检查漂移。
-4. 破坏性适配同时更新 `package.json` 的 DSH 范围、`baseline.json` 的兼容键和各本地化 README 的兼容表。
+4. 破坏性适配同时更新 `package.json` 的 DSH 范围，并在各本地化 README 新增对应兼容分组；`baseline.json` 的 `pstackVersion` 随上游 pstack 发版更新。
 5. 发布说明由 agent 会话按 `changes/AGENTS.md` 从上一 tag 到当前的提交归纳生成到 `changes/RELEASE.md`，逐条与用户确认；`vp run release` 要求该文件存在且已提交后才 bumpp，发布后删除。
 
 ## 边界

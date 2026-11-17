@@ -4,65 +4,55 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import {
-  compatibilityBlock,
   releaseMetadata,
   syncCompatibility,
+  verifyCompatibility,
 } from "../scripts/release-compatibility.ts";
 
 const ROOT = join(process.cwd(), ".tmp", "release-compatibility-tests");
-const KEY = "dsh-0.2.2-rc.1+port-v1";
-const RANGE = ">=0.2.2-rc.1";
-const LEGACY_KEY = "dsh-0.2.1-rc.5+legacy-v1";
+const EN_HEADER = "| dsh-pstack release | pstack version |";
+const ZH_HEADER = "| dsh-pstack 发布版本 | pstack 版本 |";
 
-function metadata(version: string, key = KEY, pstackVersion = "0.15.36", dshRange = RANGE) {
-  return { version, dshRange, compatibilityKey: key, pstackVersion };
+function group(dsh: string, rows: Array<[string, string]>, header = EN_HEADER): string {
+  return [
+    `**DSH \`${dsh}\`**`,
+    "",
+    header,
+    "|---|---|",
+    ...rows.map(([release, pstack]) => `| \`${release}\` | \`${pstack}\` |`),
+  ].join("\n");
 }
 
-function table(version = "0.3.0-beta.1") {
-  return {
-    keys: [KEY, LEGACY_KEY],
-    rows: [
-      { dshRange: `\`${RANGE}\``, releases: [`\`${version}\``], pstackVersion: "`0.15.36`" },
-      {
-        dshRange: "`>=0.2.1-rc.5`",
-        releases: ["`0.2.2`"],
-        pstackVersion: "`0.15.36`",
-      },
+function document(heading: string, intro: string, groups: string[], tail = ""): string {
+  const parts = [heading, "", intro];
+  for (const block of groups) parts.push("", block);
+  if (tail !== "") parts.push("", tail);
+  return `${parts.join("\n")}\n`;
+}
+
+function enReadme(): string {
+  return document(
+    "## 📦 Compatibility",
+    "Intro.",
+    [
+      group(">=0.2.2-rc.1", [["0.3.1", "0.15.36"]]),
+      group(">=0.2.1-rc.5", [["0.2.2", "0.15.36"]]),
+      group(">=0.2.0", [["0.1.0", "0.15.29"]]),
     ],
-  };
+    "See tail.",
+  );
 }
 
-function readme(version = "0.3.0-beta.1", heading = "## 📦 Compatibility"): string {
-  return `# English
-
-${heading}
-
-Choose a release.
-
-<!-- compatibility-keys: ["${KEY}","${LEGACY_KEY}"] -->
-| DSH version | Release | pstack |
-|---|---|---|
-| \`${RANGE}\` | \`${version}\` | \`0.15.36\` |
-| \`>=0.2.1-rc.5\` | \`0.2.2\` | \`0.15.36\` |
-
-Keep this English tail.
-`;
-}
-
-function prepare(): void {
-  mkdirSync(join(ROOT, "port"), { recursive: true });
-  mkdirSync(join(ROOT, "upstream", "cursor-plugins", "pstack"), { recursive: true });
-  writeJson("package.json", { version: "0.3.0-beta.1", engines: { dsh: RANGE } });
-  writeJson("port/baseline.json", {
-    compatibilityKey: KEY,
-    dshVersion: RANGE,
-    pstackCommit: "ae5650febf4320793844c12c4adaa937f417f8da",
-  });
-  writeJson("upstream/cursor-plugins/pstack/plugin.json", { version: "0.15.36" });
-  writeFileSync(join(ROOT, "README.md"), readme());
-  writeFileSync(
-    join(ROOT, "README.zh.md"),
-    readme("0.3.0-beta.1", "## 📦 兼容性").replace("Keep this English tail.", "保留这段中文。"),
+function zhReadme(): string {
+  return document(
+    "## 📦 兼容性",
+    "说明。",
+    [
+      group(">=0.2.2-rc.1", [["0.3.1", "0.15.36"]], ZH_HEADER),
+      group(">=0.2.1-rc.5", [["0.2.2", "0.15.36"]], ZH_HEADER),
+      group(">=0.2.0", [["0.1.0", "0.15.29"]], ZH_HEADER),
+    ],
+    "见尾部。",
   );
 }
 
@@ -70,94 +60,91 @@ function writeJson(path: string, value: unknown): void {
   writeFileSync(join(ROOT, path), `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function prepare(): void {
+  mkdirSync(join(ROOT, "port"), { recursive: true });
+  mkdirSync(join(ROOT, "docs"), { recursive: true });
+  writeJson("package.json", { version: "0.4.0", engines: { dsh: ">=0.2.2-rc.1" } });
+  writeJson("port/baseline.json", { pstackVersion: "0.15.36" });
+  writeFileSync(join(ROOT, "README.md"), enReadme());
+  writeFileSync(join(ROOT, "README.zh.md"), zhReadme());
+  writeFileSync(
+    join(ROOT, "docs", "compatibility-history.md"),
+    document("## 📦 Compatibility history", "Older.", []),
+  );
+  writeFileSync(
+    join(ROOT, "docs", "compatibility-history.zh.md"),
+    document("## 📦 兼容历史", "更早。", []),
+  );
+}
+
+function meta(version: string, dshRange = ">=0.2.2-rc.1", pstackVersion = "0.15.36") {
+  return { version, dshRange, pstackVersion };
+}
+
+function read(path: string): string {
+  return readFileSync(join(ROOT, path), "utf8");
+}
+
 afterEach(() => {
   rmSync(ROOT, { recursive: true, force: true });
 });
 
 describe("release compatibility metadata", () => {
-  it("reads the explicit key rather than deriving it from semver", () => {
+  it("reads the version, DSH range, and pstack version", () => {
     prepare();
     expect(releaseMetadata((path) => JSON.parse(readFileSync(join(ROOT, path), "utf8")))).toEqual(
-      metadata("0.3.0-beta.1"),
+      meta("0.4.0"),
     );
   });
 
-  it("replaces one minor slot through prerelease, stable, and patch releases", () => {
-    let current = table();
-    for (const version of ["0.3.0-rc.1", "0.3.0", "0.3.1", "0.3.2"]) {
-      current = compatibilityBlock(metadata(version), current);
-    }
-    expect(current.rows[0].releases).toEqual(["`0.3.2`"]);
-  });
-
-  it("keeps the latest patch of each minor when the key is unchanged", () => {
-    let current = table("0.3.1");
-    for (const version of ["0.3.2", "0.4.0", "0.4.1"]) {
-      current = compatibilityBlock(metadata(version), current);
-    }
-    expect(current.rows[0].releases).toEqual(["`0.3.2`", "`0.4.1`"]);
-    expect(current.rows[1].releases).toEqual(["`0.2.2`"]);
-  });
-
-  it("adds a row only for a new compatibility key", () => {
-    const result = compatibilityBlock(
-      metadata("0.4.0", "dsh-0.3.0+port-v2", "0.16.0", ">=0.3.0"),
-      table(),
-    );
-    expect(result.appendedRow).toBe(true);
-    expect(result.keys[0]).toBe("dsh-0.3.0+port-v2");
-    expect(result.rows[0]).toEqual({
-      dshRange: "`>=0.3.0`",
-      releases: ["`0.4.0`"],
-      pstackVersion: "`0.16.0`",
-    });
-    expect(result.rows[1]).toEqual(table().rows[0]);
-  });
-
-  it("rejects a changed DSH range under the same key", () => {
-    const changed = table();
-    changed.rows[0].dshRange = "`>=0.3.0`";
-    expect(() => compatibilityBlock(metadata("0.4.0"), changed)).toThrow("DSH range differs");
-  });
-
-  it("rejects a release older than its existing minor slot", () => {
-    expect(() => compatibilityBlock(metadata("0.3.0"), table("0.3.1"))).toThrow("older than");
-  });
-
-  it("sorts multi-digit minors and rejects duplicate slots or keys", () => {
-    let current = table("0.9.1");
-    current = compatibilityBlock(metadata("0.10.0"), current);
-    expect(current.rows[0].releases).toEqual(["`0.9.1`", "`0.10.0`"]);
-    const duplicate = table("0.3.1");
-    duplicate.rows[0].releases.push("`0.3.2`");
-    expect(() => compatibilityBlock(metadata("0.3.3"), duplicate)).toThrow("Duplicate 0.3");
-    const duplicateKeys = table();
-    duplicateKeys.keys[1] = KEY;
-    expect(() => compatibilityBlock(metadata("0.3.1"), duplicateKeys)).toThrow("duplicates");
-  });
-
-  it("syncs both README files in an isolated release sequence", () => {
+  it("rejects an invalid package version", () => {
     prepare();
-    const read = (path: string) => JSON.parse(readFileSync(join(ROOT, path), "utf8"));
-    for (const version of ["0.3.1", "0.3.2", "0.4.0", "0.4.1"]) {
-      const manifest = read("package.json");
-      manifest.version = version;
-      writeJson("package.json", manifest);
-      expect(syncCompatibility(releaseMetadata(read), true, ROOT)).toEqual({
-        addedRow: false,
-        releases: version.startsWith("0.3") ? [`\`${version}\``] : ["`0.3.2`", `\`${version}\``],
-      });
-    }
-    for (const file of ["README.md", "README.zh.md"]) {
-      const text = readFileSync(join(ROOT, file), "utf8");
-      const separator = file === "README.md" ? ", " : "、";
-      expect(text).toContain(`\`0.3.2\`${separator}\`0.4.1\``);
-      expect(text).toContain(LEGACY_KEY);
-      expect(text).toContain(file === "README.md" ? "Keep this English tail." : "保留这段中文。");
-    }
-    expect(syncCompatibility(releaseMetadata(read), false, ROOT).releases).toEqual([
-      "`0.3.2`",
-      "`0.4.1`",
-    ]);
+    writeJson("package.json", { version: "nope", engines: { dsh: ">=0.2.2-rc.1" } });
+    expect(() =>
+      releaseMetadata((path) => JSON.parse(readFileSync(join(ROOT, path), "utf8"))),
+    ).toThrow("invalid release version");
+  });
+
+  it("treats an unreleased DSH range as pending", () => {
+    prepare();
+    expect(verifyCompatibility(meta("0.4.0", ">=0.2.2-rc.2", "0.15.43"), ROOT)).toEqual({
+      pending: true,
+      releases: [],
+    });
+  });
+
+  it("appends a new DSH group and moves the oldest range into history", () => {
+    prepare();
+    const next = meta("0.4.0", ">=0.2.2-rc.2", "0.15.43");
+    expect(syncCompatibility(next, true, ROOT)).toEqual({ addedRow: true, releases: ["`0.4.0`"] });
+    expect(verifyCompatibility(next, ROOT)).toEqual({ pending: false, releases: ["`0.4.0`"] });
+
+    const readme = read("README.md");
+    expect(readme).toContain("**DSH `>=0.2.2-rc.2`**");
+    expect(readme).toContain("**DSH `>=0.2.2-rc.1`**");
+    expect(readme).toContain("**DSH `>=0.2.1-rc.5`**");
+    expect(readme).not.toContain("**DSH `>=0.2.0`**");
+
+    const history = read("docs/compatibility-history.md");
+    expect(history).toContain("**DSH `>=0.2.0`**");
+    expect(history).not.toContain("**DSH `>=0.2.2-rc.1`**");
+  });
+
+  it("updates the matching group and keeps only the latest patch of a minor", () => {
+    prepare();
+    const next = meta("0.3.2", ">=0.2.2-rc.1", "0.15.36");
+    expect(syncCompatibility(next, true, ROOT)).toEqual({ addedRow: false, releases: ["`0.3.2`"] });
+    expect(verifyCompatibility(next, ROOT)).toEqual({ pending: false, releases: ["`0.3.2`"] });
+    const readme = read("README.md");
+    expect(readme).toContain("| `0.3.2` | `0.15.36` |");
+    expect(readme).not.toContain("| `0.3.1` |");
+  });
+
+  it("rejects bilingual tables that differ", () => {
+    prepare();
+    writeFileSync(join(ROOT, "README.zh.md"), zhReadme().replace("`0.3.1`", "`0.9.9`"));
+    expect(() => verifyCompatibility(meta("0.4.0"), ROOT)).toThrow(
+      "Bilingual compatibility tables differ",
+    );
   });
 });

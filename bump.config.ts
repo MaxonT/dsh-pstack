@@ -14,7 +14,7 @@ export default defineConfig({
     for (const file of ["README.md", "README.zh.md"]) updatedFiles.add(resolve(file));
     operation.update({ updatedFiles: [...updatedFiles] });
     console.log(
-      `${result.addedRow ? "Added" : "Updated"} compatibility row for ${metadata.compatibilityKey}: ${result.releases.join("、")}.`,
+      `${result.addedRow ? "Added" : "Updated"} compatibility group for DSH ${metadata.dshRange}: ${result.releases.join("、")}.`,
     );
   },
 });

@@ -1,21 +1,22 @@
 #!/usr/bin/env node
-// Keep bilingual compatibility tables in step with package.json before a release commit.
+// Keep the grouped bilingual compatibility tables in step with package.json before a release commit.
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const TABLE_HEADING = "## 📦 Compatibility";
-const TABLE_HEADING_ZH = "## 📦 兼容性";
-const KEYS = /^<!-- compatibility-keys: (\[.*\]) -->$/;
-const RELEASES = /`\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?`/g;
+const README_HEADING = "## 📦 Compatibility";
+const README_HEADING_ZH = "## 📦 兼容性";
+const HISTORY_HEADING = "## 📦 Compatibility history";
+const HISTORY_HEADING_ZH = "## 📦 兼容历史";
+const README_KEEP = 3;
 const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/;
-const KEY = /^[a-z0-9][a-z0-9.-]*\+(?:port|legacy)-v\d+$/;
+const GROUP_HEADING = /^\*\*DSH (.+)\*\*$/;
+const TABLE_SEPARATOR = "|---|---|";
 
 interface ReleaseMetadata {
   version: string;
   dshRange: string;
-  compatibilityKey: string;
   pstackVersion: string;
 }
 
@@ -25,25 +26,62 @@ interface Manifest {
 }
 
 interface Baseline {
-  compatibilityKey?: string;
-  dshVersion?: string;
-  pstackCommit?: string;
+  pstackVersion?: string;
 }
 
-interface UpstreamManifest {
-  version?: string;
+interface ReleaseRow {
+  release: string;
+  pstack: string;
 }
 
-interface CompatibilityRow {
+interface Group {
   dshRange: string;
-  releases: string[];
-  pstackVersion: string;
+  rows: ReleaseRow[];
 }
 
-interface CompatibilityTable {
-  keys: string[];
-  rows: CompatibilityRow[];
+interface ParsedSection {
+  header: string[];
+  groups: Group[];
+  trailing: string[];
 }
+
+interface SectionSpec {
+  file: string;
+  heading: string;
+  header: string;
+}
+
+interface Language {
+  readme: SectionSpec;
+  history: SectionSpec;
+}
+
+const LANGUAGES: readonly Language[] = [
+  {
+    readme: {
+      file: "README.md",
+      heading: README_HEADING,
+      header: "| dsh-pstack release | pstack version |",
+    },
+    history: {
+      file: "docs/compatibility-history.md",
+      heading: HISTORY_HEADING,
+      header: "| dsh-pstack release | pstack version |",
+    },
+  },
+  {
+    readme: {
+      file: "README.zh.md",
+      heading: README_HEADING_ZH,
+      header: "| dsh-pstack 发布版本 | pstack 版本 |",
+    },
+    history: {
+      file: "docs/compatibility-history.zh.md",
+      heading: HISTORY_HEADING_ZH,
+      header: "| dsh-pstack 发布版本 | pstack 版本 |",
+    },
+  },
+];
 
 function readJson(path: string, root = ROOT): unknown {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
@@ -52,35 +90,30 @@ function readJson(path: string, root = ROOT): unknown {
 export function releaseMetadata(read = readJson): ReleaseMetadata {
   const manifest = read("package.json") as Manifest;
   const baseline = read("port/baseline.json") as Baseline;
-  const upstream = read("upstream/cursor-plugins/pstack/plugin.json") as UpstreamManifest;
   const version = manifest.version;
   const dshRange = manifest.engines?.dsh;
-  const compatibilityKey = baseline.compatibilityKey;
-  const pstackVersion = upstream.version;
+  const pstackVersion = baseline.pstackVersion;
   if (typeof version !== "string" || !VERSION.test(version)) {
     throw new Error(`package.json has an invalid release version: ${version}`);
   }
   if (typeof dshRange !== "string" || dshRange.trim() === "") {
     throw new Error("package.json must declare engines.dsh");
   }
-  if (typeof compatibilityKey !== "string" || !KEY.test(compatibilityKey)) {
-    throw new Error(`Invalid baseline.compatibilityKey: ${compatibilityKey}`);
-  }
   if (typeof pstackVersion !== "string" || !VERSION.test(pstackVersion)) {
-    throw new Error(`Invalid bundled pstack version: ${pstackVersion}`);
+    throw new Error(`port/baseline.json has an invalid pstackVersion: ${pstackVersion}`);
   }
-  return { version, dshRange, compatibilityKey, pstackVersion };
+  return { version, dshRange, pstackVersion };
 }
 
 function compareVersions(left: string, right: string): number {
   const parse = (version: string) => {
     const [core, prerelease] = version.split("-");
-    return { core: core.split(".").map(Number), prerelease: prerelease?.split(".") ?? [] };
+    return { core: core!.split(".").map(Number), prerelease: prerelease?.split(".") ?? [] };
   };
   const a = parse(left);
   const b = parse(right);
   for (let index = 0; index < 3; index++) {
-    if (a.core[index] !== b.core[index]) return a.core[index] - b.core[index];
+    if (a.core[index] !== b.core[index]) return a.core[index]! - b.core[index]!;
   }
   if (a.prerelease.length === 0 || b.prerelease.length === 0) {
     return b.prerelease.length - a.prerelease.length;
@@ -100,158 +133,216 @@ function compareVersions(left: string, right: string): number {
   return 0;
 }
 
-export function compatibilityBlock(metadata: ReleaseMetadata, table: CompatibilityTable) {
-  if (table.keys.length !== table.rows.length) {
-    throw new Error("Compatibility keys and rows differ in length");
-  }
-  if (new Set(table.keys).size !== table.keys.length) {
-    throw new Error("Compatibility keys contain duplicates");
-  }
-  const targetIndex = table.keys.indexOf(metadata.compatibilityKey);
-  if (targetIndex >= 0 && table.rows[targetIndex].dshRange !== `\`${metadata.dshRange}\``) {
-    throw new Error(`DSH range differs for ${metadata.compatibilityKey}`);
-  }
-  const releases = [...(targetIndex >= 0 ? table.rows[targetIndex].releases : [])];
-  const release = `\`${metadata.version}\``;
-  const minor = metadata.version.split(".").slice(0, 2).join(".");
-  const sameMinor = releases.filter((item) => item.slice(1, -1).startsWith(`${minor}.`));
-  if (sameMinor.length > 1) throw new Error(`Duplicate ${minor} compatibility releases`);
-  if (sameMinor.length === 1 && compareVersions(metadata.version, sameMinor[0].slice(1, -1)) < 0) {
-    throw new Error(`Release ${metadata.version} is older than ${sameMinor[0]}`);
-  }
-  if (sameMinor.length === 1) releases.splice(releases.indexOf(sameMinor[0]), 1, release);
-  else releases.push(release);
-  releases.sort((left, right) => {
-    const a = left.slice(1, -1).split(".").slice(0, 2).map(Number);
-    const b = right.slice(1, -1).split(".").slice(0, 2).map(Number);
-    return a[0] - b[0] || a[1] - b[1];
-  });
-  const row: CompatibilityRow = {
-    dshRange: `\`${metadata.dshRange}\``,
-    releases,
-    pstackVersion: `\`${metadata.pstackVersion}\``,
-  };
-  if (targetIndex >= 0) {
-    const rows = [...table.rows];
-    rows[targetIndex] = row;
-    return { keys: [...table.keys], rows, appendedRow: false };
-  }
-  return {
-    keys: [metadata.compatibilityKey, ...table.keys],
-    rows: [row, ...table.rows],
-    appendedRow: true,
-  };
+function stripCell(cell: string): string {
+  return cell.trim().replace(/^`+/, "").replace(/`+$/, "").trim();
 }
 
-function serializeKeys(keys: string[]): string {
-  return `<!-- compatibility-keys: ${JSON.stringify(keys)} -->`;
+function wrap(value: string): string {
+  return `\`${value}\``;
 }
 
-function serializeRow(row: CompatibilityRow, separator: string): string {
-  return `| ${row.dshRange} | ${row.releases.join(separator)} | ${row.pstackVersion} |`;
-}
-
-function parseTable(
-  path: string,
-  lines: string[],
-  headerIndex: number,
-  dataEnd: number,
-): CompatibilityTable {
-  const keysLine = lines[headerIndex - 1]?.trim();
-  const match = keysLine?.match(KEYS);
-  if (match === null || match === undefined) {
-    throw new Error(`${path} lacks compatibility-keys metadata`);
-  }
-  const keys = JSON.parse(match[1]) as unknown;
-  if (!Array.isArray(keys) || keys.some((key) => typeof key !== "string" || !KEY.test(key))) {
-    throw new Error(`${path} has invalid compatibility keys`);
-  }
-  const rows = lines.slice(headerIndex + 2, dataEnd).map((line) => {
-    const cells = line
-      .split("|")
-      .slice(1, -1)
-      .map((cell) => cell.trim());
-    if (cells.length !== 3) throw new Error(`${path} has a malformed compatibility row`);
-    const releases = cells[1].match(RELEASES) ?? [];
-    if (releases.length === 0) throw new Error(`${path} has a row without releases`);
-    return { dshRange: cells[0], releases, pstackVersion: cells[2] };
-  });
-  if (keys.length !== rows.length) throw new Error(`${path} compatibility key count differs`);
-  return { keys, rows };
-}
-
-function updateReadme(path: string, heading: string, metadata: ReleaseMetadata, root = ROOT) {
-  const text = readFileSync(join(root, path), "utf8");
+function locate(text: string, heading: string): { start: number; end: number; section: string } {
   const start = text.indexOf(heading);
-  if (start < 0) throw new Error(`${path} lacks ${heading}`);
-  const sectionEnd = text.indexOf("\n## ", start + heading.length);
-  const end = sectionEnd < 0 ? text.length : sectionEnd;
-  const section = text.slice(start, end);
-  const lines = section.split("\n");
-  const separator = path.includes(".zh.") ? "、" : ", ";
-  const headerIndex = lines.findIndex((line) => line.startsWith("| DSH"));
-  if (headerIndex < 0 || !/^\|[-| :]+\|$/.test(lines[headerIndex + 1]?.trim() ?? "")) {
-    throw new Error(`${path} lacks a compatibility table header`);
-  }
-  let dataEnd = headerIndex + 2;
-  while (lines[dataEnd]?.startsWith("|")) dataEnd += 1;
-  const table = parseTable(path, lines, headerIndex, dataEnd);
-  const updated = compatibilityBlock(metadata, table);
-  const replacement = [
-    serializeKeys(updated.keys),
-    lines[headerIndex],
-    lines[headerIndex + 1],
-    ...updated.rows.map((row) => serializeRow(row, separator)),
-  ];
-  const before = lines.slice(0, headerIndex - 1).join("\n");
-  const after = lines.slice(dataEnd).join("\n").replace(/^\n*/, "\n\n");
-  return {
-    text: `${text.slice(0, start)}${before}\n${replacement.join("\n")}${after}${text.slice(end)}`,
-    appendedRow: updated.appendedRow,
-    releases: updated.rows[updated.keys.indexOf(metadata.compatibilityKey)].releases,
-  };
+  if (start < 0) throw new Error(`file lacks ${heading}`);
+  const next = text.indexOf("\n## ", start + heading.length);
+  const end = next < 0 ? text.length : next;
+  return { start, end, section: text.slice(start, end) };
 }
 
-export function renderCompatibility(metadata: ReleaseMetadata, root = ROOT) {
+function parseSection(section: string): ParsedSection {
+  const lines = section.split("\n");
+  const first = lines.findIndex((line) => GROUP_HEADING.test(line.trim()));
+  if (first < 0) return { header: lines, groups: [], trailing: [] };
+  const header = lines.slice(0, first);
+  const groups: Group[] = [];
+  let trailing: string[] = [];
+  let i = first;
+  while (i < lines.length) {
+    const match = GROUP_HEADING.exec(lines[i]!.trim());
+    if (match === null) break;
+    const dshRange = stripCell(match[1]!);
+    i += 1;
+    while (i < lines.length && lines[i]!.trim() === "") i += 1;
+    if (!(lines[i] ?? "").trim().startsWith("|")) {
+      throw new Error(`compatibility group ${dshRange} lacks a table header`);
+    }
+    i += 1;
+    if (!/^\|[-| :]+\|$/.test((lines[i] ?? "").trim())) {
+      throw new Error(`compatibility group ${dshRange} lacks a table separator`);
+    }
+    i += 1;
+    const rows: ReleaseRow[] = [];
+    while (i < lines.length && lines[i]!.trim().startsWith("|")) {
+      const cells = lines[i]!.split("|")
+        .slice(1, -1)
+        .map((cell) => cell.trim());
+      if (cells.length !== 2)
+        throw new Error(`compatibility group ${dshRange} has a malformed row`);
+      rows.push({ release: stripCell(cells[0]!), pstack: stripCell(cells[1]!) });
+      i += 1;
+    }
+    groups.push({ dshRange, rows });
+    let j = i;
+    while (j < lines.length && lines[j]!.trim() === "") j += 1;
+    if (j < lines.length && GROUP_HEADING.test(lines[j]!.trim())) {
+      i = j;
+      continue;
+    }
+    trailing = lines.slice(i);
+    break;
+  }
+  return { header, groups, trailing };
+}
+
+function renderGroup(group: Group, tableHeader: string): string {
   return [
-    updateReadme("README.md", TABLE_HEADING, metadata, root),
-    updateReadme("README.zh.md", TABLE_HEADING_ZH, metadata, root),
-  ];
+    `**DSH ${wrap(group.dshRange)}**`,
+    "",
+    tableHeader,
+    TABLE_SEPARATOR,
+    ...group.rows.map((row) => `| ${wrap(row.release)} | ${wrap(row.pstack)} |`),
+  ].join("\n");
+}
+
+function serializeSection(parsed: ParsedSection, tableHeader: string): string {
+  const head = parsed.header.join("\n").replace(/\n+$/, "");
+  let out = head;
+  for (const group of parsed.groups) out += `\n\n${renderGroup(group, tableHeader)}`;
+  const tail = parsed.trailing.join("\n").replace(/^\n+/, "").replace(/\s+$/, "");
+  if (tail !== "") out += `\n\n${tail}`;
+  return `${out}\n`;
+}
+
+function sortRowsDesc(rows: ReleaseRow[]): ReleaseRow[] {
+  return [...rows].sort((a, b) => compareVersions(b.release, a.release));
+}
+
+function applyRelease(rows: ReleaseRow[], metadata: ReleaseMetadata): ReleaseRow[] {
+  const minor = metadata.version.split(".").slice(0, 2).join(".");
+  const kept = rows.filter((row) => row.release.split(".").slice(0, 2).join(".") !== minor);
+  return sortRowsDesc([...kept, { release: metadata.version, pstack: metadata.pstackVersion }]);
+}
+
+function sameRows(left: readonly ReleaseRow[], right: readonly ReleaseRow[]): boolean {
+  if (left.length !== right.length) return false;
+  return left.every(
+    (row, index) => row.release === right[index]!.release && row.pstack === right[index]!.pstack,
+  );
+}
+
+function sameGroups(left: readonly Group[], right: readonly Group[]): boolean {
+  if (left.length !== right.length) return false;
+  return left.every(
+    (group, index) =>
+      group.dshRange === right[index]!.dshRange && sameRows(group.rows, right[index]!.rows),
+  );
+}
+
+function readSection(spec: SectionSpec, root: string) {
+  const text = readFileSync(join(root, spec.file), "utf8");
+  const { start, end, section } = locate(text, spec.heading);
+  return { text, start, end, parsed: parseSection(section) };
 }
 
 export function syncCompatibility(metadata = releaseMetadata(), write = true, root = ROOT) {
-  const results = renderCompatibility(metadata, root);
-  if (results.some((result) => result.appendedRow !== results[0].appendedRow)) {
-    throw new Error("Bilingual compatibility rows are inconsistent");
+  const perLanguage: Group[][] = [];
+  const writes: Array<{ file: string; text: string }> = [];
+  let addedRow: boolean | undefined;
+  for (const language of LANGUAGES) {
+    const readme = readSection(language.readme, root);
+    const history = readSection(language.history, root);
+    const combined = [...readme.parsed.groups, ...history.parsed.groups];
+    const index = combined.findIndex((group) => group.dshRange === metadata.dshRange);
+    const added = index < 0;
+    const groups = added
+      ? [
+          {
+            dshRange: metadata.dshRange,
+            rows: [{ release: metadata.version, pstack: metadata.pstackVersion }],
+          },
+          ...combined,
+        ]
+      : combined.map((group, position) =>
+          position === index ? { ...group, rows: applyRelease(group.rows, metadata) } : group,
+        );
+    if (addedRow !== undefined && addedRow !== added) {
+      throw new Error("Bilingual compatibility rows are inconsistent");
+    }
+    addedRow = added;
+    perLanguage.push(groups);
+    const readmeSection = serializeSection(
+      {
+        header: readme.parsed.header,
+        groups: groups.slice(0, README_KEEP),
+        trailing: readme.parsed.trailing,
+      },
+      language.readme.header,
+    );
+    const historySection = serializeSection(
+      {
+        header: history.parsed.header,
+        groups: groups.slice(README_KEEP),
+        trailing: history.parsed.trailing,
+      },
+      language.history.header,
+    );
+    writes.push({
+      file: language.readme.file,
+      text: `${readme.text.slice(0, readme.start)}${readmeSection}${readme.text.slice(readme.end)}`,
+    });
+    writes.push({
+      file: language.history.file,
+      text: `${history.text.slice(0, history.start)}${historySection}${history.text.slice(history.end)}`,
+    });
   }
-  if (results.some((result) => result.releases.join() !== results[0].releases.join())) {
-    throw new Error("Bilingual compatibility releases are inconsistent");
+  if (!sameGroups(perLanguage[0]!, perLanguage[1]!)) {
+    throw new Error("Bilingual compatibility tables differ");
   }
+  const target = perLanguage[0]!.find((group) => group.dshRange === metadata.dshRange);
+  const releases = (target?.rows ?? []).map((row) => wrap(row.release));
   if (write) {
-    writeFileSync(join(root, "README.md"), results[0].text);
-    writeFileSync(join(root, "README.zh.md"), results[1].text);
+    for (const result of writes) writeFileSync(join(root, result.file), result.text);
   }
-  return { addedRow: results[0].appendedRow, releases: results[0].releases };
+  return { addedRow: addedRow ?? false, releases };
+}
+
+export function verifyCompatibility(metadata = releaseMetadata(), root = ROOT) {
+  const perLanguage: Group[][] = [];
+  for (const language of LANGUAGES) {
+    const readmeGroups = readSection(language.readme, root).parsed.groups;
+    const historyGroups = readSection(language.history, root).parsed.groups;
+    const all = [...readmeGroups, ...historyGroups];
+    if (readmeGroups.length !== Math.min(README_KEEP, all.length)) {
+      throw new Error("Compatibility tables are stale; run vpx scripts/release-compatibility.ts");
+    }
+    perLanguage.push(all);
+  }
+  if (!sameGroups(perLanguage[0]!, perLanguage[1]!)) {
+    throw new Error("Bilingual compatibility tables differ");
+  }
+  const all = perLanguage[0]!;
+  const index = all.findIndex((group) => group.dshRange === metadata.dshRange);
+  if (index < 0) return { pending: true, releases: [] };
+  const expected = applyRelease(all[index]!.rows, metadata);
+  if (!sameRows(expected, all[index]!.rows)) {
+    throw new Error("Compatibility tables are stale; run vpx scripts/release-compatibility.ts");
+  }
+  return { pending: false, releases: expected.map((row) => wrap(row.release)) };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const metadata = releaseMetadata();
   if (process.argv.includes("--check")) {
-    const current = [
-      readFileSync(join(ROOT, "README.md"), "utf8"),
-      readFileSync(join(ROOT, "README.zh.md"), "utf8"),
-    ];
-    const once = renderCompatibility(metadata).map((result) => result.text);
-    if (current.some((text, index) => text !== once[index])) {
-      throw new Error("Compatibility tables are stale; run vpx scripts/release-compatibility.ts");
-    }
+    const result = verifyCompatibility(metadata);
     console.log(
-      `Compatibility tables current for ${syncCompatibility(metadata, false).releases.join("、")}.`,
+      result.pending
+        ? `No compatibility group for DSH ${metadata.dshRange} yet; it will be added on release.`
+        : `Compatibility tables current for ${result.releases.join("、")}.`,
     );
   } else {
     const result = syncCompatibility(metadata);
     console.log(
-      `${result.addedRow ? "Added" : "Updated"} compatibility row for ${metadata.compatibilityKey}: ${result.releases.join("、")}.`,
+      `${result.addedRow ? "Added" : "Updated"} compatibility group for DSH ${metadata.dshRange}: ${result.releases.join("、")}.`,
     );
   }
 }

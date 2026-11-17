@@ -34,7 +34,7 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 
 由 `scripts/generate-pstack.mjs --target port` 从固定上游和 `port/dsh.md` 整体生成的根 `pstack/` 目录，构建时复制到 `dist/pstack/`。
 
-手工变更应落在生成来源、插件源码、测试或技能工作区。发布兼容键由 `port/baseline.json` 提供；场景注册表与审核侧车分别位于 `playground/scenarios/` 和 `playground/reviews/`，都不属于本仓工程决策记录目录。
+手工变更应落在生成来源、插件源码、测试或技能工作区。发布兼容范围由 `package.json` 的 `engines.dsh` 提供，pstack 版本记在 `port/baseline.json`；场景注册表与审核侧车分别位于 `playground/scenarios/` 和 `playground/reviews/`，都不属于本仓工程决策记录目录。
 
 ## Playground（验证场）
 
@@ -54,4 +54,4 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 
 ## Baseline（发布基线）
 
-`port/baseline.json` 中的发布兼容元数据，包含 `compatibilityKey`、DSH 范围和被审核的 pstack commit。它不是 playground 的测试基线；发布脚本读取它维护根 README 兼容表。
+`port/baseline.json` 中的发布基线，记录当前移植的 pstack 版本。它不是 playground 的测试基线，也不是 README 兼容表的数据源；DSH 兼容范围以 `package.json` 的 `engines.dsh` 为准，兼容表由 `scripts/release-compatibility.ts` 直接维护。
