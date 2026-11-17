@@ -88,7 +88,7 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 
 Team 任务板用于需要负责人、依赖关系、写入范围或交接给其他成员的持久工作。私有或一次性的探索、快速查询、工具配置，以及 Lead 自己一轮就能完成的检查，不要创建 Team task；这些仍然使用普通的 `pstack_subagent` 委派，不登记任务。
 
-每次为 Team task 调用 `pstack_subagent` 后，立即用 `team_task_update` 绑定任务负责人。一轮任务派发完成后，先运行 `team_task_list`，发现 pending 且没有 owner 的任务就重新分配或删除，再进入等待。每次 `team_task_update` 前重新读取任务，确保 revision 是最新的。
+每次为 Team task 调用 `pstack_subagent` 后，立即用 `team_task_update` 绑定任务负责人。一轮任务派发完成后，先运行 `team_task_list`，发现 pending 且没有 owner 的任务就重新分配或删除，再进入等待。每次 `team_task_update` 前重新读取任务，确保 revision 是最新的。只有任务 owner 才能完成自己的任务；Lead 要代为收尾时，先把任务 reassign 给 Lead，再完成，不要直接完成子代理仍在进行中的任务。
 
 ## Local replacements
 

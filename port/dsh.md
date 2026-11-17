@@ -88,7 +88,7 @@ When the session enables Agent Teams, `pstack_subagent` starts a teammate. Creat
 
 Use the Team board for durable work that needs an owner, dependencies, write scopes, or handoff to another member. Do not create a Team task for private or one-shot exploration, quick lookups, tool setup, or a single-turn check the Lead can finish directly; those remain ordinary `pstack_subagent` delegation without a task.
 
-After each `pstack_subagent` call made for a Team task, immediately bind the task owner with `team_task_update`. After dispatching a batch, run `team_task_list` and reject any pending task that has no owner; reassign or delete it before waiting. Re-read the task immediately before every `team_task_update` so its revision is current.
+After each `pstack_subagent` call made for a Team task, immediately bind the task owner with `team_task_update`. After dispatching a batch, run `team_task_list` and reject any pending task that has no owner; reassign or delete it before waiting. Re-read the task immediately before every `team_task_update` so its revision is current. Only the task owner completes a task; if the Lead must finish it, reassign it to the Lead first instead of completing a child's in-progress task.
 
 ## Local replacements
 
