@@ -4,7 +4,7 @@
 
 ## 新增能力
 
-- **Poteto 工作流开关**：不用再先选预设，按会话开启，可以和任意预设搭配使用。开启后每轮把 poteto-mode 规则保留在系统提示里。
+- **Poteto 工作流开关**：不用再先选预设，按会话开启，可以和任意能承载它的预设搭配；固定提示、没有技能工具的预设（如 Minimal）不启用，也不能手动打开。开启后每轮把 poteto-mode 规则保留在系统提示里。
   - 用法：在模型与推理等级菜单切换当前会话的开关。快捷键在 设置 → 通用设置 → 快捷键 里绑。新会话默认在 Pstack 配置弹窗的「通用」页设置。
 - **Agent Teams 开关**：新增会话级「启用智能体团队协作」开关，以及全局默认「新会话默认开启智能体团队协作」。打开后 pstack_subagent 启动团队成员，可以在团队任务板上跟踪共享工作。
   - 用法：在模型与推理等级菜单切换当前会话的开关。新会话默认在 Pstack 配置弹窗的「通用」页设置。委派时给 pstack_subagent 传 name，便于用 list_agents 定位。
@@ -42,3 +42,4 @@
 - 发布说明改由 agent 会话生成，并作为发布前置条件（changes/RELEASE.md），旧的产物差异生成器移除。见 docs/decisions/2026-11-16-release-notes-authored-by-agent.md。
 - 客户端 UI 改用 DSH primitives，Host 改用官方 DSH 服务类型，依赖按官方 catalog 对齐，兼容表改由脚本维护。
 - playground 证据与截图刷新，评审记录 redaction 增强，本仓文档与决策记录做了清理。
+- poteto 内部模块移到 `src/poteto/`，顶层只保留真正的入口，避免内部工具被当成公开子路径导出；`decision-audit` 与 `docs-drift` 两个技能的报告模板和检查分类做了细化。
