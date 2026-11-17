@@ -2,7 +2,11 @@ import { resolve } from "node:path";
 
 import { defineConfig } from "bumpp";
 
-import { releaseMetadata, syncCompatibility } from "./scripts/release-compatibility.ts";
+import {
+  COMPATIBILITY_FILES,
+  releaseMetadata,
+  syncCompatibility,
+} from "./scripts/release-compatibility.ts";
 
 /** Update the bilingual compatibility tables after the version bump and before the release commit. */
 export default defineConfig({
@@ -11,7 +15,7 @@ export default defineConfig({
     const metadata = releaseMetadata();
     const result = syncCompatibility(metadata);
     const updatedFiles = new Set(operation.state.updatedFiles);
-    for (const file of ["README.md", "README.zh.md"]) updatedFiles.add(resolve(file));
+    for (const file of COMPATIBILITY_FILES) updatedFiles.add(resolve(file));
     operation.update({ updatedFiles: [...updatedFiles] });
     console.log(
       `${result.addedRow ? "Added" : "Updated"} compatibility group for DSH ${metadata.dshRange}: ${result.releases.join("、")}.`,

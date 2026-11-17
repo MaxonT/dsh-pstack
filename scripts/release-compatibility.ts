@@ -83,6 +83,12 @@ const LANGUAGES: readonly Language[] = [
   },
 ];
 
+/** Every file `syncCompatibility` rewrites; the release commit must include all of them. */
+export const COMPATIBILITY_FILES: readonly string[] = LANGUAGES.flatMap((language) => [
+  language.readme.file,
+  language.history.file,
+]);
+
 function readJson(path: string, root = ROOT): unknown {
   return JSON.parse(readFileSync(join(root, path), "utf8"));
 }

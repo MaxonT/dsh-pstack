@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import {
+  COMPATIBILITY_FILES,
   releaseMetadata,
   syncCompatibility,
   verifyCompatibility,
@@ -128,6 +129,26 @@ describe("release compatibility metadata", () => {
     const history = read("docs/compatibility-history.md");
     expect(history).toContain("**DSH `>=0.2.0`**");
     expect(history).not.toContain("**DSH `>=0.2.2-rc.1`**");
+  });
+
+  it("lists every file the release sync rewrites so the commit includes them", () => {
+    expect([...COMPATIBILITY_FILES].sort()).toEqual(
+      [
+        "README.md",
+        "README.zh.md",
+        "docs/compatibility-history.md",
+        "docs/compatibility-history.zh.md",
+      ].sort(),
+    );
+
+    prepare();
+    const before = new Map(COMPATIBILITY_FILES.map((file) => [file, read(file)]));
+    syncCompatibility(meta("0.4.0", ">=0.2.2-rc.2", "0.15.43"), true, ROOT);
+    for (const file of COMPATIBILITY_FILES) {
+      expect(read(file), `${file} should be rewritten by the release sync`).not.toBe(
+        before.get(file),
+      );
+    }
   });
 
   it("updates the matching group and keeps only the latest patch of a minor", () => {
