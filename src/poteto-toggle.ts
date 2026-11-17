@@ -28,6 +28,8 @@ const SECTION_ORDER = 10;
 const AGENT_TEAM_ENTRY = "@deepseek-ai/dsh-agent-team";
 const REMINDER =
   "Poteto workflow is active. Follow the poteto-mode skill in the system prompt strictly. Do not skip any required step or rule it names.";
+/** Native delegation tools pstack replaces while the poteto workflow runs. */
+const NATIVE_DELEGATION_TOOLS = ["subagent", "subagent_fork"] as const;
 
 function writeDefaultEnabled(enabled: boolean): void {
   writeSettings({ version: 1, potetoDefault: enabled });
@@ -38,7 +40,9 @@ export class PotetoModeService extends TypertRemoteService {
   static inject = ["agents", "skills", "sessions", "sessionProjections", "systemPrompt", "typert"];
 
   private readonly lastUserMessage = new WeakMap<Agent, string>();
-  private readonly lifts = new WeakMap<Agent, () => void>();
+  private readonly lifts = new WeakMap<Agent, Array<() => void>>();
+  private readonly appliedTools = new WeakMap<Agent, Set<string>>();
+  private readonly restricting = new WeakSet<Agent>();
   private defaultEnabled = false;
   private sectionText = "";
   private projection!: ProjectionHandle<PotetoProjectionState>;
@@ -104,6 +108,17 @@ export class PotetoModeService extends TypertRemoteService {
         ),
       "pstack.poteto-toggle.pre-step",
     );
+
+    this.ctx.effect(
+      () =>
+        this.ctx.on("tools/change", () => {
+          this.reconcileNativeTools();
+        }),
+      "pstack.poteto-toggle.tools-change",
+    );
+
+    // Agents created before this service finished initializing missed agent/created; catch them up.
+    this.reconcileNativeTools();
   }
 
   /** Whether poteto workflow is on for one exact Agent scope. */
@@ -199,18 +214,45 @@ export class PotetoModeService extends TypertRemoteService {
     return { enabled };
   }
 
+  /** Deny every native delegation tool currently registered for the Agent, once each. */
   private ensureNativeToolsRestricted(agent: Agent): void {
-    if (this.lifts.has(agent)) return;
-    const names = ["subagent", "subagent_fork"].filter(
-      (name) => agent.ctx.tools.get(name, agent) !== undefined,
+    if (this.restricting.has(agent)) return;
+    const applied = this.appliedTools.get(agent) ?? new Set<string>();
+    const missing = NATIVE_DELEGATION_TOOLS.filter(
+      (name) => !applied.has(name) && agent.ctx.tools.get(name, agent) !== undefined,
     );
-    if (names.length === 0) return;
-    this.lifts.set(agent, agent.ctx.tools.restrict({ deny: names }));
+    if (missing.length === 0) {
+      this.appliedTools.set(agent, applied);
+      return;
+    }
+    this.restricting.add(agent);
+    try {
+      const lift = agent.ctx.tools.restrict({ deny: missing });
+      const lifts = this.lifts.get(agent) ?? [];
+      lifts.push(lift);
+      this.lifts.set(agent, lifts);
+      for (const name of missing) applied.add(name);
+      this.appliedTools.set(agent, applied);
+    } catch {
+      // A name raced out of the registry between the lookup and the restrict; retry on the next tools/change.
+    } finally {
+      this.restricting.delete(agent);
+    }
+  }
+
+  /** Re-apply to every live root Agent, since a tool can register after the Agent was created. */
+  private reconcileNativeTools(): void {
+    for (const agent of this.ctx.agents.list()) {
+      if (agent.session.header.origin === "subagent") continue;
+      if (!this.isEnabledFor(agent)) continue;
+      this.ensureNativeToolsRestricted(agent);
+    }
   }
 
   private clearNativeToolsRestriction(agent: Agent): void {
-    this.lifts.get(agent)?.();
+    for (const lift of this.lifts.get(agent) ?? []) lift();
     this.lifts.delete(agent);
+    this.appliedTools.delete(agent);
   }
 }
 
