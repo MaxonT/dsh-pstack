@@ -31,6 +31,8 @@
 ## 修复
 
 - **推荐插件表**：之前推荐插件页列出 dsh-browser-use 与 dsh-mcp-client，两者在 DSH 0.2.2-rc.2 不可切换、始终显示未安装，现在移除，可选插件表同步更新。
+- **docs-drift 检查拆分**：之前把冗余、文档耦合、无依据扩写合成一项、报告模板只写五类，模型读到合并标签就跳过其余；现在拆成具名检查，报告列全八类，语言漂移也从术语里分出。
+- **decision-audit 报告改版**：之前每个发现重复四行文本、类名是字母，难以扫读；现在以处置表开头、发现用表格列出、类名写成文字，Legacy 和未验证项单独成表。
 
 ## 兼容基线
 
@@ -42,4 +44,4 @@
 - 发布说明改由 agent 会话生成，并作为发布前置条件（changes/RELEASE.md），旧的产物差异生成器移除。见 docs/decisions/2026-11-16-release-notes-authored-by-agent.md。
 - 客户端 UI 改用 DSH primitives，Host 改用官方 DSH 服务类型，依赖按官方 catalog 对齐，兼容表改由脚本维护。
 - playground 证据与截图刷新，评审记录 redaction 增强，本仓文档与决策记录做了清理。
-- poteto 内部模块移到 `src/poteto/`，顶层只保留真正的入口，避免内部工具被当成公开子路径导出；`decision-audit` 与 `docs-drift` 两个技能的报告模板和检查分类做了细化。
+- poteto 内部模块移到 `src/poteto/`，顶层只保留真正的入口，避免内部工具被当成公开子路径导出。
