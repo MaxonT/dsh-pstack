@@ -5,7 +5,7 @@ Date: 2026-11-08
 Scope: bump.config.ts, package.json, tsconfig.json, vite.config.ts, README.md, README.zh.md, docs/architecture.md, port/AGENTS.md, playground/cases.lock.json, port/release-compatibility.ts, tests/release-compatibility.test.ts, .github/workflows/release.yml
 Implemented-by: commit:0ae9631217ef3d30c3fdb3b118b27f3d1fa2c999
 Review: 2026-11-11
-Superseded-by: 2026-11-11-test-driven-port-baseline.md — cases.lock 已删除，发布兼容键迁到 port/baseline.json
+Superseded-by: docs/decisions/2026-11-11-test-driven-port-baseline.md — cases.lock 已删除，发布兼容键迁到 port/baseline.json
 
 ## 背景
 
