@@ -179,19 +179,11 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 |---|---|---|
 | 工作树与 GitHub PR | `@deepseek-ai/dsh-experimental-forge-bundle` | 提供本地工作树和 GitHub PR 工作流。GitHub 状态需要已登录的 `gh`。没有此插件时，通过 `bash` 使用 `gh` 与 `git worktree add`。 |
 | 历史会话 | `@deepseek-ai/dsh-experimental-session-search` | 只读检索历史会话与事件，按 `cwd` 完全匹配。是否包含子代理会话记录尚未确认。 |
-| 浏览器验证 | `@deepseek-ai/dsh-browser-use` 与下方任一提供方搭配 | 浏览器导航、输入和截图。每个会话使用一个提供方。截图需要支持图像的模型。 |
 | 桌面验证 | `@deepseek-ai/dsh-cua-bundle` | 在 macOS PTC 桌面控制会话中控制桌面。Windows 支持尚不完整。 |
 | 持久终端 | `@deepseek-ai/dsh-experimental-terminal-bundle` | 为 CLI 和 TUI 验证提供持久终端与 REPL 会话。 |
-| MCP 集成 | `@deepseek-ai/dsh-mcp-client` | 使用显式配置的 MCP server 工具。默认不配置服务器。 |
 | 自主循环 | `@deepseek-ai/dsh-experimental-ralph-bundle` | 每轮启动新子代理的前台循环，不是同一会话的常驻循环或事件监听器。 |
 
-浏览器验证从以下提供方中选一个：
-
-- `@deepseek-ai/dsh-experimental-browser-use-stagehand-native` 还需要 Chromium 和受支持的非 DeepSeek 模型。
-- `@deepseek-ai/dsh-experimental-browser-use-playwright-mcp`
-- `@deepseek-ai/dsh-experimental-browser-use-chrome-devtools-mcp`
-
-通过 **插件 → 添加插件** 启用对应包，必要时重启 profile。多数包随 DSH 提供，`@deepseek-ai/dsh-cua-bundle` 按需安装。除 MCP 客户端外，以上插件均为实验性插件。
+通过 **插件 → 添加插件** 启用对应包，必要时重启 profile。以上插件均随 DSH 作为可选插件提供，`@deepseek-ai/dsh-cua-bundle` 仅在 macOS 上运行。
 
 依赖未启用插件的步骤会标记为已跳过或已阻止，不会标记为通过。安装与回退说明见 [DSH 适配文档](./port/dsh.zh.md)。
 

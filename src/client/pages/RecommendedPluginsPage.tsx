@@ -5,12 +5,10 @@ import type { BundleInfo, ChangeResult } from "@deepseek-ai/dsh-api-remotes/clie
 
 import {
   IconAlert,
-  IconBrowser,
   IconCheck,
   IconCheckCircle,
   IconGitBranch,
   IconMonitor,
-  IconPlug,
   IconRefresh,
   IconRepeat,
   IconSearch,
@@ -69,12 +67,6 @@ const PLUGIN_GROUPS: readonly PluginGroup[] = [
     titleKey: "groupNormal",
     plugins: [
       {
-        name: "@deepseek-ai/dsh-browser-use",
-        titleKey: "recommendedBrowserTitle",
-        descriptionKey: "recommendedBrowserDescription",
-        icon: IconBrowser,
-      },
-      {
         name: "@deepseek-ai/dsh-cua-bundle",
         titleKey: "recommendedCuaTitle",
         descriptionKey: "recommendedCuaDescription",
@@ -85,12 +77,6 @@ const PLUGIN_GROUPS: readonly PluginGroup[] = [
         titleKey: "recommendedTerminalTitle",
         descriptionKey: "recommendedTerminalDescription",
         icon: IconTerminal,
-      },
-      {
-        name: "@deepseek-ai/dsh-mcp-client",
-        titleKey: "recommendedMcpTitle",
-        descriptionKey: "recommendedMcpDescription",
-        icon: IconPlug,
       },
       {
         name: "@deepseek-ai/dsh-experimental-ralph-bundle",

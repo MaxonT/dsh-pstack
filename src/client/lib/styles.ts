@@ -153,13 +153,6 @@ const CSS = `
   border-radius: var(--dsw-radius-xl);
   background: var(--dsw-alias-settings-card-fill);
 }
-.pstack-plugin-card[data-conflict="true"] {
-  border-color: color-mix(
-    in srgb,
-    var(--dsw-alias-state-error-primary) 35%,
-    var(--dsw-alias-settings-card-stroke)
-  );
-}
 .pstack-plugin-icon {
   display: grid;
   place-items: center;

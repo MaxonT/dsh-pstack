@@ -33,16 +33,11 @@ const en = {
     "Track GitHub PRs, checks, reviews, and local worktrees beside the conversation.",
   recommendedSessionSearchTitle: "Session search",
   recommendedSessionSearchDescription: "Search earlier sessions and inspect their events.",
-  recommendedBrowserTitle: "Browser verification",
-  recommendedBrowserDescription:
-    "Drive a browser to verify pages. Requires a provider and an image-capable model.",
   recommendedCuaTitle: "Desktop verification",
   recommendedCuaDescription:
     "Control the desktop in macOS PTC sessions. Windows support is incomplete.",
   recommendedTerminalTitle: "Persistent terminals",
   recommendedTerminalDescription: "Keep PTY terminals alive for CLI and TUI verification.",
-  recommendedMcpTitle: "MCP integrations",
-  recommendedMcpDescription: "Connect configured MCP servers. No server is configured by default.",
   recommendedRalphTitle: "Ralph loop",
   recommendedRalphDescription: "Run a foreground fresh-agent loop with structured handoff.",
 } as const;
@@ -78,14 +73,10 @@ const zh = {
   recommendedForgeDescription: "在会话侧边栏跟踪 GitHub PR、检查、评审和本地工作树。",
   recommendedSessionSearchTitle: "会话搜索",
   recommendedSessionSearchDescription: "搜索历史会话并检查其中的事件。",
-  recommendedBrowserTitle: "浏览器验证",
-  recommendedBrowserDescription: "驱动浏览器验证页面；需要 provider 和支持图像的模型。",
   recommendedCuaTitle: "桌面验证",
   recommendedCuaDescription: "在 macOS PTC Session 中控制桌面；Windows 支持不完整。",
   recommendedTerminalTitle: "持久终端",
   recommendedTerminalDescription: "保留 PTY 终端，用于 CLI 和 TUI 验证。",
-  recommendedMcpTitle: "MCP 集成",
-  recommendedMcpDescription: "连接已配置的 MCP server；默认不配置任何 server。",
   recommendedRalphTitle: "Ralph 循环",
   recommendedRalphDescription: "运行带结构化交接的前台 fresh-agent 循环。",
 } as const satisfies Record<keyof typeof en, string>;

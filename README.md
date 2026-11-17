@@ -179,19 +179,11 @@ Install dsh-pstack without these plugins, then enable only the capabilities you 
 |---|---|---|
 | Worktrees and GitHub PRs | `@deepseek-ai/dsh-experimental-forge-bundle` | Local worktrees and GitHub PR workflows. GitHub status requires a logged-in `gh`. Without this plugin, use `gh` and `git worktree add` through `bash`. |
 | Session history | `@deepseek-ai/dsh-experimental-session-search` | Read-only history and event inspection. It matches Sessions by exact `cwd`. Whether it includes subagent transcripts is unconfirmed. |
-| Browser verification | `@deepseek-ai/dsh-browser-use` plus one provider below | Browser navigation, input, and screenshots. One provider per Session. Screenshots need a model that accepts images. |
 | Desktop verification | `@deepseek-ai/dsh-cua-bundle` | macOS desktop control in PTC desktop-control sessions. Windows support is incomplete. |
 | Persistent terminals | `@deepseek-ai/dsh-experimental-terminal-bundle` | Persistent shell and REPL sessions for CLI and TUI verification. |
-| MCP integrations | `@deepseek-ai/dsh-mcp-client` | Tools from explicitly configured MCP servers. No server is configured by default. |
 | Autonomous loops | `@deepseek-ai/dsh-experimental-ralph-bundle` | A foreground loop that starts a fresh child each round, rather than a persistent Session loop or event watcher. |
 
-For browser verification, pick one provider:
-
-- `@deepseek-ai/dsh-experimental-browser-use-stagehand-native` also needs Chromium and a supported non-DeepSeek model.
-- `@deepseek-ai/dsh-experimental-browser-use-playwright-mcp`
-- `@deepseek-ai/dsh-experimental-browser-use-chrome-devtools-mcp`
-
-Enable packages through **Plugins → Add plugin**, then restart the profile when required. Most packages ship with DSH. `@deepseek-ai/dsh-cua-bundle` installs on demand. All except the MCP client are experimental.
+Enable packages through **Plugins → Add plugin**, then restart the profile when required. All listed packages ship with DSH as optional bundles. `@deepseek-ai/dsh-cua-bundle` runs on macOS only.
 
 Steps that depend on a disabled plugin report skipped or blocked, never passed. See the [DSH adaptation guide](./port/dsh.md) for setup and fallbacks.
 
