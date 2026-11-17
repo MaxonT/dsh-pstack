@@ -36,6 +36,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./models": "./dist/models.mjs",
+    "./poteto-preset": "./dist/poteto-preset.mjs",
     "./poteto-projection": "./dist/poteto-projection.mjs",
     "./poteto-settings": "./dist/poteto-settings.mjs",
     "./poteto-toggle": "./dist/poteto-toggle.mjs",

@@ -4,6 +4,7 @@ import { Service } from "@deepseek-ai/cordis";
 import type { Context } from "@deepseek-ai/cordis";
 import type { Agent } from "@deepseek-ai/dsh-agent";
 import type {} from "@deepseek-ai/dsh-agent-team";
+import type { AgentPresetRegistry } from "@deepseek-ai/dsh-agent-preset-registry";
 import type { ConfigEditor } from "@deepseek-ai/dsh-config-editor";
 import type { SessionId } from "@deepseek-ai/dsh-session";
 import { createUserMessage } from "@deepseek-ai/dsh-llm";
@@ -15,6 +16,7 @@ import type {} from "@deepseek-ai/dsh-tools";
 import type {} from "@deepseek-ai/dsh-system-prompt";
 import type {} from "@deepseek-ai/dsh-typert-registry";
 
+import { potetoSupportsPreset, resolvePotetoEnabled } from "./poteto-preset.ts";
 import { potetoProjectionDefinition, type PotetoProjectionState } from "./poteto-projection.ts";
 import { readSettings, writeSettings } from "./poteto-settings.ts";
 import { POTETO_SERVICE } from "./poteto-toggle-remote.ts";
@@ -106,7 +108,17 @@ export class PotetoModeService extends TypertRemoteService {
 
   /** Whether poteto workflow is on for one exact Agent scope. */
   isEnabledFor(agent: Agent): boolean {
-    return this.projection.stateOf(agent.session).enabled ?? this.defaultEnabled;
+    return resolvePotetoEnabled({
+      agentPreset: this.presetOf(agent),
+      selected: this.projection.stateOf(agent.session).enabled,
+      byDefault: this.defaultEnabled,
+    });
+  }
+
+  /** The preset this Session runs under, reading the durable log record before the creation header. */
+  private presetOf(agent: Agent): string | undefined {
+    const registry = this.ctx.get("agentPresets") as AgentPresetRegistry | undefined;
+    return registry?.presetForSession(agent.session) ?? agent.session.header.agentPreset;
   }
 
   /** Read the saved switch for one Session id. */
@@ -172,6 +184,10 @@ export class PotetoModeService extends TypertRemoteService {
     signal?.throwIfAborted();
     const agent = this.ctx.agents.get(sessionId as SessionId);
     if (agent === undefined) throw new Error(`session ${sessionId} is not live`);
+    const preset = this.presetOf(agent);
+    if (enabled && preset !== undefined && !potetoSupportsPreset(preset)) {
+      throw new Error(`the poteto workflow is not available for the "${preset}" agent preset`);
+    }
     if (this.isEnabledFor(agent) !== enabled) {
       agent.session.append("poteto/mode", { enabled });
       if (!(await this.ctx.sessions.flush(agent.session))) {
