@@ -302,9 +302,14 @@ export function evaluateAssertions(
         break;
       }
       case "no-tool-error": {
-        const errors = session.toolCalls.filter((call) => call.status === "error");
-        if (errors.length > 0)
-          failures.push(`tool errors: ${errors.map((call) => call.name).join(", ")}`);
+        // A retry that recovers is acceptable; only a tool whose last call still
+        // failed counts as a real tool error.
+        const finalStatus = new Map<string, string>();
+        for (const call of session.toolCalls) finalStatus.set(call.name, call.status);
+        const errors = [...finalStatus.entries()]
+          .filter(([, status]) => status === "error")
+          .map(([name]) => name);
+        if (errors.length > 0) failures.push(`tool errors: ${errors.join(", ")}`);
         break;
       }
       case "artifact-contains": {
