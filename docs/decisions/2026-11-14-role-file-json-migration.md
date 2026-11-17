@@ -4,7 +4,7 @@ Status: accepted
 Date: 2026-11-14
 Scope: src/**, docs/architecture.md, docs/glossary.md, port/dsh.md, port/dsh.zh.md, README.md, README.zh.md, tests/**
 Implemented-by: commit:50eb307
-Review: 2026-11-15
+Review: 2026-11-17
 
 ## 背景
 
@@ -14,7 +14,7 @@ Review: 2026-11-15
 
 - 角色文件路径改为 `$DSH_HOME/pstack-models.json`，schema 固定为 `{ "version": 1, "budget"?: "<tier> (<target>)", "roles": { "<role key>": ["provider/model [effort]", ...] } }`。`budget` 存 `budgetValueFor(tier)` 的结果，仍由 `budgetTierFromLabel` 解析。
 - 读取顺序：JSON 存在则读 JSON；JSON 缺失但同目录 `pstack-models.mdc` 存在，则用 legacy 行解析器读出 budget 与各角色路由，写成 JSON、删除 `.mdc`，再加载；两者都没有则为 missing（所有角色继承父路由），首次保存时创建 JSON。两份都在时以 JSON 为准，保留 `.mdc` 不自动删除。迁移幂等、原子写，失败时报错，不静默按 missing 处理。
-- 生产路径只保留 typed JSON 文档：语义视图把每条路由解析成 `Route`，编辑视图保留原始路由字符串以便只改一个角色时其他条目逐字节不变；删除按行文档模型与按行预算文本渲染（`parseRoleFileDocument`、`updateRoleText`、`removeRoleText` 及 `# budget` 渲染）。旧的 `.mdc` 行解析器只作为迁移用的 legacy 解析保留在 `src/compat/legacy-role-file.ts`。
+- 生产路径只保留 typed JSON 文档：语义视图把每条路由解析成 `Route`，编辑视图保留原始路由字符串以便只改一个角色时其他条目逐字节不变；删除按行文档模型与按行预算文本渲染（`parseRoleFileDocument`、`updateRoleText`、`removeRoleText` 及 `# budget` 渲染）。旧的 `.mdc` 行解析器只作为迁移用的 legacy 解析保留在 `src/compat/mdc-to-json.ts`，字符串路由语法在 `src/compat/legacy-route.ts`。
 - 角色选择不再由工具固化：`pstack_subagent` 直接收 `provider`、`model`、`reasoningEffort`，把这三个值转成子代理的 `agentOptions`；选哪个角色、用哪个模型，由调用方读取角色文件后自行决定，工具不做角色解析。
 
 ## 替代方案

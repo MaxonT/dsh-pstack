@@ -1,10 +1,10 @@
 # 决策：发布说明由 agent 会话生成并作为发布前置条件
 
-Status: proposed
+Status: accepted
 Date: 2026-11-16
 Scope: changes/**, scripts/**, .github/workflows/release.yml, package.json, docs/architecture.md, docs/decisions/**
-Implemented-by: -
-Review: 2026-11-16
+Implemented-by: commit:0d5b722
+Review: 2026-11-17
 
 ## 背景
 
