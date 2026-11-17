@@ -1,6 +1,7 @@
 /** One role card and its route rows in the role settings page. */
 
 import type { ReactElement } from "react";
+import { Tag } from "@deepseek-ai/dsh-client-ui-primitives";
 
 import type { CatalogueResult } from "../../models.ts";
 import type { RoleView, RouteView } from "../../roles/role-wire.ts";
@@ -78,11 +79,10 @@ export function RoleCard(props: {
           <div className="pstack-role-name-row">
             <h4 className="pstack-role-name">{name}</h4>
             <code className="pstack-code-chip">{role.key}</code>
-            <span
-              className="pstack-tag"
-              title={role.shape === "single" ? t("singleRouteHint") : undefined}
-            >
-              {role.shape === "single" ? t("singleRoute") : t("listRoute")}
+            <span title={role.shape === "single" ? t("singleRouteHint") : undefined}>
+              <Tag tone="neutral">
+                {role.shape === "single" ? t("singleRoute") : t("listRoute")}
+              </Tag>
             </span>
           </div>
           {description === "" ? null : <p className="pstack-role-desc">{description}</p>}

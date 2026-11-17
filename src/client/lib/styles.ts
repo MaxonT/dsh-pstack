@@ -452,14 +452,6 @@ const CSS = `
   line-height: 16px;
   padding: 1px 6px;
 }
-.pstack-tag {
-  border: 0.5px solid var(--dsw-alias-border-l3);
-  border-radius: var(--dsw-radius-xs);
-  color: var(--dsw-alias-label-secondary);
-  font-size: 11px;
-  line-height: 16px;
-  padding: 1px 6px;
-}
 .pstack-role-desc {
   margin: 0;
   color: var(--dsw-alias-label-tertiary);
@@ -507,6 +499,7 @@ const CSS = `
   font-size: 11px;
   line-height: 16px;
 }
+/* Native select: DSH primitives ship no Select control, so this styles the platform control instead of rebuilding one. */
 .pstack-select {
   box-sizing: border-box;
   width: 100%;

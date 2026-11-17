@@ -104,10 +104,3 @@ export function cx(...values: readonly (string | undefined | false)[]): string {
     .filter((value): value is string => typeof value === "string" && value !== "")
     .join(" ");
 }
-
-/** Confirm a destructive action with the one browser dialog the plugin uses. */
-export function confirmDiscard(message: string): boolean {
-  if (typeof window === "undefined") return true;
-  const confirm = window.confirm;
-  return typeof confirm !== "function" || confirm.call(window, message);
-}

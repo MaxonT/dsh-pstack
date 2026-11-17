@@ -10,7 +10,8 @@ import { RecommendedPluginsView, type PluginManagerApi } from "./RecommendedPlug
 import { RoleSettingsView, type RoleSettingsApi } from "./RoleSettingsPage.tsx";
 import { GeneralSettingsView, type PotetoSettingsApi } from "./GeneralSettingsPage.tsx";
 import { ensurePstackStyles } from "../lib/styles.ts";
-import { Button, SegmentedTabs, confirmDiscard } from "../components/ui.tsx";
+import { Button, SegmentedTabs } from "../components/ui.tsx";
+import { useDiscardConfirm } from "../components/DiscardConfirmation.tsx";
 import type { PstackTranslations } from "../locales/index.ts";
 
 ensurePstackStyles();
@@ -34,6 +35,15 @@ export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement
   const tabsId = useId();
   const { roleApi, pluginApi, potetoApi, translations, onClose } = props;
 
+  const { request: requestDiscard, dialog: discardDialog } = useDiscardConfirm({
+    title: translations.roles("discardTitle"),
+    description: translations.roles("confirmDiscardChanges"),
+    acknowledge: translations.roles("discardAcknowledge"),
+    cancel: translations.common("cancel"),
+    close: translations.common("close"),
+    confirm: translations.roles("discardConfirm"),
+  });
+
   const dirtyRef = useRef(false);
   useEffect(() => {
     dirtyRef.current = rolesDirty;
@@ -44,11 +54,12 @@ export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement
   }, [onClose]);
 
   const requestClose = useCallback(() => {
-    if (dirtyRef.current && !confirmDiscard(translations.roles("confirmDiscardChanges"))) {
+    if (dirtyRef.current) {
+      requestDiscard(() => onCloseRef.current());
       return;
     }
     onCloseRef.current();
-  }, [translations]);
+  }, [requestDiscard]);
 
   const selectTab = (next: ConfigTab): void => {
     setTab(next);
@@ -129,6 +140,7 @@ export function PstackConfigDialog(props: PstackConfigDialogProps): ReactElement
           </div>
         ) : null}
       </main>
+      {discardDialog}
     </Modal>
   );
 }

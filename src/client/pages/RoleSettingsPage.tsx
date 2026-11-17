@@ -22,6 +22,7 @@ import {
 import { BudgetDialog, budgetLabel } from "../components/BudgetDialog.tsx";
 import { messageOf } from "../lib/message.ts";
 import { RoleCard } from "../components/RoleCard.tsx";
+import { useDiscardConfirm } from "../components/DiscardConfirmation.tsx";
 import {
   draftOf,
   inheritedRoutes,
@@ -33,14 +34,7 @@ import {
 import { routeIsIncomplete, routeIsInvalid } from "../roles/role-selectors.ts";
 import { ensurePstackStyles } from "../lib/styles.ts";
 import { showToast } from "../lib/toast.ts";
-import {
-  Button,
-  IconButton,
-  Spinner,
-  Status,
-  confirmDiscard,
-  type StatusTone,
-} from "../components/ui.tsx";
+import { Button, IconButton, Spinner, Status, type StatusTone } from "../components/ui.tsx";
 import type { PstackTranslations } from "../locales/index.ts";
 
 ensurePstackStyles();
@@ -68,6 +62,15 @@ export function RoleSettingsView(props: {
   const [bulkBusy, setBulkBusy] = useState<"save" | undefined>();
   const [budgetOpen, setBudgetOpen] = useState(false);
   const abortRef = useRef<AbortController | undefined>(undefined);
+
+  const discard = useDiscardConfirm({
+    title: t("discardTitle"),
+    description: t("confirmDiscardChanges"),
+    acknowledge: t("discardAcknowledge"),
+    cancel: common("cancel"),
+    close: common("close"),
+    confirm: t("discardConfirm"),
+  });
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -324,8 +327,13 @@ export function RoleSettingsView(props: {
   };
 
   const openBudget = (): void => {
-    if (dirtyFlag && !confirmDiscard(t("confirmDiscardChanges"))) return;
-    if (dirtyFlag) resetAll();
+    if (dirtyFlag) {
+      discard.request(() => {
+        resetAll();
+        setBudgetOpen(true);
+      });
+      return;
+    }
     setBudgetOpen(true);
   };
 
@@ -396,7 +404,10 @@ export function RoleSettingsView(props: {
             label={common("refresh")}
             disabled={loading || bulkBusy !== undefined || anyBusy}
             onClick={() => {
-              if (dirtyFlag && !confirmDiscard(t("confirmDiscardChanges"))) return;
+              if (dirtyFlag) {
+                discard.request(() => void load());
+                return;
+              }
               void load();
             }}
           >
@@ -478,6 +489,7 @@ export function RoleSettingsView(props: {
           />
         ))}
       </div>
+      {discard.dialog}
     </section>
   );
 }

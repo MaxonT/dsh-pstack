@@ -2,6 +2,7 @@
 
 const en = {
   close: "Close",
+  cancel: "Cancel",
   refresh: "Refresh",
   retry: "Retry",
   save: "Save",
@@ -11,6 +12,7 @@ const en = {
 
 const zh = {
   close: "关闭",
+  cancel: "取消",
   refresh: "刷新",
   retry: "重试",
   save: "保存",
