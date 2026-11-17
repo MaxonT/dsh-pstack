@@ -217,22 +217,40 @@ function startSession(session: BrowserSession, scenarioId: string): void {
   if (started === "none") throw new Error("could not start a session in the scenario workspace");
 }
 
+/**
+ * Ensure the new-session preset matches `preset`. DSH opens a fresh session on the
+ * default preset, so when the seat already shows the wanted label there is nothing to
+ * click. rc.2 preset menus ignore a bare `.click()` and open only on a full pointer
+ * sequence, so a switch dispatches one before looking for the menu item.
+ */
 function selectPreset(session: BrowserSession, preset: string): void {
-  const seat = session.eval<string>(
+  const labels = PRESET_LABELS[preset] ?? [preset];
+  const current = session.eval<string>(
     `(() => {
       const button = [...document.querySelectorAll("button")].find((element) =>
         (element.className || "").toString().includes("seat") ||
         (element.getAttribute("aria-haspopup") === "menu" && !element.getAttribute("aria-label") && /模式|Mode/.test(element.innerText || ""))
       );
       if (!button) return "no-seat";
-      button.click(); return "clicked";
+      button.setAttribute("data-playground-preset-seat", "1");
+      return (button.innerText || "").trim();
     })()`,
   );
-  if (seat === "no-seat") throw new InfraError("preset selector is unavailable");
+  if (current === "no-seat") throw new InfraError("preset selector is unavailable");
+  if (labels.some((label) => current.startsWith(label))) return;
+  session.eval(
+    `(() => {
+      const button = document.querySelector("button[data-playground-preset-seat]");
+      for (const type of ["pointerdown", "mousedown", "pointerup", "mouseup", "click"]) {
+        button.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window, button: 0 }));
+      }
+      return true;
+    })()`,
+  );
   session.wait(900);
   const picked = session.eval<string>(
     `(() => {
-      const labels = ${JSON.stringify(PRESET_LABELS[preset] ?? [preset])};
+      const labels = ${JSON.stringify(labels)};
       const item = [...document.querySelectorAll("[role=menuitem]")].find((element) => labels.some((label) => (element.innerText || "").trim().startsWith(label)));
       if (!item) return "no-item";
       item.click(); return "selected";
@@ -274,6 +292,16 @@ function findMatchingSession(
   for (const { id, file } of listSessionFiles(paths)) {
     if (before.has(id) && statSync(file).mtimeMs < startedAtMs - 2000) continue;
     const events = readSessionEvents(file);
+    const header = events.find((event) => event.type === "session");
+    // Only the root session answers a scenario prompt. A delegated child shares the
+    // workspace and often echoes the prompt, so matching it would capture the child
+    // instead of the orchestrator.
+    if (
+      header !== undefined &&
+      (header.origin === "subagent" || (header.delegationDepth ?? 0) > 0)
+    ) {
+      continue;
+    }
     if (sessionMatchesPrompt(events, prompt, true)) return { id, file };
   }
   return null;
@@ -658,7 +686,9 @@ async function main(): Promise<void> {
   const configFile = argValue("--config") ?? process.env.PLAYGROUND_CONFIG_FILE ?? CONFIG_FILE;
   const config = readPlaygroundConfig(configFile);
   const expectedTarget = readHomePlan(paths);
-  const expectedPreset = phase === "raw" ? "standard" : "poteto-mode";
+  // DSH starts every session on its default Standard preset; the poteto workflow is a
+  // session toggle, not a root preset, so both phases assert the same preset id.
+  const expectedPreset = "standard";
   const workspace = materializeWorkspace(paths, scenario);
   rmSync(stopRequestFile(paths), { force: true });
   const capturedAt = new Date().toISOString();

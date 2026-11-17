@@ -79,7 +79,7 @@ The package registers its own model-facing tools beyond the native DSH tools abo
 | --- | --- |
 | `pstack_subagent` | Start one subagent. Requires `description` and `prompt`; optional `agent_preset` (default `general`), `name`, `cwd`, `maxDepth`, and a route override with `provider`, `model`, and `reasoning_effort`. Returns `{kind:"activation", name}`. Completion arrives as a notice. A subagent is not a background job: never pass its name to `job_output`; wait for the completion notice, or use the native `list_agents`/`send_message`. |
 | `pstack_interrupt` | Stop one pstack child's current turn by its name from `list_agents` or its Session id. Built-in presets disable the native `interrupt_agent`, so this is the interruption path for a pstack child. |
-| `pstack_models` | List the provider, model, and reasoning-effort routes this deployment serves. |
+| `pstack_models` | List the advertised provider, model, and reasoning-effort routes for this deployment. Availability is confirmed only by an actual call; a listed route can still fail or be disallowed for the Session. |
 | `pstack_roles` | Report each pstack role with its configured routes as provider, model, and reasoningEffort values, plus each route's served efforts and default. Pass them to `pstack_subagent` as `provider`, `model`, and `reasoning_effort`. |
 
 ## Agent Teams

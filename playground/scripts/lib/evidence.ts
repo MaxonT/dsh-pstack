@@ -19,6 +19,11 @@ export interface SessionEvent {
   type: string;
   cwd?: string;
   agentPreset?: string;
+  /** Provenance on the `session` header: delegated children carry "subagent". */
+  origin?: string;
+  /** Delegation depth on the `session` header: root is 0, children are 1 or more. */
+  delegationDepth?: number;
+  parentSession?: string;
   data?: Record<string, unknown>;
 }
 

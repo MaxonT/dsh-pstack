@@ -17,14 +17,10 @@ const scenario: BehaviorScenario = {
     {
       kind: "turn-completed",
     },
-    {
-      kind: "skill-loaded",
-      skill: "poteto-help",
-    },
   ],
   rubric: {
     prompt:
-      "用户能看到帮助技能被实际加载，并据此给出能力说明。技能没有被加载、或只输出一段泛泛的文本，记为缺口。",
+      "用户能看到基于 pstack 帮助技能内容的能力说明。通过 skill 工具加载，或用 read 读取 SKILL.md，都属于正确的加载方式；只有完全没有帮助内容、或输出与帮助技能无关时才记为缺口。",
   },
   uiObservations: [
     {

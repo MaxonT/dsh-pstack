@@ -233,6 +233,19 @@ export function writeRoleFile(paths: WorkerPaths, config: PlaygroundConfig): voi
   );
 }
 
+/**
+ * Seed `$DSH_HOME/pstack-settings.json`. The poteto workflow is a session toggle whose
+ * global default applies to new Sessions, so this replaces the removed poteto-mode root
+ * preset: adapted workers start with the workflow on, raw keeps it off.
+ */
+export function writePstackSettings(paths: WorkerPaths, potetoDefault: boolean): void {
+  mkdirSync(paths.home, { recursive: true });
+  writeFileSync(
+    join(paths.home, "pstack-settings.json"),
+    `${JSON.stringify({ version: 1, potetoDefault }, null, 2)}\n`,
+  );
+}
+
 export function writeHomePatch(paths: WorkerPaths, plan: ProviderPlan, _phase: Phase): void {
   mkdirSync(paths.home, { recursive: true });
   const patch = [

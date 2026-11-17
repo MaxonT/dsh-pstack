@@ -79,7 +79,7 @@ DeepSeek Harness 没有 Cursor Automations、Bugbot、Cursor cloud agents 或内
 | --- | --- |
 | `pstack_subagent` | 启动一个子智能体。必填 `description` 和 `prompt`；可选 `agent_preset`（默认 `general`）、`name`、`cwd`、`maxDepth`，以及用 `provider`、`model`、`reasoning_effort` 覆盖路由。返回 `{kind:"activation", name}`。完成时发通知。子智能体不是后台 job：不要把它的名称传给 `job_output`；等完成通知，或用原生 `list_agents`/`send_message`。 |
 | `pstack_interrupt` | 按 `list_agents` 的名称或会话 id 中断一个 pstack 子代理当前回合。内置 preset 禁用了原生 `interrupt_agent`，所以这是 pstack 子代理的中断通道。 |
-| `pstack_models` | 列出本部署实际提供的 provider、model 和 reasoning-effort 路由。 |
+| `pstack_models` | 列出本部署声明的 provider、model 和 reasoning-effort 路由。是否可用以实际调用为准；列出的路由仍可能失败或被当前 Session 禁用。 |
 | `pstack_roles` | 报告每个 pstack 角色及其已配置路由，路由以 provider、model、reasoningEffort 给出，并附该路由的可用 efforts 和默认档位。传给 `pstack_subagent` 时用 `provider`、`model`、`reasoning_effort`。 |
 
 ## 智能体团队协作

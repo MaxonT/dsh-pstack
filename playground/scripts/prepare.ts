@@ -17,6 +17,7 @@ import {
   stopWeb,
   writeHomePatch,
   writeRoleFile,
+  writePstackSettings,
   writeWorkerInstructions,
   CONFIG_FILE,
   type ProviderPlan,
@@ -120,6 +121,7 @@ async function main(): Promise<void> {
       if (readPhase(worker) === "raw") mountRawTree(worker);
       writeWorkerInstructions(worker);
       writeRoleFile(worker, config);
+      writePstackSettings(worker, phase === "adapted");
     }
     await startWorkers(workers, plan, port);
     return;
@@ -145,6 +147,7 @@ async function main(): Promise<void> {
     copyCredentials(worker, config.credentialsFile);
     writeHomePatch(worker, plan, phase);
     writeRoleFile(worker, config);
+    writePstackSettings(worker, phase === "adapted");
     registerWorkspaces(worker, listScenarioIds());
     if (enabledPackages.length > 0) {
       if (installed === null) {
