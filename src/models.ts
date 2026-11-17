@@ -19,6 +19,9 @@ import {
 
 export type { CatalogueResult, ModelEntry, ProviderEntry } from "./models/catalogue.ts";
 
+import { describeError } from "./lib/errors.ts";
+import { textOutput } from "./lib/tool-output.ts";
+
 export const name = "pstack-models";
 
 export const inject = ["llm", "tools"];
@@ -159,12 +162,7 @@ export function createPstackModelsTool(llm: LlmRuntime): ToolDefinition {
         },
       },
     },
-    output: {
-      schema: CATALOGUE_OUTPUT_SCHEMA,
-      render: (_args, value) => [
-        { type: "text", text: renderCatalogue(value as unknown as CatalogueResult) },
-      ],
-    },
+    output: textOutput<CatalogueResult>(CATALOGUE_OUTPUT_SCHEMA, renderCatalogue),
     isConcurrencySafe: () => true,
     async execute(rawArgs, exec: ToolRunContext) {
       if (typeof rawArgs !== "object" || rawArgs === null || Array.isArray(rawArgs)) {
@@ -181,8 +179,4 @@ export function createPstackModelsTool(llm: LlmRuntime): ToolDefinition {
 
 export function apply(ctx: Context): void {
   ctx.tools.register(createPstackModelsTool(ctx.llm));
-}
-
-function describeError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
+import { describeError } from "../lib/errors.ts";
 import { normalizeBudgetValue } from "../roles/budget.ts";
 import { LEGACY_PSTACK_MODELS_FILENAME, isRetiredRoleKey } from "../roles/role-manifest.ts";
 import type { Route } from "../roles/route.ts";
@@ -106,10 +107,6 @@ export function upgradeRoleFile(
   } catch (error) {
     return { status: "unreadable", reason: describeError(error) };
   }
-}
-
-function describeError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }
 
 /**

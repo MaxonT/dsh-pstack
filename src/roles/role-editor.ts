@@ -12,6 +12,7 @@ import { readFileSync } from "node:fs";
 import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
 
 import { collectCatalogue } from "../models.ts";
+import { describeError } from "../lib/errors.ts";
 import {
   isBudgetRowBlocked,
   planBudget,
@@ -326,8 +327,4 @@ export async function saveBudgetConfiguration(
 
 function routeSignature(routes: readonly Route[]): string {
   return JSON.stringify(routes);
-}
-
-function describeError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

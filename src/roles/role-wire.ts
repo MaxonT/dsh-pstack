@@ -2,7 +2,7 @@
 
 import { isRoleKey, ROLE_SHAPES, type RoleShape } from "./role-manifest.ts";
 import { parseRouteEntry, type Route } from "./route.ts";
-import { WireTypeError } from "../lib/wire-error.ts";
+import { WireTypeError, optionalString, parseRecord } from "../lib/wire-error.ts";
 
 export type { CatalogueResult } from "../models/catalogue.ts";
 export type { BudgetApplyRequest } from "./budget.ts";
@@ -47,25 +47,6 @@ export type SaveRoleResult =
 export type BudgetApplyResult =
   | { readonly ok: true; readonly snapshot: RoleFileSnapshot }
   | { readonly ok: false; readonly reason: string };
-
-function parseRecord(value: unknown, path: string): Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new WireTypeError(path, "an object");
-  }
-  return value as Record<string, unknown>;
-}
-
-function optionalString(
-  record: Record<string, unknown>,
-  key: string,
-  path: string,
-): string | undefined {
-  const value = record[key];
-  if (value !== undefined && typeof value !== "string") {
-    throw new WireTypeError(`${path}.${key}`, "a string when present");
-  }
-  return value as string | undefined;
-}
 
 function parseRouteView(value: unknown, path: string): RouteView {
   const parsed = parseRouteEntry(value);

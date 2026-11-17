@@ -15,6 +15,7 @@ import type { SubagentCapabilities, SubagentRuntime } from "@deepseek-ai/dsh-sub
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
 import { POTETO_MODE_SKILL_PATH } from "./lib/paths.ts";
+import { textOutput } from "./lib/tool-output.ts";
 
 export const name = "pstack-subagent";
 
@@ -310,12 +311,7 @@ export function createPstackSubagentTool(
       },
       required: ["description", "prompt"],
     },
-    output: {
-      schema: OUTPUT_SCHEMA,
-      render: (_args, value) => [
-        { type: "text", text: renderDelegation(value as unknown as ActivationResult) },
-      ],
-    },
+    output: textOutput<ActivationResult>(OUTPUT_SCHEMA, renderDelegation),
     isConcurrencySafe: () => true,
     async execute(rawArgs, exec: ToolRunContext) {
       if (exec.agent === undefined) throw new Error("pstack_subagent requires a calling Agent");
@@ -340,12 +336,7 @@ export function createPstackInterruptTool(runtime: DelegationRuntime): ToolDefin
       },
       required: ["agent"],
     },
-    output: {
-      schema: INTERRUPT_OUTPUT_SCHEMA,
-      render: (_args, value) => [
-        { type: "text", text: renderInterrupt(value as unknown as InterruptResult) },
-      ],
-    },
+    output: textOutput<InterruptResult>(INTERRUPT_OUTPUT_SCHEMA, renderInterrupt),
     isConcurrencySafe: () => true,
     async execute(rawArgs, exec: ToolRunContext) {
       if (exec.agent === undefined) throw new Error("pstack_interrupt requires a calling Agent");

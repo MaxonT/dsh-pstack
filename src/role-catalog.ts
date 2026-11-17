@@ -15,6 +15,8 @@ import { collectCatalogue, type CatalogueResult } from "./models.ts";
 import { ROLE_MANIFEST, type RoleSpec } from "./roles/role-manifest.ts";
 import { modelsFilePath, readRoleConfiguration, resolveDshHome } from "./roles/role-store.ts";
 import { isRoute, type Route } from "./roles/route.ts";
+import { describeError } from "./lib/errors.ts";
+import { textOutput } from "./lib/tool-output.ts";
 
 export const name = "pstack-role-catalog";
 
@@ -145,25 +147,15 @@ export function createPstackRolesTool(
     name: TOOL_NAME,
     description: TOOL_DESCRIPTION,
     parameters: { type: "object", additionalProperties: false, properties: {} },
-    output: {
-      schema: OUTPUT_SCHEMA,
-      render: (_args, value) => {
-        const result = value as unknown as {
-          roles: readonly RoleCapability[];
-          catalogueError?: string;
-        };
-        const text = renderRoleCapabilities(result.roles);
-        return [
-          {
-            type: "text",
-            text:
-              result.catalogueError === undefined
-                ? text
-                : `${text}\n\ncatalogue discovery failed: ${result.catalogueError}`,
-          },
-        ];
+    output: textOutput<{ roles: readonly RoleCapability[]; catalogueError?: string }>(
+      OUTPUT_SCHEMA,
+      (value) => {
+        const text = renderRoleCapabilities(value.roles);
+        return value.catalogueError === undefined
+          ? text
+          : `${text}\n\ncatalogue discovery failed: ${value.catalogueError}`;
       },
-    },
+    ),
     // A legacy role file is migrated on first read, which writes, so this tool is
     // not concurrency-safe even though its own result is read-only.
     isConcurrencySafe: () => false,
@@ -237,8 +229,4 @@ function annotateRoute(route: RoleRoute, catalogue: CatalogueResult): RoleRoute 
     ...(model.defaultEffort === undefined ? {} : { defaultEffort: model.defaultEffort }),
     ...(model.error === undefined ? {} : { error: model.error }),
   };
-}
-
-function describeError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }

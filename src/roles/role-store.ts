@@ -17,6 +17,7 @@ import { join, resolve } from "node:path";
 
 import { upgradeRoleFile, type RoleFileDocumentLike } from "../compat/upgrade-role-file.ts";
 import { writeFileAtomically } from "../lib/atomic-write.ts";
+import { describeError } from "../lib/errors.ts";
 import { normalizeBudgetValue } from "./budget.ts";
 import { PSTACK_MODELS_FILENAME, findRole, isRetiredRoleKey } from "./role-manifest.ts";
 import { parseRouteEntry, validateRoleRouteShape, type Route } from "./route.ts";
@@ -222,8 +223,4 @@ function parseJsonObject(text: string): Record<string, unknown> {
     throw new Error("the role file must be a JSON object");
   }
   return raw as Record<string, unknown>;
-}
-
-function describeError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }
