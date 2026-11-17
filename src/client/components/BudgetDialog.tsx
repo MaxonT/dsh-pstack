@@ -22,7 +22,7 @@ import { roleLabel } from "../roles/role-copy.ts";
 import { providerIsUsable, providerIssue, providerLabel } from "../roles/role-selectors.ts";
 import { Button, Spinner, Status, type StatusTone } from "./ui.tsx";
 import { IconCheckCircle } from "./icons.tsx";
-import type { PstackTranslations } from "../locales/index.ts";
+import type { PstackTranslations, RolesKey } from "../locales/index.ts";
 
 export interface BudgetDialogProps {
   readonly snapshot: RoleFileSnapshot;
@@ -37,11 +37,17 @@ export interface BudgetDialogProps {
   readonly signal?: AbortSignal;
 }
 
-const TIER_LABEL: Record<BudgetTier, "budgetTierLarge" | "budgetTierMedium" | "budgetTierSmall"> = {
+/** Optional tier labels, keyed by the raw tier; an unknown tier falls back to its name. */
+const TIER_LABEL: Partial<Record<string, RolesKey>> = {
   large: "budgetTierLarge",
   medium: "budgetTierMedium",
   small: "budgetTierSmall",
 };
+
+function tierLabel(tier: string, t: PstackTranslations["roles"]): string {
+  const key = TIER_LABEL[tier];
+  return key === undefined ? tier : t(key);
+}
 
 export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
   const { snapshot, catalogue, translations, onApply, onApplied, onClose, signal } = props;
@@ -168,7 +174,7 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
               >
                 {BUDGET_TIERS.map((value) => (
                   <option key={value} value={value}>
-                    {t(TIER_LABEL[value])}
+                    {tierLabel(value, t)}
                   </option>
                 ))}
               </select>
@@ -290,14 +296,7 @@ export function BudgetDialog(props: BudgetDialogProps): ReactElement | null {
 export function budgetLabel(raw: string | undefined, t: PstackTranslations["roles"]): string {
   const tier = budgetTierFromLabel(raw);
   if (tier === undefined) return raw ?? t("budgetUnset");
-  switch (tier) {
-    case "large":
-      return t("budgetTierLarge");
-    case "medium":
-      return t("budgetTierMedium");
-    case "small":
-      return t("budgetTierSmall");
-  }
+  return tierLabel(tier, t);
 }
 
 function budgetPlanErrorText(reason: unknown, t: PstackTranslations["roles"]): string {

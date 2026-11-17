@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
 
 import { parseRoleConfiguration } from "../src/roles/role-store.ts";
+import { ROLE_MANIFEST } from "../src/roles/role-manifest.ts";
 import {
   saveBudgetConfiguration,
   saveRoleConfiguration,
@@ -137,7 +138,7 @@ describe("role editor", () => {
     const path = join(tempHome(undefined), "missing.json");
     const snapshot = snapshotFromConfiguration({ status: "missing", path });
     expect(snapshot.status).toBe("missing");
-    expect(snapshot.roles.length).toBe(9);
+    expect(snapshot.roles.length).toBe(ROLE_MANIFEST.length);
     expect(snapshot.canSave).toBe(true);
   });
 

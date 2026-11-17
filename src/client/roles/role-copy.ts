@@ -1,6 +1,5 @@
 /** Locale keys for the display name and scenario of every pstack role. */
 
-import { isRoleKey, type RoleKey } from "../../roles/role-manifest.ts";
 import type { RolesKey, Translate } from "../locales/index.ts";
 
 export interface RoleCopy {
@@ -8,7 +7,12 @@ export interface RoleCopy {
   readonly descriptionKey: RolesKey;
 }
 
-export const ROLE_COPY: Record<RoleKey, RoleCopy> = {
+/**
+ * Optional per-role display copy, keyed by the raw role key. A role with no entry
+ * falls back to its raw key and an empty description, so adding or retiring a
+ * manifest role never forces an edit here.
+ */
+export const ROLE_COPY: Partial<Record<string, RoleCopy>> = {
   "feature, refactoring": {
     nameKey: "roleFeatureName",
     descriptionKey: "roleFeatureDescription",
@@ -35,7 +39,14 @@ export const ROLE_COPY: Record<RoleKey, RoleCopy> = {
   },
 };
 
-/** User-facing role name for a manifest key, falling back to the raw key. */
+/** User-facing role name, falling back to the raw key when no copy exists. */
 export function roleLabel(key: string, t: Translate<RolesKey>): string {
-  return isRoleKey(key) ? t(ROLE_COPY[key].nameKey) : key;
+  const copy = ROLE_COPY[key];
+  return copy === undefined ? key : t(copy.nameKey);
+}
+
+/** User-facing role description, empty when no copy exists. */
+export function roleDescription(key: string, t: Translate<RolesKey>): string {
+  const copy = ROLE_COPY[key];
+  return copy === undefined ? "" : t(copy.descriptionKey);
 }

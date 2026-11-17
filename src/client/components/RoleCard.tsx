@@ -3,7 +3,6 @@
 import type { ReactElement } from "react";
 
 import type { CatalogueResult } from "../../models.ts";
-import { isRoleKey } from "../../roles/role-manifest.ts";
 import type { RoleView, RouteView } from "../../roles/role-wire.ts";
 import {
   IconAlert,
@@ -15,7 +14,7 @@ import {
   IconTrash,
   IconUndo,
 } from "./icons.tsx";
-import { ROLE_COPY, roleLabel } from "../roles/role-copy.ts";
+import { roleDescription, roleLabel } from "../roles/role-copy.ts";
 import { isClearDraft, isDirty, type RoleDraft } from "../roles/role-draft.ts";
 import {
   effortChoices,
@@ -52,9 +51,8 @@ export function RoleCard(props: {
   } = props;
   const t = translations.roles;
   const common = translations.common;
-  const copy = isRoleKey(role.key) ? ROLE_COPY[role.key] : undefined;
   const name = roleLabel(role.key, t);
-  const description = copy === undefined ? "" : t(copy.descriptionKey);
+  const description = roleDescription(role.key, t);
   const dirty = isDirty(draft, role);
   const controlsDisabled = disabled || draft.busy;
   const incomplete = draft.routes.some(routeIsIncomplete);
