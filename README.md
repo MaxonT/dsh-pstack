@@ -231,6 +231,12 @@ These limits remain even with every optional plugin that can run alongside pstac
 
 Choose a release by its declared DSH range. Each range has its own table of releases and the pstack version each bundles.
 
+**DSH `>=0.2.2-rc.2`**
+
+| dsh-pstack release | pstack version |
+|---|---|
+| `0.5.0` | `0.15.43` |
+
 **DSH `>=0.2.2-rc.1`**
 
 | dsh-pstack release | pstack version |
@@ -243,12 +249,6 @@ Choose a release by its declared DSH range. Each range has its own table of rele
 | dsh-pstack release | pstack version |
 |---|---|
 | `0.2.2` | `0.15.36` |
-
-**DSH `>=0.2.0`**
-
-| dsh-pstack release | pstack version |
-|---|---|
-| `0.1.0` | `0.15.29` |
 
 See [Porting](./port/AGENTS.md#生成与发布) for how the compatibility table is maintained. Older DSH baselines move to [compatibility history](./docs/compatibility-history.md).
 

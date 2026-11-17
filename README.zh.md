@@ -231,6 +231,12 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 
 按发布版本声明的 DSH 范围选择。每个范围一张小表，列出各发布版本及其打包的 pstack 版本。
 
+**DSH `>=0.2.2-rc.2`**
+
+| dsh-pstack 发布版本 | pstack 版本 |
+|---|---|
+| `0.5.0` | `0.15.43` |
+
 **DSH `>=0.2.2-rc.1`**
 
 | dsh-pstack 发布版本 | pstack 版本 |
@@ -243,12 +249,6 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 | dsh-pstack 发布版本 | pstack 版本 |
 |---|---|
 | `0.2.2` | `0.15.36` |
-
-**DSH `>=0.2.0`**
-
-| dsh-pstack 发布版本 | pstack 版本 |
-|---|---|
-| `0.1.0` | `0.15.29` |
 
 表格维护规则见[移植与维护](./port/AGENTS.md#生成与发布)。更早的 DSH 基线移到[兼容历史](./docs/compatibility-history.zh.md)。
 
