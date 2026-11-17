@@ -29,6 +29,8 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 ```markdown
 ## Plugin tools
 
+## Agent Teams
+
 ## Local replacements
 ```
 
@@ -100,6 +102,12 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 - 不写参数 schema、必填项、枚举或返回结构；没有该工具时不写占位行，也不假设插件未安装。
 - 工具作用范围只写本插件实际提供的资源，不用原生工具的行为来定义它。
 
+### Agent Teams（仅 port）
+
+- 只在会话启用 Agent Teams 时说明 `pstack_subagent` 与团队任务的配合：先建共享任务，再用 `name` 启动子代理，最后把任务 reassign 给该名字，并把任务 id 写进子代理 prompt。
+- 不写团队工具的 schema、参数清单或返回结构；`pstack_roles` 报告的是模型路由而非团队成员，这点只写一次。
+- 默认三句以内，块规则之外优先遵守通用写作约束。
+
 ### Local replacements（仅 port）
 
 - 只登记确实需要本地替代实现的依赖技能或外部技能，一行一个，写替代技能或 fallback。
@@ -112,4 +120,4 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 - 修改任一 `dsh.md` 后同步对应的 `dsh.zh.md`，保持 section 数、行数、Cursor 单元格和代码标识符一致。
 - 生成前对照本文件自检：没有抄运行时 schema 字面量，没有跨块重复，没有未定义的内部简称，`Local replacements` 只含真实替代项。
 - `scripts/generate-pstack.mjs --target port|raw` 负责生成树；修改后人工检查结构并运行 `vp run generate:check`。
-- 结构只允许模板中的核心块；`port` 只追加 `Plugin tools` 和 `Local replacements`。
+- 结构只允许模板中的核心块；`port` 只追加 `Plugin tools`、`Agent Teams` 和 `Local replacements`。

@@ -28,7 +28,7 @@ Role 的路由基数由 `shape` 描述：
 
 ## Agent preset（Agent 预设）
 
-DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会话能力。根 preset 面向用户会话，子代理 preset 面向委派。`pstack_subagent` 的 `agent` 选择 preset 类别；模型路由由调用方读取角色文件后通过 `provider`/`model`/`reasoningEffort` 传入，两者是正交配置。
+DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会话能力。DSH 的根 preset 面向用户会话；本插件只随包提供子代理 preset（`poteto-agent`、`comment-sicko`、`readonly`），用户会话的 Poteto 工作流改由会话级开关启用。`pstack_subagent` 的 `agent` 选择 preset 类别；模型路由由调用方读取角色文件后通过 `provider`/`model`/`reasoningEffort` 传入，两者是正交配置。
 
 ## Generated tree（生成树）
 
