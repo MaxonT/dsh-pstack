@@ -3,15 +3,15 @@
   "phase": "adapted",
   "environment": {
     "worker": 2,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.3.1",
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "base",
       "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
       "kind": "base",
       "enabledPluginPackages": []
     },
-    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
     "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
   },
   "target": {
@@ -20,20 +20,11 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-60348a39-0918-4557-9ff1-44d4cb3e17a1",
+    "sessionId": "session-33a77aaa-1cba-4dab-a52b-97e34f623d09",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
-    "agentPreset": "poteto-mode",
-    "skillLoads": [
-      "poteto-mode",
-      "poteto-mode#playbooks/feature.md",
-      "principle-laziness-protocol",
-      "principle-model-the-domain",
-      "unslop",
-      "technical-writing",
-      "principle-build-the-lever",
-      "principle-prove-it-works"
-    ],
+    "agentPreset": "standard",
+    "skillLoads": [],
     "toolCalls": [
       {
         "name": "bash",
@@ -41,9 +32,9 @@
         "argsSummary": "bash command=pwd; ls -la"
       },
       {
-        "name": "bash",
+        "name": "glob",
         "status": "ok",
-        "argsSummary": "bash command=cat <HOST_PATH> 2>/dev/null | head -100"
+        "argsSummary": "glob pattern=**/*"
       },
       {
         "name": "read",
@@ -51,55 +42,34 @@
         "argsSummary": "read file_path=<TEMP_PATH>"
       },
       {
-        "name": "bash",
+        "name": "read",
         "status": "ok",
-        "argsSummary": "bash command=git -C <TEMP_PATH> log --oneline -5; git -C <TEMP_PATH> s"
-      },
-      {
-        "name": "pstack_skill",
-        "status": "ok",
-        "argsSummary": "pstack_skill name=poteto-mode"
-      },
-      {
-        "name": "pstack_skill",
-        "status": "error",
-        "argsSummary": "pstack_skill name=feature",
-        "errorText": "Error: skill \"feature\" is unknown or no longer available"
-      },
-      {
-        "name": "pstack_skill",
-        "status": "ok",
-        "argsSummary": "pstack_skill name=poteto-mode resource=playbooks/feature.md"
+        "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cat -A <TEMP_PATH> ls <HOST_PATH>"
-      },
-      {
-        "name": "pstack_skill",
-        "status": "ok",
-        "argsSummary": "pstack_skill name=principle-laziness-protocol"
-      },
-      {
-        "name": "pstack_skill",
-        "status": "ok",
-        "argsSummary": "pstack_skill name=principle-model-the-domain"
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --oneline -10 && git status && git branch -a"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && git branch -a && git log --all --oneline && git ls-files && cat .git/config"
+        "argsSummary": "bash command=ls -R <HOST_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cat $DSH_HOME/pstack-models.json 2>/dev/null; echo ---; ls $DSH_HOME 2>/dev/null | head"
-      },
-      {
-        "name": "pstack_models",
-        "status": "ok",
-        "argsSummary": "pstack_models"
+        "argsSummary": "bash command=ls <HOST_PATH> && ls -a <TEMP_PATH>"
       },
       {
         "name": "pstack_roles",
@@ -107,29 +77,39 @@
         "argsSummary": "pstack_roles"
       },
       {
-        "name": "pstack_skill",
+        "name": "bash",
         "status": "ok",
-        "argsSummary": "pstack_skill name=unslop"
+        "argsSummary": "bash command=node -v; ls $DSH_HOME; cat $DSH_HOME/pstack-models.json 2>/dev/null | head -40"
       },
       {
-        "name": "pstack_skill",
+        "name": "read",
         "status": "ok",
-        "argsSummary": "pstack_skill name=technical-writing"
+        "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
-        "name": "pstack_skill",
+        "name": "read",
         "status": "ok",
-        "argsSummary": "pstack_skill name=principle-build-the-lever"
+        "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
-        "name": "pstack_skill",
+        "name": "read",
         "status": "ok",
-        "argsSummary": "pstack_skill name=principle-prove-it-works"
+        "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
-        "name": "todo_write",
+        "name": "read",
         "status": "ok",
-        "argsSummary": "todo_write"
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
         "name": "todo_write",
@@ -139,12 +119,17 @@
       {
         "name": "pstack_subagent",
         "status": "ok",
-        "argsSummary": "pstack_subagent"
+        "argsSummary": "pstack_subagent name=probe-impl"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=sleep 60; ls -la <TEMP_PATH>"
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --oneline && git show --stat HEAD && echo \"--- run ---\" && node probe.mjs; echo \"exit=$?\""
       },
       {
         "name": "read",
@@ -155,30 +140,10 @@
         "name": "read",
         "status": "ok",
         "argsSummary": "read file_path=<TEMP_PATH>"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && bash check.sh; echo \"exit=$?\"; echo ---; bash -n check.sh; echo \"syntax=$?\"; echo ---; git status --shor"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd /tmp && rm -rf probe-fail && mkdir probe-fail && cp <TEMP_PATH> probe-fail/ && cd probe-fail && bash check.sh;"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && git add README.md check.sh && git -c user.name=poteto -c user.email=poteto@local commit -q -m \"Add capab"
-      },
-      {
-        "name": "todo_write",
-        "status": "ok",
-        "argsSummary": "todo_write"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "Workspace is nearly empty: one uncommitted `README.md` with a placeholder line, and a git repo with no commits and no remote. Goal restated: run the next step in poteto style, which means I compress the intended implementation into the smallest change, then hand that one small change to a poteto-style executor.\n\nSmallest change I expect to meet it. Turn the placeholder README into a real capability probe with a check script that proves the probe's structure, in two files.\nNow I verify the real artifact myself.\nGoal restated. You wanted the poteto loop driven forward, with the implementation compressed to the smallest change and handed to one poteto-style executor. I did that. The workspace now holds a working capability probe in two files, and the executor made both of them.\n\n**What shipped.** `check.sh` runs three probe entries and prints one PASS or FAIL line per entry, then exits nonzero if any entry failed. `README.md` keeps its `# poteto-agent` title and lists each probe with the command that runs it. One commit, `2b71c71`, holds both files. Nothing else was added.\n\n**What I chose and why.** The data shape is a probe entry with a name, a check, and an expected observed result. The organizing structure is one lookup table of those records, not three inline conditionals, which is what the Model the Domain principle asked for and what the delegate built. The Laziness Protocol set the size. The diff is 37 lines across two files with no dependency, no config, and no wrapper.\n\n**Throughput checkpoint.** Blocking first steps were the shape and structure choice, done before any delegate wrote logic. The README prose and the script touch disjoint files, so one delegate owned both in one pass. Only the delegate wrote to the workspace, so writes were serialized. One delegate was the smallest safe decomposition because the two files share a fixed contract.\n\n**Verification.** I ran the real script, not the delegate's word. `bash check.sh` prints three PASS lines and exits 0. `bash -n check.sh` exits 0. Running it from another directory gives the same output because the script resolves its own directory. A temp copy without `README.md` printed two FAIL lines and exited 1, so the failure branch works too.\n\n**For the next person.** Keep `# poteto-agent` as line one of `README.md`. The `readme h1` probe reads that literal line, so moving the title breaks the check. Add new probes as new rows in the `probes` table and a matching function.\n\n**Open decisions.** None on the code. Two notes on the environment. This repo has no remote and no commits existed before this one, so I made a local commit and stopped there. The Opening a PR step has no forge available here, so it could not run. I also skipped the `how` and `architect` explorations as separate phases, because the change was two files with a contract I could state up front.",
+    "assistantText": "Read the poteto-mode skill, the DSH adapter, worker.md, and the leaf skills for Laziness Protocol, Model the Domain, Architect, Prove It Works, and Sequence Verifiable Units.\n\nGoal: add a small capability probe to this workspace so it reports which local capabilities are available, then document it. Smallest change is one new script plus one new data file and a README section, all in one commit.\n\nData shape first. The probe is a registry, not branches: a `capabilities.json` array where each entry is a discriminated union on `kind`, either `{kind:\"file\", id, path}` or `{kind:\"runtime\", id, probe:\"node-version\"}`. The script walks the registry and emits one record per entry, so adding a capability never touches the script's logic.\nWaiting on the delegate's completion notice.\nDone. The capability probe is in the workspace as one commit, and I re-ran it myself rather than trusting the delegate's report.\n\nWhat changed for you. The workspace now holds a runnable capability probe. `capabilities.json` is the registry, `probe.mjs` is the runner, and the README documents the command and exit codes. The original two README lines are untouched.\n\nMeasured, from my own run of `node probe.mjs`:\n\n```\n[\n  { \"id\": \"readme\", \"kind\": \"file\", \"available\": true, \"detail\": \"README.md\" },\n  { \"id\": \"probe-script\", \"kind\": \"file\", \"available\": true, \"detail\": \"probe.mjs\" },\n  { \"id\": \"capability-registry\", \"kind\": \"file\", \"available\": true, \"detail\": \"capabilities.json\" },\n  { \"id\": \"node-runtime\", \"kind\": \"runtime\", \"available\": true, \"detail\": \"node v26.13.1\" }\n]\n```\n\nExit code 0. Commit `d5361bc`, three files, 113 insertions, no dependencies and no build step.\n\nThe smallest change. I fixed the data shape before any code: the registry is a discriminated union on `kind`, with `file` and `runtime` entries. Adding a capability means editing JSON only, never the script. The runner is one map over entries with validation at the file boundary.\n\nThe principles that shaped the choices:\n- Laziness Protocol. No abstraction layer, no dependency, no separate test framework. Three files.\n- Model the Domain. The registry encodes the capability domain as typed entries instead of branches inside the script.\n- Architect. I sketched the entry shape and picked the one where the script holds no per-capability logic.\n- Prove It Works. I ran the script and read the actual stdout. The delegate also exercised a missing registry, malformed JSON, an unavailable file, and a run from a different cwd, each giving exit 2, 2, 1, and 0.\n- Sequence Verifiable Units. One unit, one commit, verified before it landed.\n- Unslop. The README has no badge list, no em dash, and no decorative headings.\n\nOne gap: the delegated work skipped the `/deslop` pre-commit step because that plugin is absent in this install. The delegate applied the unslop rules by hand instead. Nothing is committed to a hook for that.\n\nSkipped in DeepSeek Harness: `gh` PR creation. There is no forge remote here and the sandbox forbids it, so the change stays local on `main`.",
     "userText": "接下来按 poteto 风格推进：把你准备做的实现压缩成最小改动，并交给一个遵循 poteto 风格的执行者来完成一处小改动。",
     "userTexts": [
       "接下来按 poteto 风格推进：把你准备做的实现压缩成最小改动，并交给一个遵循 poteto 风格的执行者来完成一处小改动。"
@@ -188,14 +153,14 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 10,
+          "attempts": 6,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
           "recovered": false
         },
         {
-          "name": "pstack_models",
+          "name": "glob",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -211,14 +176,6 @@
           "recovered": false
         },
         {
-          "name": "pstack_skill",
-          "attempts": 9,
-          "failures": 1,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": true
-        },
-        {
           "name": "pstack_subagent",
           "attempts": 1,
           "failures": 0,
@@ -228,7 +185,7 @@
         },
         {
           "name": "read",
-          "attempts": 3,
+          "attempts": 12,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -236,7 +193,15 @@
         },
         {
           "name": "todo_write",
-          "attempts": 3,
+          "attempts": 1,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "wait_agent",
+          "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -244,17 +209,13 @@
         }
       ],
       "artifacts": [],
-      "warnings": ["pstack_skill needed 9 attempts with 1 failures"]
+      "warnings": []
     }
   },
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": [
-      "skillLoads=poteto-mode,poteto-mode#playbooks/feature.md,principle-laziness-protocol,principle-model-the-domain,unslop,technical-writing,principle-build-the-lever,principle-prove-it-works",
-      "toolCalls=28",
-      "warnings=1"
-    ]
+    "observed": ["skillLoads=none", "toolCalls=23", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -266,6 +227,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114221850",
-  "capturedAt": "2026-11-14T14:21:01.187Z"
+  "batchId": "adapted-base-20261117111536",
+  "capturedAt": "2026-11-17T03:27:12.356Z"
 }

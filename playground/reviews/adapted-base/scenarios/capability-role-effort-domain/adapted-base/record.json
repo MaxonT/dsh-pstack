@@ -2,16 +2,16 @@
   "scenarioId": "capability-role-effort-domain",
   "phase": "adapted",
   "environment": {
-    "worker": 0,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.4.0",
+    "worker": 3,
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "base",
       "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
       "kind": "base",
       "enabledPluginPackages": []
     },
-    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
     "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
   },
   "target": {
@@ -20,10 +20,10 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-5118d19c-c47d-46bc-8c78-da3eff7d54fd",
+    "sessionId": "session-bc432011-1baf-47c1-aaa2-4da152785b00",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
-    "agentPreset": "poteto-mode",
+    "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
       {
@@ -37,9 +37,44 @@
         "argsSummary": "pstack_roles"
       },
       {
-        "name": "read",
+        "name": "bash",
         "status": "ok",
-        "argsSummary": "read file_path=<HOST_PATH>"
+        "argsSummary": "bash command=ls <HOST_PATH> 2>&1 | head"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cat $DSH_HOME/pstack-models.json; echo ---; cat $DSH_HOME/../../..//dev/null 2>/dev/null; ls <HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && ls -la && cat *.md 2>/dev/null | head -100"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --oneline -20 && git branch -a && cat README.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && cat docs/harness/dsh.md && echo ===== && cat skills/poteto-mode/worker.md"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git status && ls -la .git && cat .git/config && find . -name '*.json' -o -name '*.yaml' -o -name '"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> | head -50"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <HOST_PATH> && cat figure-it-out/SKILL.md | head -60; echo ====; ls poteto-mode/playbooks"
       },
       {
         "name": "todo_write",
@@ -49,21 +84,66 @@
       {
         "name": "pstack_subagent",
         "status": "ok",
-        "argsSummary": "pstack_subagent"
+        "argsSummary": "pstack_subagent name=effort-probe"
       },
       {
-        "name": "job_list",
+        "name": "wait_agent",
         "status": "ok",
-        "argsSummary": "job_list"
+        "argsSummary": "wait_agent"
       },
       {
-        "name": "todo_write",
+        "name": "list_agents",
         "status": "ok",
-        "argsSummary": "todo_write"
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --oneline -5; ls -la"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "list_agents",
+        "status": "ok",
+        "argsSummary": "list_agents"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --oneline && ls && python3 test_probe.py 2>&1 | tail -3"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "**Goal.** Run this subtask one reasoning step above the role default, after confirming which efforts the model actually serves.\n\n**What the live route advertises.** `pstack_models` lists `magpie / workbuddy/minimax-m3.1-flash` with efforts `off, low, high, max`, default `high`. `pstack_roles` shows the `judgment and prose` role configured on that model at `high`. So one step up from the role default is `max`, and `max` is a served value.\n\n**Final effort used.** `max`.\n\nI launched the subtask on `provider=magpie, model=workbuddy/minimax-m3.1-flash, reasoningEffort=max`, and the spawn confirmation echoed the route as `magpie/workbuddy/minimax-m3.1-flash [max] effort=max`. `max` is the top of the served list, so no higher effort is available on this route.\n\nOne caveat on evidence: the `max` value is confirmed by the served route list and the spawn echo, not yet by the child's own self-report. That report arrives as a completion notice, and I will relay it if it disagrees.\n\n--- turn 2 ---\n\nThe child confirmed the same thing I found, from its own session descriptor.\n\n**Final effort used.** `max`.\n\n**Evidence.** The route `magpie / workbuddy/minimax-m3.1-flash` serves efforts `off, low, high, max`, with `high` as both the route default and the configured effort for the `judgment and prose` role. The child's own descriptor records `agentReasoningEffort=max`, so it ran one ladder step above the role default on a value the route actually advertises. `max` is the top of the list, so there is no higher effort to step to.\n\nThe sibling route `magpie / workbuddy/deepseek-v4.1-flash` advertises the identical ladder with the same default, so an escalation plan transfers between the two magpie models unchanged.\nThe child has finished. Its closing message carried nothing beyond the report it already sent, so there is no new information to fold in.\n\n**Final state.** The subtask ran on `magpie / workbuddy/minimax-m3.1-flash` at effort `max`. The role default was `high`, one ladder step below, and `max` is the highest effort the route serves. The child verified this from its own session descriptor, so the effort is confirmed both by the served-route list and by the child's self-report. No further work is pending.",
+    "assistantText": "探测完成，最终档位已定。\n\n**最终用的档位：`high`，provider `magpie` / model `workbuddy/minimax-m3.1-flash`。**\n\n探测到的可用档位（`pstack_models` 实测，非猜测）：\n- `workbuddy/minimax-m3.1-flash` → 档位 `low, high`，默认 `high`，最高就是 `high`\n- `workbuddy/deepseek-v4.1-flash` → 只有 `low`，无法上调\n- `deepseek-flash` / `deepseek-v4-pro` → `off, low, high, max`，但没有任何角色路由指向它们\n\n角色默认档位（`pstack_roles`）：\n- `feature, refactoring` / `bug-fix` / `perf-issue` → deepseek-v4.1-flash，`low`，**无法提高**，该模型只服务 `low`\n- `hillclimb` / `judgment and prose` / 各 list 角色的 minimax 席位 → `high`，**已经是该模型最高档**\n\n所以「比角色默认高一档」只有一条路可行：把 `low` 提到 `high`。子代理最初继承到的是环境里的 `low`（spawn 未带 effort 覆盖），它随后显式传 `reasoning_effort=high` 派出的 worker 才是真正跑在 `high` 上。子代理自己无法在内部改路由，必须由 spawn 调用显式传参，这一点已写进探测脚本的 `requested_effort` vs `live_effort` 对比。\n\n**证据**（本地，未推送）：\n- 会话日志里 `agentReasoningEffort: \"high\"` 与 header `config.reasoningEffort: \"high\"`\n- `probe.py` 对两个会话分别输出 `live_effort: low / verdict: below-model-default` 与 `live_effort: high / verdict: at-highest-served`\n- `test_probe.py` 31 项检查全过\n- 提交 `2d9974f`、`87eb5f2`\n\n**取舍说明**：如果这个子任务本属代码类角色（默认 `low`），换模型会违反角色路由，所以我保留 minimax 路线并把档位提到它能给的最高值 `high`。没有选 `deepseek-v4-pro` 的 `max`，因为没有任何角色指向它，那会脱离角色配置另起一条路线。\n\n产物：[README.md](<<TEMP_PATH>",
     "userText": "这次子任务想比角色默认的推理档位再高一点。请先确认这个模型实际支持哪些档位，再从里面选一个更高的来跑；如果已经是最高档，就用最高档并说明。告诉我你最终用的档位。",
     "userTexts": [
       "这次子任务想比角色默认的推理档位再高一点。请先确认这个模型实际支持哪些档位，再从里面选一个更高的来跑；如果已经是最高档，就用最高档并说明。告诉我你最终用的档位。"
@@ -72,8 +152,16 @@
     "analysis": {
       "tools": [
         {
-          "name": "job_list",
-          "attempts": 1,
+          "name": "bash",
+          "attempts": 10,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "list_agents",
+          "attempts": 4,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -104,7 +192,7 @@
           "recovered": false
         },
         {
-          "name": "read",
+          "name": "todo_write",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -112,8 +200,8 @@
           "recovered": false
         },
         {
-          "name": "todo_write",
-          "attempts": 2,
+          "name": "wait_agent",
+          "attempts": 5,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -127,7 +215,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=7", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=23", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -139,6 +227,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261115152426",
-  "capturedAt": "2026-11-15T07:29:07.312Z"
+  "batchId": "adapted-base-20261117111536",
+  "capturedAt": "2026-11-17T03:29:55.782Z"
 }

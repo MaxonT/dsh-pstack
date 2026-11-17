@@ -2,16 +2,16 @@
   "scenarioId": "capability-readonly-false",
   "phase": "adapted",
   "environment": {
-    "worker": 3,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.3.1",
+    "worker": 5,
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "base",
       "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
       "kind": "base",
       "enabledPluginPackages": []
     },
-    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
     "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
   },
   "target": {
@@ -20,16 +20,16 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-c6ee8ba7-ac37-41bd-ac71-45a772624d80",
+    "sessionId": "session-98a483b9-dcae-4ade-8569-d63a024c7ee4",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
-    "agentPreset": "poteto-mode",
+    "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=ls -R . | head -50; echo ---; cat src/a.ts"
+        "argsSummary": "bash command=pwd && ls -la && cat src/a.ts"
       },
       {
         "name": "read",
@@ -37,18 +37,58 @@
         "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
-        "name": "pstack_subagent",
+        "name": "bash",
         "status": "ok",
-        "argsSummary": "pstack_subagent"
+        "argsSummary": "bash command=ls <HOST_PATH>"
+      },
+      {
+        "name": "pstack_roles",
+        "status": "ok",
+        "argsSummary": "pstack_roles"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=sleep 30; cat src/a.ts"
+        "argsSummary": "bash command=ls <HOST_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent name=executor"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "我的目标很简单：让一个执行者子代理把 `src/a.ts` 里的常量从 1 改成 2，然后把结果汇报给你。改动本身只有一行。\n你的目标是让一个执行者把 `src/a.ts` 里的常量从 1 改成 2 并汇报结果。已经完成。\n\n执行者子代理读取并编辑了文件，我独立复核了内容。\n\n`src/a.ts` 当前内容：\n\n```ts\nexport const a = 2;\n```\n\n改动只有一处：导出的常量字面量由 1 变为 2，其余文件与格式未受影响。后续维护者只需注意这个常量值已被改为 2。",
+    "assistantText": "目标是让一个执行者把 `src/a.ts` 里的常量从 1 改成 2，并回报结果。已由一个执行者子代理完成，我复核了文件内容。\n\n改动（实测读取 [src/a.ts](src/a.ts)）：\n\n```diff\n-export const a = 1;\n+export const a = 2;\n```\n\n现在文件内容是 `export const a = 2;`。改动留在工作区未提交，`src/` 目录本身未纳入 git 跟踪，所以 `git diff` 没有基线可对比。\n\n用到的原则：**Laziness Protocol**（本次只读该叶子技能），决定了只做一处单字符替换，不附带格式化或重构。委派模型按 `feature` 角色路由 `workbuddy/deepseek-v4.1-flash`。",
     "userText": "让一个执行者把 src/a.ts 里的常量值从 1 改成 2，改完把结果告诉我。",
     "userTexts": ["让一个执行者把 src/a.ts 里的常量值从 1 改成 2，改完把结果告诉我。"],
     "autoAnswers": [],
@@ -56,7 +96,15 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 2,
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "pstack_roles",
+          "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -72,6 +120,22 @@
         },
         {
           "name": "read",
+          "attempts": 4,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "todo_write",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "wait_agent",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -86,7 +150,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=4", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=12", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -98,6 +162,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114221850",
-  "capturedAt": "2026-11-14T14:21:25.166Z"
+  "batchId": "adapted-base-20261117111536",
+  "capturedAt": "2026-11-17T03:28:35.244Z"
 }

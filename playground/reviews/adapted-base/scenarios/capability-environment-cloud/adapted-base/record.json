@@ -3,15 +3,15 @@
   "phase": "adapted",
   "environment": {
     "worker": 4,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.3.1",
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "base",
       "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
       "kind": "base",
       "enabledPluginPackages": []
     },
-    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
     "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
   },
   "target": {
@@ -20,91 +20,36 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-840601e5-ca1b-480d-99c6-8f502d965c83",
+    "sessionId": "session-a466c3b6-20c8-4df0-bd59-4112540ed70a",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
-    "agentPreset": "poteto-mode",
+    "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=pwd; ls -la; git status 2>&1 | head -20; git log --oneline -5 2>&1"
+        "argsSummary": "bash command=pwd; ls -a; git status 2>&1 | head -20; git worktree list 2>&1"
       },
       {
         "name": "read",
         "status": "ok",
-        "argsSummary": "read file_path=README.md"
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd /tmp && mkdir -p iso-probe-test && cd iso-probe-test && git init -q . && echo ok > a.txt && git add . && git -c user.email=a@b -c user.name=t commit -qm init && echo COMMITTED; ls -a /"
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --oneline -5; git branch -a; ls <TEMP_PATH>"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && find .git -type f | head -50; echo ---; cat .git/config; echo ---; git branch -a; git stash list"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && git clone . <TEMP_PATH> 2>&1 | tail -3; echo \"clone-exit=$?\"; git worktree add <TEMP_PATH> 2"
-      },
-      {
-        "name": "todo_write",
-        "status": "ok",
-        "argsSummary": "todo_write"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && node -v; git --version; ls <HOST_PATH> 2>&1 | head -3"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && rm -rf <TEMP_PATH> <TEMP_PATH> <TEMP_PATH> && git clone -q . .isolated-checkout && e"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && cp ../README.md . && git add README.md && git -c user.email=worker@local -c user"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && git remote remove origin && git remote -v && echo \"no remotes\""
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && ls -la; find . -path ./.isolated-checkout -prune -o -type f -print | head -20; git log --all --onel"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && git worktree remove --force <TEMP_PATH> 2>&1; git worktree prune; ls .git/worktrees 2>&1; git wor"
-      },
-      {
-        "name": "write",
-        "status": "ok",
-        "argsSummary": "write file_path=<TEMP_PATH>"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && node probe-capabilities.mjs; echo \"exit=$?\""
-      },
-      {
-        "name": "write",
-        "status": "ok",
-        "argsSummary": "write file_path=<TEMP_PATH>"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && node --test probe-capabilities.test.mjs 2>&1 | tail -20"
+        "argsSummary": "bash command=set -e; rm -rf <TEMP_PATH> mkdir -p <TEMP_PATH> cd <TEMP_PATH> git init -q -b main; cp <TEMP_PATH>"
       },
       {
         "name": "read",
@@ -119,21 +64,11 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && git add -A && git -c user.email=worker@local -c user.name=worker commit -qm \"fea"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=cd <TEMP_PATH> && echo \"== main workspace status ==\" && git status --short && ls -la && echo \"== main README content "
-      },
-      {
-        "name": "todo_write",
-        "status": "ok",
-        "argsSummary": "todo_write"
+        "argsSummary": "bash command=cd <TEMP_PATH> && git -c user.email=dev@local -c user.name=dev commit -aqm \"docs: note isolated checkout verification\" && git log --oneline && git show --stat HEAD && cd "
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "Workspace git repo has no commits yet, so `git clone` of it can't work directly. Let me check whether a worktree/clone path is possible at all before choosing the isolation mechanism.\nIsolation is feasible: the repo's git state allows a separate checkout. I'll build it as a nested clone so it stays inside the allowed workspace root.\nIsolation works. Now the small change in the isolated checkout. The workspace is \"能力探测\" (capability probing), so the change fits: a self-contained capability probe.\nNow update the README inside the isolated checkout and commit there only.\n**Goal.** Make one small change in an isolated checkout that does not touch the current working tree, and verify the working tree stays clean.\n\n**Isolation was possible.** The workspace repo has no commits yet, so I seeded the isolated checkout myself rather than cloning. The isolated checkout lives at `.isolated-checkout/` inside the workspace, so it stays under the allowed root. Its `origin` remote was removed right after cloning, per the local-only git rule.\n\n**The change.** The repo is named `environment-cloud` and its README says 能力探测, so the change is a capability probe that fits the stated purpose.\n\n- `probe-capabilities.mjs` exports `probeCapabilities()`, which returns a fixed set of capability records, each with `name`, a boolean `detected`, and a string `detail`.\n- Order is stable, driven by the `CAPABILITY_NAMES` constant, so two runs can be diffed.\n- The script also runs standalone and prints one line per capability.\n\n**Verification, measured.** `node --test probe-capabilities.test.mjs` passes 2 of 2 tests. Running the probe directly prints network reachable via TCP to 1.1.1.1:53, a writable tmpdir, 24 logical cores, and no container marker.\n\n**Working tree untouched.** The main checkout still shows only the original untracked `README.md` plus the new `.isolated-checkout/` directory. Its `README.md` content is unchanged. All commits live in the isolated checkout's own git directory.\n\n**For the next engineer.** The isolated checkout has two commits, a baseline seed and `fd884b0` with the change. It has no remote, so landing it means copying the files or adding a remote yourself. The main checkout has no commits at all, so nothing is mergeable from either side yet.\n\nOne note on a judgment call I made. The probe reaches out to 1.1.1.1:53 to test the network. That is a real outbound connection to a third party on every run. I picked a short timeout and a non-privileged port, but if you would rather the probe stay fully offline, that check can be dropped and the capability reported as unknown instead.",
+    "assistantText": "隔离检出做完了，当前工作区保持未改动。\n\n做了什么\n- 在工作区之外新建独立 git 仓库 `<TEMP_PATH> init`，自带 baseline 提交），把 [README.md](<TEMP_PATH> 复制进去，在那里做了一处小改动并提交：`docs: note isolated checkout verification`。\n- 验证（已测量）：`git show --stat` 显示改动只落在隔离检出的 README.md；工作区 `git status --porcelain` 仍只有未跟踪的 README.md，没有新增提交。\n\n说明\n- 适配文档里 `environment: \"cloud\"` 要求用 `create_worktree` 拿隔离检出，本会话没有该工具，所以我用手工 `git init` 的独立仓库等价替代，不在当前工作区硬做。\n- 提交只是本地提交，没有加远端、没有推送。\n\n原则上：**Never Block on the Human** 让我在有可行的隔离手段时直接动手而不是先问；**Prove It Works** 让我用 `git status` 实证工作区未被触碰，而不是口头保证。\n\n需要我把同样的隔离检出用于后续更大范围的改动吗？",
     "userText": "请在一个和当前工作区彼此隔离、独立的检出里做一处小改动。如果这个环境提供不了这种隔离执行，就直接说明并跳过，不要在当前工作区硬做。",
     "userTexts": [
       "请在一个和当前工作区彼此隔离、独立的检出里做一处小改动。如果这个环境提供不了这种隔离执行，就直接说明并跳过，不要在当前工作区硬做。"
@@ -143,7 +78,7 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 14,
+          "attempts": 4,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -159,41 +94,21 @@
         },
         {
           "name": "read",
-          "attempts": 2,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "todo_write",
-          "attempts": 2,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "write",
-          "attempts": 2,
+          "attempts": 3,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
           "recovered": false
         }
       ],
-      "artifacts": [
-        "write file_path=<TEMP_PATH>",
-        "write file_path=<TEMP_PATH>",
-        "edit file_path=<TEMP_PATH>"
-      ],
+      "artifacts": ["edit file_path=<TEMP_PATH>"],
       "warnings": []
     }
   },
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=21", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=8", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -205,6 +120,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114221850",
-  "capturedAt": "2026-11-14T14:18:51.143Z"
+  "batchId": "adapted-base-20261117111536",
+  "capturedAt": "2026-11-17T03:15:36.357Z"
 }

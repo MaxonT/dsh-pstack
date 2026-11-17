@@ -2,16 +2,16 @@
   "scenarioId": "capability-model-route",
   "phase": "adapted",
   "environment": {
-    "worker": 7,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.3.1",
+    "worker": 0,
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "base",
       "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
       "kind": "base",
       "enabledPluginPackages": []
     },
-    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
     "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
   },
   "target": {
@@ -20,12 +20,17 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-51e8f687-e68e-4f83-8c2e-679838a3ce37",
+    "sessionId": "session-fc7d73fe-f79b-47fd-ba13-c18394edeca0",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
-    "agentPreset": "poteto-mode",
+    "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -a; echo \"---DSH_HOME=$DSH_HOME\""
+      },
       {
         "name": "pstack_models",
         "status": "ok",
@@ -35,11 +40,6 @@
         "name": "pstack_roles",
         "status": "ok",
         "argsSummary": "pstack_roles"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=pwd; ls -la; find . -type f | head -50"
       },
       {
         "name": "read",
@@ -54,48 +54,57 @@
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=git log --oneline -5 2>&1 | head; git status 2>&1 | head"
-      },
-      {
-        "name": "pstack_subagent",
-        "status": "ok",
-        "argsSummary": "pstack_subagent"
-      },
-      {
-        "name": "pstack_subagent",
-        "status": "ok",
-        "argsSummary": "pstack_subagent"
-      },
-      {
-        "name": "pstack_subagent",
-        "status": "ok",
-        "argsSummary": "pstack_subagent"
-      },
-      {
-        "name": "pstack_subagent",
-        "status": "ok",
-        "argsSummary": "pstack_subagent"
-      },
-      {
-        "name": "job_list",
-        "status": "ok",
-        "argsSummary": "job_list"
-      },
-      {
-        "name": "job_output",
-        "status": "error",
-        "argsSummary": "job_output",
-        "errorText": "Error: unknown job 0c96939b-201f-4e33-8d74-d2567818e6c0"
-      },
-      {
-        "name": "list_agents",
-        "status": "ok",
-        "argsSummary": "list_agents"
+        "argsSummary": "bash command=ls <HOST_PATH> <HOST_PATH> 2>&1; echo ---; cat \"$DSH_HOME/pstack-models.json\" 2>&1"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=sleep 60; echo waited"
+        "argsSummary": "bash command=cd <TEMP_PATH> && git log --oneline -5 2>&1 | head; git status --short; ls -R . | head -50"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=ls <HOST_PATH> <HOST_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "list_subagent_models",
+        "status": "ok",
+        "argsSummary": "list_subagent_models"
+      },
+      {
+        "name": "todo_write",
+        "status": "ok",
+        "argsSummary": "todo_write"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && git branch -a; git log --all --oneline 2>&1|head; ls -la; cat .git/config"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent name=judge"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
+      },
+      {
+        "name": "pstack_subagent",
+        "status": "ok",
+        "argsSummary": "pstack_subagent name=judge2"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
       },
       {
         "name": "todo_write",
@@ -105,22 +114,17 @@
       {
         "name": "pstack_subagent",
         "status": "ok",
-        "argsSummary": "pstack_subagent"
+        "argsSummary": "pstack_subagent name=executor"
+      },
+      {
+        "name": "wait_agent",
+        "status": "ok",
+        "argsSummary": "wait_agent"
       },
       {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=sleep 90; ls -la"
-      },
-      {
-        "name": "list_agents",
-        "status": "ok",
-        "argsSummary": "list_agents"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=sleep 120; ls -la"
+        "argsSummary": "bash command=cd <TEMP_PATH> && git status --short && echo \"--- run ---\" && python3 probe_routes.py; echo \"exit=$?\"; echo \"--- grep ---\";"
       },
       {
         "name": "read",
@@ -133,18 +137,18 @@
         "argsSummary": "read file_path=<TEMP_PATH>"
       },
       {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=git status --short; grep -nP '[\\x{2012}-\\x{2015}\\x{2212}]' CAPABILITY.md README.md || echo \"no long dashes\"; grep -c ':' CAPABILITY.md README.md"
-      },
-      {
         "name": "todo_write",
         "status": "ok",
         "argsSummary": "todo_write"
+      },
+      {
+        "name": "present",
+        "status": "ok",
+        "argsSummary": "present"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "Workspace is nearly empty (`README.md` only, no commits), so the concrete job here is capability probing plus picking the strongest judging route. I will probe the advertised routes before committing to one.\nOne probe failed before finishing. Let me check the others.\nBoth `deepseek-account` routes failed. Waiting on the two magpie routes.\nTwo magpie routes answered; both `deepseek-account` routes failed before finishing, so that provider is unusable here. Now I hand the real work to the strongest judging route.\nExecutor dispatched on the selected route. Waiting for its artifact.\nThe goal was capability probing for this repo, and the smallest change that meets it is one new record file plus a pointer line, which is what landed.\n\n**Route selection.** I probed all four advertised routes at their highest advertised effort, `max`, with one identical non-tool task that had an underspecified premise.\n\n| Route | Probe at max | Status |\n| --- | --- | --- |\n| `deepseek-account/deepseek-flash` | no closing message | unavailable this session |\n| `deepseek-account/deepseek-v4-pro` | no closing message | unavailable this session |\n| `magpie/workbuddy/deepseek-v4.1-flash` | answered, applied formula as written | available |\n| `magpie/workbuddy/minimax-m3.1-flash` | answered, flagged the formula | available |\n\nThe selected route is `magpie/workbuddy/minimax-m3.1-flash` at reasoning effort `max`. It is the strongest route available here, and there is no stronger one to escalate to. The two `deepseek-account` routes failed outright at max, so they were excluded as unavailable rather than ranked as weaker. Between the two magpie routes the arithmetic was identical at `E[N] = 11.24`, so arithmetic could not separate them. The tie broke on judgment. The minimax route noticed the supplied formula is not a standard `M/G/c` form, listed the readings of the summation index, and computed the Erlang C result `E[N] = 4.32`. The v4.1-flash route accepted the premise silently. For a repo whose work is judgment about capability, that difference decides it.\n\nThe failure of the `deepseek-account` routes is a session-scoped observation, not a property of the provider. The artifact says so and says to re-probe before relying on either.\n\n**What changed.** [CAPABILITY.md](CAPABILITY.md) is new and holds the route table, the selection, the reason the loser lost, and four re-verification steps. [README.md](README.md) gained one link line and kept its original two lines. Nothing else was touched. No commits, branches, or remotes were created.\n\n**For the next maintainer.** The re-verify steps are written to be rerunnable as-is. They name the registry listing tool and the per-route probe, and they state the two things to record per child, which is whether it closed and whether it challenged the formula. The one judgment the executor made that the brief left open was how to phrase the probe task in those steps, since the original prompt text was not handed down. It described the task by its discriminating property instead of quoting it, so a re-verifier knows what the task must do without a false exactness.\n\nOne caveat worth your attention. The probes ran at `max` only. The artifact claims effort `max` because it is the highest advertised and nothing cheaper was shown sufficient, but no cheaper effort was actually tested, so the doc does not claim a lower effort would fail. If that boundary matters later, the probes need to be repeated downward.",
+    "assistantText": "Route decision first, then dispatch.\n\n**Available routes (measured via `pstack_models`)**\n- `magpie/workbuddy/minimax-m3.1-flash` — efforts low, high (role default for \"judgment and prose\")\n- `magpie/workbuddy/deepseek-v4.1-flash` — efforts low only\n- `deepseek-account/deepseek-v4-pro` — efforts off, low, high, **max**\n- `deepseek-account/deepseek-flash` — off, low, high, max\n\n**Chosen judgment route:** `provider=deepseek-account`, `model=deepseek-v4-pro`, `reasoning_effort=max`. It is the strongest reasoning-capable route advertised, and `max` is its highest served effort. The Opus/Fable/Gemini panel seats from poteto-mode do not exist in this deployment, so there is no stronger seat. The role file default (`minimax-m3.1-flash/high`) is one tier weaker, so I override it explicitly.\nGoal: pick the strongest available judgment route explicitly, then hand it to an executor. The probe artifact now records the result in the repo.\n\n**Route selection (measured, not guessed)**\n- Advertised but dead: `deepseek-account/deepseek-v4-pro` and `deepseek-account/deepseek-flash`, top effort `max`, both fail with `ACCOUNT_QUOTA` / HTTP 402 Insufficient Balance on every effort. My own first judge attempt on `deepseek-v4-pro @ max` died for this reason.\n- `deepseek-official` advertises no models.\n- Serving routes: `magpie/workbuddy/minimax-m3.1-flash` (efforts low, high) and `magpie/workbuddy/deepseek-v4.1-flash` (effort low only).\n- **Judgment route used: `magpie/workbuddy/minimax-m3.1-flash` at `reasoning_effort=high`**, the top served effort of the strongest serving route. It matches the `judgment and prose` role route.\n- **Executor route used: `magpie/workbuddy/deepseek-v4.1-flash` at `reasoning_effort=low`**, its only served effort, matching the `feature, refactoring` and `swarm workers` role route.\n- The poteto panel seats (Opus 5.5 xhigh, Fable 5.2, Gemini 4 carbon) do not exist in this deployment, so no stronger seat exists here.\n\n**What changed**\n- `probe_routes.py` (new, 119 lines, stdlib only) reads the pstack role file and session logs, derives each verdict from the `turn/end` record, prints the table, exits 1 when the judgment row is missing.\n- `README.md` keeps its original three lines and adds a `## Route probe` section with the table, the chosen route, and the rejected routes.\n\n**Verification I reran myself**\n- `python3 probe_routes.py` exit 0 with the four-row table; `| grep -q ACCOUNT_QUOTA` exit 0; `py_compile` exit 0; `git status --short` shows exactly the two untracked files.\n\nPrinciples applied: Attack the Premise (the \"stronger model\" premise failed on billing, so the premise itself was tested directly), Explain the Number (verdicts come from session turn/end codes, not self-report), Build the Lever (the script regenerates the table), Prove It Works (I reran the artifact rather than trusting the report).",
     "userText": "这个子任务请用当前可用模型里最适合判断的模型和它可用的最高推理档来跑，把实际选择的路由明确下来再交给执行者；如果当前没有更强的可用路由，也说明你实际用了什么。",
     "userTexts": [
       "这个子任务请用当前可用模型里最适合判断的模型和它可用的最高推理档来跑，把实际选择的路由明确下来再交给执行者；如果当前没有更强的可用路由，也说明你实际用了什么。"
@@ -161,7 +165,7 @@
           "recovered": false
         },
         {
-          "name": "job_list",
+          "name": "list_subagent_models",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -169,16 +173,8 @@
           "recovered": false
         },
         {
-          "name": "job_output",
+          "name": "present",
           "attempts": 1,
-          "failures": 1,
-          "firstAttemptStatus": "error",
-          "finalStatus": "error",
-          "recovered": false
-        },
-        {
-          "name": "list_agents",
-          "attempts": 2,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -202,7 +198,7 @@
         },
         {
           "name": "pstack_subagent",
-          "attempts": 5,
+          "attempts": 3,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -210,7 +206,7 @@
         },
         {
           "name": "read",
-          "attempts": 4,
+          "attempts": 5,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -218,7 +214,15 @@
         },
         {
           "name": "todo_write",
-          "attempts": 2,
+          "attempts": 3,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "wait_agent",
+          "attempts": 3,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -232,7 +236,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=23", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=24", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -244,6 +248,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114221850",
-  "capturedAt": "2026-11-14T14:20:16.756Z"
+  "batchId": "adapted-base-20261117111536",
+  "capturedAt": "2026-11-17T03:22:07.029Z"
 }

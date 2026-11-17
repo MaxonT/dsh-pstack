@@ -2,16 +2,16 @@
   "scenarioId": "capability-inherit-parent",
   "phase": "adapted",
   "environment": {
-    "worker": 10,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.3.1",
+    "worker": 1,
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "base",
       "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
       "kind": "base",
       "enabledPluginPackages": []
     },
-    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
     "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
   },
   "target": {
@@ -20,41 +20,36 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-5df7d2a2-cdd1-4ca5-b4b6-498987d64084",
+    "sessionId": "session-34420637-816f-4b87-b977-ac5a70e8e31f",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
-    "agentPreset": "poteto-mode",
+    "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=pwd; ls -la; cat $DSH_HOME/pstack-models.json 2>/dev/null | head -50"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "bash",
+        "status": "ok",
+        "argsSummary": "bash command=cd <TEMP_PATH> && cat README.md && git log --oneline -5 && git status"
+      },
       {
         "name": "pstack_models",
         "status": "ok",
         "argsSummary": "pstack_models"
       },
       {
-        "name": "pstack_roles",
-        "status": "ok",
-        "argsSummary": "pstack_roles"
-      },
-      {
-        "name": "get_goal",
-        "status": "ok",
-        "argsSummary": "get_goal"
-      },
-      {
         "name": "bash",
         "status": "ok",
-        "argsSummary": "bash command=pwd; ls -la"
-      },
-      {
-        "name": "glob",
-        "status": "ok",
-        "argsSummary": "glob pattern=**/*"
-      },
-      {
-        "name": "read",
-        "status": "ok",
-        "argsSummary": "read file_path=README.md"
+        "argsSummary": "bash command=ls <HOST_PATH>"
       },
       {
         "name": "pstack_subagent",
@@ -62,23 +57,18 @@
         "argsSummary": "pstack_subagent"
       },
       {
-        "name": "job_list",
+        "name": "wait_agent",
         "status": "ok",
-        "argsSummary": "job_list"
+        "argsSummary": "wait_agent"
       },
       {
-        "name": "list_agents",
+        "name": "read",
         "status": "ok",
-        "argsSummary": "list_agents"
-      },
-      {
-        "name": "bash",
-        "status": "ok",
-        "argsSummary": "bash command=sleep 45; echo waited"
+        "argsSummary": "read file_path=<TEMP_PATH>"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "这个子任务走的是继承父路由，没有单独指定模型。\n\n**实际使用的路由。** 子代理创建时没有传 provider 或 model，pstack 把它标成 `route=inherit-parent`。子代理自报它跑在 `magpie/workbuddy/minimax-m3.1-flash`，和当前会话的模型一致。effort 没有直接暴露给子代理，但该路由的默认值是 `high`。\n\n**探测结果。** 工作区里只有一个 `README.md`，三行。标题是 `inherit-parent`，正文一行「能力探测。」。子代理正确读到了它，并且没有改动任何文件、也没有联网。\n\n**给下一个维护者接手的东西。** 继承父路由这个探测路径是通的：不给 provider 和 model 时，子代理确实落在父会话的模型上，而不是角色配置里的默认路由。这里角色表里 `general` 没有配置，所以它回落到父路由。若要换成别的行为，需要显式传 provider 和 model，或者给 `general` 角色加一条配置行。",
+    "assistantText": "Goal: run this probe subtask on the current session's model (no route override), then report which route actually served it.\n\nLaunching the child with an explicit inherit-parent brief.\nChild started, waiting for its report.\nDone. The subtask ran on the inherited route with no override.\n\nRoute actually used (measured from the child's own session log, not inferred):\n- provider `magpie`, model `workbuddy/minimax-m3.1-flash`, reasoning effort `low`, context window 1000000.\n\nThat matches the parent session exactly (magpie / workbuddy/minimax-m3.1-flash / low). The role file's high-effort lines for hillclimb and judgment-and-prose were not applied, because an omitted override means the child takes the parent's route rather than the role's.\n\nFindings are in [PROBE.md](PROBE.md).",
     "userText": "这个子任务就沿用当前会话的模型，不要另外指定模型。跑完告诉我你实际用的是哪条路由。",
     "userTexts": [
       "这个子任务就沿用当前会话的模型，不要另外指定模型。跑完告诉我你实际用的是哪条路由。"
@@ -88,39 +78,7 @@
       "tools": [
         {
           "name": "bash",
-          "attempts": 2,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "get_goal",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "glob",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "job_list",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "list_agents",
-          "attempts": 1,
+          "attempts": 3,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -128,14 +86,6 @@
         },
         {
           "name": "pstack_models",
-          "attempts": 1,
-          "failures": 0,
-          "firstAttemptStatus": "ok",
-          "finalStatus": "ok",
-          "recovered": false
-        },
-        {
-          "name": "pstack_roles",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -152,6 +102,14 @@
         },
         {
           "name": "read",
+          "attempts": 2,
+          "failures": 0,
+          "firstAttemptStatus": "ok",
+          "finalStatus": "ok",
+          "recovered": false
+        },
+        {
+          "name": "wait_agent",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -166,7 +124,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=10", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=8", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -178,6 +136,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114221850",
-  "capturedAt": "2026-11-14T14:19:58.412Z"
+  "batchId": "adapted-base-20261117111536",
+  "capturedAt": "2026-11-17T03:20:57.094Z"
 }

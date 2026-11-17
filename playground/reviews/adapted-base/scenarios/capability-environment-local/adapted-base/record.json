@@ -2,16 +2,16 @@
   "scenarioId": "capability-environment-local",
   "phase": "adapted",
   "environment": {
-    "worker": 7,
-    "dshVersion": "0.2.2-rc.1",
-    "adaptedVersion": "0.3.1",
+    "worker": 4,
+    "dshVersion": "0.2.2-rc.2",
+    "adaptedVersion": "0.4.1",
     "matrix": {
       "id": "base",
       "description": "默认环境，不加载额外插件，用于观察原生 DSH 能力。",
       "kind": "base",
       "enabledPluginPackages": []
     },
-    "upstreamRevision": "ae5650febf4320793844c12c4adaa937f417f8da",
+    "upstreamRevision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
     "configHash": "3aa7db10df9015190040d91bf76064369bc294f09f37408e26a33a7804a5fbcb"
   },
   "target": {
@@ -20,32 +20,37 @@
     "effort": "low"
   },
   "session": {
-    "sessionId": "session-5e59a882-8191-4573-bf2c-5d966b934d21",
+    "sessionId": "session-aee1c093-93b7-47d1-938c-a4eb24a8f1f6",
     "sessionFile": "session.jsonl.zstd",
     "workspacePath": "<WORKSPACE>",
-    "agentPreset": "poteto-mode",
+    "agentPreset": "standard",
     "skillLoads": [],
     "toolCalls": [
       {
-        "name": "glob",
+        "name": "bash",
         "status": "ok",
-        "argsSummary": "glob pattern=README*"
+        "argsSummary": "bash command=pwd && ls"
       },
       {
         "name": "read",
         "status": "ok",
-        "argsSummary": "read file_path=README.md"
+        "argsSummary": "read file_path=<HOST_PATH>"
+      },
+      {
+        "name": "read",
+        "status": "ok",
+        "argsSummary": "read file_path=<TEMP_PATH>"
       }
     ],
     "turnEndReason": "completed",
-    "assistantText": "标题是「本地执行探测」。文件为 [README.md](README.md)。",
+    "assistantText": "README 标题是「本地执行探测」，正文写着「标题在这里。」。",
     "userText": "在当前这个工作区里直接读一下 README，把标题告诉我。",
     "userTexts": ["在当前这个工作区里直接读一下 README，把标题告诉我。"],
     "autoAnswers": [],
     "analysis": {
       "tools": [
         {
-          "name": "glob",
+          "name": "bash",
           "attempts": 1,
           "failures": 0,
           "firstAttemptStatus": "ok",
@@ -54,7 +59,7 @@
         },
         {
           "name": "read",
-          "attempts": 1,
+          "attempts": 2,
           "failures": 0,
           "firstAttemptStatus": "ok",
           "finalStatus": "ok",
@@ -68,7 +73,7 @@
   "artifacts": {
     "recordFile": "record.json",
     "screenshotFile": "screenshot.png",
-    "observed": ["skillLoads=none", "toolCalls=2", "warnings=0"]
+    "observed": ["skillLoads=none", "toolCalls=3", "warnings=0"]
   },
   "semanticReview": {
     "status": "pending",
@@ -80,6 +85,6 @@
     "status": "inconclusive",
     "reason": "No reviewer has compared the observed effect with the scenario rubric."
   },
-  "batchId": "adapted-base-20261114221850",
-  "capturedAt": "2026-11-14T14:18:51.217Z"
+  "batchId": "adapted-base-20261117111536",
+  "capturedAt": "2026-11-17T03:16:42.459Z"
 }
