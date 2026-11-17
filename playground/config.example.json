@@ -38,41 +38,6 @@
       "model": "your-model",
       "effort": "high"
     },
-    "hardest tasks": {
-      "provider": "your-provider",
-      "model": "your-model",
-      "effort": "high"
-    },
-    "how explorer": {
-      "provider": "your-provider",
-      "model": "your-model",
-      "effort": "low"
-    },
-    "how explainer": {
-      "provider": "your-provider",
-      "model": "your-model",
-      "effort": "high"
-    },
-    "why investigators": {
-      "provider": "your-provider",
-      "model": "your-model",
-      "effort": "low"
-    },
-    "why synthesizer": {
-      "provider": "your-provider",
-      "model": "your-model",
-      "effort": "high"
-    },
-    "reflect tooling": {
-      "provider": "your-provider",
-      "model": "your-model",
-      "effort": "low"
-    },
-    "reflect judgment, divergent, synthesizer": {
-      "provider": "your-provider",
-      "model": "your-model",
-      "effort": "high"
-    },
     "arena runners": [
       {
         "provider": "your-provider",
@@ -98,18 +63,6 @@
       }
     ],
     "swarm workers": [
-      {
-        "provider": "your-provider",
-        "model": "your-model",
-        "effort": "low"
-      },
-      {
-        "provider": "your-provider",
-        "model": "your-model",
-        "effort": "high"
-      }
-    ],
-    "architect runners": [
       {
         "provider": "your-provider",
         "model": "your-model",
