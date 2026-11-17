@@ -124,7 +124,8 @@ export function parseDelegationArgs(raw: unknown): DelegationArgs {
       typeof agentValue !== "string" ||
       !(AGENT_KINDS as readonly string[]).includes(agentValue)
     ) {
-      throw new Error(`unknown agent preset "${String(agentValue)}"`);
+      const shown = typeof agentValue === "string" ? agentValue : JSON.stringify(agentValue);
+      throw new Error(`unknown agent preset "${shown}"`);
     }
     agent = agentValue as AgentKind;
   }
