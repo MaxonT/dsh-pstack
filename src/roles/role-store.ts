@@ -17,7 +17,8 @@ import { join, resolve } from "node:path";
 
 import { upgradeRoleFile, type RoleFileDocumentLike } from "../compat/upgrade-role-file.ts";
 import { writeFileAtomically } from "../lib/atomic-write.ts";
-import { PSTACK_MODELS_FILENAME, findRole } from "./role-manifest.ts";
+import { normalizeBudgetValue } from "./budget.ts";
+import { PSTACK_MODELS_FILENAME, findRole, isRetiredRoleKey } from "./role-manifest.ts";
 import { parseRouteEntry, validateRoleRouteShape, type Route } from "./route.ts";
 
 export type { Route } from "./route.ts";
@@ -111,6 +112,7 @@ export function parseRoleDocument(text: string): RoleFileDocument {
   const { budget, rawRoles } = readRoleDocumentShape(text);
   const roles: Record<string, readonly Route[]> = {};
   for (const [key, value] of Object.entries(rawRoles)) {
+    if (isRetiredRoleKey(key)) continue;
     if (!Array.isArray(value)) {
       throw new Error(`role ${JSON.stringify(key)} routes must be an array of route entries`);
     }
@@ -122,7 +124,11 @@ export function parseRoleDocument(text: string): RoleFileDocument {
       return parsed.route;
     });
   }
-  return { version: ROLE_FILE_VERSION, ...(budget === undefined ? {} : { budget }), roles };
+  return {
+    version: ROLE_FILE_VERSION,
+    ...(budget === undefined ? {} : { budget: normalizeBudgetValue(budget) }),
+    roles,
+  };
 }
 
 /** Render an editable role document as stable, pretty-printed JSON. */
@@ -149,6 +155,7 @@ export function parseRoleConfiguration(text: string, path: string): RoleConfigur
   for (const [rawKey, rawValue] of Object.entries(rawRoles)) {
     const spec = findRole(rawKey);
     if (spec === undefined) {
+      if (isRetiredRoleKey(rawKey)) continue;
       issues.push({ message: `unknown pstack role ${JSON.stringify(rawKey)}` });
       continue;
     }
@@ -181,7 +188,7 @@ export function parseRoleConfiguration(text: string, path: string): RoleConfigur
   return {
     status: "loaded",
     path,
-    ...(budget === undefined ? {} : { budget: budget as string }),
+    ...(budget === undefined ? {} : { budget: normalizeBudgetValue(budget) }),
     roles,
     issues,
   };

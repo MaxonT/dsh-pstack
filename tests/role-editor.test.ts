@@ -137,7 +137,7 @@ describe("role editor", () => {
     const path = join(tempHome(undefined), "missing.json");
     const snapshot = snapshotFromConfiguration({ status: "missing", path });
     expect(snapshot.status).toBe("missing");
-    expect(snapshot.roles.length).toBe(17);
+    expect(snapshot.roles.length).toBe(9);
     expect(snapshot.canSave).toBe(true);
   });
 

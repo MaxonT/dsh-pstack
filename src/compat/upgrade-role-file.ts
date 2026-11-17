@@ -7,7 +7,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
-import { LEGACY_PSTACK_MODELS_FILENAME } from "../roles/role-manifest.ts";
+import { normalizeBudgetValue } from "../roles/budget.ts";
+import { LEGACY_PSTACK_MODELS_FILENAME, isRetiredRoleKey } from "../roles/role-manifest.ts";
 import type { Route } from "../roles/route.ts";
 import { migrateMdcToJson } from "./mdc-to-json.ts";
 import { upgradeVersionOneRoles } from "./version-1-to-2.ts";
@@ -64,7 +65,23 @@ export function upgradeRoleFile(
   }
   const record = raw as Record<string, unknown>;
   const version = record["version"];
-  if (version === options.currentVersion) return { status: "current" };
+  if (version === options.currentVersion) {
+    const sanitized = sanitizeCurrentRoleFile(record);
+    if (sanitized === undefined || !sanitized.changed) return { status: "current" };
+    try {
+      writeFileAtomically(
+        jsonPath,
+        options.serialize({
+          version: options.currentVersion,
+          ...(sanitized.budget === undefined ? {} : { budget: sanitized.budget }),
+          roles: sanitized.roles,
+        }),
+      );
+      return { status: "migrated" };
+    } catch (error) {
+      return { status: "unreadable", reason: describeError(error) };
+    }
+  }
   if (version !== 1) {
     return {
       status: "unreadable",
@@ -93,4 +110,38 @@ export function upgradeRoleFile(
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * A current-version file can still carry retired role keys or a retired budget
+ * label. Drop the retired keys and remap the budget so the file matches the
+ * current manifest. Returns `undefined` when the shape is not safe to rewrite, so
+ * the normal reader reports the issue instead.
+ */
+function sanitizeCurrentRoleFile(record: Record<string, unknown>):
+  | {
+      readonly changed: boolean;
+      readonly budget?: string;
+      readonly roles: Record<string, readonly Route[]>;
+    }
+  | undefined {
+  const rawRoles = record["roles"] ?? {};
+  if (typeof rawRoles !== "object" || rawRoles === null || Array.isArray(rawRoles)) {
+    return undefined;
+  }
+  const roles: Record<string, readonly Route[]> = {};
+  let changed = false;
+  for (const [key, value] of Object.entries(rawRoles as Record<string, unknown>)) {
+    if (!Array.isArray(value)) return undefined;
+    if (isRetiredRoleKey(key)) {
+      changed = true;
+      continue;
+    }
+    roles[key] = value as readonly Route[];
+  }
+  const rawBudget = record["budget"];
+  if (rawBudget !== undefined && typeof rawBudget !== "string") return undefined;
+  const budget = normalizeBudgetValue(rawBudget as string | undefined);
+  if (budget !== rawBudget) changed = true;
+  return { changed, ...(budget === undefined ? {} : { budget }), roles };
 }

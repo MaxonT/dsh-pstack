@@ -8,7 +8,7 @@
 import { readFileSync, rmSync } from "node:fs";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
-import { findRole } from "../roles/role-manifest.ts";
+import { findRole, isRetiredRoleKey } from "../roles/role-manifest.ts";
 import { validateRoleRouteShape, type Route } from "../roles/route.ts";
 import { parseLegacyRouteValue } from "./legacy-route.ts";
 
@@ -61,6 +61,7 @@ export function parseLegacyRoleFileText(text: string): LegacyRoleFile {
       }
       const spec = findRole(rawKey);
       if (spec === undefined) {
+        if (isRetiredRoleKey(rawKey)) continue;
         issues.push({ message: `unknown pstack role ${JSON.stringify(rawKey)}` });
         continue;
       }

@@ -4,6 +4,7 @@ import {
   budgetTierFromLabel,
   budgetValueFor,
   isBudgetRowBlocked,
+  normalizeBudgetValue,
   parseBudgetApplyRequest,
   planBudget,
   type BudgetRoleInput,
@@ -62,7 +63,7 @@ describe("budget planning", () => {
         role({ key: "inherit", configured: true, routes: [{ kind: "inherit", alias: "auto" }] }),
       ],
       catalogue,
-      { tier: "unlimited", scope: "concrete" },
+      { tier: "large", scope: "concrete" },
     );
     expect(plan.rows.map((row) => [row.key, row.status])).toEqual([
       ["exact", "changed"],
@@ -72,7 +73,7 @@ describe("budget planning", () => {
       ["inherit", "skipped"],
     ]);
     expect(plan.rows[0]?.routes).toEqual([
-      { kind: "route", provider: "p", model: "full", effort: "max" },
+      { kind: "route", provider: "p", model: "full", effort: "xhigh" },
     ]);
     expect(plan.rows[1]?.routes).toEqual([
       { kind: "route", provider: "p", model: "flat", effort: "high" },
@@ -159,7 +160,10 @@ describe("budget planning", () => {
       "defaultModel",
     );
     expect(budgetTierFromLabel("large (xhigh)")).toBe("large");
+    expect(budgetTierFromLabel("unlimited (max)")).toBe("large");
     expect(budgetTierFromLabel(undefined)).toBeUndefined();
+    expect(normalizeBudgetValue("unlimited (max)")).toBe("large (xhigh)");
+    expect(normalizeBudgetValue("large (xhigh)")).toBe("large (xhigh)");
     expect(budgetValueFor("medium")).toBe("medium (high)");
     const plan = planBudget([], catalogue, { tier: "large", scope: "concrete" });
     expect(plan.budget).toBe("large (xhigh)");

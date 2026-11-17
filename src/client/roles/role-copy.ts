@@ -20,31 +20,6 @@ export const ROLE_COPY: Record<RoleKey, RoleCopy> = {
     nameKey: "roleJudgmentName",
     descriptionKey: "roleJudgmentDescription",
   },
-  "hardest tasks": { nameKey: "roleHardestName", descriptionKey: "roleHardestDescription" },
-  "how explorer": {
-    nameKey: "roleHowExplorerName",
-    descriptionKey: "roleHowExplorerDescription",
-  },
-  "how explainer": {
-    nameKey: "roleHowExplainerName",
-    descriptionKey: "roleHowExplainerDescription",
-  },
-  "why investigators": {
-    nameKey: "roleWhyInvestigatorsName",
-    descriptionKey: "roleWhyInvestigatorsDescription",
-  },
-  "why synthesizer": {
-    nameKey: "roleWhySynthesizerName",
-    descriptionKey: "roleWhySynthesizerDescription",
-  },
-  "reflect tooling": {
-    nameKey: "roleReflectToolingName",
-    descriptionKey: "roleReflectToolingDescription",
-  },
-  "reflect judgment, divergent, synthesizer": {
-    nameKey: "roleReflectJudgmentName",
-    descriptionKey: "roleReflectJudgmentDescription",
-  },
   "arena runners": {
     nameKey: "roleArenaRunnersName",
     descriptionKey: "roleArenaRunnersDescription",
@@ -54,10 +29,6 @@ export const ROLE_COPY: Record<RoleKey, RoleCopy> = {
     descriptionKey: "roleArenaJudgesDescription",
   },
   "swarm workers": { nameKey: "roleSwarmName", descriptionKey: "roleSwarmDescription" },
-  "architect runners": {
-    nameKey: "roleArchitectName",
-    descriptionKey: "roleArchitectDescription",
-  },
   "interrogate reviewers": {
     nameKey: "roleInterrogateName",
     descriptionKey: "roleInterrogateDescription",

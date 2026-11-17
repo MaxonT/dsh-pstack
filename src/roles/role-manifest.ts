@@ -27,28 +27,39 @@ export const LEGACY_PSTACK_MODELS_FILENAME = "pstack-models.mdc";
 export const INHERIT_ALIASES = ["inherit-parent", "auto"] as const;
 export type InheritAlias = (typeof INHERIT_ALIASES)[number];
 
-/** The 17 roles, in the order `setup-pstack` documents them. */
+/** The 9 roles, in the order `setup-pstack` documents them. */
 export const ROLE_MANIFEST = [
   { key: "feature, refactoring", shape: "single" },
   { key: "bug-fix", shape: "single" },
   { key: "perf-issue", shape: "single" },
   { key: "hillclimb", shape: "single" },
   { key: "judgment and prose", shape: "single" },
-  { key: "hardest tasks", shape: "single" },
-  { key: "how explorer", shape: "single" },
-  { key: "how explainer", shape: "single" },
-  { key: "why investigators", shape: "single" },
-  { key: "why synthesizer", shape: "single" },
-  { key: "reflect tooling", shape: "single" },
-  { key: "reflect judgment, divergent, synthesizer", shape: "single" },
   { key: "arena runners", shape: "list" },
   { key: "arena cross-judge pool", shape: "list" },
   { key: "swarm workers", shape: "list" },
-  { key: "architect runners", shape: "list" },
   { key: "interrogate reviewers", shape: "list" },
 ] as const satisfies readonly RoleSpec[];
 
 export type RoleKey = (typeof ROLE_MANIFEST)[number]["key"];
+
+/** Roles upstream retired. An older role file may still name one; readers drop it silently. */
+export const RETIRED_ROLE_KEYS = [
+  "hardest tasks",
+  "how explorer",
+  "how explainer",
+  "why investigators",
+  "why synthesizer",
+  "reflect tooling",
+  "reflect judgment, divergent, synthesizer",
+  "architect runners",
+] as const;
+
+const RETIRED_ROLE_KEY_SET = new Set<string>(RETIRED_ROLE_KEYS);
+
+/** Whether a role key names a retired upstream role to drop instead of reporting unknown. */
+export function isRetiredRoleKey(raw: string): boolean {
+  return RETIRED_ROLE_KEY_SET.has(normalizeRoleName(raw));
+}
 
 /** Normalize spacing and comma formatting without splitting the key. */
 export function normalizeRoleName(raw: string): string {

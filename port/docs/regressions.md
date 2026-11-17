@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- |
 | RG-001 | DSH 升级后根 preset 工具集漂移 | 根 preset 手工复制标准与创造模式的工具行 | `tests/preset-parity.test.ts` 对 `tests/fixtures/dsh-<version>/` 的基线做完整插件行对比；升级基线时刷新 fixture | 已覆盖 |
 | RG-002 | 把上游 skill 的散文式委派选择（派几个、挑哪条）固化成 `role`、`roleRoute`、`roleIndex`、autoPanel 等专用参数，模型频繁漏传或错传，工具还要替调用方解析角色文件 | 适配偏离上游调用形态：上游是调用方直接给模型、按需多次调用做 fan-out，固化成专用选择参数后，参数面和校验围绕补偿概念膨胀，且和角色文件里的配置反复漂移 | `pstack_subagent` 只收 `provider`、`model`、`reasoningEffort`，省略则继承父路由；角色到路由的映射由调用方读取角色文件决定；`tests/subagent.test.ts` 覆盖薄包装语义 | 已覆盖 |
+| RG-003 | 上游 pstack 升级后 `src/roles/role-manifest.ts` 的角色清单和 `src/roles/budget.ts` 的预算档位与随包 `setup-pstack` 脱节（0.15.43 把角色 17→9、预算四档→三档） | 适配层把 `pstack/skills/setup-pstack/SKILL.md` 第 5 步的角色键和预算档位抄成硬编码，上游增删时不会自动跟随 | 每次上游升级对照第 5 步同步清单与档位；退役角色键进 `RETIRED_ROLE_KEYS` 由读取静默丢弃，`unlimited` 预算迁移为 `large`；`tests/role-catalog.test.ts`、`tests/role-editor.test.ts`、`tests/budget.test.ts`、`tests/role-config.test.ts` 覆盖 | 已覆盖 |
 
 ## 新增流程
 

@@ -44,7 +44,7 @@ describe("pstack_roles", () => {
 
   it("reports list roles by shape and leaves unconfigured roles without routes", () => {
     const roles = roleCapabilities();
-    for (const key of ["arena runners", "architect runners", "interrogate reviewers"]) {
+    for (const key of ["arena runners", "swarm workers", "interrogate reviewers"]) {
       const role = roles.find((entry) => entry.role === key);
       expect(role?.shape).toBe("list");
       expect(role?.routes).toEqual([]);

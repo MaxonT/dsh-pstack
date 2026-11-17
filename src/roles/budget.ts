@@ -5,15 +5,18 @@ import type { RoleShape } from "./role-manifest.ts";
 import type { Route } from "./route.ts";
 import { WireTypeError } from "../lib/wire-error.ts";
 
-export const BUDGET_TIERS = ["unlimited", "large", "medium", "small"] as const;
+export const BUDGET_TIERS = ["large", "medium", "small"] as const;
 export type BudgetTier = (typeof BUDGET_TIERS)[number];
 
+/** Upstream caps every role at xhigh, so no budget target is above it. */
 export const BUDGET_TARGETS: Record<BudgetTier, string> = {
-  unlimited: "max",
   large: "xhigh",
   medium: "high",
   small: "medium",
 };
+
+/** Retired tier labels still found in older role files, remapped to the current tier. */
+const LEGACY_BUDGET_TIERS: Record<string, BudgetTier> = { unlimited: "large" };
 
 const EFFORT_LADDER = ["off", "low", "medium", "high", "xhigh", "max"] as const;
 
@@ -90,7 +93,16 @@ export interface BudgetPlan {
 export function budgetTierFromLabel(raw: string | undefined): BudgetTier | undefined {
   if (raw === undefined) return undefined;
   const match = /^\s*(unlimited|large|medium|small)\b/i.exec(raw);
-  return match?.[1]?.toLowerCase() as BudgetTier | undefined;
+  const token = match?.[1]?.toLowerCase();
+  if (token === undefined) return undefined;
+  return LEGACY_BUDGET_TIERS[token] ?? (token as BudgetTier);
+}
+
+/** Normalize a stored budget label, mapping the retired `unlimited` tier to `large`. */
+export function normalizeBudgetValue(raw: string | undefined): string | undefined {
+  if (raw === undefined) return undefined;
+  const tier = budgetTierFromLabel(raw);
+  return tier === undefined ? raw : budgetValueFor(tier);
 }
 
 /** Render the persisted budget value, such as `large (xhigh)`. */
