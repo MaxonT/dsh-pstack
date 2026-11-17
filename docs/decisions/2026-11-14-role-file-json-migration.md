@@ -1,10 +1,11 @@
 # 决策：角色文件从 mdc 行格式迁移为 pstack-models.json
 
-Status: accepted
+Status: superseded
 Date: 2026-11-14
 Scope: src/**, docs/architecture.md, docs/glossary.md, port/dsh.md, port/dsh.zh.md, README.md, README.zh.md, tests/**
 Implemented-by: commit:50eb307
 Review: 2026-11-17
+Superseded-by: docs/decisions/2026-11-16-structured-role-routes.md — 角色文件路由改为 version 2 结构化对象，旧的行文档与字符串编辑机制不再适用
 
 ## 背景
 

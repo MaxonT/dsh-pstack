@@ -10,6 +10,8 @@ Review: 2026-11-17
 
 角色文件 `$DSH_HOME/pstack-models.json` 里每个角色保存 `provider/model [effort]` 字符串数组。代码在读取时按第一个 `/` 拆分 provider 和 model。原先假设 provider 不含 `/`、只有 model 可能含 `/`，这个假设不成立，provider 也可能含 `/`，于是拆分会产生歧义，`budget` 里的 `splitRoute` 也有同样问题。
 
+本条记录替代 [2026-11-14-role-file-json-migration.md](./2026-11-14-role-file-json-migration.md) 的存储 schema 与按行编辑机制，把该记录的 version 1 字符串路由升级为 version 2 结构化对象。
+
 ## 决策
 
 角色文件的每条路由改为结构化对象：`{ "kind": "route", "provider", "model", "effort"? }`，继承用 `{ "kind": "inherit", "alias": "auto" | "inherit-parent" }`。角色文件版本升到 `version: 2`。读取前统一由 `compat/upgrade-role-file.ts` 的 `upgradeRoleFile` 检测并迁移：`.mdc` 由 `compat/mdc-to-json.ts` 迁移成 `version: 2` JSON 并删除旧文件，`version: 1` 由 `compat/version-1-to-2.ts` 原地重写成 `version: 2` 对象，之后正常读取只处理当前版本，`compat/` 可在大版本后整目录删除。`role-store` 读写对象，`role-wire`、`role-editor`、客户端共用同一个 `Route`/`RouteView` 形状。`pstack_models` 的 catalogue 去掉 `route: "provider/model"` 字符串，改带 `provider` 字段，`budget` 直接用 `provider` 和 `id`，删除 `splitRoute`。

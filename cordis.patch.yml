@@ -9,7 +9,7 @@
 # video rendering is not provided.
 #
 # Each `dsh-pstack/preset` row's `name`/`description` below is a display default.
-# `dsh-pstack/preset` overwrites both at runtime from `src/preset-copy.ts` for the
+# `dsh-pstack/preset` overwrites both at runtime from `src/presets/preset-copy.ts` for the
 # active locale, so change the user-visible copy there, not here.
 - insert:
     - id: pstack
