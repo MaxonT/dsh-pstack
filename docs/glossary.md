@@ -10,7 +10,7 @@ pstack 工作流中的委派职责，由 `src/roles/role-manifest.ts` 的精确 
 
 一次子代理调用的模型选择，表示为以下两类之一：
 
-- `route`：明确的 `provider/model`，可以带该模型公布的 reasoning effort。按第一个 `/` 拆分，`provider` 是首段，其余（可含 `/`）是 `model`；委派时把这三部分分别传给 `pstack_subagent`，不要传组合后的路由字符串。
+- `route`：结构化对象 `{ "kind": "route", "provider", "model", "effort"? }`，`provider` 和 `model` 都可含 `/`，`effort` 取该模型公布的档位；委派时把 `provider`、`model`、`effort` 分别传给 `pstack_subagent`，不要拼成 `provider/model` 字符串。
 - `inherit`：不向子代理传递模型覆盖，沿用父级路由；文件中的别名为 `inherit-parent` 或 `auto`。
 
 角色文件中的 `routes: []` 是保存协议中的**删除该角色行**操作，不是一个继承路由。删除后角色处于未配置状态，委派时同样继承父级。
@@ -28,13 +28,13 @@ Role 的路由基数由 `shape` 描述：
 
 ## Agent preset（Agent 预设）
 
-DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会话能力。DSH 的根 preset 面向用户会话；本插件只随包提供子代理 preset（`poteto-agent`、`comment-sicko`、`readonly`），用户会话的 Poteto 工作流改由会话级开关启用。`pstack_subagent` 的 `agent` 选择 preset 类别；模型路由由调用方读取角色文件后通过 `provider`/`model`/`reasoningEffort` 传入，两者是正交配置。
+DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会话能力。DSH 的根 preset 面向用户会话；本插件只随包提供子代理 preset（`poteto-agent`、`comment-sicko`、`readonly`），用户会话的 Poteto 工作流改由会话级开关启用。`pstack_subagent` 的 `agent_preset` 选择 preset 类别；模型路由由调用方读取角色文件后通过 `provider`/`model`/`reasoning_effort` 传入，两者是正交配置。
 
 ## Generated tree（生成树）
 
 由 `scripts/generate-pstack.mjs --target port` 从固定上游和 `port/dsh.md` 整体生成的根 `pstack/` 目录，构建时复制到 `dist/pstack/`。
 
-手工变更应落在生成来源、插件源码、测试或技能工作区。发布兼容范围由 `package.json` 的 `engines.dsh` 提供，pstack 版本记在 `port/baseline.json`；场景注册表与审核侧车分别位于 `playground/scenarios/` 和 `playground/reviews/`，都不属于本仓工程决策记录目录。
+手工变更应落在生成来源、插件源码、测试或技能工作区。发布兼容范围由 `package.json` 的 `engines.dsh` 提供，pstack 版本记在 `port/baseline.json`；场景注册表与当前审核快照分别位于 `playground/scenarios/` 和 `playground/reviews/`，都不属于本仓工程决策记录目录。
 
 ## Playground（验证场）
 

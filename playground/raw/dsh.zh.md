@@ -45,7 +45,7 @@ DSH 没有 rules 目录，从不把 `.mdc` 文件当作会话规则读取。psta
 
 - 检测。使用 `list_subagent_models`，把每条可用路由写成 `<provider>/<model> <effort>`。检测不到任何路由时，请用户粘贴路由；绝不写入未确认的路由。
 - 默认值。可用的 slug 映射到路由；不可用的 slug 写成 `inherit-parent`。
-- 写入。写 `$DSH_HOME/pstack-models.json`，包含 `version: 1`、可选 `budget` 和由路由字符串数组组成的 `roles` 对象。覆盖整个文件；缺少某个角色时它继承父路由。
+- 写入。写 `$DSH_HOME/pstack-models.json`，包含 `version: 2`、可选 `budget` 和由路由对象数组组成的 `roles` 对象。覆盖整个文件；缺少某个角色时它继承父路由。
 
 ## 路径
 

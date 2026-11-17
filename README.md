@@ -219,7 +219,7 @@ These limits remain even with every optional plugin that can run alongside pstac
 
 1. **Preset names show in English**
 
-   Set the language to Chinese in **Settings → General → Language**, then restart DSH. If the row already shows Chinese, select it again. That saves the preference that preset names use when the host starts.
+   Set the language to Chinese in **Settings → General → Language**, then restart DSH. The row may already show Chinese because it follows the browser. Select Chinese again. That saves the preference that preset names use when the host starts.
 
 2. **Some rendering needs a plugin**
 
