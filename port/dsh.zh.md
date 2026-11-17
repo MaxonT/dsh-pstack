@@ -8,7 +8,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 
 | Cursor | DeepSeek Harness |
 | --- | --- |
-| `Task` | `pstack_subagent` 一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它，并传 `description` 和 `prompt`。传 `provider`、`model` 和可选 `reasoning_effort` 覆盖路由，或全部省略以继承父路由。`pstack_models` 把每个 model id 列在对应 provider 标题下：把标题里的 provider id 传给 `provider`、把列出的 id 传给 `model`，不要传组合后的 `provider/model` 路由。 |
+| `Task` | `pstack_subagent` 一次调用只启动一个子代理；需要在同一消息里并行多个子代理时，按子代理数多次调用它，并传 `description` 和 `prompt`。覆盖路由时，`provider` 与 `model` 必须成对传入，不能只给其中一个，可再加可选 `reasoning_effort`。全部省略则继承父路由。`pstack_models` 把每个 model id 列在对应 provider 标题下：把标题里的 provider id 传给 `provider`、把列出的 id 传给 `model`，不要传组合后的 `provider/model` 路由。 |
 | `AskQuestion` | `ask_user_question` 接收一批带选项和自由输入的问题。只有活跃的根智能体有人工回答者；被委派的子智能体把问题保留在结果里。工具不可用时用纯文本提问。 |
 | Open a todolist | `todo_write` 替换整个列表，没有 `skipped` 状态。跳过的步骤保持可见，在 `content` 中写 `skip: <reason> - <step>`，状态设为 `completed`。 |
 | Run another pstack skill (`/name` 或 "the **name** skill") | 会话技能目录里的技能用原生 `skill` 工具。带 `disable-model-invocation: true` 的随包 pstack 技能对 `skill` 隐藏，所以用 `read` 读取 `<pstack>/skills/<name>/SKILL.md` 并遵循，包括技能目录下的 playbook 和 reference。用户 `/name` 手势会直接注入一个技能；内置帮助技能是 `poteto-help`。 |
