@@ -239,7 +239,7 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 
 | dsh-pstack 发布版本 | pstack 版本 |
 |---|---|
-| `0.5.0` | `0.15.43` |
+| `0.5.1` | `0.15.43` |
 
 **DSH `>=0.2.2-rc.1`**
 
