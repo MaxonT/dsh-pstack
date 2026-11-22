@@ -231,9 +231,13 @@ export async function apply(ctx: Context): Promise<() => Promise<void>> {
   const injectProps = (sessionId: string) => ({
     sessionId,
     readMode: async () => {
-      if (potetoApi === undefined) return false;
+      // Reject instead of synthesizing false: the toggle keeps its projection
+      // value when the answer is unavailable, so a late mount or transient
+      // failure cannot overwrite a correct "on" with "off".
+      if (potetoApi === undefined) throw new Error("poteto mode is not available yet");
       const result = await potetoApi.status(sessionId);
-      return result.ok ? result.value.enabled : false;
+      if (!result.ok) throw result.error;
+      return result.value.enabled;
     },
     selectMode: async (enabled: boolean) => {
       if (potetoApi === undefined) return "poteto mode is not available yet";

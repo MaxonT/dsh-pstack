@@ -38,19 +38,20 @@ type PotetoProjectionDefinition = Omit<
 };
 
 /**
- * Build the projection from the storage sidecar. The projection is a
- * first-paint snapshot; live toggle changes are applied by the client
- * component from the Remote result, so it does not fold Session events.
+ * Build the projection from the resolved Session switch. The resolver folds the
+ * preset, the storage sidecar, and the global default, so first paint does not
+ * depend on the seed write order. Live toggle changes are applied by the client
+ * component from the Remote result, so the projection does not fold events.
  */
 export function createPotetoProjectionDefinition(
-  readEnabled: (sessionId: string) => boolean | undefined,
+  resolveEnabled: (header: SessionHeader) => boolean,
 ): PotetoProjectionDefinition {
   return {
     key: "potetoMode",
     stateVersion: 2,
     stateSchema,
     init: (header: SessionHeader): PotetoProjectionState => ({
-      enabled: readEnabled(header.id),
+      enabled: resolveEnabled(header),
     }),
     apply: (state: PotetoProjectionState): PotetoProjectionState => state,
     wire: {

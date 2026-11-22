@@ -30,6 +30,7 @@ import {
   queuedSessionIds,
   readRepairQueue,
   scanLegacySessions as scanLegacySessionRefs,
+  writeRepairQueue,
   type StoredSessionRef,
 } from "./poteto/maintenance.ts";
 import type { MaintenanceScanResult, RepairOutcome } from "./poteto/maintenance-types.ts";
@@ -96,7 +97,13 @@ export class PotetoModeService extends TypertRemoteService {
     this.ctx.effect(() => () => this.domain.close(), "pstack.poteto-toggle.domain");
     this.repairOutcome = await this.processRepairQueue();
     await this.ctx.sessionProjections.register(
-      createPotetoProjectionDefinition((sessionId) => readPotetoMode(this.modeTable, sessionId)),
+      createPotetoProjectionDefinition((header) =>
+        resolvePotetoEnabled({
+          agentPreset: header.agentPreset,
+          selected: readPotetoMode(this.modeTable, header.id),
+          byDefault: this.defaultEnabled,
+        }),
+      ),
     );
     const skill = await this.ctx.skills.get("poteto-mode", {});
     if (skill === undefined) throw new Error("poteto-mode skill is not available");
@@ -270,8 +277,14 @@ export class PotetoModeService extends TypertRemoteService {
       },
       isLive: (sessionId) => this.ctx.agents.get(sessionId as SessionId) !== undefined,
     });
+    // Keep sessions that failed for a retryable reason so the user does not have
+    // to rescan; drop "not found" ids, which will never repair.
+    const retryable = outcome.failed
+      .filter((failure) => failure.sessionId !== "" && failure.message !== "session not found")
+      .map((failure) => failure.sessionId);
     try {
-      clearRepairQueue();
+      if (retryable.length > 0) writeRepairQueue(retryable);
+      else clearRepairQueue();
     } catch (error) {
       return {
         repaired: outcome.repaired,
@@ -291,6 +304,9 @@ export class PotetoModeService extends TypertRemoteService {
     signal?.throwIfAborted();
     writeDefaultEnabled(enabled);
     this.defaultEnabled = enabled;
+    // Only sessions created before this build can still lack an explicit
+    // selection and depend on the live default, so re-apply tool denial for them.
+    this.reconcileNativeTools();
     return { enabled };
   }
 
@@ -351,25 +367,21 @@ export class PotetoModeService extends TypertRemoteService {
   }
 
   /**
-   * Record an explicit on selection for a Session that would run the workflow
-   * from the global default. The sidecar keeps the client snapshot and the
-   * running Session on the same saved value after the default is applied.
+   * Record the resolved default as an explicit selection for a new Session. The
+   * sidecar then holds the creation-time value, so a later change to the global
+   * default cannot flip this Session, and the projection paints it on first pass.
    */
   private async seedDefaultMode(agent: Agent): Promise<void> {
     if (this.seededDefaults.has(agent)) return;
     const selected = readPotetoMode(this.modeTable, agent.session.id);
-    const seed = shouldSeedPotetoDefault({
-      agentPreset: this.presetOf(agent),
-      selected,
-      byDefault: this.defaultEnabled,
-    });
+    const seed = shouldSeedPotetoDefault({ agentPreset: this.presetOf(agent), selected });
     if (!seed) return;
     this.seededDefaults.add(agent);
     try {
-      await writePotetoMode(this.modeTable, agent.session.id, true);
-    } catch (error) {
+      await writePotetoMode(this.modeTable, agent.session.id, this.defaultEnabled);
+    } catch {
+      // Best effort: a failed seed falls back to the live default in isEnabledFor.
       this.seededDefaults.delete(agent);
-      throw error;
     }
   }
 

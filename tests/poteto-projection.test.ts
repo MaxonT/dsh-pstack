@@ -20,7 +20,7 @@ const header: SessionHeader = {
 };
 const inheritedEventCount = SessionLogOffset(0);
 
-function definitionFor(enabled: boolean | undefined) {
+function definitionFor(enabled: boolean) {
   return createPotetoProjectionDefinition(() => enabled);
 }
 
@@ -29,9 +29,22 @@ describe("poteto projection snapshot", () => {
     expect(definitionFor(true).stateVersion).toBe(2);
   });
 
-  it("uses the storage sidecar value on first paint", () => {
+  it("uses the resolved value on first paint", () => {
     expect(definitionFor(true).init(header, inheritedEventCount)).toEqual({ enabled: true });
     expect(definitionFor(false).init(header, inheritedEventCount)).toEqual({ enabled: false });
+  });
+
+  it("resolves first paint from the Session header, not the seed order", () => {
+    const definition = createPotetoProjectionDefinition(
+      (sessionHeader) => sessionHeader.agentPreset !== "minimal",
+    );
+
+    expect(definition.init({ ...header, agentPreset: "minimal" }, inheritedEventCount)).toEqual({
+      enabled: false,
+    });
+    expect(definition.init({ ...header, agentPreset: "standard" }, inheritedEventCount)).toEqual({
+      enabled: true,
+    });
   });
 
   it("maps the saved selection to the wire enabled flag", () => {
