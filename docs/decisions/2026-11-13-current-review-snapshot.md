@@ -4,7 +4,7 @@ Status: accepted
 Date: 2026-11-13
 Scope: playground/scripts/collect.ts, playground/scripts/lib/review-snapshot.ts, playground/scripts/run-batch.ts, playground/scripts/run-case.ts, playground/AGENTS.md, playground/docs/workflow.md, playground/docs/evidence-analysis.md, playground/reviews/**
 Implemented-by: commit:ef01e56
-Review: 2026-11-13
+Review: 2026-11-22
 
 ## 背景
 

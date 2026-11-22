@@ -62,4 +62,4 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 
 ## Repair queue（修复队列）
 
-`$DSH_HOME/pstack-repair.json` 保存等待下次启动处理的 Session id。用户在维护页确认后追加写入；DSH 启动时读取、逐个修复并删除该文件。它是一次性迁移队列，不是 Session 日志，也不是 storageDomain sidecar。
+`$DSH_HOME/pstack-repair.json` 保存等待下次启动处理的 Session id。用户在配置弹窗的修复页确认后追加写入；DSH 启动时读取、逐个修复并删除该文件。它是一次性迁移队列，不是 Session 日志，也不是 storageDomain sidecar。

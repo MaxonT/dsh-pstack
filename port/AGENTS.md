@@ -31,7 +31,7 @@
 2. 生成后运行 `vp run generate:check` 检查生成树。
 3. 用 `vpx scripts/generate-pstack.mjs --target port` 生成根 `pstack/`；加 `--check` 检查漂移。
 4. 破坏性适配同时更新 `package.json` 的 DSH 范围，并在各本地化 README 新增对应兼容分组；`baseline.json` 的 `pstackVersion` 随上游 pstack 发版更新。
-5. 发布说明由 agent 会话按 `changes/AGENTS.md` 从上一 tag 到当前的提交归纳生成到 `changes/RELEASE.md`，逐条与用户确认；`vp run release` 要求该文件存在且已提交后才 bumpp，发布后删除。
+5. 发布说明按 `changes/AGENTS.md` 生成到 `changes/RELEASE.md` 并逐条与用户确认；`vp run release` 校验其已提交后才 bumpp，发布后删除。
 
 ## 边界
 
