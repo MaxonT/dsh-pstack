@@ -4,7 +4,7 @@ Status: proposed
 Date: 2026-11-19
 Scope: tests/**, src/**, playground/**, vite.config.ts, tsconfig.json, docs/architecture.md, docs/decisions/**
 Implemented-by: -
-Review: 2026-11-19
+Review: 2026-11-23
 
 ## 背景
 

@@ -2,9 +2,9 @@
 
 Status: accepted
 Date: 2026-11-16
-Scope: src/roles/**, src/models/**, src/compat/**, port/dsh.md, port/dsh.zh.md, docs/architecture.md, tests/**
+Scope: src/roles/**, src/models/**, src/compat/**, src/dsh.md, src/dsh.zh.md, docs/architecture.md, src/tests/**
 Implemented-by: commit:461d4e2
-Review: 2026-11-22
+Review: 2026-11-23
 
 ## 背景
 

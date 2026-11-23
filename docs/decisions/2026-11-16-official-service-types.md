@@ -4,7 +4,7 @@ Status: accepted
 Date: 2026-11-16
 Scope: src/**, package.json, pnpm-workspace.yaml, docs/decisions/**
 Implemented-by: commit:700bcb0
-Review: 2026-11-22
+Review: 2026-11-23
 
 ## 背景
 

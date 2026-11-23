@@ -1,10 +1,11 @@
 # 决策：以 capability 驱动验证覆盖
 
-Status: accepted
+Status: superseded
 Date: 2026-11-13
-Scope: playground/**, docs/decisions/**
+Scope: playground/**, native/gaps.json, docs/decisions/**
 Implemented-by: commit:99e6036
-Review: 2026-11-22
+Review: 2026-11-23
+Superseded-by: docs/decisions/2026-11-23-gap-driven-scenarios.md — capability inventory 和目录分组已由 native gap 驱动的扁平场景取代，capability 原则由新记录延续
 
 ## 背景
 

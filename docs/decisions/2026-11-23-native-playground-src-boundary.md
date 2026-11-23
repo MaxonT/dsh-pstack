@@ -1,9 +1,9 @@
 # 决策：以 native 基准、playground 验证、src 产品实现分层
 
-Status: proposed
+Status: accepted
 Date: 2026-11-23
 Scope: native/**, src/**, playground/**, docs/architecture.md, docs/glossary.md, docs/decisions/**
-Implemented-by: -
+Implemented-by: PR #43
 Review: 2026-11-23
 
 ## 背景
@@ -35,5 +35,5 @@ Review: 2026-11-23
 - `native/`、`playground/`、`src/` 的职责和输入输出固定，新增文件先按这三层归档。
 - `native/pstack/` 是唯一生成树，`src/dsh.md` 是唯一产品适配答案；文档和测试均引用当前路径。
 - `playground/evidence/runs/` 保存当前验证快照，历史记录依赖 Git，不再维护 `playground/reviews`。
-- 相关记录：[2026-11-13-capability-driven-validation.md](./2026-11-13-capability-driven-validation.md) 的 capability 驱动原则继续成立，但其 `raw/adapted` 和 `playground/adapter` 路径属于历史术语；[2026-11-13-current-review-snapshot.md](./2026-11-13-current-review-snapshot.md) 的快照原则继续成立，但其 `playground/harness` 路径属于历史路径。
-- 本记录在 PR #43 合并前保持 `proposed`；合并后将 `Implemented-by` 更新为 `PR #43`。
+- 相关记录：[2026-11-23-gap-driven-scenarios.md](./2026-11-23-gap-driven-scenarios.md) 承接 capability 覆盖原则，[2026-11-23-playground-worker-container-isolation.md](./2026-11-23-playground-worker-container-isolation.md) 承接 worker 读取边界；旧记录中的 `port/`、`playground/harness`、`playground/adapter`、根 `pstack/`、根 `tests/` 下的产品测试和 `port/surface.json` 路径属于历史，当前对应 `src/`、`playground/runner`、`native/`、`src/tests/` 和 `src/surface.json`。
+- 本记录已在 PR #43 合并后更新为 `Status: accepted`、`Implemented-by: PR #43`。

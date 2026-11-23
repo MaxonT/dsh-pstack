@@ -1,10 +1,11 @@
 # 决策：用结构化 $DSH_HOME/AGENTS.md 约束 worker 的读取边界
 
-Status: accepted
+Status: superseded
 Date: 2026-11-13
 Scope: playground/harness/lib/env.ts, playground/harness/cli/prepare.ts, playground/harness/cli/run-case.ts, playground/scenarios/capabilities/, playground/AGENTS.md, playground/docs/worker.md
 Implemented-by: commit:7d7ba2f
-Review: 2026-11-22
+Review: 2026-11-23
+Superseded-by: docs/decisions/2026-11-23-playground-worker-container-isolation.md — worker 改为 Docker 容器隔离，$DSH_HOME/AGENTS.md 和 git init 已移除
 
 ## 背景
 
