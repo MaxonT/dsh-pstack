@@ -28,7 +28,12 @@
     "dist",
     "assets",
     "cordis.patch.yml",
+    "docs",
     "locale",
+    "playground/docs",
+    "skills/skills-lock.json",
+    "src/dsh.md",
+    "src/dsh.zh.md",
     "README.md",
     "README.zh.md"
   ],
@@ -53,7 +58,7 @@
     "surface:check": "vpx scripts/release-surface.ts --check",
     "prerelease": "vp run ci",
     "release": "bash scripts/release.sh",
-    "prepublishOnly": "vp run ci"
+    "prepublishOnly": "vp run build"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "catalog:runtime",
