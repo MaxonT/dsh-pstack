@@ -131,7 +131,7 @@ const OUTPUT_SCHEMA: JsonSchemaNode = {
 };
 
 const TOOL_DESCRIPTION = [
-  "Use this first when asked which model a role uses or before calling `pstack_subagent`. It lists every pstack role with its shape and configured routes as structured provider, model, and reasoningEffort values, plus each route's served efforts and default effort.",
+  "List every pstack role with its shape and configured routes as structured provider, model, and reasoningEffort values, plus each route's served efforts and default effort.",
   "",
   "Read-only. Use it to pick the provider, model, and reasoningEffort to pass to `pstack_subagent`, and to change the effort to another value from the route's `efforts` instead of guessing. Use `pstack_models` only to detect served routes during setup or verify one exists.",
   "",

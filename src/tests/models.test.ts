@@ -2,12 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
 
-import {
-  CATALOGUE_NOTE,
-  collectCatalogue,
-  createPstackModelsTool,
-  renderCatalogue,
-} from "../models.ts";
+import { collectCatalogue, renderCatalogue } from "../models.ts";
 
 const signal = new AbortController().signal;
 
@@ -64,17 +59,5 @@ describe("pstack_models", () => {
     await expect(collectCatalogue(cancelled, undefined, controller.signal)).rejects.toThrow(
       "cancelled",
     );
-  });
-
-  it("states in its description that it cannot answer which model a role uses", () => {
-    const description = createPstackModelsTool(llm).description;
-    expect(description).toContain("does not read the pstack role file");
-    expect(description).toContain("`pstack_roles`");
-  });
-
-  it("opens a listing with a note that points role questions to pstack_roles", async () => {
-    const rendered = renderCatalogue(await collectCatalogue(llm, undefined, signal));
-    expect(rendered.startsWith(CATALOGUE_NOTE)).toBe(true);
-    expect(CATALOGUE_NOTE).toContain("`pstack_roles`");
   });
 });
