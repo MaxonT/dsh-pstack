@@ -12,6 +12,7 @@ import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
 import { collectCatalogue, type CatalogueResult } from "./models.ts";
+import type { PstackHomeService } from "./index.ts";
 import { resolveDshHome } from "./lib/dsh-home.ts";
 import { pstackHomePaths } from "./pstack/home.ts";
 import { ROLE_MANIFEST, type RoleSpec } from "./roles/role-manifest.ts";
@@ -22,7 +23,7 @@ import { textOutput } from "./lib/tool-output.ts";
 
 export const name = "pstack-role-catalog";
 
-export const inject = ["tools", "llm"];
+export const inject = ["tools", "llm", "pstackHome"];
 
 export const TOOL_NAME = "pstack_roles";
 
@@ -158,7 +159,6 @@ export function createPstackRolesTool(
           : `${text}\n\ncatalogue discovery failed: ${value.catalogueError}`;
       },
     ),
-    // Reading is now a pure read of the current file, so concurrent calls are safe.
     isConcurrencySafe: () => true,
     async execute(_rawArgs, exec: ToolRunContext) {
       const roleFile = readRoleConfiguration(pstackHomePaths(dshHome).models);
@@ -182,7 +182,8 @@ export function createPstackRolesTool(
 }
 
 export function apply(ctx: Context): void {
-  ctx.tools.register(createPstackRolesTool(resolveDshHome(), ctx.llm));
+  const home = ctx.get("pstackHome") as PstackHomeService;
+  ctx.tools.register(createPstackRolesTool(home.dshHome, ctx.llm));
 }
 
 function routeToChoice(route: Route): RoleRoute {

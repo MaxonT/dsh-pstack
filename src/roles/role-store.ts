@@ -57,7 +57,7 @@ export interface RoleFileDocumentLike {
 
 /** The editable JSON shape: version, optional budget, structured routes per role. */
 export interface RoleFileDocument extends RoleFileDocumentLike {
-  readonly version: 1 | 2;
+  readonly version: typeof ROLE_FILE_VERSION;
 }
 
 /** An empty document for the first save on a missing home. */

@@ -62,7 +62,7 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 
 ## Pstack home（pstack 目录）
 
-`$DSH_HOME/pstack/`，保存 pstack 的用户级配置和运行时数据：`models.json`、`settings.json` 和 `repair.json`。`src/compat/migrate-pstack-home.ts` 由 `src/index.ts` 在插件启动时调用一次，把根目录旧的 `pstack-models.json`、`pstack-models.mdc` 和 `pstack-settings.json` 迁入该目录；旧 `pstack-repair.json` 不迁移。运行时读取只读当前文件，不触发迁移。
+`$DSH_HOME/pstack/`，保存 pstack 的用户级配置和运行时数据：`models.json`、`settings.json` 和 `repair.json`。`src/index.ts` 的 `PstackHomeService` 在服务初始化时调用 `src/compat/migrate-pstack-home.ts` 一次，把根目录旧的 `pstack-models.json`、`pstack-models.mdc` 和 `pstack-settings.json` 迁入该目录；旧 `pstack-repair.json` 不迁移。运行时读取只读当前文件，不触发迁移。
 
 ## Repair queue（修复队列）
 

@@ -7,7 +7,7 @@ import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
 import type {} from "@deepseek-ai/dsh-typert-registry";
 
 import { collectCatalogue, type CatalogueResult } from "./models.ts";
-import { pstackHomePaths } from "./pstack/home.ts";
+import type { PstackHomeService } from "./index.ts";
 import type { BudgetApplyRequest } from "./roles/budget.ts";
 import { readRoleConfiguration } from "./roles/role-store.ts";
 import {
@@ -25,7 +25,7 @@ import type {
 
 /** Read and write `$DSH_HOME/pstack/models.json` for the Web settings page. */
 export class PstackRolesService extends TypertRemoteService {
-  static inject = ["llm", "typert"];
+  static inject = ["llm", "typert", "pstackHome"];
 
   constructor(ctx: Context) {
     super(ctx, ROLES_SERVICE);
@@ -37,7 +37,7 @@ export class PstackRolesService extends TypertRemoteService {
 
   /** Current path, status, values, and per-role issues. */
   status(): RoleFileSnapshot {
-    return snapshotFromConfiguration(readRoleConfiguration(roleFilePath()));
+    return snapshotFromConfiguration(readRoleConfiguration(this.home.paths.models));
   }
 
   /** The live model directory used by the page's selectors. */
@@ -48,22 +48,22 @@ export class PstackRolesService extends TypertRemoteService {
   /** Validate and save one role, then return the reloaded snapshot. */
   async save(request: SaveRoleRequest, signal: AbortSignal): Promise<SaveRoleResult> {
     signal.throwIfAborted();
-    return saveRoleConfiguration(roleFilePath(), request, this.llm, signal);
+    return saveRoleConfiguration(this.home.paths.models, request, this.llm, signal);
   }
 
   /** Apply a global budget target and return the reloaded snapshot. */
   async budget(request: BudgetApplyRequest, signal: AbortSignal): Promise<BudgetApplyResult> {
     signal.throwIfAborted();
-    return saveBudgetConfiguration(roleFilePath(), request, this.llm, signal);
+    return saveBudgetConfiguration(this.home.paths.models, request, this.llm, signal);
+  }
+
+  private get home(): PstackHomeService {
+    return this.ctx.get("pstackHome") as PstackHomeService;
   }
 
   private get llm(): LlmRuntime {
     return this.ctx.llm;
   }
-}
-
-function roleFilePath(): string {
-  return pstackHomePaths().models;
 }
 
 export default PstackRolesService;

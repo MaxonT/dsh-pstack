@@ -21,7 +21,6 @@ import type { CatalogueResult } from "../models.ts";
 const directories: string[] = [];
 
 interface SeededDocument {
-  readonly version?: 1 | 2;
   readonly budget?: string;
   readonly roles: Record<string, Array<string | Route>>;
 }
@@ -334,7 +333,7 @@ describe("role editor", () => {
   });
 
   it("returns a refused save for provider and model discovery failures", async () => {
-    const home = tempHome({ version: 2, roles: {} });
+    const home = tempHome({ roles: {} });
     const path = pathOf(home);
     const original = readFileSync(path, "utf8");
     const failures = [
@@ -421,7 +420,6 @@ describe("role editor", () => {
 
   it("refuses a budget when a configured route model is missing", async () => {
     const home = tempHome({
-      version: 2,
       roles: {
         "bug-fix": [{ kind: "route", provider: "ghost", model: "model", effort: "low" }],
       },

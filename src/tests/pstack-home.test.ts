@@ -52,6 +52,10 @@ describe("migratePstackHome", () => {
 
     expect(existsSync(pstackHomePaths(home).models)).toBe(true);
     expect(existsSync(pstackHomePaths(home).settings)).toBe(true);
+    expect(readSettings(pstackHomePaths(home).settings)).toEqual({
+      version: 1,
+      potetoDefault: true,
+    });
     expect(existsSync(join(home, "pstack-models.json"))).toBe(false);
     expect(existsSync(join(home, "pstack-settings.json"))).toBe(false);
     expect(readFileSync(join(home, "pstack-repair.json"), "utf8")).toBe(legacyRepair);
@@ -78,7 +82,7 @@ describe("migratePstackHome", () => {
     expect(raw.roles["bug-fix"]).toEqual([route]);
   });
 
-  it("migrates a legacy pstack-models.mdc to version 2 models.json and removes the mdc", () => {
+  it("migrates a legacy pstack-models.mdc to version 2 models.json and keeps a backup", () => {
     const home = tempHome();
     writeFile(
       join(home, "pstack-models.mdc"),
@@ -92,6 +96,63 @@ describe("migratePstackHome", () => {
     expect(raw.version).toBe(2);
     expect(raw.budget).toBe("large (xhigh)");
     expect(raw.roles["bug-fix"]).toEqual([route]);
+    expect(readFileSync(join(pstackHomePaths(home).root, "models.mdc.bak"), "utf8")).toContain(
+      "bug-fix: cpa/model-a [high]",
+    );
+  });
+
+  it("strips the Cursor frontmatter from a documented mdc file", () => {
+    const home = tempHome();
+    writeFile(
+      join(home, "pstack-models.mdc"),
+      [
+        "---",
+        "description: pstack per-role model choices (overrides skill defaults)",
+        "alwaysApply: true",
+        "---",
+        "# pstack model configuration. One line per role.",
+        "# budget: large (xhigh)",
+        "bug-fix: cpa/model-a [high]",
+        "arena runners: cpa/model-a [high], cpa/model-b [low]",
+        "",
+      ].join("\n"),
+    );
+
+    migratePstackHome(home);
+
+    const raw = JSON.parse(readFileSync(pstackHomePaths(home).models, "utf8"));
+    expect(raw.version).toBe(2);
+    expect(raw.budget).toBe("large (xhigh)");
+    expect(raw.roles["bug-fix"]).toEqual([route]);
+    expect(raw.roles["arena runners"]).toEqual([
+      route,
+      { kind: "route", provider: "cpa", model: "model-b", effort: "low" },
+    ]);
+  });
+
+  it("upgrades a current models.json version 1 at startup", () => {
+    const home = tempHome();
+    writeJson(pstackHomePaths(home).models, {
+      version: 1,
+      roles: { "bug-fix": ["cpa/model-a [high]"] },
+    });
+
+    migratePstackHome(home);
+
+    const raw = JSON.parse(readFileSync(pstackHomePaths(home).models, "utf8"));
+    expect(raw.version).toBe(2);
+    expect(raw.roles["bug-fix"]).toEqual([route]);
+  });
+
+  it("keeps the current settings.json when a legacy settings file also exists", () => {
+    const home = tempHome();
+    writeJson(pstackHomePaths(home).settings, { version: 1, potetoDefault: false });
+    writeJson(join(home, "pstack-settings.json"), { version: 1, potetoDefault: true });
+
+    migratePstackHome(home);
+
+    expect(readSettings(pstackHomePaths(home).settings).potetoDefault).toBe(false);
+    expect(existsSync(join(home, "pstack-settings.json"))).toBe(true);
   });
 
   it("keeps the current file and leaves a legacy sibling untouched when both exist", () => {

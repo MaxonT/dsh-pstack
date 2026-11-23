@@ -2,9 +2,8 @@
  * The pstack home layout.
  *
  * Every global pstack file lives under one directory, `$DSH_HOME/pstack/`. This
- * module is the single source of truth for those paths and their names. Legacy
- * files at the `$DSH_HOME` root are named here only so the startup migration can
- * find them once; runtime reads and writes use the current paths.
+ * module is the single source of truth for the current paths and names. Legacy
+ * root filenames live only in `compat/migrate-pstack-home.ts`.
  */
 
 import { join } from "node:path";
