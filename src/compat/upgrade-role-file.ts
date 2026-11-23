@@ -1,17 +1,16 @@
 /**
- * Detect the on-disk role file and upgrade it to the current version before the
- * normal reader runs. Each legacy shape lives in its own migration module.
+ * Upgrade one JSON role file to the current version in place. Each legacy JSON
+ * shape lives in its own migration module; the `.mdc` line format is migrated by
+ * `compat/mdc-to-json.ts` before this runs.
  */
 
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
 import { describeError } from "../lib/errors.ts";
 import { normalizeBudgetValue } from "../roles/budget.ts";
-import { LEGACY_PSTACK_MODELS_FILENAME, isRetiredRoleKey } from "../roles/role-manifest.ts";
+import { isRetiredRoleKey } from "../roles/role-manifest.ts";
 import type { Route } from "../roles/route.ts";
-import { migrateMdcToJson } from "./mdc-to-json.ts";
 import { upgradeVersionOneRoles } from "./version-1-to-2.ts";
 
 /** The document shape the current serializer accepts. */
@@ -35,25 +34,16 @@ export type RoleFileUpgrade =
   | { readonly status: "unreadable"; readonly reason: string };
 
 /**
- * Detect the role file and upgrade it in place. A `.mdc` beside a missing `.json`
- * is migrated and removed; a `version: 1` JSON document is rewritten with
- * structured routes; an unknown version is unreadable. The JSON path always ends
+ * Upgrade a JSON role file in place. A `version: 1` document is rewritten with
+ * structured routes; a current-version document is sanitized (retired roles and
+ * budget labels dropped); an unknown version is unreadable. The file always ends
  * up at the current version, or the result reports why not.
  */
 export function upgradeRoleFile(
   jsonPath: string,
   options: UpgradeRoleFileOptions,
 ): RoleFileUpgrade {
-  if (!existsSync(jsonPath)) {
-    const mdcPath = join(dirname(jsonPath), LEGACY_PSTACK_MODELS_FILENAME);
-    if (!existsSync(mdcPath)) return { status: "missing" };
-    try {
-      migrateMdcToJson(mdcPath, jsonPath, options);
-      return { status: "migrated" };
-    } catch (error) {
-      return { status: "unreadable", reason: describeError(error) };
-    }
-  }
+  if (!existsSync(jsonPath)) return { status: "missing" };
 
   let raw: unknown;
   try {

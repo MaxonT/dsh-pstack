@@ -93,7 +93,8 @@ function providerRows(
 }
 
 export function writeRoleFile(paths: WorkerPaths, config: PlaygroundConfig): void {
-  mkdirSync(paths.home, { recursive: true });
+  const root = join(paths.home, "pstack");
+  mkdirSync(root, { recursive: true });
   const roles: Record<
     string,
     Array<{ kind: "route"; provider: string; model: string; effort?: string }>
@@ -107,21 +108,19 @@ export function writeRoleFile(paths: WorkerPaths, config: PlaygroundConfig): voi
       ...(route.effort === undefined ? {} : { effort: route.effort }),
     }));
   }
-  writeFileSync(
-    join(paths.home, "pstack-models.json"),
-    `${JSON.stringify({ version: 2, roles }, null, 2)}\n`,
-  );
+  writeFileSync(join(root, "models.json"), `${JSON.stringify({ version: 2, roles }, null, 2)}\n`);
 }
 
 /**
- * Seed `$DSH_HOME/pstack-settings.json`. The poteto workflow is a session toggle whose
+ * Seed `$DSH_HOME/pstack/settings.json`. The poteto workflow is a session toggle whose
  * global default applies to new Sessions, so this replaces the removed poteto-mode root
  * preset: adapted workers start with the workflow on, native keeps it off.
  */
 export function writePstackSettings(paths: WorkerPaths, potetoDefault: boolean): void {
-  mkdirSync(paths.home, { recursive: true });
+  const root = join(paths.home, "pstack");
+  mkdirSync(root, { recursive: true });
   writeFileSync(
-    join(paths.home, "pstack-settings.json"),
+    join(root, "settings.json"),
     `${JSON.stringify({ version: 1, potetoDefault }, null, 2)}\n`,
   );
 }

@@ -102,7 +102,7 @@
 
 需要从会话直接启动工作流时，使用对应的技能。
 
-1. **初始化角色路由。** 运行一次 `/setup-pstack`。它会把检测到的路由写入 `$DSH_HOME/pstack-models.json`。缺少该文件时，角色继承父级路由。若存在旧的 `$DSH_HOME/pstack-models.mdc`，插件首次读取时会迁移为 JSON 并删除旧文件。
+1. **初始化角色路由。** 运行一次 `/setup-pstack`。它会把检测到的路由写入 `$DSH_HOME/pstack/models.json`。缺少该文件时，角色继承父级路由。启动时若新文件缺失，插件会把旧的 `$DSH_HOME/pstack-models.json` 或 `$DSH_HOME/pstack-models.mdc` 迁移为 `$DSH_HOME/pstack/models.json` 并删除旧文件。
 2. **通过技能启动。** 直接输入 `/poteto-mode`。不需要先切换预设。
 3. **使用针对性命令。** 从[常用命令](#️-常用命令)中选择一条。
 

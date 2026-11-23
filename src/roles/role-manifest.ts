@@ -17,12 +17,6 @@ export interface RoleSpec {
   readonly shape: RoleShape;
 }
 
-/** Role file name under `$DSH_HOME`. The plugin reads and edits it; DSH never loads it. */
-export const PSTACK_MODELS_FILENAME = "pstack-models.json";
-
-/** Legacy line-format role file that `pstack-models.json` migrated from. */
-export const LEGACY_PSTACK_MODELS_FILENAME = "pstack-models.mdc";
-
 /** Values that resolve to "send no route override and inherit the parent route". */
 export const INHERIT_ALIASES = ["inherit-parent", "auto"] as const;
 export type InheritAlias = (typeof INHERIT_ALIASES)[number];

@@ -1,6 +1,6 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
@@ -30,17 +30,34 @@ function tempHome(document: SeededDocument | undefined): string {
   const directory = mkdtempSync(join(tmpdir(), "pstack-editor-"));
   directories.push(directory);
   if (document !== undefined) {
-    const { version = 1, ...rest } = document;
+    const { budget, roles } = document;
+    const path = pathOf(directory);
+    mkdirSync(dirname(path), { recursive: true });
     writeFileSync(
-      join(directory, "pstack-models.json"),
-      `${JSON.stringify({ version, ...rest }, null, 2)}\n`,
+      path,
+      `${JSON.stringify(
+        {
+          version: 2,
+          ...(budget === undefined ? {} : { budget }),
+          roles: Object.fromEntries(
+            Object.entries(roles).map(([key, routes]) => [
+              key,
+              routes.map((route) =>
+                typeof route === "string" ? parseLegacyRoute(route).route : route,
+              ),
+            ]),
+          ),
+        },
+        null,
+        2,
+      )}\n`,
     );
   }
   return directory;
 }
 
 function pathOf(directory: string): string {
-  return join(directory, "pstack-models.json");
+  return join(directory, "pstack", "models.json");
 }
 
 function formatRoute(route: Route): string {
@@ -390,6 +407,7 @@ describe("role editor", () => {
     )}\n`;
     const home = tempHome(undefined);
     const path = pathOf(home);
+    mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, original);
     const result = await saveBudgetConfiguration(
       path,

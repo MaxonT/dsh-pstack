@@ -60,6 +60,10 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 
 `native/upstream.lock.json` 记录当前钉定的已发布上游 pstack 版本与对应 commit，由 `native/scripts/fetch-upstream.ts` 维护；`native/upstream/` 是钉定的树，不入库，由 `native/scripts/fetch-upstream.ts` 按 lock 重建。上游 monorepo 没有 tag，发布版本以把 `plugin.json` 改到目标版本的 bump commit 为边界。它的 `pstackVersion` 是 README 兼容表 pstack 版本列的数据源；DSH 兼容范围以 `package.json` 的 `engines.dsh` 为准，兼容表由 `scripts/release-compatibility.ts` 直接维护。`native/pstack/` 是 native 变体挂载的基准树，不决定 adapted 场景的通过条件。
 
+## Pstack home（pstack 目录）
+
+`$DSH_HOME/pstack/`，保存 pstack 的用户级配置和运行时数据：`models.json`、`settings.json` 和 `repair.json`。`src/pstack/migrate.ts` 在启动时把根目录旧的 `pstack-models.json`、`pstack-models.mdc` 和 `pstack-settings.json` 迁入该目录；旧 `pstack-repair.json` 不迁移。运行时读取只读当前文件，不触发迁移。
+
 ## Repair queue（修复队列）
 
-`$DSH_HOME/pstack-repair.json` 保存等待下次启动处理的 Session id。用户在配置弹窗的修复页确认后追加写入；DSH 启动时读取、逐个修复并删除该文件。它是一次性迁移队列，不是 Session 日志，也不是 storageDomain sidecar。
+`$DSH_HOME/pstack/repair.json` 保存等待下次启动处理的 Session id。用户在配置弹窗的修复页确认后追加写入；DSH 启动时读取、逐个修复并删除该文件。它是一次性迁移队列，不是 Session 日志，也不是 storageDomain sidecar。旧的根目录 `$DSH_HOME/pstack-repair.json` 不参与启动迁移，保持原样。

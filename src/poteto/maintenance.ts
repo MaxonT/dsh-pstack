@@ -13,13 +13,13 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import { constants, zstdCompressSync, zstdDecompressSync } from "node:zlib";
 import { z } from "zod";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
-import { resolveDshHome } from "../roles/role-store.ts";
+import { pstackHomePaths } from "../pstack/home.ts";
 import type {
   LegacySessionInfo,
   MaintenanceFailure,
@@ -30,7 +30,6 @@ import type {
 import type { PotetoModeTable } from "./storage.ts";
 
 const RETIRED_EVENT = "poteto/mode";
-const REPAIR_QUEUE_FILENAME = "pstack-repair.json";
 const ZSTD_CHECKSUM = { params: { [constants.ZSTD_c_checksumFlag]: 1 } };
 
 const repairQueueSchema = z
@@ -265,7 +264,7 @@ export function clearRepairQueue(path: string = repairQueuePath()): void {
 
 /** Absolute path of the repair queue for the active DSH home. */
 export function repairQueuePath(): string {
-  return join(resolveDshHome(), REPAIR_QUEUE_FILENAME);
+  return pstackHomePaths().repair;
 }
 
 /** Scan stored logs for the retired event without writing anything. */

@@ -1,6 +1,6 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 
 import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
@@ -161,9 +161,16 @@ describe("pstack_roles", () => {
   it("annotates role routes through the tool when the llm is available", async () => {
     const home = mkdtempSync(join(tmpdir(), "pstack-roles-"));
     try {
+      const modelsPath = join(home, "pstack", "models.json");
+      mkdirSync(dirname(modelsPath), { recursive: true });
       writeFileSync(
-        join(home, "pstack-models.json"),
-        JSON.stringify({ version: 1, roles: { "swarm workers": ["p/a [low]"] } }),
+        modelsPath,
+        JSON.stringify({
+          version: 2,
+          roles: {
+            "swarm workers": [{ kind: "route", provider: "p", model: "a", effort: "low" }],
+          },
+        }),
       );
       const llm = {
         listProviders: () => [{ id: "p", name: "P" }],

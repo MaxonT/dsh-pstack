@@ -30,8 +30,8 @@ playground 真实会话验证
 - Host 端注册技能、模型目录、角色目录和子代理工具，并提供角色配置与工作流开关 Remote 服务、Agent preset。
 - Client 端在插件详情页注入配置入口，通过 Remote 服务管理角色配置，并通过可选的插件管理接口管理关联插件。
 - 上游 pstack 内容经生成器进入 `native/pstack/`，构建时复制到 `dist/pstack/` 并把适配答案盖章为 `src/dsh.md`；vendored 和 authored 技能分别复制到 `dist/skills/` 下。
-- 角色配置保存在 `$DSH_HOME/pstack-models.json`。该文件由本插件读取和编辑，不是 DSH 自动加载的规则文件；同目录存在旧 `pstack-models.mdc` 时，缺失 JSON 会先迁移并删除旧文件。
-- 会话级 Poteto 工作流开关的全局默认保存在 `$DSH_HOME/pstack-settings.json` 的 `potetoDefault`，与角色文件分开维护。
+- 角色配置保存在 `$DSH_HOME/pstack/models.json`。该文件由本插件读取和编辑，不是 DSH 自动加载的规则文件；`src/pstack/migrate.ts` 在启动时把根目录旧的 `pstack-models.json` 或 `pstack-models.mdc` 一次性迁入 `$DSH_HOME/pstack/`，此后读取只读当前文件。
+- 会话级 Poteto 工作流开关的全局默认保存在 `$DSH_HOME/pstack/settings.json` 的 `potetoDefault`，与角色文件分开维护；根目录旧的 `pstack-settings.json` 同样在启动时迁入。
 
 ## 模块与入口
 
@@ -41,13 +41,13 @@ playground 真实会话验证
 | 模型目录 | `src/models.ts`、`src/models/catalogue.ts` | 实现 `pstack_models`，读取实时 LLM adapter 目录，保留单 provider 或 model 的发现错误；共享 catalogue 类型、schema 与 wire 解析。 |
 | 角色清单 | `src/roles/role-manifest.ts`、`src/role-catalog.ts` | 定义角色 key 与 shape；实现只读的 `pstack_roles`，按角色报告配置好的 provider/model/effort 路由，并附实时目录中该路由的可用 efforts 与默认档位。 |
 | 子代理委派 | `src/subagent.ts` | 实现 `pstack_subagent` 薄包装：一次调用只启动一个子代理，`description` 和 `prompt` 必填，支持可选 `agent_preset`、`name`、`cwd`、`maxDepth`；`provider`/`model`/`reasoning_effort` 转成 `agentOptions`，省略则继承父路由；做能力校验与路由预检后调用 `ctx.subagents.startActivation`，返回原生 `{kind:"activation", name}`。同一模块还注册 `pstack_interrupt`，用于按名称或会话 id 中断 pstack 子代理；列出与续聊改用原生 `list_agents`、`send_message`。 |
-| 角色文件 | `src/roles/role-store.ts`、`src/roles/route.ts`、`src/roles/budget.ts`、`src/roles/role-editor.ts`、`src/compat/` | 读写 `$DSH_HOME/pstack-models.json` 这份 typed JSON 文档，版本 2，每个角色保存结构化 Route 对象数组。读取前先由 `compat/upgrade-role-file.ts` 的 `upgradeRoleFile` 检测文件：`.mdc` 走 `compat/mdc-to-json.ts` 迁移成 JSON 并删除旧文件，`version: 1` 走 `compat/version-1-to-2.ts` 把字符串路由重写成版本 2 对象，然后正常读取只处理当前版本。整个 `compat/` 目录在大版本升级后可整目录删除。按预算把目标推理档位映射到具体模型并原子保存。 |
+| 角色文件 | `src/pstack/home.ts`、`src/pstack/migrate.ts`、`src/roles/role-store.ts`、`src/roles/route.ts`、`src/roles/budget.ts`、`src/roles/role-editor.ts`、`src/compat/` | `src/pstack/home.ts` 定义 `$DSH_HOME/pstack/` 布局与文件名常量；`src/pstack/migrate.ts` 的 `migratePstackHome` 在启动时幂等迁移一次：根目录旧 `pstack-models.json` 直接移入并升级，`pstack-models.mdc` 经 `compat/mdc-to-json.ts` 转成当前 JSON 并删除旧文件，`version: 1` 经 `compat/version-1-to-2.ts` 重写成版本 2 对象，当前版本则清理已退役角色与预算标签。`role-store.ts` 读写 `$DSH_HOME/pstack/models.json` 这份 typed JSON 文档，版本 2，每个角色保存结构化 Route 对象数组；读取为纯读，不再触发迁移。整个 `compat/` 目录在大版本升级后可整目录删除。按预算把目标推理档位映射到具体模型并原子保存。 |
 | 角色 Remote 边界 | `src/roles/role-wire.ts`、`src/roles/role-remote.ts`、`src/role-service.ts` | 定义并严格校验传输结构；共享 Typert 描述符；在 Host 暴露状态、目录、保存和预算应用方法。 |
 | Preset 与工作流开关 | `src/preset.ts`、`src/presets/preset-copy.ts`、`src/poteto-toggle.ts`、`src/poteto/remote.ts`、`src/poteto/projection.ts`、`src/poteto/preset-gate.ts`、`src/poteto/settings.ts`、`src/poteto/storage.ts`、`src/readonly.ts` | 注册本地化 preset；实现会话级 Poteto 工作流开关并向系统提示注入常驻 `poteto-mode` 内容；持久化开关的全局默认；按会话所在的 Agent preset 判定能否启用（极简模式不启用）；为只读子代理设置沙箱策略。 |
 | Client 入口与对话框 | `src/client/index.ts`、`src/client/pages/PstackConfigDialog.tsx`、`src/client/pages/GeneralSettingsPage.tsx` | 挂载 Remote 描述符、注册 locale 和插件详情动作；管理配置对话框、页签、未保存草稿和通用默认开关。 |
 | 角色与插件页面 | `src/client/pages/RoleSettingsPage.tsx`、`src/client/pages/RecommendedPluginsPage.tsx`、`src/client/components/RoleCard.tsx`、`src/client/components/BudgetDialog.tsx` | 编辑角色草稿并展示保存结果；按预算批量预览并应用推理档位；展示关联插件及其变更结果。 |
 | Client 支撑 | `src/client/components/`（`ui.tsx`、`icons.tsx`、`DiscardConfirmation.tsx`、`PotetoModeToggle.tsx`、`PotetoModeBadge.tsx`）、`src/client/session-projection-types.ts`、`src/client/lib/`（`styles.ts`、`toast.ts`、`message.ts`）、`src/client/roles/`（`role-copy.ts`、`role-draft.ts`、`role-selectors.ts`）、`src/client/locales/` | 提供本插件的 UI 组件、样式、共享提示、翻译、角色草稿和选择器文案。 |
-| 维护修复 | `src/poteto/maintenance.ts`、`src/poteto/maintenance-remote.ts`、`src/poteto/maintenance-types.ts`、`src/client/pages/MaintenanceSettingsPage.tsx` | 扫描含旧 `poteto/mode` 事件的会话，按工作区展示并选择；确认后写入 `$DSH_HOME/pstack-repair.json`，下次启动时修复日志、把旧开关值写入会话 sidecar，并清理队列。 |
+| 维护修复 | `src/poteto/maintenance.ts`、`src/poteto/maintenance-remote.ts`、`src/poteto/maintenance-types.ts`、`src/client/pages/MaintenanceSettingsPage.tsx` | 扫描含旧 `poteto/mode` 事件的会话，按工作区展示并选择；确认后写入 `$DSH_HOME/pstack/repair.json`，下次启动时修复日志、把旧开关值写入会话 sidecar，并清理队列。旧的根目录 `pstack-repair.json` 不参与启动迁移，保持原样。 |
 | 移植与生成 | `native/scripts/fetch-upstream.ts`、`native/scripts/generate-pstack.ts`、`native/`（`upstream/`、`upstream.lock.json`、`dsh.md`、`dsh.zh.md`、`dsh-evidence.md`、`gaps.json`）、`src/dsh.md`、`src/dsh.zh.md`、`playground/scenarios/` | fetch 把已发布上游版本钉定到 `native/upstream/`；生成器从上游树加注入行并盖章 `native/dsh.md` 产出唯一生成树 `native/pstack/`；`src/dsh.md` 是随包适配答案，构建时盖章替换 dist 内的基准答案；缺口提取规则见 `native/AGENTS.md`，缺口清单 `native/gaps.json` 与场景规则见 `playground/docs/scenario-rules.md`。 |
 | 发布元数据与发布说明 | `scripts/release-compatibility.ts`、`scripts/release-surface.ts`、`scripts/release.sh`、`bump.config.ts`、`changes/AGENTS.md` | 按 DSH 兼容范围分组同步各本地化 README 的发布版本表，并把对应本地化 README 加入发布提交；分组与保留规则见 `docs/release.md`。发布说明由 agent 会话按 `changes/AGENTS.md` 从版本间提交生成到 `changes/RELEASE.md`；`release.sh` 要求该文件存在且已提交后才 bumpp，打完 tag 后删除它，发布工作流在 tag 上读取它作为 Release 正文；`release-surface.ts` 维护 `src/surface.json`。 |
 | 构建与打包 | `vite.config.ts`、`package.json` | 分别构建 Host 与浏览器 Client；导出 Host 模块，复制生成树和技能资源。 |
@@ -74,7 +74,7 @@ Client 页面
   → src/role-service.ts
   → src/roles/role-editor.ts
   → src/roles/role-store.ts
-  → $DSH_HOME/pstack-models.json
+  → $DSH_HOME/pstack/models.json
 ```
 
 `roles/role-wire.ts` 是 Host 与 Client 共享的传输契约；`roles/role-remote.ts` 同时供 Host 注册和 Client 挂载。Client 使用共享类型、清单和描述符，不直接访问文件系统或 Host 的 LLM 服务。

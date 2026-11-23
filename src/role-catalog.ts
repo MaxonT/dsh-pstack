@@ -12,8 +12,11 @@ import type { LlmRuntime } from "@deepseek-ai/dsh-llm";
 import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-ai/dsh-tools";
 
 import { collectCatalogue, type CatalogueResult } from "./models.ts";
+import { resolveDshHome } from "./lib/dsh-home.ts";
+import { pstackHomePaths } from "./pstack/home.ts";
+import { migratePstackHome } from "./pstack/migrate.ts";
 import { ROLE_MANIFEST, type RoleSpec } from "./roles/role-manifest.ts";
-import { modelsFilePath, readRoleConfiguration, resolveDshHome } from "./roles/role-store.ts";
+import { readRoleConfiguration } from "./roles/role-store.ts";
 import { isRoute, type Route } from "./roles/route.ts";
 import { describeError } from "./lib/errors.ts";
 import { textOutput } from "./lib/tool-output.ts";
@@ -156,11 +159,10 @@ export function createPstackRolesTool(
           : `${text}\n\ncatalogue discovery failed: ${value.catalogueError}`;
       },
     ),
-    // A legacy role file is migrated on first read, which writes, so this tool is
-    // not concurrency-safe even though its own result is read-only.
-    isConcurrencySafe: () => false,
+    // Reading is now a pure read of the current file, so concurrent calls are safe.
+    isConcurrencySafe: () => true,
     async execute(_rawArgs, exec: ToolRunContext) {
-      const roleFile = readRoleConfiguration(modelsFilePath(dshHome));
+      const roleFile = readRoleConfiguration(pstackHomePaths(dshHome).models);
       if (roleFile.status === "unreadable") {
         throw new Error(
           `the pstack role file at ${roleFile.path} cannot be read: ${roleFile.reason}`,
@@ -181,6 +183,7 @@ export function createPstackRolesTool(
 }
 
 export function apply(ctx: Context): void {
+  migratePstackHome();
   ctx.tools.register(createPstackRolesTool(resolveDshHome(), ctx.llm));
 }
 

@@ -33,7 +33,7 @@ function catalogueWithModel(patch: Record<string, unknown>): CatalogueResult {
 }
 
 const snapshot: RoleFileSnapshot = {
-  path: "/home/user/.dsh/pstack-models.json",
+  path: "/home/user/.dsh/pstack/models.json",
   status: "loaded",
   budget: "large (xhigh)",
   roles: [

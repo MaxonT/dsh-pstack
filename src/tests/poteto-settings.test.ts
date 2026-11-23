@@ -10,7 +10,7 @@ import { EMPTY_SETTINGS, readSettings, writeSettings } from "../poteto/settings.
 function inTempFile(run: (path: string, dir: string) => void): void {
   const dir = mkdtempSync(join(tmpdir(), "pstack-settings-"));
   try {
-    run(join(dir, "pstack-settings.json"), dir);
+    run(join(dir, "settings.json"), dir);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -35,7 +35,7 @@ describe("pstack settings file", () => {
       writeSettings({ version: 1, potetoDefault: true }, path);
       expect(readSettings(path)).toEqual({ version: 1, potetoDefault: true });
       expect(readFileSync(path, "utf8")).toBe('{\n  "version": 1,\n  "potetoDefault": true\n}\n');
-      expect(readdirSync(dir)).toEqual(["pstack-settings.json"]);
+      expect(readdirSync(dir)).toEqual(["settings.json"]);
     });
   });
 });
