@@ -28,6 +28,10 @@ Use the selected directory, follow its naming convention, and read its `AGENTS.m
 - **Draft:** no record owns this decision, a new record replaces an old one, or an existing record needs substantive body or relationship updates. Duplicate and overlapping dispositions stay in Draft; explicit status-field updates use Land. Do steps 1–5, present the approval gate in step 6, then write only after confirmation and report with step 7.
 - **Land:** the user explicitly asks to mark an existing record `accepted` or update its status fields. Read the full target record, then do steps 4, 5, and 7. A record path plus `accepted` is sufficient input; never enter Land autonomously. Without a path, list records whose `Scope` matches the landed change and ask which to update. For a Review-only update, preserve `Status` and `Implemented-by`, skip steps 4 and 5, and report with step 7.
 
+## Path-only maintenance
+
+A path or directory rename is not a new decision. Leave `Background`, `Decision`, `Alternatives`, and `Consequences` in an existing record unchanged. Keep its original `Implemented-by`. Update only the `Scope` and links used for routing. When readers need an old-to-new path map, add one migration or boundary record. Mark the old record `superseded` only when the decision itself changed.
+
 ## 1. Establish the choice
 
 Obtain all three from the change and discussion; ask only about missing items and wait:

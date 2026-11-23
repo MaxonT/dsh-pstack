@@ -4,6 +4,7 @@ When decision records are enabled, draft `<dir>/AGENTS.md` as the repository's a
 
 - The five-field header: `Status`, `Date`, `Scope`, `Implemented-by`, `Review`.
 - The status/anchor pair rule and transitions, including immediate supersession by a new draft. A replaced `proposed` record retains `Implemented-by: -`; preserve its body rather than deleting or reverting it.
+- Path renames are not decisions. Keep historical `Background`, `Decision`, `Alternatives`, and `Consequences` unchanged. Preserve the original `Implemented-by`. Update only live `Scope` and links. Add one migration or boundary record when old-to-new paths need to be discoverable.
 - Before starting any repository task, read the headers of every `proposed` and `accepted` record, then select by `Scope` against the task and its affected paths and read the full text of relevant records. `accepted` records constrain current implementation; `proposed` records state the intended direction. When the task conflicts with a relevant record, report the conflict and obtain the user's direction before proceeding.
 - Related-record search and classification before writing or substantially updating a record.
 - `decision-write` as the entry rule for every record change.
