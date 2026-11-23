@@ -6,19 +6,19 @@
  * still legacy.
  */
 
-import { existsSync, mkdirSync, renameSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, renameSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import { migrateMdcToJson } from "../compat/mdc-to-json.ts";
-import { upgradeRoleFile } from "../compat/upgrade-role-file.ts";
+import { migrateMdcToJson } from "./mdc-to-json.ts";
+import { upgradeRoleFile } from "./upgrade-role-file.ts";
 import { ROLE_FILE_VERSION, serializeRoleDocument } from "../roles/role-store.ts";
 import { resolveDshHome } from "../lib/dsh-home.ts";
-import {
-  LEGACY_MODELS_FILENAME,
-  LEGACY_MODELS_MDC_FILENAME,
-  LEGACY_SETTINGS_FILENAME,
-  pstackHomePaths,
-} from "./home.ts";
+import { pstackHomePaths } from "../pstack/home.ts";
+
+/** Legacy filenames at the `$DSH_HOME` root. `pstack-repair.json` is never migrated. */
+const LEGACY_MODELS_FILENAME = "pstack-models.json";
+const LEGACY_MODELS_MDC_FILENAME = "pstack-models.mdc";
+const LEGACY_SETTINGS_FILENAME = "pstack-settings.json";
 
 /** Move one legacy file into place when the current file does not already exist. */
 function moveLegacy(legacyPath: string, currentPath: string): void {
@@ -48,9 +48,6 @@ export function migratePstackHome(dshHome: string = resolveDshHome()): void {
   if (!existsSync(paths.models)) {
     if (existsSync(legacyModels)) {
       moveLegacy(legacyModels, paths.models);
-      // The legacy JSON is authoritative; a sibling `.mdc` is obsolete, so a
-      // legacy-only home leaves no legacy role file behind.
-      if (existsSync(legacyMdc)) rmSync(legacyMdc, { force: true });
     } else if (existsSync(legacyMdc)) {
       migrateMdcToJson(legacyMdc, paths.models, {
         currentVersion: ROLE_FILE_VERSION,

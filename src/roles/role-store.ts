@@ -5,15 +5,14 @@
  * parses each route into a `Route` and reports issues for the settings page and
  * the delegator. The editable view (`RoleFileDocument`) keeps the structured
  * routes so a save round-trips them unchanged. Both views handle only the
- * current schema version; `pstack/migrate` upgrades a legacy `.mdc` or an older
- * JSON version once at startup. Reading is pure: a missing file means every role
- * inherits the parent route, while an unreadable file fails loudly instead of
- * behaving like a fresh install.
+ * current schema version; `compat/migrate-pstack-home` upgrades a legacy `.mdc`
+ * or an older JSON version once at plugin startup. Reading is pure: a missing
+ * file means every role inherits the parent route, while an unreadable file fails
+ * loudly instead of behaving like a fresh install.
  */
 
 import { readFileSync } from "node:fs";
 
-import type { RoleFileDocumentLike } from "../compat/upgrade-role-file.ts";
 import { writeFileAtomically } from "../lib/atomic-write.ts";
 import { describeError } from "../lib/errors.ts";
 import { normalizeBudgetValue } from "./budget.ts";
@@ -49,11 +48,16 @@ export type RoleConfiguration =
 /** The current role-file schema version. Version 1 stored provider/model strings. */
 export const ROLE_FILE_VERSION = 2;
 
-/** The editable JSON shape: version, optional budget, structured routes per role. */
-export interface RoleFileDocument {
-  readonly version: 1 | 2;
+/** The document shape accepted by {@link serializeRoleDocument}. */
+export interface RoleFileDocumentLike {
+  readonly version: number;
   readonly budget?: string;
   readonly roles: Record<string, readonly Route[]>;
+}
+
+/** The editable JSON shape: version, optional budget, structured routes per role. */
+export interface RoleFileDocument extends RoleFileDocumentLike {
+  readonly version: 1 | 2;
 }
 
 /** An empty document for the first save on a missing home. */

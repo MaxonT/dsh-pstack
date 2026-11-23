@@ -13,6 +13,7 @@ import {
   queuedSessionIds,
   readRepairQueue,
   repairLegacySession,
+  repairQueuePath,
   restoreLegacySession,
   scanLegacySessions,
   writeRepairQueue,
@@ -75,6 +76,10 @@ function readEvents(path: string): readonly Record<string, unknown>[] {
 }
 
 describe("poteto legacy session maintenance", () => {
+  it("resolves the repair queue under the pstack home for one DSH home", () => {
+    expect(repairQueuePath("/home/user/.dsh")).toBe("/home/user/.dsh/pstack/repair.json");
+  });
+
   it("finds sessions with the retired event and reports the last selection", async () => {
     await withTempDir(async (dir) => {
       const logPath = writeLegacyLog(dir);

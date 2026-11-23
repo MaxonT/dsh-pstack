@@ -102,7 +102,7 @@ Use the plugin UI to set workflow defaults, enable related plugins, and route ea
 
 Use pstack skills to start workflows directly from a Session.
 
-1. **Initialize role routes.** Run `/setup-pstack` once. It writes the detected routes to `$DSH_HOME/pstack/models.json`. Without this file, roles inherit the parent route. On startup, when the new file is missing, the plugin migrates a legacy `$DSH_HOME/pstack-models.json` or `$DSH_HOME/pstack-models.mdc` into `$DSH_HOME/pstack/models.json` and removes the old file.
+1. **Initialize role routes.** Run `/setup-pstack` once. It writes the detected routes to `$DSH_HOME/pstack/models.json`. Without this file, roles inherit the parent route.
 2. **Start through skills.** Type `/poteto-mode` directly. You do not need to switch presets first.
 3. **Use targeted commands.** Pick a command from [Common commands](#️-common-commands).
 

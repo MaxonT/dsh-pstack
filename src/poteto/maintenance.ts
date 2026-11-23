@@ -262,9 +262,9 @@ export function clearRepairQueue(path: string = repairQueuePath()): void {
   rmSync(path, { force: true });
 }
 
-/** Absolute path of the repair queue for the active DSH home. */
-export function repairQueuePath(): string {
-  return pstackHomePaths().repair;
+/** Absolute path of the repair queue for one DSH home. */
+export function repairQueuePath(dshHome?: string): string {
+  return pstackHomePaths(dshHome).repair;
 }
 
 /** Scan stored logs for the retired event without writing anything. */

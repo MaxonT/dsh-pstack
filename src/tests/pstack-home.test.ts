@@ -12,7 +12,7 @@ import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { EMPTY_SETTINGS, readSettings } from "../poteto/settings.ts";
-import { migratePstackHome } from "../pstack/migrate.ts";
+import { migratePstackHome } from "../compat/migrate-pstack-home.ts";
 import { pstackHomePaths } from "../pstack/home.ts";
 import { readRoleConfiguration } from "../roles/role-store.ts";
 
@@ -44,7 +44,6 @@ describe("migratePstackHome", () => {
   it("moves a legacy-only home onto the current layout and leaves the repair file alone", () => {
     const home = tempHome();
     writeJson(join(home, "pstack-models.json"), { version: 2, roles: { "bug-fix": [route] } });
-    writeFile(join(home, "pstack-models.mdc"), "bug-fix: cpa/obsolete [low]\n");
     writeJson(join(home, "pstack-settings.json"), { version: 1, potetoDefault: true });
     const legacyRepair = `${JSON.stringify({ version: 1, createdAt: 1, sessionIds: ["s1"] })}\n`;
     writeFile(join(home, "pstack-repair.json"), legacyRepair);
@@ -54,7 +53,6 @@ describe("migratePstackHome", () => {
     expect(existsSync(pstackHomePaths(home).models)).toBe(true);
     expect(existsSync(pstackHomePaths(home).settings)).toBe(true);
     expect(existsSync(join(home, "pstack-models.json"))).toBe(false);
-    expect(existsSync(join(home, "pstack-models.mdc"))).toBe(false);
     expect(existsSync(join(home, "pstack-settings.json"))).toBe(false);
     expect(readFileSync(join(home, "pstack-repair.json"), "utf8")).toBe(legacyRepair);
     expect(existsSync(pstackHomePaths(home).repair)).toBe(false);
@@ -106,6 +104,19 @@ describe("migratePstackHome", () => {
     migratePstackHome(home);
 
     expect(JSON.parse(readFileSync(pstackHomePaths(home).models, "utf8"))).toEqual(current);
+    expect(readFileSync(join(home, "pstack-models.mdc"), "utf8")).toBe(legacyMdc);
+  });
+
+  it("keeps a legacy mdc when a legacy JSON file wins", () => {
+    const home = tempHome();
+    const legacy = { version: 2, roles: { "bug-fix": [{ ...route, model: "json" }] } };
+    const legacyMdc = "bug-fix: cpa/mdc [high]\n";
+    writeJson(join(home, "pstack-models.json"), legacy);
+    writeFile(join(home, "pstack-models.mdc"), legacyMdc);
+
+    migratePstackHome(home);
+
+    expect(JSON.parse(readFileSync(pstackHomePaths(home).models, "utf8"))).toEqual(legacy);
     expect(readFileSync(join(home, "pstack-models.mdc"), "utf8")).toBe(legacyMdc);
   });
 

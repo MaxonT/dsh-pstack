@@ -40,7 +40,6 @@ import {
 } from "./poteto/storage.ts";
 import { POTETO_SERVICE } from "./poteto/remote.ts";
 import { readSettings, writeSettings } from "./poteto/settings.ts";
-import { migratePstackHome } from "./pstack/migrate.ts";
 
 export const name = "pstack-poteto-toggle";
 
@@ -93,7 +92,6 @@ export class PotetoModeService extends TypertRemoteService {
   }
 
   protected async [Service.init](): Promise<void> {
-    migratePstackHome();
     const settings = readSettings();
     this.defaultEnabled = settings.potetoDefault;
     this.domain = await this.ctx.storageDomain.open(potetoDomainSpec);

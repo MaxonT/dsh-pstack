@@ -10,15 +10,9 @@ import { writeFileAtomically } from "../lib/atomic-write.ts";
 import { describeError } from "../lib/errors.ts";
 import { normalizeBudgetValue } from "../roles/budget.ts";
 import { isRetiredRoleKey } from "../roles/role-manifest.ts";
+import type { RoleFileDocumentLike } from "../roles/role-store.ts";
 import type { Route } from "../roles/route.ts";
 import { upgradeVersionOneRoles } from "./version-1-to-2.ts";
-
-/** The document shape the current serializer accepts. */
-export interface RoleFileDocumentLike {
-  readonly version: number;
-  readonly budget?: string;
-  readonly roles: Record<string, readonly Route[]>;
-}
 
 /** Options for {@link upgradeRoleFile}. */
 export interface UpgradeRoleFileOptions {

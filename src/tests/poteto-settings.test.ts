@@ -4,7 +4,12 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import { EMPTY_SETTINGS, readSettings, writeSettings } from "../poteto/settings.ts";
+import {
+  EMPTY_SETTINGS,
+  readSettings,
+  settingsFilePath,
+  writeSettings,
+} from "../poteto/settings.ts";
 
 /** A fresh settings path inside a throwaway directory, cleaned after `run`. */
 function inTempFile(run: (path: string, dir: string) => void): void {
@@ -17,6 +22,10 @@ function inTempFile(run: (path: string, dir: string) => void): void {
 }
 
 describe("pstack settings file", () => {
+  it("resolves the settings path under the pstack home for one DSH home", () => {
+    expect(settingsFilePath("/home/user/.dsh")).toBe("/home/user/.dsh/pstack/settings.json");
+  });
+
   it("falls back to defaults when the file is missing", () => {
     inTempFile((path) => {
       expect(readSettings(path)).toEqual(EMPTY_SETTINGS);

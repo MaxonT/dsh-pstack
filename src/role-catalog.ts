@@ -14,7 +14,6 @@ import type { JsonSchemaNode, ToolDefinition, ToolRunContext } from "@deepseek-a
 import { collectCatalogue, type CatalogueResult } from "./models.ts";
 import { resolveDshHome } from "./lib/dsh-home.ts";
 import { pstackHomePaths } from "./pstack/home.ts";
-import { migratePstackHome } from "./pstack/migrate.ts";
 import { ROLE_MANIFEST, type RoleSpec } from "./roles/role-manifest.ts";
 import { readRoleConfiguration } from "./roles/role-store.ts";
 import { isRoute, type Route } from "./roles/route.ts";
@@ -183,7 +182,6 @@ export function createPstackRolesTool(
 }
 
 export function apply(ctx: Context): void {
-  migratePstackHome();
   ctx.tools.register(createPstackRolesTool(resolveDshHome(), ctx.llm));
 }
 
