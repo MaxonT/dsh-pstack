@@ -16,14 +16,20 @@ const PATH_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
   // Container paths (/dsh/...) are not host secrets; these patterns cover host
   // paths that can still leak through host-side error text in a blocked record.
   [/\/home\/[^\s"'\\]*/g, "<HOST_PATH>"],
+  [/\/root\/[^\s"'\\]*/g, "<HOST_PATH>"],
+  [/\/opt\/[^\s"'\\]*/g, "<HOST_PATH>"],
+  [/\/srv\/[^\s"'\\]*/g, "<HOST_PATH>"],
   [/\/tmp\/[^\s"'\\]*/g, "<TEMP_PATH>"],
   [/\/var\/folders\/[^\s"'\\]*/g, "<TEMP_PATH>"],
   [/\/Users\/[^\s"'\\]*/g, "<HOST_PATH>"],
-  [/[A-Za-z]:\\\\[^\s"'\\]+/g, "<HOST_PATH>"],
+  [/[A-Za-z]:\\[A-Za-z0-9._-]+\\[^\s"']+/g, "<HOST_PATH>"],
+  [/[A-Za-z]:\\\\[A-Za-z0-9._-]+\\\\[^\s"']+/g, "<HOST_PATH>"],
   // DSH session directory keys encode the workspace path with "/" replaced by "-",
   // so a host login name can survive the absolute-path patterns above.
   [/(--home-)[A-Za-z0-9._]+(?=-)/g, "$1<REDACTED_USER>"],
   [/(--Users-)[A-Za-z0-9._]+(?=-)/g, "$1<REDACTED_USER>"],
+  // WSL paths are encoded as --mnt-<drive>-Users-<user>-... in session keys.
+  [/(--mnt-[a-z]-Users-)[A-Za-z0-9._]+(?=-)/g, "$1<REDACTED_USER>"],
 ];
 
 export function sanitizeDeep(value: unknown): unknown {

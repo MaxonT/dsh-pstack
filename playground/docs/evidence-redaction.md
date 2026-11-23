@@ -4,7 +4,7 @@
 
 ## 流程
 
-1. `run-scenario` 生成 record 和本地 `record.source.json`；`collect` 只从 source 复制 record 和截图到快照。
+1. `run-scenario` 生成 record 和本地 `record.source.json`；`collect` 从 worker evidence 读取 record，`record.source.json` 只用于定位截图。
 2. 独立分析会话按本文件生成 `record.safe.json`。
 3. 检查候选文件：
 

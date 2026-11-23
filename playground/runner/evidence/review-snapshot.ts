@@ -182,6 +182,14 @@ export function writeReviewSnapshot(
   const scoped =
     batch === null ? current : current.filter((record) => batch.scope.includes(record.scenarioId));
   const scopedIds = new Set(scoped.map((record) => record.scenarioId));
+  if (batch?.mode === "full") {
+    const missing = batch.scope.filter((scenarioId) => !scopedIds.has(scenarioId)).sort();
+    if (missing.length > 0) {
+      throw new Error(
+        `full batch has no record for ${missing.join(", ")}; refusing to prune the snapshot`,
+      );
+    }
+  }
   const manifestRecords = batch?.mode === "full" ? scoped : current;
   const manifestIds = new Set(manifestRecords.map((record) => record.scenarioId));
   const snapshot = reviewSnapshotDirectory(variant, environment, reviewsDirectory);

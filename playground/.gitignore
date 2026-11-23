@@ -3,8 +3,8 @@
 .workers/
 .workers-*/
 
-# Local config; copy config.example.ts and fill the real values.
-config.json
+# Local config; copy config.example.ts and fill in real values.
+/config.json
 # Legacy machine-local host provider patch; config.ts carries provider definitions now.
 host.patch.yml
 node_modules
@@ -22,5 +22,5 @@ evidence/runs/**/record.source.json
 # Agent redaction candidate; only validated record.json is committed.
 evidence/runs/**/record.safe.json
 
-# Local playground config; copy config.example.ts and fill real values.
-config.ts
+# Local playground config; copy config.example.ts and fill in real values.
+/config.ts

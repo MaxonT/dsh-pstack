@@ -93,4 +93,4 @@ vp run playground:compare -- --environment <environment> --all
 
 - 当前 variant/environment 的 manifest、record 和截图完整。
 - 分析、review `--check` 和 redaction `--apply` 完成。
-- 状态表和对比检查通过，`vp run ci` 通过。
+- 状态表和对比检查通过，`vp run ci` 通过。compare 发现旧 `scenarioHash` 时先按当前场景重跑并更新快照。

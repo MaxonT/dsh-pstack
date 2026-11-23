@@ -8,7 +8,7 @@ native `base` 的四个场景均为 `gap`；`render` 只运行 `inline-video-pla
 
 ## 范围与判据
 
-- 快照：[base](../runs/native-base/) 覆盖 4 个场景；[render](../runs/native-render/) 只覆盖 `inline-video-playback`，加载可选渲染插件 0.3.3。`inline-video-playback` 增加 render 环境后场景 hash 变化，已增量重跑。
+- 快照：[base](../runs/native-base/) 覆盖 4 个场景；[render](../runs/native-render/) 只覆盖 `inline-video-playback`，加载可选渲染插件 `dsh-genui`。两份 `inline-video-playback` record 的 `scenarioHash` 仍是旧值，发布前需按当前场景定义重跑并更新快照。
 - 版本：两个环境均为 DSH `0.2.2-rc.4`、pstack `0.15.43`、上游 revision `2f87c854fe3e2fcda44ca86b46ede35aad3c46b7`。
 - 运行身份：全部记录使用 `magpie / workbuddy/minimax-m3.1-flash / low`，preset 为 `standard`。
 - 判定：机械断言是下限；语义结论来自 rubric、截图和本地 session。记录初始为 `verdict=unobserved`、`semanticReview=pending`，本分析写入 `review.json` 后由 `playground:review --apply` 回写。
@@ -18,7 +18,7 @@ native `base` 的四个场景均为 `gap`；`render` 只运行 `inline-video-pla
 
 | 场景 | 环境 | 机械断言 | 语义结论 | 关键观察 |
 | --- | --- | --- | --- | --- |
-| `inline-video-playback` | base | 通过 | `gap` | 回复说明做不到内嵌播放；只有文字和文件卡片。 |
+| `inline-video-playback` | base | 失败（assistant reply lacks `sample.mp4`） | `gap` | 回复说明做不到内嵌播放；只有文字和文件卡片。 |
 | `inline-video-playback` | render | 通过 | `observed` | 出现加载 `sample.mp4` 的真实视频播放器。 |
 | `subagent-interrupt` | base | 通过 | `gap` | `started.txt` 存在、`done.txt` 不存在；但停止来自子代理自行 `job_kill`，不是系统级中断。 |
 | `subagent-model-routing` | base | 通过 | `gap` | `subagent` 显式换路由被拒绝；`workflow` 的逐子代理路由覆盖完成分拣，但这是绕过路径，不是正规的 subagent 派发方式。 |
@@ -66,7 +66,7 @@ base 汇总为 4 个 `gap`；render 为 1 个 `observed`。
 ### `subagent-interrupt`：只有自愿停手，没有系统级取消
 
 - 证据：[record.json](../runs/native-base/scenarios/subagent-interrupt/native-base/record.json) / [screenshot.png](../runs/native-base/scenarios/subagent-interrupt/native-base/screenshot.png)
-- 现象：子代理 `slow-runner` 写入 `started.txt`；主会话三次 `job_kill` 均失败（`unknown job`、跨会话 `belongs to another session`），随后通过 `send_message` 要求子代理自行终止。子代理在自己的会话里调用 `job_kill`，作业状态为 `killed, signal: SIGTERM`，扫描 `/proc` 未发现残留进程，`done.txt` 不存在。
+- 现象：子代理 `slow-runner` 写入 `started.txt`；主会话调用 `job_kill` 返回 `unknown job runner`，随后通过 `send_message` 要求子代理自行终止。子代理在自己的会话里调用 `job_kill`，扫描 `/proc` 未发现残留进程，`done.txt` 不存在。
 - 根因：标准模式把 `tool-subagent-control` 的 `interrupt` 设为 `false`，模型拿不到 `interrupt_agent`；主会话无法定向停止子代理，只能发消息让子代理自愿停手。若子代理不配合或已卡死，没有系统级兜底。
 - 建议：保留为 native `gap`，由插件提供系统级子代理中断能力。
 - 已确认：将系统级中断列入插件实现范围。

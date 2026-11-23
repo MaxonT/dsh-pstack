@@ -27,6 +27,14 @@ export interface CompareResult {
   failures: CompareFailure[];
 }
 
+export function recordHashProblems(record: RunRecord, scenario: BehaviorScenario): string[] {
+  const hash = scenarioContentHash(scenario);
+  if (record.scenarioHash === undefined) return ["scenario content hash is missing"];
+  return record.scenarioHash === hash
+    ? []
+    : [`${record.variant} record scenario content differs from the current definition`];
+}
+
 /**
  * The comparability check for one scenario. Two records are comparable on the run-identity
  * tuple `(dshVersion, scenario content hash, environment matrix id, target route)`;
@@ -53,16 +61,8 @@ export function compareOne(
   if (JSON.stringify(native.target) !== JSON.stringify(adapted.target)) {
     problems.push("native and adapted actual model routes differ");
   }
-  const hash = scenarioContentHash(scenario);
-  if (native.scenarioHash === undefined || adapted.scenarioHash === undefined) {
-    problems.push("scenario content hash is missing");
-  }
-  if (native.scenarioHash !== undefined && native.scenarioHash !== hash) {
-    problems.push("native record scenario content differs from the current definition");
-  }
-  if (adapted.scenarioHash !== undefined && adapted.scenarioHash !== hash) {
-    problems.push("adapted record scenario content differs from the current definition");
-  }
+  problems.push(...recordHashProblems(native, scenario));
+  problems.push(...recordHashProblems(adapted, scenario));
   if (
     native.scenarioHash !== undefined &&
     adapted.scenarioHash !== undefined &&
@@ -109,6 +109,9 @@ export function compareSnapshot(input: CompareSnapshotInput): CompareResult {
     if (native && adapted) {
       problems.push(...compareOne(native, adapted, defined).map((p) => `${id}: ${p}`));
       compared.push(id);
+    } else {
+      if (native) problems.push(...recordHashProblems(native, defined).map((p) => `${id}: ${p}`));
+      if (adapted) problems.push(...recordHashProblems(adapted, defined).map((p) => `${id}: ${p}`));
     }
     if (problems.length > 0) failures.push({ scenarioId: id, problems });
   }
@@ -141,7 +144,7 @@ async function main(): Promise<void> {
     `[compare] compared ${result.compared.length} scenario(s), ${result.failures.length} with problems`,
   );
   if (result.failures.length > 0) process.exitCode = 1;
-  if (all && result.compared.length === 0) {
+  if (all && result.compared.length === 0 && result.failures.length === 0) {
     console.error("[compare] no comparable scenarios");
     process.exitCode = 1;
   }

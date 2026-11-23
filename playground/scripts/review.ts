@@ -91,6 +91,18 @@ export function checkReview(target: ReviewTarget): CheckResult {
     if (JSON.stringify(record.semanticReview) !== JSON.stringify(expected)) {
       problems.push(`record ${scenarioId} semanticReview does not match review.json`);
     }
+    if (record.verdict.status !== "blocked") {
+      const expectedVerdict = verdictFor({
+        variant: record.variant,
+        failures: record.mechanicalFailures,
+        semanticReview: expected,
+      });
+      if (JSON.stringify(record.verdict) !== JSON.stringify(expectedVerdict)) {
+        problems.push(
+          `record ${scenarioId} verdict does not match its review and mechanical results`,
+        );
+      }
+    }
   }
   return { ok: problems.length === 0, problems };
 }

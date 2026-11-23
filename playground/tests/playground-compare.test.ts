@@ -193,6 +193,25 @@ describe("compareSnapshot", () => {
     expect(result.failures).toEqual([]);
   });
 
+  it("flags a stale hash on a native-only scenario", () => {
+    const root = mkdtempSync(join(temporary, "native-only-stale-"));
+    const nativeOnly: BehaviorScenario = { ...scenario, variants: ["native"] };
+    const native = record("native", "cap-native-only");
+    native.scenarioHash = "deadbeef";
+    writeRecord(root, "native", "base", native);
+
+    const result = compareSnapshot({
+      environment: "base",
+      root,
+      loadScenario: () => nativeOnly,
+    });
+    expect(result.compared).toEqual([]);
+    expect(result.failures).toHaveLength(1);
+    expect(result.failures[0]!.problems.join(" ")).toContain(
+      "native record scenario content differs from the current definition",
+    );
+  });
+
   it("reports a scenario missing on adapted when only native exists", () => {
     const root = mkdtempSync(join(temporary, "missing-adapted-"));
     writeRecord(root, "native", "base", record("native", "cap-native-only"));

@@ -63,13 +63,14 @@ export function publicConfigHash(
               kind: entry.kind,
               api: entry.api,
               baseURL: entry.baseURL,
-              models: entry.models.map((model) => model.id),
+              reasoning: entry.reasoning,
+              models: entry.models,
             }
           : entry.kind === "deepseek-api-key"
             ? {
                 kind: entry.kind,
                 apiKeyEnv: entry.apiKeyEnv,
-                models: entry.models.map((model) => model.id),
+                models: entry.models,
               }
             : { kind: entry.kind, modelOverrides: entry.modelOverrides },
       ]),

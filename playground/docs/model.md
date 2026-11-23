@@ -33,4 +33,4 @@
 
 - `manifest.json` 的 `scenarioIds` 与快照实际场景一致。
 - 同一场景的 native/adapted record 使用相同 scenario 定义和 environment；只声明单 variant 的场景只要求该 variant 的记录。
-- `playground:compare` 和 `playground:status-table` 的检查通过。
+- `playground:compare` 和 `playground:status-table` 的检查通过；compare 会校验每条记录的 `scenarioHash`，旧记录与当前场景不一致时按失败处理。

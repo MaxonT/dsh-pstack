@@ -231,6 +231,30 @@ describe("checkReview", () => {
     expect(result.problems).toContain("review.json references unknown scenario cap-c");
     expect(result.problems).toContain("record cap-b has no review entry");
   });
+
+  it("reports a verdict changed without applying the review", () => {
+    const root = mkdtempSync(join(temporary, "verdict-"));
+    const variant: Variant = "adapted";
+    const environment = "base";
+    writeSnapshot(root, variant, environment, [
+      makeRecord(variant, environment, "cap-a", {
+        verdict: { variant: "adapted", status: "verified" },
+        semanticReview: {
+          status: "supported",
+          reason: "checked",
+          reviewer: { kind: "human", name: "tester" },
+        },
+        mechanicalFailures: ["assertion failed"],
+      }),
+    ]);
+    writeReview(root, variant, environment, { "cap-a": review("supported") });
+
+    const result = checkReview({ variant, environment, root });
+    expect(result.ok).toBe(false);
+    expect(result.problems.some((problem) => problem.includes("verdict does not match"))).toBe(
+      true,
+    );
+  });
 });
 
 describe("status table", () => {

@@ -10,7 +10,7 @@
 
 ## Provider
 
-`providers` 支持 `pi-ai`、`deepseek-api-key` 和 `deepseek-account` 三种路由。`testModel` 和 `roleModels` 中的每条路由都必须能在已配置的 provider/model/effort 目录中解析；provider 的校验与模型目录逻辑见 `runner/config/provider.ts`。
+`providers` 支持 `pi-ai`、`deepseek-api-key` 和 `deepseek-account` 三种路由。`deepseek-api-key` 必须命名为 `deepseek-official`，`deepseek-account` 必须命名为 `deepseek-account`。`testModel` 和 `roleModels` 中的每条路由都必须能在已配置的 provider/model/effort 目录中解析；`deepseek-account` 没有静态模型目录，模型 id 由账号端解析。provider 的校验与模型目录逻辑见 `runner/config/provider.ts`。
 
 `fromHost` 从宿主 DSH web profile 提取 provider、模型和 effort，避免手工抄写。选择结构和默认宿主 patch 路径见 `runner/config/config-host.ts`。
 

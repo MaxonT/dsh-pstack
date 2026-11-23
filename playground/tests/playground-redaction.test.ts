@@ -20,7 +20,7 @@ function record(): RunRecord {
     session: {
       sessionId: "session-1",
       sessionFile: "/home/user/.dsh/sessions/x/session.v4.jsonl.zstd",
-      workspacePath: "/tmp/dsh-pstack-playground/adapter/base/w0/workspace/x",
+      workspacePath: "/tmp/dsh-pstack-playground/adapted/base/w0/workspace/x",
       agentPreset: "standard",
       skillLoads: [],
       toolCalls: [
@@ -34,7 +34,7 @@ function record(): RunRecord {
           name: "bash",
           status: "ok",
           argsSummary:
-            "bash command=ls ~/.dsh/sessions/--home-user-workspace-dsh-pstack-raw-base-w0--/ && curl 'http://127.0.0.1:1234/?token=faketoken0123456789abcdef'",
+            "bash command=ls ~/.dsh/sessions/--home-user-workspace-dsh-pstack-adapted-base-w0--/ && curl 'http://127.0.0.1:1234/?token=faketoken0123456789abcdef'",
         },
       ],
       turnEndReason: "completed",
@@ -73,5 +73,21 @@ describe("record redaction", () => {
     expect(text).not.toContain("--home-user");
     expect(text).toContain("token=<REDACTED_TOKEN>");
     expect(text).toContain("--home-<REDACTED_USER>");
+  });
+
+  it("redacts root, WSL encoded, and single-backslash Windows host paths", () => {
+    const safe = sanitizeRecord({
+      ...record(),
+      session: {
+        ...record().session!,
+        assistantText:
+          "root /root/.dsh/sessions/x, wsl --mnt-c-Users-alice-workspace-project, windows C:\\Users\\alice\\secret",
+      },
+    });
+    const text = JSON.stringify(safe);
+    expect(text).not.toContain("/root/.dsh");
+    expect(text).not.toContain("alice");
+    expect(text).not.toContain("--mnt-c-Users-alice");
+    expect(residualKinds(text)).toEqual([]);
   });
 });

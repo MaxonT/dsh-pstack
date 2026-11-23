@@ -2,12 +2,12 @@
 
 ## 结论
 
-adapted `base` 的 3 个场景全部为 `verified`，没有 `blocked` 或 `not-verified`。`pstack_subagent` 的不同路由、`pstack_interrupt` 的系统级中断和 `readonly` preset 的只读沙箱均按预期工作。
+adapted `base` 的 3 个场景全部为 `verified`，没有 `blocked` 或 `not-verified`。`pstack_subagent` 的不同路由、`pstack_interrupt` 的系统级中断和 `readonly` preset 的 shell 层写入拒绝均按预期工作。`pstack_subagent` 的实际子代理路由和 `write` 工具路径的只读限制仍缺少 record 级证据。
 
 ## 范围与判据
 
 - 快照：[adapted-base](../runs/adapted-base/) 覆盖 3 个场景；`inline-video-playback` 声明 `variants: ["native"]`，不在 adapted 运行。
-- 版本：DSH `0.2.2-rc.4`、pstack `0.15.43`、adapted `0.5.0`、上游 revision `2f87c854fe3e2fcda44ca86b46ede35aad3c46b7`。
+- 版本：DSH `0.2.2-rc.4`、pstack `0.15.43`、capture-time adapted `0.5.0`、上游 revision `2f87c854fe3e2fcda44ca86b46ede35aad3c46b7`。当前包是 `0.5.2`；三个场景的实现自 0.5.0 未改，但该快照不能证明 0.5.2 构建，发布前需重跑。
 - 运行身份：全部记录使用 `magpie / workbuddy/minimax-m3.1-flash / low`，preset 为 `standard`，config hash 为 `7f65ea17946aefa3d4a21e251ae8e90eccb039e0e283d9660d6212fce5574b9e`。
 - 判定：机械断言通过后，按 rubric、截图和本地 session 做语义审核；`review.json` 已应用，三个记录均为非 pending。
 
@@ -16,8 +16,8 @@ adapted `base` 的 3 个场景全部为 `verified`，没有 `blocked` 或 `not-v
 | 场景 | 环境 | 机械断言 | 语义结论 | 关键观察 |
 | --- | --- | --- | --- | --- |
 | `subagent-interrupt` | base | 通过 | `verified` | `pstack_interrupt` 成功中断子代理；`started.txt` 存在，`done.txt` 不存在。 |
-| `subagent-model-routing` | base | 通过 | `verified` | `pstack_subagent` 使用不同模型路由完成分拣，`urgent.md`、`later.md`、`done.txt` 均产出。 |
-| `subagent-readonly-sandbox` | base | 通过 | `verified` | 只读子代理写入 `readonly-probe.txt` 被拒，`review.md` 记录 `DENIED`，文件不存在。 |
+| `subagent-model-routing` | base | 通过 | `verified` | assistant 自述使用不同模型路由完成分拣；record 只保存 `pstack_subagent` 调用状态，未记录子代理实际 provider/model，需补证据。 |
+| `subagent-readonly-sandbox` | base | 通过 | `verified` | shell 层写 `readonly-probe.txt` 被拒，`review.md` 记录 `DENIED`，文件不存在；`write` 工具路径未覆盖。 |
 
 ## dsh.md 审查
 
