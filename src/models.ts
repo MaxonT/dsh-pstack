@@ -94,6 +94,10 @@ export async function collectCatalogue(
   };
 }
 
+/** First line of every non-empty listing: this is a deployment directory, not role routing. */
+export const CATALOGUE_NOTE =
+  "Deployment catalogue, not role routing. For which model a role uses, call `pstack_roles`.";
+
 /** Render the catalogue as compact model-facing text. */
 export function renderCatalogue(result: CatalogueResult): string {
   if (result.providers.length === 0) {
@@ -101,7 +105,7 @@ export function renderCatalogue(result: CatalogueResult): string {
       ? "No provider is registered with the live adapter registry."
       : `No provider matches "${result.providerFilter}".`;
   }
-  const lines: string[] = [];
+  const lines: string[] = [CATALOGUE_NOTE, ""];
   for (const provider of result.providers) {
     lines.push(`${provider.provider} (${provider.name})`);
     if (provider.error !== undefined) {
@@ -140,7 +144,7 @@ function entryFor(provider: string, info: LlmResolvedModelInfo): ModelEntry {
 const TOOL_DESCRIPTION = [
   "List the exact model routes this deployment serves, with each route's advertised reasoning-effort tokens.",
   "",
-  "Read-only. Use it only for setup-time discovery or to verify that a route exists. It reports what the live adapters actually serve, so a role route names a route that exists instead of a slug guessed from a Cursor name.",
+  "Read-only. Use it only for setup-time discovery or to verify that a route exists. It does not read the pstack role file and cannot answer which model a role uses; use `pstack_roles` for the role-to-model mapping. It reports what the live adapters actually serve, so a role route names a route that exists instead of a slug guessed from a Cursor name.",
   "",
   "`provider` limits discovery to one registered provider id or display name; omit it to list every provider.",
   "",

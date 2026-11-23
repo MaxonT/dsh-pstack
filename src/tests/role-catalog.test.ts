@@ -194,4 +194,9 @@ describe("pstack_roles", () => {
       rmSync(home, { recursive: true, force: true });
     }
   });
+
+  it("tells the model to call it first for role-to-model questions", () => {
+    const description = createPstackRolesTool(tmpdir()).description;
+    expect(description.startsWith("Use this first when asked which model a role uses")).toBe(true);
+  });
 });
