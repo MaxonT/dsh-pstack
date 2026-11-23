@@ -66,6 +66,9 @@ const { values: args } = parseArgs({
 
 let latest = args.latest;
 let restoreFromLock = args.version === undefined && !latest;
+if (args.commit !== undefined && args.version === undefined && !latest) {
+  throw new Error("--commit requires --version or --latest");
+}
 const LOCK_FILE = join(NATIVE, "upstream.lock.json");
 const lockOnDisk: LockOnDisk | undefined = existsSync(LOCK_FILE)
   ? JSON.parse(readFileSync(LOCK_FILE, "utf8"))
@@ -141,7 +144,7 @@ function remoteUrl(atWork: string, fallback: string): string {
     const match = readFileSync(config, "utf8").match(/\[remote "origin"\][^[]*?url = (\S+)/);
     if (match) return match[1];
   }
-  return fallback;
+  return /^https?:\/\//.test(fallback) ? fallback : DEFAULT_SOURCE;
 }
 
 let bump: string | undefined;
@@ -159,8 +162,10 @@ if (commitOverride) {
     throw new Error(`no commits touch ${manifest} in ${source}`);
   }
   const parentOf = (sha: string): string | undefined => {
-    const parent = git(["rev-parse", "--short=40", `${sha}^`], work).trim();
-    return parent === sha ? undefined : parent;
+    const [commit, parent] = git(["rev-list", "--parents", "-n", "1", sha], work)
+      .trim()
+      .split(/\s+/);
+    return commit === undefined || commit === parent ? undefined : parent;
   };
   // Newest commit that entered the requested version relative to its parent.
   bump = history.find((sha) => {
@@ -182,15 +187,30 @@ if (commitOverride) {
 mkdirSync(SCRATCH, { recursive: true });
 const target = join(NATIVE, "upstream");
 const archive = join(SCRATCH, `archive-${Date.now()}.tar`);
-git(["archive", "--format=tar", "--output", archive, bump, path], work);
-rmSync(target, { recursive: true, force: true });
-mkdirSync(target, { recursive: true });
-const extract = spawnSync("tar", ["-xf", archive, "-C", target, "--strip-components=1"]);
-if (extract.status !== 0) {
-  throw new Error(`tar extract failed: ${String(extract.stderr ?? "unknown tar error")}`);
+try {
+  git(["archive", "--format=tar", "--output", archive, bump, path], work);
+  const expected = versionAt(work, bump);
+  if (expected !== version) {
+    throw new Error(`commit ${bump} carries version ${expected}, not ${version}`);
+  }
+  rmSync(target, { recursive: true, force: true });
+  mkdirSync(target, { recursive: true });
+  const stripComponents = path.split("/").length;
+  const extract = spawnSync("tar", [
+    "-xf",
+    archive,
+    "-C",
+    target,
+    "--strip-components",
+    String(stripComponents),
+  ]);
+  if (extract.status !== 0) {
+    throw new Error(`tar extract failed: ${String(extract.stderr ?? "unknown tar error")}`);
+  }
+} finally {
+  rmSync(archive, { force: true });
+  if (cloned) rmSync(cloned, { recursive: true, force: true });
 }
-rmSync(archive, { force: true });
-if (cloned) rmSync(cloned, { recursive: true, force: true });
 
 const pinned = JSON.parse(readFileSync(join(target, "plugin.json"), "utf8")).version;
 if (pinned !== version) {

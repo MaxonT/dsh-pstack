@@ -36,12 +36,12 @@ Use only tools visible in the current session. If a mapped tool or optional capa
 | `claude-<family>-<version>-<effort>[-fast]`, such as `claude-opus-5-5-xhigh` | Split it into `provider`, `model`, and `reasoning_effort`, and drop `-fast`; these arguments appear only when the delegation tool enables model selection. Discover ids with `list_subagent_models` when the tool offers it; when it does not, omit them and the child inherits the parent route. |
 | A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route. If none matches, omit `provider` and `model` so the child inherits the parent route, and say so. |
 | `auto` or `inherit-parent` | Omit `provider`, `model`, and `reasoning_effort`; the child inherits the parent route. |
-| The `pstack-models.mdc` rule, `~/.cursor/rules/pstack-models.mdc` | Base DSH has no `.mdc` rules directory and never loads one. The pstack role file is `$DSH_HOME/pstack-models.json`; base DSH does not read it, and the pstack adapter reads it on every delegation, so read it when it is not in context. |
+| The `pstack-models.mdc` rule, `~/.cursor/rules/pstack-models.mdc` | Base DSH has no `.mdc` rules directory and never loads one. The pstack role file is `$DSH_HOME/pstack-models.json`; base DSH does not read it, so read it yourself before delegation when it exists. |
 | A role value `<model> <effort>`, such as `opus high` | Write it as `<provider>/<model> <effort>` and split it into `provider`, `model`, and `reasoning_effort`. |
 
 ## setup-pstack
 
-DSH has no rules directory and never reads `.mdc` files as session rules. The pstack role file is `$DSH_HOME/pstack-models.json`; base DSH does not read it, and the pstack adapter reads it on every delegation. The `AGENTS.md`-compatible chain supplies session instructions but does not replace the role file. Follow its steps with these changes:
+DSH has no rules directory and never reads `.mdc` files as session rules. The pstack role file is `$DSH_HOME/pstack-models.json`; base DSH does not read it, so read it yourself before delegation when it exists. The `AGENTS.md`-compatible chain supplies session instructions but does not replace the role file. Follow its steps with these changes:
 
 - Detect. Use `list_subagent_models` and write each served route as `<provider>/<model> <effort>`. If nothing is detectable, ask the user to paste the routes; never write an unconfirmed one.
 - Defaults. Map a served slug to its route; an unserved slug becomes `inherit-parent`.
@@ -53,7 +53,7 @@ DSH has no rules directory and never reads `.mdc` files as session rules. The ps
 | --- | --- |
 | `.cursor/skills/`, `~/.cursor/skills/` | Project skills live in `.dsh/skills/` or `.agents/skills/`; user skills live in `$DSH_HOME/skills/` or `$DSH_AGENTS_HOME/skills/`, which defaults to `~/.agents`. |
 | `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | A profile is `$DSH_HOME/profiles/<name>/`, holding `cordis.patch.yml`; a plugin manifest is the `dsh` section of its `package.json`. |
-| `.cursor/rules/*.mdc`, always-applied rules | General rules use the `AGENTS.md` chain; DSH never reads `.mdc`. Project `AGENTS.md`/`AGENTS.local.md` (`CLAUDE.md` accepted) plus `$DSH_HOME/AGENTS.md`. The pstack role file in Models is the exception, read only by the pstack adapter. |
+| `.cursor/rules/*.mdc`, always-applied rules | General rules use the `AGENTS.md` chain; DSH never reads `.mdc`. Project `AGENTS.md`/`AGENTS.local.md` (`CLAUDE.md` accepted) plus `$DSH_HOME/AGENTS.md`. The pstack role file in Models is not loaded by DSH; read it only when it exists. |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | `<pstack>/<path>` when the file exists. Read the local copy and never fetch it; give the user the URL when needed. |
 | Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | `$DSH_HOME/sessions/<workspace-key>/<session>.jsonl`, one append-only log per session. Optional session search adds model-facing search tools. |
 
