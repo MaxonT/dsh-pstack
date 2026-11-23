@@ -35,7 +35,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | `readonly: false` | `agent_preset: "general"`。 |
 | `environment: "cloud"` | 没有云代理。可用时用 `create_worktree`，把 checkout 作为 `cwd`；否则按规则跳过。 |
 | `environment: "local"` | 省略 `cwd`；子代理继承会话目录。 |
-| `cloud_base_branch: <b>` | 作为 `create_worktree.from` 传入；否则让子代理先 checkout `<b>`。 |
+| `cloud_base_branch: <b>` | 把 `<b>` 作为 `create_worktree.from` 传入；否则让子代理先 checkout `<b>`。 |
 | `run_in_background: true` | 省略。`pstack_subagent` 由托管执行并通过完成通知返回。 |
 | `resume` | 用原生 `send_message`，按 `list_agents` 报告的名称或 Session id 续聊 pstack 子代理。只有永久停止时才新建 `pstack_subagent`。 |
 | `file_attachments` | 在 `prompt` 中列出真实路径，子代理用 `read` 读取。 |

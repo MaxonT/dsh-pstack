@@ -17,10 +17,10 @@ const PACKAGE_ROOT = resolve(here, "..");
 const DIST_ROOT = join(PACKAGE_ROOT, "dist");
 
 /** The generated pstack tree. */
-const PORT_ROOT = join(DIST_ROOT, "pstack");
+const PSTACK_ROOT = join(DIST_ROOT, "pstack");
 
 /** The generated pstack skills. */
-const SKILLS_ROOT = join(PORT_ROOT, "skills");
+const SKILLS_ROOT = join(PSTACK_ROOT, "skills");
 
 /**
  * The `poteto-mode` instruction path used by the `poteto-agent` delegate brief.

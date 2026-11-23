@@ -91,7 +91,7 @@
 
    ![修复栏](./assets/plugin-repair.png)
 
-6. 在会话中打开模型与推理等级菜单，分别开启 **Poteto 工作流** 和 **启用智能体团队协作**。Poteto 工作流在极简模式之外的内置预设下可用。
+6. 在会话中打开模型与推理等级菜单，分别开启 **Poteto 工作流** 和 **启用智能体团队协作**。Poteto 工作流在除极简预设外的任何预设下可用。
 
    ![会话工作流开关](./assets/session-workflow-switches.png)
 
@@ -131,7 +131,7 @@
 
 ### 🎛️ 工作流开关
 
-Poteto 工作流和智能体团队协作是两个独立开关，可以在同一个会话里同时开启。Poteto 工作流在极简模式之外的内置预设下可用。
+Poteto 工作流和智能体团队协作是两个独立开关，可以在同一个会话里同时开启。Poteto 工作流在除极简预设外的任何预设下可用。
 
 - **Poteto 工作流** 每轮把 poteto-mode 规则保留在系统提示里。
 - **启用智能体团队协作** 让 `pstack_subagent` 启动团队成员，因此 pstack 委派可以在团队任务板上跟踪共享工作。
@@ -195,7 +195,7 @@ vendored 技能的来源与哈希记录在 [`skills/skills-lock.json`](./skills/
 
 移植由真实 DeepSeek Harness Web 会话验证，不靠与上游比对文本。完整流程见 [playground/docs/workflow.md](./playground/docs/workflow.md)。
 
-- **native 基准。** `native/` 钉定上游 pstack 并生成 `native/pstack`；`native/dsh.md` 把每项上游能力写成三种情况之一：DSH 原生、仅官方可选插件提供、没有此能力。生成器把该文档插入生成树，上游文案保持原样。
+- **native 基准。** `native/` 钉定上游 pstack 并生成 `native/pstack`；`native/dsh.md` 把每个 Cursor 名称映射到 DSH 替代项，并写清替代项不可用时的 fallback。生成器把该文档插入生成树，上游文案保持原样。
 - **场景驱动。** 覆盖来自 `native/gaps.json` 与 `playground/scenarios/` 下的场景文件；缺口清单记录 DSH 标准运行时缺少的能力，场景负责验证这些缺口。
 - **语义审核。** 技能能加载，只证明它可被触达。每个场景单独记录 `supported`、`gap` 或 `inconclusive` 结论，并附审核者与理由。adapted 运行记录 `verified`、`not-verified` 或 `inconclusive`。
 - **adapted 复验。** 审核结论驱动 [src/dsh.zh.md](./src/dsh.zh.md)。用 `vp run build` 重建适配包，再重跑同一批场景，确认映射后的行为。
