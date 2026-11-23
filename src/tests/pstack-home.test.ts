@@ -82,7 +82,7 @@ describe("migratePstackHome", () => {
     expect(raw.roles["bug-fix"]).toEqual([route]);
   });
 
-  it("migrates a legacy pstack-models.mdc to version 2 models.json and keeps a backup", () => {
+  it("migrates a legacy pstack-models.mdc to version 2 models.json and removes the mdc", () => {
     const home = tempHome();
     writeFile(
       join(home, "pstack-models.mdc"),
@@ -96,9 +96,7 @@ describe("migratePstackHome", () => {
     expect(raw.version).toBe(2);
     expect(raw.budget).toBe("large (xhigh)");
     expect(raw.roles["bug-fix"]).toEqual([route]);
-    expect(readFileSync(join(pstackHomePaths(home).root, "models.mdc.bak"), "utf8")).toContain(
-      "bug-fix: cpa/model-a [high]",
-    );
+    expect(existsSync(join(pstackHomePaths(home).root, "models.mdc.bak"))).toBe(false);
   });
 
   it("strips the Cursor frontmatter from a documented mdc file", () => {

@@ -5,8 +5,7 @@
  * JSON version, then deletes the `.mdc`. Nothing here runs once a `.json` exists.
  */
 
-import { readFileSync, renameSync, rmSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { readFileSync, rmSync } from "node:fs";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
 import { findRole, isRetiredRoleKey } from "../roles/role-manifest.ts";
@@ -99,10 +98,9 @@ export interface MdcMigrationOptions {
 }
 
 /**
- * Parse `mdcPath`, write the current JSON version at `jsonPath`, then keep the
- * old file as a sibling `.mdc.bak`. Throws on a parse issue or write failure so
- * the caller can report the role file as unreadable instead of treating it as
- * missing.
+ * Parse `mdcPath`, write the current JSON version at `jsonPath`, then delete the
+ * `.mdc`. Throws on a parse issue or write failure so the caller can report the
+ * role file as unreadable instead of treating it as missing.
  */
 export function migrateMdcToJson(
   mdcPath: string,
@@ -121,7 +119,5 @@ export function migrateMdcToJson(
       roles,
     }),
   );
-  const backupPath = join(dirname(jsonPath), `${basename(jsonPath, ".json")}.mdc.bak`);
-  rmSync(backupPath, { force: true });
-  renameSync(mdcPath, backupPath);
+  rmSync(mdcPath, { force: true });
 }
