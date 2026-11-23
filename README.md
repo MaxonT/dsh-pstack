@@ -239,7 +239,7 @@ Choose a release by its declared DSH range. Each range has its own table of rele
 
 | dsh-pstack release | pstack version |
 |---|---|
-| `0.5.1` | `0.15.43` |
+| `0.5.2` | `0.15.43` |
 
 **DSH `>=0.2.2-rc.1`**
 
