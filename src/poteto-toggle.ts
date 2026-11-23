@@ -8,8 +8,6 @@ import type { AgentPresetRegistry } from "@deepseek-ai/dsh-agent-preset-registry
 import type { ConfigEditor } from "@deepseek-ai/dsh-config-editor";
 import type { SessionId } from "@deepseek-ai/dsh-session";
 import type {} from "@deepseek-ai/dsh-session-persistence";
-import { createUserMessage } from "@deepseek-ai/dsh-llm";
-import type {} from "@deepseek-ai/dsh-agent-instructions";
 import { renderSkillContent } from "@deepseek-ai/dsh-skill";
 import type { Domain } from "@deepseek-ai/dsh-storage-domain";
 import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
@@ -47,9 +45,14 @@ export const name = "pstack-poteto-toggle";
 
 const SECTION_NAME = "pstack:poteto-workflow";
 const SECTION_ORDER = 10;
+const CONTRACT_SECTION_NAME = "pstack:poteto-contract";
+const CONTRACT_SECTION_ORDER = 0;
+const CONTRACT_TEXT = [
+  "Poteto workflow is active.",
+  "Before acting, follow the non-negotiables in the poteto-mode skill in this session.",
+  "Do not rely on earlier summaries for them.",
+].join("\n");
 const AGENT_TEAM_ENTRY = "@deepseek-ai/dsh-agent-team";
-const REMINDER =
-  "Poteto workflow is active. Follow the poteto-mode skill in the system prompt strictly. Do not skip any required step or rule it names.";
 /** Native delegation tools pstack replaces while the poteto workflow runs. */
 const NATIVE_DELEGATION_TOOLS = ["subagent", "subagent_fork"] as const;
 
@@ -74,7 +77,6 @@ export class PotetoModeService extends TypertRemoteService {
     "typert",
   ];
 
-  private readonly lastUserMessage = new WeakMap<Agent, string>();
   private readonly lifts = new WeakMap<Agent, Array<() => void>>();
   private readonly appliedTools = new WeakMap<Agent, Set<string>>();
   private readonly restricting = new WeakSet<Agent>();
@@ -116,6 +118,18 @@ export class PotetoModeService extends TypertRemoteService {
     this.ctx.effect(
       () =>
         this.ctx.systemPrompt.section({
+          name: CONTRACT_SECTION_NAME,
+          order: CONTRACT_SECTION_ORDER,
+          interpolate: false,
+          text: ({ agent }) =>
+            agent !== undefined && this.isEnabledFor(agent) ? CONTRACT_TEXT : "",
+        }),
+      "pstack.poteto-toggle.contract()",
+    );
+
+    this.ctx.effect(
+      () =>
+        this.ctx.systemPrompt.section({
           name: SECTION_NAME,
           order: SECTION_ORDER,
           interpolate: false,
@@ -140,21 +154,11 @@ export class PotetoModeService extends TypertRemoteService {
       () =>
         this.ctx.on(
           "agent/pre-step",
-          async ({ agent, messages }, next) => {
+          async ({ agent }, next) => {
             const decision = await next();
             if (decision.kind === "reject") return decision;
-            if (!this.isEnabledFor(agent)) return decision;
-            this.ensureNativeToolsRestricted(agent);
-            const users = messages.filter((message) => message.source.kind === "user");
-            const latest = users[users.length - 1];
-            if (latest === undefined) return decision;
-            if (this.lastUserMessage.get(agent) === latest.id) return decision;
-            this.lastUserMessage.set(agent, latest.id);
-            const injection = createUserMessage({
-              content: [{ type: "text", text: REMINDER }],
-              source: { kind: "agent-instructions", form: "instructions", changes: [] },
-            });
-            return { ...decision, messages: [...decision.messages, injection] };
+            if (this.isEnabledFor(agent)) this.ensureNativeToolsRestricted(agent);
+            return decision;
           },
           { prepend: true },
         ),
