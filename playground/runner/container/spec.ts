@@ -1,0 +1,142 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
+import type { ProviderPlan } from "../config/provider.ts";
+import type { WorkerPaths } from "../worker/worker.ts";
+import { runtimeEnv } from "../worker/worker.ts";
+
+/** The port DSH binds inside the container; bridge mode publishes it on the host. */
+export const CONTAINER_PORT = 8080;
+export type NetworkMode = "bridge" | "host";
+
+export interface ContainerMount {
+  source: string;
+  target: string;
+  readonly: boolean;
+}
+
+export interface ContainerSpec {
+  name: string;
+  image: string;
+  user: string | null;
+  workdir: string;
+  mounts: ContainerMount[];
+  env: Record<string, string>;
+  networkMode: NetworkMode;
+  hostPort: number;
+  containerPort: number;
+}
+
+export interface ContainerSpecInput {
+  paths: WorkerPaths;
+  plan: ProviderPlan;
+  image: string;
+  networkMode: NetworkMode;
+  hostPort: number;
+}
+
+function containerUser(): string | null {
+  if (process.platform !== "linux") return null;
+  const uid = process.getuid?.();
+  const gid = process.getgid?.();
+  if (uid === undefined || gid === undefined) {
+    throw new Error("cannot resolve the Linux host uid/gid for the worker container");
+  }
+  return `${uid}:${gid}`;
+}
+
+/**
+ * Everything the agent may reach is an explicit mount under /dsh: the workspace, the
+ * worker home, the native tree read-only, and the runtime temp dirs. The repository and
+ * the host home are never mounted.
+ */
+export function containerSpec(input: ContainerSpecInput): ContainerSpec {
+  const { paths, plan, image, hostPort } = input;
+  const networkMode = input.networkMode;
+  const containerPort = networkMode === "host" ? hostPort : CONTAINER_PORT;
+  // Ensure the host-side runtime directories exist before they become mount sources.
+  runtimeEnv(paths);
+  const providerEnv = {
+    ...Object.fromEntries(
+      Object.values(plan.providers).flatMap((provider) =>
+        provider.kind === "deepseek-account"
+          ? []
+          : [[provider.apiKeyEnv, provider.apiKey] as const],
+      ),
+    ),
+    ...(plan.apiKeyEnv === undefined || plan.apiKey === undefined
+      ? {}
+      : { [plan.apiKeyEnv]: plan.apiKey }),
+  };
+  const mounts: ContainerMount[] = [
+    { source: paths.workspaceRoot, target: paths.containerWorkspace, readonly: false },
+    { source: paths.home, target: paths.containerHome, readonly: false },
+    {
+      source: join(paths.isolatedRoot, "tmp"),
+      target: paths.containerTmp,
+      readonly: false,
+    },
+    {
+      source: join(paths.isolatedRoot, "xdg-runtime"),
+      target: paths.containerRuntime,
+      readonly: false,
+    },
+  ];
+  if (existsSync(paths.nativeMount)) {
+    mounts.push({ source: paths.nativeMount, target: paths.containerNative, readonly: true });
+  }
+  return {
+    name: paths.containerName,
+    image,
+    // Docker Desktop maps bind-mount ownership itself; Linux uses the host uid/gid.
+    user: containerUser(),
+    workdir: paths.containerWorkspace,
+    mounts,
+    env: {
+      DSH_HOME: paths.containerHome,
+      HOME: paths.containerHome,
+      XDG_RUNTIME_DIR: paths.containerRuntime,
+      TMPDIR: paths.containerTmp,
+      DSH_PORT: String(containerPort),
+      ...(networkMode === "host" ? { DSH_HOST: "127.0.0.1" } : {}),
+      ...providerEnv,
+    },
+    networkMode,
+    hostPort,
+    containerPort,
+  };
+}
+
+/** Pure translation from a spec to `docker run` arguments, kept separate for tests. */
+export function dockerRunArgs(spec: ContainerSpec): string[] {
+  const args = [
+    "run",
+    "--detach",
+    "--name",
+    spec.name,
+    "--read-only",
+    "--init",
+    "--tmpfs",
+    "/tmp:rw,size=512m",
+    "--cap-drop",
+    "ALL",
+    "--security-opt",
+    "no-new-privileges",
+    "--workdir",
+    spec.workdir,
+  ];
+  if (spec.networkMode === "host") args.push("--network", "host");
+  else args.push("--add-host", "host.docker.internal:host-gateway");
+  if (spec.user !== null) args.push("--user", spec.user);
+  for (const mount of spec.mounts) {
+    args.push("-v", `${mount.source}:${mount.target}:${mount.readonly ? "ro" : "rw"}`);
+  }
+  if (spec.networkMode === "bridge") {
+    args.push("--publish", `127.0.0.1:${String(spec.hostPort)}:${spec.containerPort}`);
+  }
+  for (const [key, value] of Object.entries(spec.env)) {
+    args.push("--env", `${key}=${value}`);
+  }
+  args.push(spec.image);
+  return args;
+}

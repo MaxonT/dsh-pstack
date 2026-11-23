@@ -36,17 +36,17 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 
 ## Generated tree（生成树）
 
-由 `scripts/generate-pstack.mjs --target port` 从固定上游和 `port/dsh.md` 整体生成的根 `pstack/` 目录，构建时复制到 `dist/pstack/`。
+由 `native/scripts/generate-pstack.ts` 从钉定的已发布上游树和 `native/dsh.md` 生成的 `native/pstack/` 目录，是全仓唯一生成树；构建时复制到 `dist/pstack/`，并把适配答案盖章为 `src/dsh.md`。
 
-手工变更应落在生成来源、插件源码、测试或技能工作区。发布兼容范围由 `package.json` 的 `engines.dsh` 提供，pstack 版本记在 `port/baseline.json`；场景注册表与当前审核快照分别位于 `playground/scenarios/` 和 `playground/reviews/`，都不属于本仓工程决策记录目录。
+手工变更应落在生成来源、插件源码、测试或技能工作区。发布兼容范围由 `package.json` 的 `engines.dsh` 提供，pstack 版本记在 `native/upstream.lock.json`；能力探针位于 `playground/scenarios/`，场景注册表在 `playground/runner/scenario/`，当前证据快照在 `playground/evidence/runs/`，都不属于本仓工程决策记录目录。
 
 ## Playground（验证场）
 
-`playground/` 的真实 DSH Web 会话验证环境。它运行 raw/adapted 能力 probe，收集 RunRecord、SessionAnalysis 和评审快照，为 port 和 src 提供缺口与结论。
+`playground/` 的真实 DSH Web 会话验证环境。它运行 native/adapted 能力 probe，收集 RunRecord、SessionAnalysis 和评审快照，为基准与产品两侧提供缺口与结论。
 
-## Raw 与 Adapted
+## Native 与 Adapted
 
-`raw` 是原生 DSH 基线阶段，只能观察 DSH 原生能力；`adapted` 是适配实现验证阶段，只使用当前适配实现和 `port/dsh.md`。两个阶段证据和结论隔离，不能互相替代。
+`native` 是不加载被测插件的 DSH 标准运行时基线，只能观察 DSH 原生能力；`adapted` 加载被测插件并使用当前适配实现和 `src/dsh.md`。两个 variant 的证据和结论隔离，不能互相替代。
 
 ## Capability probe（能力探针）
 
@@ -54,11 +54,11 @@ DSH 对一类 Agent 的插件组合，包含人格、工具、沙箱及其他会
 
 ## Capability environment（能力对照环境）
 
-在 `environments.ts` 中登记的可选环境，用于比较某个可选依赖是否改变行为。它只作为对照，不代表原生 DSH 能力，也不进入 base 通过条件。
+在 `playground/runner/scenario/environments.ts` 中登记的可选环境，用于比较某个可选依赖是否改变行为。它只作为对照，不代表原生 DSH 能力，也不进入 base 通过条件。
 
-## Baseline（发布基线）
+## Upstream pin（上游钉定）
 
-`port/baseline.json` 中的发布基线，记录当前移植的 pstack 版本。它不是 playground 的测试基线，也不是 README 兼容表的数据源；DSH 兼容范围以 `package.json` 的 `engines.dsh` 为准，兼容表由 `scripts/release-compatibility.ts` 直接维护。
+`native/upstream.lock.json` 记录当前钉定的已发布上游 pstack 版本与对应 commit，由 `native/scripts/fetch-upstream.ts` 维护；`native/upstream/` 是钉定的树，不入库，由 `native/scripts/fetch-upstream.ts` 按 lock 重建。上游 monorepo 没有 tag，发布版本以把 `plugin.json` 改到目标版本的 bump commit 为边界。它不是 playground 的测试基线，也不是 README 兼容表的数据源；DSH 兼容范围以 `package.json` 的 `engines.dsh` 为准，兼容表由 `scripts/release-compatibility.ts` 直接维护。
 
 ## Repair queue（修复队列）
 

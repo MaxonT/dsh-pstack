@@ -2,12 +2,13 @@ import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from "no
 import { dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { isPhase } from "../types.ts";
-import type { Phase } from "../types.ts";
-import { environmentMatrix } from "./lib/run-metadata.ts";
-import { EVIDENCE_FILES } from "./lib/evidence-files.ts";
-import { residualKinds } from "./lib/redaction.ts";
-import { reviewSnapshotDirectory } from "./lib/review-snapshot.ts";
+import { isVariant } from "../runner/types.ts";
+import type { Variant } from "../runner/types.ts";
+import { environmentMatrix } from "../runner/worker/run-metadata.ts";
+import { EVIDENCE_FILES } from "../runner/evidence/evidence-files.ts";
+import { isRunRecord } from "../runner/evidence/evidence.ts";
+import { residualKinds } from "../runner/evidence/redaction.ts";
+import { reviewSnapshotDirectory } from "../runner/evidence/review-snapshot.ts";
 
 function argValue(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
@@ -23,13 +24,13 @@ function walk(dir: string): string[] {
 }
 
 function main(): void {
-  const phase = argValue("--phase") as Phase | undefined;
-  if (!isPhase(phase)) throw new Error("redact requires --phase raw|adapted");
+  const variant = argValue("--variant") as Variant | undefined;
+  if (!isVariant(variant)) throw new Error("redact requires --variant native|adapted");
   const environmentId = argValue("--environment");
   if (environmentId === undefined) throw new Error("--environment is required");
   const environment = environmentMatrix(environmentId).id;
   const apply = process.argv.includes("--apply");
-  const root = reviewSnapshotDirectory(phase, environment);
+  const root = reviewSnapshotDirectory(variant, environment);
   const records = walk(root);
   if (records.length === 0) throw new Error(`no review records under ${root}`);
 
@@ -48,6 +49,11 @@ function main(): void {
       parsed = JSON.parse(readFileSync(candidate, "utf8"));
     } catch (error) {
       console.error(`[redact] INVALID ${relative(root, candidate)}: ${String(error)}`);
+      errors += 1;
+      continue;
+    }
+    if (!isRunRecord(parsed)) {
+      console.error(`[redact] INVALID ${relative(root, candidate)}: not a RunRecord`);
       errors += 1;
       continue;
     }

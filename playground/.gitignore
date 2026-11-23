@@ -1,21 +1,26 @@
 # Per-worker runtime: DSH home, browser profile, workspaces, evidence.
+.workspace/
 .workers/
 .workers-*/
 
-# Local config with provider keys and allowed routes; copy config.example.json and fill the real values.
+# Local config; copy config.example.ts and fill the real values.
 config.json
+# Legacy machine-local host provider patch; config.ts carries provider definitions now.
+host.patch.yml
 node_modules
 *.log
 .DS_Store
 
-# Regenerated raw baseline. The generator never writes the upstream checkout.
-raw/pstack/
 
-# Review snapshots under reviews/ are committed source; only in-flight staging is transient.
-reviews/.staging/
 
 # Session logs contain host paths and may contain credentials; keep local only.
-reviews/**/session.jsonl.zstd
+evidence/runs/**/session.jsonl.zstd
+
+# Local artifact locator; never committed.
+evidence/runs/**/record.source.json
 
 # Agent redaction candidate; only validated record.json is committed.
-reviews/**/record.safe.json
+evidence/runs/**/record.safe.json
+
+# Local playground config; copy config.example.ts and fill real values.
+config.ts

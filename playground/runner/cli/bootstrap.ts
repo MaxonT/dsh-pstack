@@ -1,0 +1,197 @@
+// Land the persistent browser profile in each prepared worker: open its tokenized
+// URL, dismiss the preview notice, and prove the page shows the workspace and model
+// chip instead of a login or 401 wall. `--worker <k>` checks one, `--all` checks all,
+// default is the first worker.
+
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { collapseSidebar, createBrowserSession } from "../browser/session.ts";
+import { UI_LABELS } from "../worker/runtime.ts";
+import {
+  CONFIG_FILE,
+  readHomePlan,
+  readPlaygroundConfig,
+  readWorkspaceStore,
+} from "../worker/home.ts";
+import { readWebUrl } from "../container/index.ts";
+import {
+  bootstrapReadyFile,
+  hasBootstrapReady,
+  listWorkers,
+  workerPaths,
+  type WorkerPaths,
+} from "../worker/worker.ts";
+import type { BrowserConfig, Variant } from "../types.ts";
+
+const { continue: CONTINUE_LABEL, previewNotice: PREVIEW_NOTICE } = UI_LABELS;
+
+function argValue(flag: string): string | undefined {
+  const index = process.argv.indexOf(flag);
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
+
+function selectWorkers(): WorkerPaths[] {
+  const environment = argValue("--environment");
+  if (environment === undefined) throw new Error("--environment is required");
+  const variant = argValue("--variant") as Variant;
+  if (variant !== "native" && variant !== "adapted")
+    throw new Error("--variant must be native or adapted");
+  if (process.argv.includes("--all")) {
+    const workers = listWorkers({ environmentId: environment, variant });
+    if (workers.length === 0)
+      throw new Error("no prepared workers found; run playground:prepare first");
+    return workers;
+  }
+  const workerFlag = argValue("--worker");
+  if (workerFlag !== undefined) {
+    const index = Number(workerFlag);
+    if (!Number.isInteger(index) || index < 0)
+      throw new Error("--worker must be a non-negative integer");
+    return [workerPaths(index, environment, variant)];
+  }
+  const workers = listWorkers({ environmentId: environment, variant });
+  return workers.length > 0 ? [workers[0] as WorkerPaths] : [workerPaths(0, environment, variant)];
+}
+
+function validateWorker(paths: WorkerPaths, browser?: BrowserConfig): string[] {
+  const url = readWebUrl(paths);
+  const plan = readHomePlan(paths);
+  const { defaultTitle } = readWorkspaceStore(paths);
+
+  const session = createBrowserSession({
+    session: `${paths.variant}-${paths.environmentId}-w${paths.index}`,
+    browserDir: paths.browserDir,
+    ...(browser === undefined ? {} : { browser }),
+  });
+  const failures: string[] = [];
+  try {
+    session.open(url);
+    session.wait(7000);
+
+    let body = session.eval<string>("document.body.innerText");
+    for (let attempt = 0; attempt < 3 && body.includes(PREVIEW_NOTICE); attempt++) {
+      const clicked = session.eval<boolean>(
+        `(() => {
+          const button = [...document.querySelectorAll("button")].find((element) => element.innerText.trim() === ${JSON.stringify(CONTINUE_LABEL)});
+          if (!button) return false;
+          button.click();
+          return true;
+        })()`,
+      );
+      if (!clicked) break;
+      session.wait(2000);
+      body = session.eval<string>("document.body.innerText");
+    }
+
+    if (body.includes(PREVIEW_NOTICE))
+      failures.push(
+        `preview notice "${PREVIEW_NOTICE}" still present after clicking "${CONTINUE_LABEL}"`,
+      );
+    const openedDefault = session.eval<boolean>(
+      `(() => {
+        const title = ${JSON.stringify(defaultTitle)};
+        const button = [...document.querySelectorAll("button")].find((element) => {
+          const label = element.getAttribute("aria-label") || "";
+          return label.includes(title);
+        });
+        if (!button) return false;
+        button.click();
+        return true;
+      })()`,
+    );
+    if (openedDefault) {
+      session.wait(3000);
+      body = session.eval<string>("document.body.innerText");
+    }
+    if (!body.includes(defaultTitle))
+      failures.push(`page does not show workspace "${defaultTitle}"`);
+    const modelSelected = session.eval<boolean>(
+      `(() => {
+        const provider = ${JSON.stringify(plan.provider)};
+        const model = ${JSON.stringify(plan.model)};
+        const visible = (element) => !!element && (element.offsetParent !== null || element.getClientRects().length > 0);
+        return [...document.querySelectorAll("[data-model-id]")].some((element) => {
+          if (!visible(element) || element.getAttribute("data-model-id") !== model) return false;
+          const elementProvider = element.getAttribute("data-provider-id");
+          return elementProvider === null || elementProvider === provider;
+        });
+      })()`,
+    );
+    if (!modelSelected) failures.push(`page does not show model chip "${plan.model}"`);
+    const effortLabels: Record<string, string[]> = {
+      off: ["off", "关闭"],
+      minimal: ["minimal", "最小"],
+      low: ["low", "低"],
+      medium: ["medium", "中"],
+      high: ["high", "高"],
+      max: ["max", "最大"],
+    };
+    const wantedEffortLabels = effortLabels[plan.effort] ?? [plan.effort];
+    const effortText = session.eval<string>(
+      `(() => {
+        const model = [...document.querySelectorAll("[data-model-id]")].find((element) => element.getAttribute("data-model-id") === ${JSON.stringify(plan.model)});
+        const button = model?.closest("button");
+        return button ? (button.getAttribute("aria-label") || "") + " " + (button.innerText || "") : "";
+      })()`,
+    );
+    const effortShown = wantedEffortLabels.some((label) =>
+      effortText.toLowerCase().includes(label.toLowerCase()),
+    );
+    if (!effortShown) failures.push(`page does not show reasoning effort "${plan.effort}"`);
+    if (/登录|401|authentication required|sign in|unauthorized|认证失败/i.test(body))
+      failures.push("page shows a login / 401 / authentication wall");
+
+    collapseSidebar(session);
+    session.screenshot(join(paths.browserDir, "ready.png"));
+
+    if (failures.length > 0) {
+      console.error(`[bootstrap] worker ${paths.index} validation failed:`);
+      for (const failure of failures) console.error(`  - ${failure}`);
+      console.error(`\n[bootstrap] worker ${paths.index} body text:\n${body.slice(0, 2000)}`);
+    } else {
+      console.log(
+        `[bootstrap] worker ${paths.index} ready: workspace="${defaultTitle}" model="${plan.model}" effort="${plan.effort}"`,
+      );
+      console.log(
+        `[bootstrap] worker ${paths.index} screenshot=${join(paths.browserDir, "ready.png")}`,
+      );
+    }
+  } finally {
+    session.close();
+  }
+  return failures;
+}
+
+async function main(): Promise<void> {
+  const config = await readPlaygroundConfig(CONFIG_FILE);
+  const workers = selectWorkers();
+  const environment = argValue("--environment");
+  if (environment === undefined) throw new Error("--environment is required");
+  const variant = argValue("--variant") as Variant;
+  if (hasBootstrapReady(environment, variant)) {
+    console.log(`[bootstrap] environment ${environment}/${variant} already ready`);
+    return;
+  }
+
+  let failed = 0;
+  for (const paths of workers) {
+    const failures = validateWorker(paths, config.browser);
+    if (failures.length > 0) failed += 1;
+  }
+  if (failed > 0) {
+    process.exitCode = 1;
+    return;
+  }
+  if (process.argv.includes("--all")) {
+    writeFileSync(
+      bootstrapReadyFile(environment, variant),
+      `${JSON.stringify({ checkedAt: new Date().toISOString(), workers: workers.map((worker) => worker.index) }, null, 2)}\n`,
+    );
+  }
+}
+
+main().catch((error: unknown) => {
+  console.error(`[bootstrap] ERROR: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+});
