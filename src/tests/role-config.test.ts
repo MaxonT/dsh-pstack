@@ -154,6 +154,29 @@ describe("legacy role file migration", () => {
     ]);
   });
 
+  it("drops retired roles and normalizes the budget during a version 1 migration", () => {
+    const directory = homeWithRoles({
+      version: 1,
+      budget: "unlimited (max)",
+      roles: {
+        "bug-fix": ["cpa/model-a [high]"],
+        "hardest tasks": ["cpa/model-a [high]"],
+      },
+    });
+    const config = readRoleConfiguration(jsonPath(directory));
+    expect(config.status).toBe("loaded");
+    if (config.status !== "loaded") return;
+    expect(config.budget).toBe("large (xhigh)");
+    expect(config.roles.has("hardest tasks")).toBe(false);
+    const raw = JSON.parse(readFileSync(jsonPath(directory), "utf8")) as {
+      budget?: string;
+      roles: Record<string, unknown>;
+    };
+    expect(raw.budget).toBe("large (xhigh)");
+    expect(raw.roles["hardest tasks"]).toBeUndefined();
+    expect(raw.roles["bug-fix"]).toBeDefined();
+  });
+
   it("drops retired roles and migrates the unlimited budget on read", () => {
     const directory = homeWithRoles({
       version: 2,

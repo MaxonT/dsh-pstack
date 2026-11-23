@@ -277,7 +277,10 @@ export class PotetoModeService extends TypertRemoteService {
       table: this.modeTable,
       openRead: async (sessionId) => {
         const handle = await this.ctx.sessionPersistence.open(sessionId as SessionId, "read");
-        return { close: () => handle.close() };
+        return {
+          read: () => handle.read(0),
+          close: () => handle.close(),
+        };
       },
       isLive: (sessionId) => this.ctx.agents.get(sessionId as SessionId) !== undefined,
     });
@@ -419,8 +422,8 @@ export class PotetoModeService extends TypertRemoteService {
   private reconcileNativeTools(): void {
     for (const agent of this.ctx.agents.list()) {
       if (agent.session.header.origin === "subagent") continue;
-      if (!this.isEnabledFor(agent)) continue;
-      this.ensureNativeToolsRestricted(agent);
+      if (this.isEnabledFor(agent)) this.ensureNativeToolsRestricted(agent);
+      else this.clearNativeToolsRestriction(agent);
     }
   }
 

@@ -345,7 +345,10 @@ export async function repairLegacySession(
 /** Host capabilities needed to execute one queued repair run. */
 export interface RepairQueueRunner {
   readonly table: PotetoModeTable;
-  openRead(sessionId: string): Promise<{ close(): Promise<void> }>;
+  openRead(sessionId: string): Promise<{
+    read(): Promise<unknown>;
+    close(): Promise<void>;
+  }>;
   isLive?(sessionId: string): boolean;
 }
 
@@ -377,7 +380,11 @@ export async function executeRepairQueue(
       result = await repairLegacySession(source, runner.table);
       if (result.changed) {
         const handle = await runner.openRead(sessionId);
-        await handle.close();
+        try {
+          await handle.read();
+        } finally {
+          await handle.close();
+        }
       }
       repaired += 1;
     } catch (error) {

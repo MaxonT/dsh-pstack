@@ -6,7 +6,7 @@ import {
   writePotetoMode,
   type PotetoModeRecord,
   type PotetoModeTable,
-} from "../src/poteto/storage.ts";
+} from "../poteto/storage.ts";
 
 function memoryTable(): PotetoModeTable {
   const records = new Map<string, PotetoModeRecord>();

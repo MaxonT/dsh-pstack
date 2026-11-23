@@ -16,8 +16,8 @@ import {
   restoreLegacySession,
   scanLegacySessions,
   writeRepairQueue,
-} from "../src/poteto/maintenance.ts";
-import type { PotetoModeRecord, PotetoModeTable } from "../src/poteto/storage.ts";
+} from "../poteto/maintenance.ts";
+import type { PotetoModeRecord, PotetoModeTable } from "../poteto/storage.ts";
 
 const CHECKSUM = { params: { [constants.ZSTD_c_checksumFlag]: 1 } };
 
@@ -141,7 +141,7 @@ describe("poteto legacy session maintenance", () => {
 
       const repaired = await executeRepairQueue(queue, [ref], {
         table,
-        openRead: async () => ({ close: async () => undefined }),
+        openRead: async () => ({ read: async () => undefined, close: async () => undefined }),
         isLive: () => false,
       });
       expect(repaired).toEqual({ repaired: 1, failed: [] });
@@ -154,13 +154,42 @@ describe("poteto legacy session maintenance", () => {
 
       const skipped = await executeRepairQueue(queue, [ref], {
         table,
-        openRead: async () => ({ close: async () => undefined }),
+        openRead: async () => ({ read: async () => undefined, close: async () => undefined }),
         isLive: () => true,
       });
       expect(skipped).toEqual({
         repaired: 0,
         failed: [{ sessionId: "session-1", message: "session is live" }],
       });
+    });
+  });
+
+  it("restores the log and sidecar when the rewritten log cannot be read", async () => {
+    await withTempDir(async (dir) => {
+      const logPath = writeLegacyLog(dir);
+      const table = memoryTable();
+      const ref = { sessionId: "session-1", workspace: "/work/repo", logPath };
+      const queue = { version: 1 as const, createdAt: 1, sessionIds: ["session-1"] };
+
+      const outcome = await executeRepairQueue(queue, [ref], {
+        table,
+        openRead: async () => ({
+          read: async () => {
+            throw new Error("invalid session log");
+          },
+          close: async () => undefined,
+        }),
+        isLive: () => false,
+      });
+
+      expect(outcome.repaired).toBe(0);
+      expect(outcome.failed[0]?.message).toBe("invalid session log");
+      expect(readEvents(logPath).map((event) => event["ignorable"])).toEqual([
+        undefined,
+        undefined,
+        undefined,
+      ]);
+      expect(table.get("session-1")).toBeUndefined();
     });
   });
 

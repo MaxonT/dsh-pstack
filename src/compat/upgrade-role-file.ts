@@ -90,17 +90,24 @@ export function upgradeRoleFile(
     };
   }
   try {
-    const roles = upgradeVersionOneRoles(record["roles"]);
+    const upgraded = upgradeVersionOneRoles(record["roles"]);
     const budget = record["budget"];
     if (budget !== undefined && typeof budget !== "string") {
       return { status: "unreadable", reason: "the role file budget must be a string" };
+    }
+    const sanitized = sanitizeCurrentRoleFile({
+      roles: upgraded,
+      ...(budget === undefined ? {} : { budget }),
+    });
+    if (sanitized === undefined) {
+      return { status: "unreadable", reason: "the role file roles must be an object" };
     }
     writeFileAtomically(
       jsonPath,
       options.serialize({
         version: options.currentVersion,
-        ...(budget === undefined ? {} : { budget }),
-        roles,
+        ...(sanitized.budget === undefined ? {} : { budget: sanitized.budget }),
+        roles: sanitized.roles,
       }),
     );
     return { status: "migrated" };
