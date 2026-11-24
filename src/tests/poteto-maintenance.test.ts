@@ -13,6 +13,7 @@ import {
   queuedSessionIds,
   readRepairQueue,
   repairLegacySession,
+  repairQueuePath,
   restoreLegacySession,
   scanLegacySessions,
   writeRepairQueue,
@@ -75,6 +76,10 @@ function readEvents(path: string): readonly Record<string, unknown>[] {
 }
 
 describe("poteto legacy session maintenance", () => {
+  it("resolves the repair queue under the pstack home for one DSH home", () => {
+    expect(repairQueuePath("/home/user/.dsh")).toBe("/home/user/.dsh/pstack/repair.json");
+  });
+
   it("finds sessions with the retired event and reports the last selection", async () => {
     await withTempDir(async (dir) => {
       const logPath = writeLegacyLog(dir);
@@ -195,7 +200,7 @@ describe("poteto legacy session maintenance", () => {
 
   it("appends newly selected sessions without dropping earlier queue entries", async () => {
     await withTempDir(async (dir) => {
-      const path = join(dir, "pstack-repair.json");
+      const path = join(dir, "repair.json");
       writeRepairQueue(["session-1"], path);
       expect(enqueueRepair(["session-2", "session-2"], path)).toBe(1);
       expect(queuedSessionIds(path)).toEqual(new Set(["session-1", "session-2"]));
@@ -204,7 +209,7 @@ describe("poteto legacy session maintenance", () => {
 
   it("queues, reads, and clears the restart request", async () => {
     await withTempDir(async (dir) => {
-      const path = join(dir, "pstack-repair.json");
+      const path = join(dir, "repair.json");
       expect(writeRepairQueue(["session-1", "session-1", "session-2"], path)).toBe(2);
       expect(readRepairQueue(path)).toMatchObject({
         version: 1,

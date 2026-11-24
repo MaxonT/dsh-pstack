@@ -1,25 +1,22 @@
 /**
- * Typed `$DSH_HOME/pstack-models.json` role file: read, parse, serialize, write.
+ * Typed `$DSH_HOME/pstack/models.json` role file: read, parse, serialize, write.
  *
  * Two views of one file live here. The semantic view (`RoleConfiguration`)
  * parses each route into a `Route` and reports issues for the settings page and
  * the delegator. The editable view (`RoleFileDocument`) keeps the structured
  * routes so a save round-trips them unchanged. Both views handle only the
- * current schema version; `compat/upgrade-role-file` upgrades a legacy `.mdc` or
- * an older JSON version in place before this module reads the file. A missing
- * file means every role inherits the parent route, while an unreadable file
- * fails loudly instead of behaving like a fresh install.
+ * current schema version; `compat/migrate-pstack-home` upgrades a legacy `.mdc`
+ * or an older JSON version once at plugin startup. Reading is pure: a missing
+ * file means every role inherits the parent route, while an unreadable file fails
+ * loudly instead of behaving like a fresh install.
  */
 
 import { readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join, resolve } from "node:path";
 
-import { upgradeRoleFile, type RoleFileDocumentLike } from "../compat/upgrade-role-file.ts";
 import { writeFileAtomically } from "../lib/atomic-write.ts";
 import { describeError } from "../lib/errors.ts";
 import { normalizeBudgetValue } from "./budget.ts";
-import { PSTACK_MODELS_FILENAME, findRole, isRetiredRoleKey } from "./role-manifest.ts";
+import { findRole, isRetiredRoleKey } from "./role-manifest.ts";
 import { parseRouteEntry, validateRoleRouteShape, type Route } from "./route.ts";
 
 export type { Route } from "./route.ts";
@@ -51,32 +48,16 @@ export type RoleConfiguration =
 /** The current role-file schema version. Version 1 stored provider/model strings. */
 export const ROLE_FILE_VERSION = 2;
 
-/** The editable JSON shape: version, optional budget, structured routes per role. */
-export interface RoleFileDocument {
-  readonly version: 1 | 2;
+/** The document shape accepted by {@link serializeRoleDocument}. */
+export interface RoleFileDocumentLike {
+  readonly version: number;
   readonly budget?: string;
   readonly roles: Record<string, readonly Route[]>;
 }
 
-/** Absolute role-file path for one DSH home. */
-export function modelsFilePath(dshHome: string): string {
-  return join(dshHome, PSTACK_MODELS_FILENAME);
-}
-
-/** Resolve `$DSH_HOME`: environment first, then `~/.dsh`. */
-export function resolveDshHome(
-  env: Readonly<Record<string, string | undefined>> = process.env,
-  home: string = homedir(),
-): string {
-  const raw = env["DSH_HOME"]?.trim();
-  const path = raw === undefined || raw === "" ? join(home, ".dsh") : raw;
-  const expanded =
-    path === "~"
-      ? home
-      : path.startsWith("~/") || path.startsWith("~\\")
-        ? join(home, path.slice(2))
-        : path;
-  return resolve(expanded);
+/** The editable JSON shape: version, optional budget, structured routes per role. */
+export interface RoleFileDocument extends RoleFileDocumentLike {
+  readonly version: typeof ROLE_FILE_VERSION;
 }
 
 /** An empty document for the first save on a missing home. */
@@ -195,18 +176,17 @@ export function parseRoleConfiguration(text: string, path: string): RoleConfigur
   };
 }
 
-/** Read the role file without throwing. Legacy shapes are upgraded first. */
+/** Read the role file without throwing or writing. */
 export function readRoleConfiguration(path: string): RoleConfiguration {
-  const upgrade = upgradeRoleFile(path, {
-    currentVersion: ROLE_FILE_VERSION,
-    serialize: serializeRoleDocument,
-  });
-  if (upgrade.status === "missing") return { status: "missing", path };
-  if (upgrade.status === "unreadable") {
-    return { status: "unreadable", path, reason: upgrade.reason };
+  let text: string;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return { status: "missing", path };
+    return { status: "unreadable", path, reason: describeError(error) };
   }
   try {
-    return parseRoleConfiguration(readFileSync(path, "utf8"), path);
+    return parseRoleConfiguration(text, path);
   } catch (error) {
     return { status: "unreadable", path, reason: describeError(error) };
   }

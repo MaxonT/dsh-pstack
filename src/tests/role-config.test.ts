@@ -1,6 +1,6 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { parseLegacyRoute as parseRoute } from "../compat/legacy-route.ts";
@@ -13,13 +13,15 @@ function homeWithRoles(document: Record<string, unknown> | undefined): string {
   const directory = mkdtempSync(join(tmpdir(), "pstack-roles-"));
   directories.push(directory);
   if (document !== undefined) {
-    writeFileSync(join(directory, "pstack-models.json"), `${JSON.stringify(document, null, 2)}\n`);
+    const path = jsonPath(directory);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, `${JSON.stringify(document, null, 2)}\n`);
   }
   return directory;
 }
 
 function jsonPath(directory: string): string {
-  return join(directory, "pstack-models.json");
+  return join(directory, "pstack", "models.json");
 }
 
 afterEach(() => {
@@ -66,7 +68,7 @@ describe("role manifest, parser, and route selection", () => {
           ],
         },
       }),
-      "/home/user/.dsh/pstack-models.json",
+      "/home/user/.dsh/pstack/models.json",
     );
     expect(parsed.status).toBe("loaded");
     if (parsed.status !== "loaded") return;
@@ -104,104 +106,5 @@ describe("role manifest, parser, and route selection", () => {
   it("distinguishes a missing file from an unreadable path", () => {
     expect(readRoleConfiguration(jsonPath(homeWithRoles(undefined))).status).toBe("missing");
     expect(readRoleConfiguration(homeWithRoles(undefined)).status).toBe("unreadable");
-  });
-});
-
-describe("legacy role file migration", () => {
-  it("migrates an mdc file to json and removes the mdc when json is missing", () => {
-    const directory = homeWithRoles(undefined);
-    const legacy = join(directory, "pstack-models.mdc");
-    writeFileSync(legacy, "# budget: large (xhigh)\nbug-fix: cpa/model-a [high]\n");
-    const config = readRoleConfiguration(jsonPath(directory));
-    expect(config.status).toBe("loaded");
-    if (config.status !== "loaded") return;
-    expect(config.budget).toBe("large (xhigh)");
-    expect(config.roles.get("bug-fix")?.routes[0]).toMatchObject({ model: "model-a" });
-    expect(existsSync(legacy)).toBe(false);
-    expect(existsSync(jsonPath(directory))).toBe(true);
-    expect(JSON.parse(readFileSync(jsonPath(directory), "utf8"))).toMatchObject({
-      version: 2,
-      budget: "large (xhigh)",
-      roles: {
-        "bug-fix": [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
-      },
-    });
-  });
-
-  it("prefers json and keeps the mdc when both exist", () => {
-    const directory = homeWithRoles({ version: 1, roles: { "bug-fix": ["json/model [low]"] } });
-    const legacy = join(directory, "pstack-models.mdc");
-    writeFileSync(legacy, "bug-fix: mdc/model [high]\n");
-    const config = readRoleConfiguration(jsonPath(directory));
-    expect(config.status).toBe("loaded");
-    if (config.status !== "loaded") return;
-    expect(config.roles.get("bug-fix")?.routes[0]).toMatchObject({ model: "model" });
-    expect(config.roles.get("bug-fix")?.routes[0]).toMatchObject({ provider: "json" });
-    expect(existsSync(legacy)).toBe(true);
-  });
-
-  it("upgrades a version 1 JSON document in place before reading", () => {
-    const directory = homeWithRoles({ version: 1, roles: { "bug-fix": ["cpa/model-a [high]"] } });
-    const config = readRoleConfiguration(jsonPath(directory));
-    expect(config.status).toBe("loaded");
-    const raw = JSON.parse(readFileSync(jsonPath(directory), "utf8")) as {
-      version: number;
-      roles: Record<string, unknown>;
-    };
-    expect(raw.version).toBe(2);
-    expect(raw.roles["bug-fix"]).toEqual([
-      { kind: "route", provider: "cpa", model: "model-a", effort: "high" },
-    ]);
-  });
-
-  it("drops retired roles and normalizes the budget during a version 1 migration", () => {
-    const directory = homeWithRoles({
-      version: 1,
-      budget: "unlimited (max)",
-      roles: {
-        "bug-fix": ["cpa/model-a [high]"],
-        "hardest tasks": ["cpa/model-a [high]"],
-      },
-    });
-    const config = readRoleConfiguration(jsonPath(directory));
-    expect(config.status).toBe("loaded");
-    if (config.status !== "loaded") return;
-    expect(config.budget).toBe("large (xhigh)");
-    expect(config.roles.has("hardest tasks")).toBe(false);
-    const raw = JSON.parse(readFileSync(jsonPath(directory), "utf8")) as {
-      budget?: string;
-      roles: Record<string, unknown>;
-    };
-    expect(raw.budget).toBe("large (xhigh)");
-    expect(raw.roles["hardest tasks"]).toBeUndefined();
-    expect(raw.roles["bug-fix"]).toBeDefined();
-  });
-
-  it("drops retired roles and migrates the unlimited budget on read", () => {
-    const directory = homeWithRoles({
-      version: 2,
-      budget: "unlimited (max)",
-      roles: {
-        "bug-fix": [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
-        "hardest tasks": [{ kind: "route", provider: "cpa", model: "model-a", effort: "high" }],
-      },
-    });
-    const config = readRoleConfiguration(jsonPath(directory));
-    expect(config.status).toBe("loaded");
-    if (config.status !== "loaded") return;
-    expect(config.budget).toBe("large (xhigh)");
-    expect(config.roles.has("hardest tasks")).toBe(false);
-    expect(config.issues).toEqual([]);
-    const raw = JSON.parse(readFileSync(jsonPath(directory), "utf8")) as {
-      budget?: string;
-      roles: Record<string, unknown>;
-    };
-    expect(raw.budget).toBe("large (xhigh)");
-    expect(raw.roles["hardest tasks"]).toBeUndefined();
-    expect(raw.roles["bug-fix"]).toBeDefined();
-  });
-
-  it("is missing when neither file exists", () => {
-    expect(readRoleConfiguration(jsonPath(homeWithRoles(undefined))).status).toBe("missing");
   });
 });

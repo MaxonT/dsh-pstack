@@ -75,6 +75,7 @@ export class PotetoModeService extends TypertRemoteService {
     "storageDomain",
     "systemPrompt",
     "typert",
+    "pstackHome",
   ];
 
   private readonly lifts = new WeakMap<Agent, Array<() => void>>();

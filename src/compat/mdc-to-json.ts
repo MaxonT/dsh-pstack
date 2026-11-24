@@ -33,6 +33,14 @@ export function budgetLineValue(line: string): string | undefined {
   return match === null ? undefined : (match[1] ?? "").trim();
 }
 
+/** Drop the YAML frontmatter the Cursor rule format puts above the role lines. */
+function stripFrontmatter(text: string): string {
+  const lines = text.split(/\r?\n/);
+  if (lines[0]?.trim() !== "---") return text;
+  const end = lines.findIndex((line, index) => index > 0 && line.trim() === "---");
+  return end === -1 ? text : lines.slice(end + 1).join("\n");
+}
+
 /** Parse the legacy line grammar. Pure: no filesystem access. */
 export function parseLegacyRoleFileText(text: string): LegacyRoleFile {
   const roles = new Map<string, readonly Route[]>();
@@ -40,7 +48,7 @@ export function parseLegacyRoleFileText(text: string): LegacyRoleFile {
   let budget: string | undefined;
 
   if (text !== "") {
-    for (const rawLine of text.split(/\r?\n/)) {
+    for (const rawLine of stripFrontmatter(text).split(/\r?\n/)) {
       const trimmed = rawLine.trim();
       if (trimmed === "") continue;
       if (trimmed.startsWith("#")) {
@@ -91,8 +99,8 @@ export interface MdcMigrationOptions {
 
 /**
  * Parse `mdcPath`, write the current JSON version at `jsonPath`, then delete the
- * `.mdc`. Throws on a parse issue or write failure so the caller can report the
- * role file as unreadable instead of silently treating it as missing.
+ * `.mdc`. Throws on a parse issue or write failure; the startup migration treats
+ * that as best effort and leaves the legacy file in place.
  */
 export function migrateMdcToJson(
   mdcPath: string,
