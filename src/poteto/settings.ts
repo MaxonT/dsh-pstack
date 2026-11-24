@@ -1,12 +1,9 @@
-/** Global poteto-workflow defaults persisted in `$DSH_HOME/pstack-settings.json`. */
+/** Global poteto-workflow defaults persisted in `$DSH_HOME/pstack/settings.json`. */
 
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
 
 import { writeFileAtomically } from "../lib/atomic-write.ts";
-import { resolveDshHome } from "../roles/role-store.ts";
-
-const SETTINGS_FILENAME = "pstack-settings.json";
+import { pstackHomePaths } from "../pstack/home.ts";
 
 /** The whole settings document, versioned for forward-compatible reads. */
 export interface PstackSettings {
@@ -17,9 +14,9 @@ export interface PstackSettings {
 /** Defaults used when the file is missing or corrupt. */
 export const EMPTY_SETTINGS: PstackSettings = { version: 1, potetoDefault: false };
 
-/** Absolute path of the settings file for the current DSH home. */
-export function settingsFilePath(): string {
-  return join(resolveDshHome(), SETTINGS_FILENAME);
+/** Absolute path of the settings file for one DSH home. */
+export function settingsFilePath(dshHome?: string): string {
+  return pstackHomePaths(dshHome).settings;
 }
 
 /**

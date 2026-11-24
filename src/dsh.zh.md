@@ -51,7 +51,7 @@ pstack 技能使用 Cursor 名称。在 DeepSeek Harness 中，每会话读取�
 | `claude-<family>-<version>-<effort>[-fast]` | 用 `pstack_roles` 读取角色的 `provider`、`model`、`reasoningEffort` 和可用 `efforts`，再把它们传给 `pstack_subagent`。`pstack_models` 只用于 setup 或校验路由。去掉 `-fast`；DSH 没有速度参数。 |
 | `grok-*`、`gpt-*` 或其他非 Claude slug | 选最接近的已公布路由，或省略路由让子代理继承父路由；说明选择了哪种。 |
 | `auto` 或 `inherit-parent` | 省略路由；子代理继承父路由。 |
-| pstack 角色文件 | `$DSH_HOME/pstack-models.json`。通过 `pstack_roles` 读取；`pstack_subagent` 不解析它。文件缺失时沿用父路由。 |
+| pstack 角色文件 | `$DSH_HOME/pstack/models.json`。通过 `pstack_roles` 读取；`pstack_subagent` 不解析它。文件缺失时沿用父路由。 |
 | 形如 `<model> <effort>` 的角色值 | 使用 `pstack_roles` 报告的结构化路由值。不要把 `provider/model` 拼成字符串或再拆开。 |
 
 覆盖子代理路由时，如果目标模型不支持父级当前 effort，同时传入 `reasoning_effort`。省略会继承父级 effort，并可能在子代理启动前失败。

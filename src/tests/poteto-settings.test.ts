@@ -4,19 +4,28 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import { EMPTY_SETTINGS, readSettings, writeSettings } from "../poteto/settings.ts";
+import {
+  EMPTY_SETTINGS,
+  readSettings,
+  settingsFilePath,
+  writeSettings,
+} from "../poteto/settings.ts";
 
 /** A fresh settings path inside a throwaway directory, cleaned after `run`. */
 function inTempFile(run: (path: string, dir: string) => void): void {
   const dir = mkdtempSync(join(tmpdir(), "pstack-settings-"));
   try {
-    run(join(dir, "pstack-settings.json"), dir);
+    run(join(dir, "settings.json"), dir);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 }
 
 describe("pstack settings file", () => {
+  it("resolves the settings path under the pstack home for one DSH home", () => {
+    expect(settingsFilePath("/home/user/.dsh")).toBe("/home/user/.dsh/pstack/settings.json");
+  });
+
   it("falls back to defaults when the file is missing", () => {
     inTempFile((path) => {
       expect(readSettings(path)).toEqual(EMPTY_SETTINGS);
@@ -35,7 +44,7 @@ describe("pstack settings file", () => {
       writeSettings({ version: 1, potetoDefault: true }, path);
       expect(readSettings(path)).toEqual({ version: 1, potetoDefault: true });
       expect(readFileSync(path, "utf8")).toBe('{\n  "version": 1,\n  "potetoDefault": true\n}\n');
-      expect(readdirSync(dir)).toEqual(["pstack-settings.json"]);
+      expect(readdirSync(dir)).toEqual(["settings.json"]);
     });
   });
 });

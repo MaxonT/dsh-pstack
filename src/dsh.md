@@ -51,7 +51,7 @@ When the session enables Agent Teams, `pstack_subagent` starts a teammate. Creat
 | `claude-<family>-<version>-<effort>[-fast]` | Use `pstack_roles` to read the role's `provider`, `model`, `reasoningEffort`, and served `efforts`; pass those values to `pstack_subagent`. Use `pstack_models` for setup or route verification. Drop `-fast`; DSH has no speed parameter. |
 | A `grok-*`, `gpt-*`, or other non-Claude slug | Pick the closest advertised route, or omit the route and let the child inherit the parent route; say which you did. |
 | `auto` or `inherit-parent` | Omit the route; the child inherits the parent route. |
-| The pstack role file | `$DSH_HOME/pstack-models.json`. Read it through `pstack_roles`; `pstack_subagent` does not parse it. A missing file leaves the parent route in effect. |
+| The pstack role file | `$DSH_HOME/pstack/models.json`. Read it through `pstack_roles`; `pstack_subagent` does not parse it. A missing file leaves the parent route in effect. |
 | A role value such as `<model> <effort>` | Use the structured route values reported by `pstack_roles`. Do not join or split a `provider/model` string. |
 
 When overriding a child route, pass a `reasoning_effort` when the target model does not serve the parent's current effort. Omitting it inherits the parent effort and can fail before the child starts.
